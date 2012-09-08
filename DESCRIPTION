@@ -1,0 +1,34 @@
+Package: SingleCellAssay
+Type: Package
+Title: Core data structures for single-cell assays
+Version: 0.2.3
+Date: 2012-07-02
+Author: Andrew McDavid <amcdavid@fhcrc.org>, Greg Finak <gfinak@fhcrc.org>
+Maintainer: Greg Finak <gfinak@fhcrc.org>
+Imports:
+    Biobase,
+    BiocGenerics,
+    testthat,
+    gdata,
+    flowCore,
+    methods,
+    reshape,
+    stats,
+    utils,
+    lattice,
+    gplots,
+    latticeExtra,
+    plyr
+Suggests:
+    parallel
+Description: Core data structures and methods for handling single cell assay
+    data.
+License: Artistic-2.0
+Collate:
+    'AllClasses.R'
+    'Fluidigm-methods.R'
+    'lrtest.r'
+    'Readers.R'
+    'SCASet-methods.R'
+    'SingleCellAssay-methods.R'
+    'filterEval.R'

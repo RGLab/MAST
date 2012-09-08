@@ -1,0 +1,11 @@
+##' Methods for analysing single cell assay data
+##'
+##' This packages provides data structures and functions for statistical analysis of single-cell assay data such as Fluidigm single cell gene expression assays.
+##'
+##' @name SingleCellAssay-package
+##' @aliases SingleCellAssay
+##' @docType package
+##' @title Tools for Single Cell Assay Analysis
+##' @author Andrew McDavid \email{amcdavid@fhcrc.org} and Greg Finak \email{gfinak@fhcrc.org}
+##' @keywords package
+##' @seealso \code{\link{SCASet}}

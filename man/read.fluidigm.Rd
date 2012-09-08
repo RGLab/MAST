@@ -1,0 +1,90 @@
+\name{read.fluidigm}
+\alias{read.fluidigm}
+\title{read.fluidigm}
+\usage{
+  read.fluidigm(files = NULL, metadata = NULL,
+    header.size = 2, skip = 8, cycle.threshold = 40,
+    metadataColClasses = NULL, meta.key = NULL,
+    idvars = NULL, splitby = NULL,
+    unique.well.id = "Chamber.ID", raw = TRUE,
+    assay = NULL, geneid = "Assay.Name", sample = NULL,
+    well = "Well", measurement = "X40.Ct",
+    measurement.processed = "Ct")
+}
+\arguments{
+  \item{files}{A \code{character} vector of files to read.}
+
+  \item{metadata}{A \code{character} path and filename of a
+  CSV file containing additional metadata about the
+  samples}
+
+  \item{header.size}{A \code{numeric} indicating the number
+  of lines in the header (default 2)}
+
+  \item{skip}{\code{numeric} how many lines to skip before
+  reading (default 8)}
+
+  \item{cycle.threshold}{The maximum number of PCR cycles
+  performed (default 40) \code{numeric}}
+
+  \item{metadataColClasses}{Optional \code{character}
+  vector giving the column classes of the metadata file.
+  See \link{read.table}.}
+
+  \item{meta.key}{Optional \code{character} vector that
+  identifies the key column between the metadata and the
+  fluidigm data}
+
+  \item{idvars}{Optional \code{character} vector that
+  defines the set of columns uniquely identifying a well
+  (unique cell, gene, and condition).}
+
+  \item{splitby}{Optional \code{character} that defines the
+  column / variable used to split the resulting data into
+  an SCASet, such that unique levels of \code{splitby} each
+  fall into their own SingleCellAssay object within an
+  SCASet. Ususally the experimental unit subjected to
+  different treatments.}
+
+  \item{unique.well.id}{The column that uniquely identifies
+  a sample well in the data. Default is "Chamber.ID".}
+
+  \item{raw}{\code{logical} flag indicating this is raw
+  data coming off the instrument. Thus we make some
+  assumptions about the column names that are present.}
+
+  \item{assay}{\code{character} name of a column that
+  uniquely identifies an Assay (i.e. gene). Default is
+  NULL}
+
+  \item{geneid}{\code{character} names of the column that
+  identifies a gene. Default is "Assay.Name"}
+
+  \item{sample}{\code{character} name of a column that
+  uniquely identifies a sample}
+
+  \item{well}{\code{character} name of a column that
+  uniquely identifies a well. Default "Well".}
+
+  \item{measurement}{\code{character} name of the column
+  that holds the measurement. Default "X40.Ct".}
+
+  \item{measurement.processed}{\code{character} one of
+  "Ct","40-Ct", or "et". If not "Ct", the measurement will
+  be transformed.}
+}
+\value{
+  \code{SCASet} holding the data.
+}
+\description{
+  Reads a fluidigm raw data file (or set of files)
+}
+\details{
+  This function reads a raw Fluidigm data file or set of
+  files and constructs a SingleCellAssay (or FluigidmAssay)
+  object.
+}
+\author{
+  Greg Finak
+}
+
