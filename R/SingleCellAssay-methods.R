@@ -251,11 +251,11 @@ setMethod("exprs",signature(object="SingleCellAssay"),function(object){
 ##' @exportMethod show
 ##' @aliases show,SingleCellAssay-method
 ##' @rdname show-methods
+##'
 setMethod("show","SingleCellAssay",function(object){
-  cat(class(object), " id: ", object@id,"\n")
+  cat(class(object), " id: ", object@id, "\n", nrow(object), " wells; ", ncol(object), " features\n")
   invisible(NULL)
 })
-
 
 ##' @rdname subset-methods
 ##' @aliases subset,SingleCellAssay-method
@@ -290,7 +290,6 @@ setMethod('split', signature(x='SingleCellAssay', f='ANY', drop='ANY'), function
 
 ## FIXME: gdata (not sure why it's imported) shadows the generic definition
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
-  browser()
   scalist <- list(x, y, ...)
   scalist <- lapply(scalist, melt)
   dfbind <- do.call(rbind.fill, scalist)
