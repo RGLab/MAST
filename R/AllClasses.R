@@ -388,7 +388,7 @@ setClass("SCASet",
 ##' @param ... Additional keywords to be added to mapping
 ##' @export SingleCellAssay
 ##' @aliases SingleCellAssay
-##' @name SingleCellAssay
+##' @name SingleCellAssay-constructor
 ##' @rdname SingleCellAssay-constructor
 ##' @docType methods
 ##' @return SingleCellAssay object
