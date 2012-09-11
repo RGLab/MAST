@@ -24,8 +24,12 @@
   with sampleName \code{i}.
 
   \code{signature(x="SingleCellAssay", i="ANY")}:
-  \code{x[[i]]}, where \code{i} is a logical or integer
-  vector, recycled as necessary to match \code{nrow(x)}
+  \code{x[[i]]}, where \code{i} is a logical, integer, or
+  character vector, recycled as necessary to match
+  \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a
+  logical, integer or character vector selecting the
+  features based on ``primerid'' which is unique, while
+  ``geneid'' or gene name is not necessarily unique.
 }
 \keyword{transform}
 

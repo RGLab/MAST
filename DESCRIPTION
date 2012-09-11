@@ -18,7 +18,8 @@ Imports:
     lattice,
     gplots,
     latticeExtra,
-    plyr
+    plyr,
+    digest
 Suggests:
     parallel
 Description: Core data structures and methods for handling single cell assay
@@ -32,3 +33,4 @@ Collate:
     'SCASet-methods.R'
     'SingleCellAssay-methods.R'
     'filterEval.R'
+    'helper-methods.R'

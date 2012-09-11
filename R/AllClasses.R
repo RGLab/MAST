@@ -194,6 +194,7 @@ setMethod("show","Mapping",function(object){
 setOldClass("ncdf")
 
 ##' @import reshape
+##' @import Biobase
 ##' @import BiocGenerics
 ##' @importFrom plyr rbind.fill
 ##' @importClassesFrom flowCore ncdfHandler NcdfOrMatrix
@@ -210,7 +211,13 @@ setClass("SCA",
 ##' @format a data frame with 11 columns
 NULL
 
-### SingleCellAssay class
+### SingleCellAssay validity method
+##'
+##' Function to check the validity of SingleCellAssay objects. More specific functionality can wrap this function.
+##' @export
+##' @title SingleCellAssayValidity
+##' @param object A \code{SingleCellAssay} object or object inheriting from SingleCellAssay
+##' @return A \code{logical}. \code{TRUE} if the object is valid, \code{FALSE} otherwise.
 SingleCellAssayValidity <- function(object){
   if(!inherits(get("data",envir=object@env),"data.frame")){
     message("Argument `dataframe` should be a data.frame.")
@@ -241,16 +248,16 @@ SingleCellAssayValidity <- function(object){
 
 
 Mandatory_Fields <- c('primerid', 'geneid', 'measurement', 'idvars')
-SingleCellAssayNames <- c(Mandatory_Fields, 'cellvars', 'featurevars', 'phenovars')
-SingleCellAssayMap<-vector('list',length(SingleCellAssayNames))
-names(SingleCellAssayMap)<-SingleCellAssayNames
+SingleCellAssayMapNames <- c(Mandatory_Fields, 'cellvars', 'featurevars', 'phenovars')
+SingleCellAssayMap<-vector('list',length(SingleCellAssayMapNames))
+names(SingleCellAssayMap)<-SingleCellAssayMapNames
                            
 
 #Mapping Class Related Functions and Methods and the Class Definition
+##'@export
 .isValidNamedList<-function(mylist){
   #if the named list is empty, we don't add anything
   if(length(mylist)==0){
-    warning("namedlist should not be empty")
     return(TRUE)
   }
   if(is.null(names(mylist))){
@@ -300,8 +307,6 @@ setClass("SingleCellAssay",contains="SCA",
          representation=representation(featureData="AnnotatedDataFrame",
            phenoData="AnnotatedDataFrame",
            cellData="AnnotatedDataFrame",
-#           mapNames='character',
- #          mapping="Mapping",
            description='data.frame',
            wellKey='character',
            id="ANY",                    #experiment descriptor
@@ -309,8 +314,6 @@ setClass("SingleCellAssay",contains="SCA",
          prototype=prototype(phenoData=new("AnnotatedDataFrame"),
            featureData=new("AnnotatedDataFrame"),
            cellData=new("AnnotatedDataFrame"),
-#           mapNames=SingleCellAssayNames,
-#           mapping=new("Mapping",mapping=SingleCellAssayMap),
            description=data.frame(),
            wellKey=NA_character_,
            id=numeric(0),
@@ -318,7 +321,7 @@ setClass("SingleCellAssay",contains="SCA",
 
 
 ## Same as SingleCellAssay, but with additional mapNames
-FluidigmMapNames <- c(SingleCellAssayNames, 'ncells')
+FluidigmMapNames <- c(SingleCellAssayMapNames, 'ncells')
 FluidigmMap<-vector('list',length(FluidigmMapNames))
 names(FluidigmMap)<-FluidigmMapNames
 
@@ -326,6 +329,7 @@ names(FluidigmMap)<-FluidigmMapNames
 setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(mapNames=FluidigmMapNames,mapping=new("Mapping",mapping=FluidigmMap)),validity=SingleCellAssayValidity)
 
 ##' @aliases getMapping,SingleCellAssay,missing-method
+##' @aliases getMapping,SCA,missing-method
 ##' @rdname getMapping-methods
 ##' @export
 setMethod("getMapping",c("SCA","missing"),function(object){
@@ -333,6 +337,7 @@ setMethod("getMapping",c("SCA","missing"),function(object){
 })
 
 ##' @aliases getMapping,SCA,character-method
+##' @aliases getMapping,SingleCellAssay,character-method
 ##' @rdname getMapping-methods
 ##' @export
 setMethod("getMapping",c("SCA","character"),function(object,mapnames){
@@ -500,20 +505,23 @@ FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, gene
   as(sc, 'FluidigmAssay')
 }
 
-##' Constructs a SCASet, which is a list of SingleCellAssays
+##' Constructs a SCASet
 ##'
-##' FIXME
+##' An SCASet is a list of SingleCellAssays or objects inheriting from SingleCellAssay. The type of constructor called is determined by the value of contentClass, which should be the class of the SCA inheriting object contained in this SCASet. Both the class and the constructor should exist and have the same name. The code dynamically looks to see if the a function with the same name exists, and ASSUMES it is the constructor for the class.
 ##' @title SCASet constructor
 ##' @param dataframe flat data.frame ala SingleCellAssay
 ##' @param splitby either a character vector naming columns or a factor or a list of factors used to split dataframe into SingleCellAssays
 ##' @param idvars character vector naming columns that uniquely identify a cell
 ##' @param primerid character vector of length 1 that names the column that containing what feature was measured
 ##' @param measurement character vector of length 1 that names the column containing the measurement
-##' @param ... passed up to SingleCellAssay
+##' @param contentClass a character, the name of the class being constructed within this SCASet. Defaults to SingleCellAssay. Other methods may pass in other classes, i.e. FluidigmAssay.
+##' @param ... passed up to SingleCellAssay or other dynamically called constructor.
 ##' @return SCASet
+##' @note The dynamic lookup of the constructor could be made more robust. 
 ##' @aliases SCASet
 ##' @rdname SCAset-methods
 ##' @export
+##' @TODO SCASet constructor should perhaps take a SingleCellAssay class or FluidigmClass rather than a dataframe. Then we can learn the class type for construction.
 SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,contentClass="SingleCellAssay",...){
   if(is.character(splitby) && all(splitby %in% names(dataframe))){
   spl<-split(dataframe,dataframe[, splitby])

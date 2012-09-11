@@ -1,0 +1,1 @@
+within.data.frame(vbeta, {Et <- 40-Ct; Et <- ifelse(is.na(Et), 0, Et)})

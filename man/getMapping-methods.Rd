@@ -4,6 +4,8 @@
 \alias{getMapping,Mapping,character-method}
 \alias{getMapping,Mapping,missing-method}
 \alias{getMapping,SCA,character-method}
+\alias{getMapping,SCA,missing-method}
+\alias{getMapping,SingleCellAssay,character-method}
 \alias{getMapping,SingleCellAssay,missing-method}
 \title{getMapping}
 \arguments{

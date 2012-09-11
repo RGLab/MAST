@@ -2,9 +2,9 @@
 \name{fData}
 \alias{fData}
 \alias{fData,SingleCellAssay-method}
-\title{cData}
+\title{fData}
 \arguments{
-  \item{sc}{An object with \code{featureData}}
+  \item{object}{An object with \code{featureData}}
 }
 \value{
   \code{data.frame}

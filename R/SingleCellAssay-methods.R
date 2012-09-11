@@ -58,29 +58,31 @@ setGeneric('cellData', function(sc) standardGeneric('cellData'))
 ##' Accessor for featureData \code{data.frame}
 ##'
 ##' Returns the \code{featureData} \code{data.frame}.
-##' @title cData
-##' @param sc An object with \code{featureData}
-##' @return \code{data.frame}
-##'
-##' 
-##' @export
+##' @title fData
+##' @param object An object with \code{featureData}
+##' @return \code{data.frame} 
 ##' @docType methods
 ##' @rdname fData-methods
 ##' @keywords accessor
-setGeneric('fData', function(sc) standardGeneric('fData'))
+##' @name fData
+##' @aliases fData,SingleCellAssay-method
+##' @importMethodsFrom Biobase fData
+#setGeneric('fData', function(sc) standardGeneric('fData'))
+NULL
 
 ##' Accessor for featureData \code{AnnotatedDataFrame}
 ##'
 ##' Returns the \code{featureData}.
-##' @param sc An object with \code{featureData}
+##' @param object An object with \code{featureData}
 ##' @return \code{AnnotatedDataFrame}
-##'
-##' 
-##' @export
 ##' @docType methods
 ##' @rdname featureData-methods
 ##' @keywords accessor
-setGeneric('featureData', function(sc) standardGeneric('featureData'))
+##' @name featureData
+##' @aliases featureData,SingleCellAssay-method
+##' @importMethodsFrom Biobase featureData
+#setGeneric('featureData', function(object) standardGeneric('featureData'))
+NULL
 
 ##' Melt a rectangular array
 ##'
@@ -185,11 +187,13 @@ setMethod('getMapNames', 'SCA', function(object) object@mapNames)
 
 ##' @rdname fData-methods
 ##' @aliases fData,SingleCellAssay-method
-setMethod('fData', 'SingleCellAssay', function(sc) pData(sc@featureData))
+##' @exportMethod fData
+setMethod('fData', 'SingleCellAssay', function(object) pData(object@featureData))
 
 ##' @rdname featureData-methods
 ##' @aliases featureData,SingleCellAssay-method
-setMethod('featureData', 'SingleCellAssay', function(sc)  sc@featureData)
+##' @exportMethod featureData
+setMethod('featureData', 'SingleCellAssay', function(object)  object@featureData)
 
 ##' @rdname melt-methods
 ##' @details \code{signature(data="SingleCellAssay")}: return a \code{data.frame}, which contains a melted version of \code{data}.
@@ -198,24 +202,53 @@ setMethod("melt","SingleCellAssay",function(data, ...) data@env$data )
 
 
 ##' @name [[
-##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[[i]]}, where \code{i} is a logical or integer vector, recycled as necessary to match \code{nrow(x)}
+##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[[i]]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique. 
 ##' @aliases [[,SingleCellAssay,ANY-method
 ##' @keywords transform
 ##' @rdname doubleAngleBracket-methods
 ##' @export
 try({ #this is needed to work around a bug in R that prevents redefining [[.
   ## see http://r.789695.n4.nabble.com/package-slot-of-generic-quot-quot-and-missing-env-target-td4634152.html
-setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i, ...){
+setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, ...){
 ### index by numeric index or boolean.
-  selectedKeys <- getwellKey(x)[i]
+  if(inherits(i,"integer")|inherits(i,"logical")|inherits(i,"numeric")){
+    selectedKeys <- getwellKey(x)[i]
+  }else if(!all(i%in%getwellKey(x))){
+    stop("wellKeys not found in SingleCellAssay",i[!i%in%getwellKey(x)]);
+  }
   meltKeys <- melt(x)[,"__wellKey"] %in% selectedKeys
+  selectedFeatures<-rep(TRUE,length(meltKeys));
+  if(!missing(j)){
+    if(inherits(j,"integer")|inherits(j,"numeric")|inherits(j,"logical")){      
+      pk<-unique(melt(x)[,getMapping(x,"primerid")])
+      if(any(j>length(pk))){
+        stop("feature index out of bounds")
+      }else{
+        pk<-pk[j]
+        selectedFeatures<-melt(x)[,getMapping(x,"primerid")]%in%pk
+      }
+    }else if(inherits(j,"character")){
+      pk<-unique(melt(x)[,getMapping(x,"primerid")])
+      if(!(all(j%in%pk))){
+        stop("feature names \n",paste(j[!j%in%pk],collapse=" "), "\n not found!");
+      }
+      pk<-pk[pk%in%j]
+      selectedFeatures<-melt(x)[,getMapping(x,"primerid")]%in%pk
+    }
+    if(!missing(j)){
+      newfdf <- featureData(x)[j,]
+    }
+  }
+  meltKeys<-meltKeys&selectedFeatures
   env <- new.env()
   env$data <-melt(x)[meltKeys,]
   ##TODO: update phenodata
   newcdf <- cellData(x)[i,]
-  
+  if(!exists("newfdf")){
+    newfdf<-x@featureData
+  }
   cls<-class(x)[[1]]
-  new(cls, env=env, mapping=x@mapping, id=x@id, wellKey=selectedKeys, featureData=x@featureData, cellData=newcdf)
+  new(cls, env=env, mapping=x@mapping, id=x@id, wellKey=selectedKeys, featureData=newfdf, cellData=newcdf)
 }) }, silent=TRUE)
 
 
@@ -305,13 +338,30 @@ setMethod('split', signature(x='SingleCellAssay', f='ANY', drop='ANY'), function
 }, silent=TRUE)
 
 ## FIXME: gdata (not sure why it's imported) shadows the generic definition
+##'Combine two SingleCellAssay or derived classes
+##'
+##' combines two single cell assays provided they share a common mapping
+##' @TODO combining based on a common mapping may be too restrictive. This may change depending on needs.
+##' @importMethodsFrom BiocGenerics combine
+##' @exportMethod combine
+##' @aliases combine,SingleCellAssay,SingleCellAssay-method
+##' @docType methods
+##' @rdname combine-methods
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
   scalist <- list(x, y, ...)
   scalist <- lapply(scalist, melt)
   dfbind <- do.call(rbind.fill, scalist)
   if(!all.equal(getMapping(x), getMapping(y))) stop('Can only combine alike SingleCellAssays')
-  
-  SingleCellAssay(dfbind, idvars=NULL, primerid=NULL, measurement=NULL, geneid=NULL, id=x@id, mapping=getMapping(x))
+  if(!all.equal(class(x),class(y))){
+    stop("Cannot combine Assays of different classes")
+  }
+  contentClass<-class(x)[[1]]
+  F <- try(getFunction(contentClass),silent=TRUE)
+  if(inherits(F,"try-error"))
+    message("Can't construct a class of type ",contentClass[[1]],". Constructor of this name doesn't exist")
+  cl<-as.call(list(as.name(contentClass[[1]]),dataframe=dfbind,id=x@id,mapping=getMapping(x)))
+  eval(cl)
+  #SingleCellAssay(dfbind, idvars=NULL, primerid=NULL, measurement=NULL, geneid=NULL, id=x@id, mapping=getMapping(x),)
 })
 
 

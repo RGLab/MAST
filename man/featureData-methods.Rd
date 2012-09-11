@@ -4,7 +4,7 @@
 \alias{featureData,SingleCellAssay-method}
 \title{Accessor for featureData \code{AnnotatedDataFrame}}
 \arguments{
-  \item{sc}{An object with \code{featureData}}
+  \item{object}{An object with \code{featureData}}
 }
 \value{
   \code{AnnotatedDataFrame}
