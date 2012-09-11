@@ -9,7 +9,8 @@ clean:
 	rm -f *.tex *.bbl *.blg *.aux *.out *.log *.spl *.dvi *tikzDictionary 
 
 %.pdf: %.vignette
-	mv $*.Rnw $*.dummy
+	cp symbols.foo symbols.tex
 	cp $*.vignette $*.Rnw
-	$(R_HOME)/bin/Rscript -e "library(knitr); knit2pdf('$*.Rnw')"
-	mv $*.dummy $*.Rnw
+	$(R_HOME)/bin/R -e "library(knitr); knit2pdf('$*.Rnw')"
+	cp $*.dummy $*.Rnw
+	rm symbols.tex

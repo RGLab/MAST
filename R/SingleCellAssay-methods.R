@@ -215,8 +215,8 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i, ...){
   ##TODO: update phenodata
   newcdf <- cellData(x)[i,]
   
-  
-  new("SingleCellAssay", env=env, mapping=x@mapping, id=x@id, cellKey=selectedKeys, featureData=x@featureData, cellData=newcdf)
+  cls<-class(x)[[1]]
+  new(cls, env=env, mapping=x@mapping, id=x@id, cellKey=selectedKeys, featureData=x@featureData, cellData=newcdf)
 }) }, silent=TRUE)
 
 
@@ -267,11 +267,11 @@ setReplaceMethod('exprs', c('SingleCellAssay', 'ANY'),
 ##' @exportMethod show
 ##' @aliases show,SingleCellAssay-method
 ##' @rdname show-methods
+##'
 setMethod("show","SingleCellAssay",function(object){
-  cat(class(object), " id: ", object@id,"\n")
+  cat(class(object), " id: ", object@id, "\n", nrow(object), " wells; ", ncol(object), " features\n")
   invisible(NULL)
 })
-
 
 ##' @rdname subset-methods
 ##' @aliases subset,SingleCellAssay-method
@@ -307,7 +307,6 @@ setMethod('split', signature(x='SingleCellAssay', f='ANY', drop='ANY'), function
 
 ## FIXME: gdata (not sure why it's imported) shadows the generic definition
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
-  browser()
   scalist <- list(x, y, ...)
   scalist <- lapply(scalist, melt)
   dfbind <- do.call(rbind.fill, scalist)

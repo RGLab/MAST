@@ -1,5 +1,9 @@
+%\VignetteIndexEntry{SingleCellAssay-intro}
 \documentclass{article}
 \usepackage{url, graphicx}
+\usepackage{color}
+\usepackage[cm]{fullpage}
+\usepackage[usenames,dvipsnames]{xcolor}
 %\usepackage[authoryear]{natbib}
 
 %\makeatletter
@@ -7,7 +11,9 @@
 % \VignetteIndexEntry{An Introduction to SingleCellAssay}
 
 %\makeatother
-\newcommand{\future}[1]{\textbf{TODO:} #1}
+\newcommand{\future}[1]{TODO: {\color{gray} #1}}
+\newcommand{\sca}{\texttt{SingleCellAssay}}
+\input{symbols.tex}
 \begin{document}
 \title{An Introduction to SingleCellAssay}
 
@@ -16,24 +22,61 @@
 
 \maketitle
 \section{Philosophy}
- \texttt{SingleCellAssay} is an R/Bioconductor package for Fluidigm and friends. 
-We are trying to represent assays that have multiple features (genes, markers) per well (cell, etc). 
-The assays is mostly \emph{complete} in the sense that most features are measured in each well. 
-We'll complete them if they are not.
+ \sca is an R/Bioconductor package for Fluidigm and friends. 
+We seek to support assays that have multiple \emph{features} (genes, markers, etc) per \emph{well} (cell, etc) in a flexible format.
+The assays is mostly \emph{complete} in the sense that most wells contain measurements for all features.
+We test for completeness, and complete the object if it is not, so very incomplete assays just make things a bit slower. 
 
 Internally, we store everything as one giant \texttt{data.frame} with names of special columns kept in a \texttt{mapping} that contains column names and keywords.  
-It is in long-melted format, in feature-major order, so not especially space-efficient, but rather is intended to be very flexible.
+It is in long-melted format, in feature-major order, so not especially fast or space-efficient, but rather is intended to be very flexible.
 
-Each well, feature and \future{unit (phenotype)} has covariates measured.
-These are kept in AnnotatedDataframes, which are generated from the basal data.frame, if so provided.
+Each well, feature \future{, and unit (phenotype)} has covariates measured.
+These are kept in \texttt{AnnotatedDataframes}, which are generated from the basal \texttt{data.frame}, if so provided.
 \future{If not provided, then they can be added after object creation.}
 
 \section{Reading Data}
 Data imported in a Fluidigm instrument-specific format (whose details are undocumented, and probably subject-to-change) or in ``long'' (melted) format, in which each row is a measurement, so if there are $N$ wells and $M$ cells, then the \texttt{data.frame} should contain $N \times M$ rows.
 
-<<Show-off, caption="here's a figure, it will work with Sweave via a makefile hack">>=
-library(lattice)
-xyplot(rnorm(10) ~ rnorm(10))
+For example, the following data set was provided in as a comma-separated value file.
+It has the cycle threshold ($\ct$) recorded, with non-detected genes recorded as NAs.
+For the Fluidigm/qPCR single cell expression functions to work as expected, we must report the expression threshold ($c_{\mbox{max}} - \ct$), which is proportional to the log-expression.
+<<long-example>>=
+library(SingleCellAssay)
+data(vbeta)
+vbeta <- within.data.frame(vbeta, {Et <- 40-Ct; Et <- ifelse(is.na(Et), 0, Et)})
+vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='Et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+show(vbeta.fa)
 @
+
+We specify \texttt{vbeta}, as the \texttt{data.frame} from which the \texttt{FluidigmAssay} object will be created, the \texttt{idvars} which is a column(s) in \texttt{vbeta} that unique identify a well, the \texttt{primerid}, which is a column(s) that specify which feature is measured at this nrow.
+The \texttt{measurement} gives the column name containing the log-expression measurement, \texttt{ncells} contains the number of cells (or other normalizing factor) for the well.  \texttt{geneid}, \texttt{cellvars}, \texttt{phenovars} all specify additional columns to be included in the \texttt{featureData}, \texttt{phenoData}  and \texttt{cellData} (\future{wellData}):
+<<examineMeta>>=
+head(fData(vbeta.fa))
+head(cData(vbeta.fa))
+@ 
+
+\section{Subsetting, splitting, combining}
+It's possible to subset \sca objects by wells \future{ and features}.
+Double square brackets (``[['') and \texttt{subset} subset by wells. 
+Both integer and boolean indices may be used.
+The usual recycling rules (if the index is shorter than the number of rows) apply.
+\future{Single square brackets subset by [wells, features].}
+<<subsets>>=
+sub1 <- vbeta.fa[[1:10]]
+show(sub1)
+sub2 <- subset(vbeta.fa, Well=='A01')
+show(sub2)
+@
+
+A \sca may be split into a list of \sca, which is known as a \texttt{SCASet}.
+<<split>>=
+sp1 <- split(vbeta.fa, 'Subject.ID')
+show(sp1)
+sp2 <- split(vbeta.fa, factor(rbinom(nrow(vbeta.fa), 1, prob=.2)))
+show(sp2)
+@
+The splitting variable can either be a character vector naming column(s) of the \sca, or may be a \texttt{factor} or \texttt{list} of \texttt{factor}s.
+
+It's possible to combine \sca.
 
 \end{document}
