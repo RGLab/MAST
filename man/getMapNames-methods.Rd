@@ -2,7 +2,7 @@
 \name{getMapNames}
 \alias{getMapNames}
 \alias{getMapNames,Mapping-method}
-\alias{getMapNames,SingleCellAssay-method}
+\alias{getMapNames,SCA-method}
 \title{getMapNames}
 \arguments{
   \item{object}{An object with a \code{Mapping} or

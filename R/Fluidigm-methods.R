@@ -1,4 +1,4 @@
-setAs('SingleCellAssay', 'FluidigmAssay', function(from)  new("FluidigmAssay",env=from@env,mapping=from@mapping,id=from@id, cellKey=from@cellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
+setAs('SingleCellAssay', 'FluidigmAssay', function(from)  new("FluidigmAssay",env=from@env,mapping=addMapping(from@mapping,list(ncells=NULL)),id=from@id, cellKey=from@cellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
 
 expavg <- function(x) mean(2^x-1)
 logmean <- function(x) log2(mean(x)+1)

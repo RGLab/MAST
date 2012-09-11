@@ -1,0 +1,15 @@
+# Makefile to use knitr for package vignettes
+
+# put all PDF targets here, separated by spaces
+PDFS=SingleCellAssay-intro.pdf
+
+all: $(PDFS) 
+
+clean:
+	rm -f *.tex *.bbl *.blg *.aux *.out *.log *.spl *.dvi *tikzDictionary 
+
+%.pdf: %.vignette
+	mv $*.Rnw $*.dummy
+	cp $*.vignette $*.Rnw
+	$(R_HOME)/bin/Rscript -e "library(knitr); knit2pdf('$*.Rnw')"
+	mv $*.dummy $*.Rnw

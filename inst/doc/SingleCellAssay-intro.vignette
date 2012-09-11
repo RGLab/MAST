@@ -1,0 +1,39 @@
+\documentclass{article}
+\usepackage{url, graphicx}
+%\usepackage[authoryear]{natbib}
+
+%\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+% \VignetteIndexEntry{An Introduction to SingleCellAssay}
+
+%\makeatother
+\newcommand{\future}[1]{\textbf{TODO:} #1}
+\begin{document}
+\title{An Introduction to SingleCellAssay}
+
+
+\author{Andrew McDavid}
+
+\maketitle
+\section{Philosophy}
+ \texttt{SingleCellAssay} is an R/Bioconductor package for Fluidigm and friends. 
+We are trying to represent assays that have multiple features (genes, markers) per well (cell, etc). 
+The assays is mostly \emph{complete} in the sense that most features are measured in each well. 
+We'll complete them if they are not.
+
+Internally, we store everything as one giant \texttt{data.frame} with names of special columns kept in a \texttt{mapping} that contains column names and keywords.  
+It is in long-melted format, in feature-major order, so not especially space-efficient, but rather is intended to be very flexible.
+
+Each well, feature and \future{unit (phenotype)} has covariates measured.
+These are kept in AnnotatedDataframes, which are generated from the basal data.frame, if so provided.
+\future{If not provided, then they can be added after object creation.}
+
+\section{Reading Data}
+Data imported in a Fluidigm instrument-specific format (whose details are undocumented, and probably subject-to-change) or in ``long'' (melted) format, in which each row is a measurement, so if there are $N$ wells and $M$ cells, then the \texttt{data.frame} should contain $N \times M$ rows.
+
+<<Show-off, caption="here's a figure, it will work with Sweave via a makefile hack">>=
+library(lattice)
+xyplot(rnorm(10) ~ rnorm(10))
+@
+
+\end{document}

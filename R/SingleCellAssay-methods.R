@@ -180,8 +180,8 @@ setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
 setMethod('cellData', 'SingleCellAssay', function(sc) sc@cellData)
 
 ##' @rdname getMapNames-methods
-##' @aliases getMapNames,SingleCellAssay-method
-setMethod('getMapNames', 'SingleCellAssay', function(object) object@mapNames)
+##' @aliases getMapNames,SCA-method
+setMethod('getMapNames', 'SCA', function(object) object@mapNames)
 
 
 ##' @rdname fData-methods
@@ -228,10 +228,11 @@ covars <- function(sc, theCovars=NULL){
   sort_df(uniquerows)
 }
 
-##' Get matrix of measurement values
+##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
 ##'
-##' Return a matrix of the measurement: cells by primerids
+##' Return or set a matrix of the measurement: cells by primerids
 ##' @title exprs
+##' @name exprs
 ##' @param object SingleCellAssay
 ##' @return numeric matrix
 ##' @docType methods
@@ -246,6 +247,21 @@ setMethod("exprs",signature(object="SingleCellAssay"),function(object){
   matrix(melt(object)[,getMapping(object,"measurement")], nrow=objrow, ncol=objcol, 
          dimnames=list(object@cellKey, unique(melt(object)[, getMapping(object,"primerid")])))
 })
+
+##' @importMethodsFrom Biobase "pData<-"
+##' @importMethodsFrom Biobase pData
+##' @importMethodsFrom Biobase "exprs<-"
+##' @rdname exprs-methods
+##' @name exprs
+##' @exportMethod "exprs<-"
+##' @docType methods
+##' @aliases exprs<-,SingleCellAssay,ANY-method
+setReplaceMethod('exprs', c('SingleCellAssay', 'ANY'),
+                 function(object, value){
+                   measure <- getMapping(object,"measurement")
+                   object@env$data[, measure] <- as.vector(value)
+                   object
+                 })
 
 ##' show methods
 ##' @exportMethod show
@@ -283,8 +299,9 @@ setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
 ##' @exportMethod split
 try({
 setMethod('split', signature(x='SingleCellAssay', f='ANY', drop='ANY'), function(x, f, drop=FALSE, ...){
-  ## Split a SingleCellAssay by criteria 
-  SCASet(melt(x), splitby=f, mapping=getMapping(x), ...)
+  ## Split a SingleCellAssay by criteria
+  contentClass<-class(x)
+  SCASet(melt(x), splitby=f, mapping=getMapping(x), contentClass=contentClass,...)
 })
 }, silent=TRUE)
 
@@ -300,17 +317,7 @@ setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), functi
 })
 
 
-##' @importMethodsFrom Biobase "pData<-"
-##' @exportMethod "exprs<-"
-##' @importMethodsFrom Biobase "exprs<-"
-try({
-setReplaceMethod('exprs', c('SingleCellAssay', 'ANY'),
-                 function(object, value){
-                   measure <- getMapping(object,"measurement")
-                   object@env$data[, measure] <- as.vector(value)
-                   object
-                 })
-}, silent=TRUE)
+
 
 ##' @exportMethod copy
 ##' @aliases copy,SingleCellAssay-method

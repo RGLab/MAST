@@ -2,6 +2,7 @@
 \name{exprs}
 \alias{exprs}
 \alias{exprs,SingleCellAssay-method}
+\alias{exprs<-,SingleCellAssay,ANY-method}
 \title{exprs}
 \arguments{
   \item{object}{SingleCellAssay}
@@ -10,9 +11,11 @@
   numeric matrix
 }
 \description{
-  Get matrix of measurement values
+  Get or set a matrix of measurement values in a
+  \code{SingleCellAssay}
 }
 \details{
-  Return a matrix of the measurement: cells by primerids
+  Return or set a matrix of the measurement: cells by
+  primerids
 }
 

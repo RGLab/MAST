@@ -51,20 +51,44 @@ logProd <- function(prod, logand){
 ##' Likelihood Ratio Tests for SingleCellAssays
 ##'
 ##' Tests for a change in ET binomial proportion or mean of positive ET
-##' @export
+##' Likelihood Ratio Test for SingleCellAssay objects
+##'
+##' Combined Likelihood ratio test (binomial and normal) for SingleCellAssay and derived objects
+##' @exportMethod LRT
 ##' @docType methods
+##' @aliases LRT
+##' @aliases LRT,SingleCellAssay,character,character,character-method
+##' @aliases LRT,SingleCellAssay,character,character,missing-method
+##' @aliases LRT,SingleCellAssay,character,character,NULL-method
 ##' @rdname LRT-methods
-setGeneric("LRT",function(sca,comparison,referent,groups,...){
+setGeneric("LRT",function(sca,comparison,referent,groups=NULL,...){
   standardGeneric("LRT")
 })
 
 
-
+##' @importFrom plyr is.formula
 ##' @rdname LRT-methods
 ##' @aliases LRT,SingleCellAssay,character,character,character-method
-##' @usage LRT(sca,comparison,referent,groups)
-setMethod("LRT",signature=c("SingleCellAssay","character","character","character"),function(sca,comparison,referent,groups,returnall=FALSE){
-  lrt(sca,comparison,referent,groups,returnall)
+##' @usage \code{LRT(sca,comparison,referent,groups)}
+##' @param sca A \code{SingleCellAssay} class object
+##' @param comparison A \code{character} specifying the factor for comparison
+##' @param referent A \code{character} specifying the reference level of \code{comparison}.
+##' @param returnall A \code{logical} specifying if additional columns should be returned with information about the different componnetns of the test.
+##' @docType methods
+setMethod("LRT",signature=c("SingleCellAssay","character","character","character"),function(sca,comparison,referent,groups=NULL,returnall=FALSE){
+  if(missing(groups))
+    groups<-NULL
+  lrt(sca,comparison,referent,groups=groups,returnall=returnall)
+})
+setMethod("LRT",signature=c("SingleCellAssay","character","character","missing"),function(sca,comparison,referent,groups=NULL,returnall=FALSE){
+  if(missing(groups))
+    groups<-NULL
+  lrt(sca,comparison,referent,groups=groups,returnall=returnall)
+})
+setMethod("LRT",signature=c("SingleCellAssay","character","character","NULL"),function(sca,comparison,referent,groups=NULL,returnall=FALSE){
+  if(missing(groups))
+    groups<-NULL
+  lrt(sca,comparison,referent,groups=groups,returnall=returnall)
 })
 
 
@@ -85,9 +109,10 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
     retme<-rename(cbind(retme,groups=factor(do.call(c,lapply(seq_along(nr),function(i)rep(nms[i],nr[i]))))),c(groups=groups))
     return(retme)
   }
-  
-  probeid <- sca@mapping$geneid
-  measure <- sca@mapping$measurement
+
+  #getMapping returns a list.. code expects a vector
+  probeid <- getMapping(sca@mapping,"geneid")[[1]]
+  measure <- getMapping(sca@mapping,"measurement")[[1]]
   
   phenocol <- melt(sca)[[comparison]]
   if(is.factor(phenocol) && is.null(referent)){

@@ -12,7 +12,7 @@
   \item{...}{Ignored}
 }
 \value{
-  subscripted object
+  subscripted SingleCellAssay or derived class
 }
 \description{
   Return a \code{SingleCellAssay} at index/indices i

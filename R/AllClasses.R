@@ -1,80 +1,21 @@
-
-setOldClass("ncdf")
-
-##' @import reshape
-##' @import BiocGenerics
-##' @importFrom plyr rbind.fill
-##' @importClassesFrom flowCore ncdfHandler NcdfOrMatrix
-setClass("SCA",
-         representation=representation(exprs="NcdfOrMatrix",
-           "VIRTUAL"),
-         prototype=list(exprs=matrix(numeric(0),
-                          nrow=0,
-                          ncol=0)
-           ))
-
-
-##' Vbeta Data Set
-##' @docType data
-##' @name vbeta
-##' @rdname vbeta-dataset
-##' @format a data frame with 11 columns
-NULL
-
-### SingleCellAssay class
-SingleCellAssayValidity <- function(object){
-  if(!inherits(get("data",envir=object@env),"data.frame")){
-    message("Argument `dataframe` should be a data.frame.")
-    return(FALSE)
-  }
-  if(!any(getMapping(object,"idvars") %in% colnames(object@env$data))){
-    warning("Invalid idvars column name. Not in data.frame")
-    return(FALSE)
-  }
-  if(! ( getMapping(object,"geneid")%in%colnames(object@env$data))){
-    warning("Invalid geneid column name. Not in data.frame")
-    return(FALSE)
-  }
-  if(!(getMapping(object,"primerid")%in%colnames(object@env$data))){
-    warning("Invalid primerid column name. Not in data.frame")
-    return(FALSE)
-  }
-  if(!(getMapping(object,"measurement")%in%colnames(object@env$data))){
-    warning("Invalid measurement column name. Not in data.frame")
-    return(FALSE)
-  }
-  return(TRUE)
-}
-
-
-Mandatory_Fields <- c('primerid', 'geneid', 'measurement', 'idvars')
-SingleCellAssayNames <- c(Mandatory_Fields, 'cellvars', 'featurevars', 'phenovars')
-SingleCellAssayMap<-vector('list',length(SingleCellAssayNames))
-names(SingleCellAssayMap)<-SingleCellAssayNames
-                           
-
-#Mapping Class Related Functions and Methods and the Class Definition
-.isValidNamedList<-function(mylist){
-  #if the named list is empty, we don't add anything
-  if(length(mylist)==0){
-    warning("namedlist should not be empty")
-    return(TRUE)
-  }
-  if(is.null(names(mylist))){
-    warning("namedlist must contain names")
-    return(FALSE)
-  }
-  if(any(gsub(" ","",names(mylist))%in%"")){
-    warning("namedlist names cannot be empty")
-    return(FALSE)
-  }
-  if(!all(do.call(c,lapply(mylist,class))%in%c("character","NULL"))){
-    warning("namedlist must be a named list of character vectors")
-    return(FALSE)
-  }
-  return(TRUE)
-}
-
+##' Mapping class for SingleCellAssay package
+##'
+##' A class that represents a mapping of columns in a raw data file to cell-leve, feature-level, and phenotype-level metadata, as well as unique identifiers for individual cells.
+##' mapNames for the SingleCellAssay class are in the object \code{SingleCellAssay:::SingleCellAssayMapNames}
+##' mapNames for the FluidigmAssay class are in the object \code{SingleCellAssay:::FluidigmMapNames}
+##' }
+##' \section{Slots}{
+##' \describe{
+##' \item{mapping}{A named list providing the mapping from required fields in a SingleCellAssay or FluidigmAssay to column names in the data file}
+##' }
+##' 
+##' @docType class
+##' @name Mapping-class
+##' @aliases Mapping
+##' @aliases Mapping-class
+##' @rdname Mapping-class
+##' @title Column Mapping for SingleCellAssays
+##' @seealso \code{\link{SingleCellAssay}},\code{\link{FluidigmAssay}}, \code{\link{getMapping}},\code{\link{addMapping}},\code{\link{getMapNames}},\code{\link{isEmpty}},\code{\link{mappingIntersection}}
 setClass("Mapping",representation(mapping="list"),prototype=list(mapping=list("_empty_mapping_"=NULL)),validity=function(object){
   return(.isValidNamedList(object@mapping))
 })
@@ -239,12 +180,91 @@ setMethod("show","Mapping",function(object){
   }
 })
 
+setOldClass("ncdf")
+
+##' @import reshape
+##' @import BiocGenerics
+##' @importFrom plyr rbind.fill
+##' @importClassesFrom flowCore ncdfHandler NcdfOrMatrix
+setClass("SCA",
+         representation=representation(env="environment",
+           "VIRTUAL",mapping="Mapping",mapNames="character"),
+         prototype=list(env=new.env(),mapping=new("Mapping"),mapNames=""))
+
+
+##' Vbeta Data Set
+##' @docType data
+##' @name vbeta
+##' @rdname vbeta-dataset
+##' @format a data frame with 11 columns
+NULL
+
+### SingleCellAssay class
+SingleCellAssayValidity <- function(object){
+  if(!inherits(get("data",envir=object@env),"data.frame")){
+    message("Argument `dataframe` should be a data.frame.")
+    return(FALSE)
+  }
+  if(!any(getMapping(object,"idvars") %in% colnames(object@env$data))){
+    warning("Invalid idvars column name. Not in data.frame")
+    return(FALSE)
+  }
+  if(! ( getMapping(object,"geneid")%in%colnames(object@env$data))){
+    warning("Invalid geneid column name. Not in data.frame")
+    return(FALSE)
+  }
+  if(!(getMapping(object,"primerid")%in%colnames(object@env$data))){
+    warning("Invalid primerid column name. Not in data.frame")
+    return(FALSE)
+  }
+  if(!(getMapping(object,"measurement")%in%colnames(object@env$data))){
+    warning("Invalid measurement column name. Not in data.frame")
+    return(FALSE)
+  }
+  ##are the required mappings present...
+  if(!all(object@mapNames%in%getMapNames(object)))
+    return(FALSE)
+  
+  return(TRUE)
+}
+
+
+Mandatory_Fields <- c('primerid', 'geneid', 'measurement', 'idvars')
+SingleCellAssayNames <- c(Mandatory_Fields, 'cellvars', 'featurevars', 'phenovars')
+SingleCellAssayMap<-vector('list',length(SingleCellAssayNames))
+names(SingleCellAssayMap)<-SingleCellAssayNames
+                           
+
+#Mapping Class Related Functions and Methods and the Class Definition
+.isValidNamedList<-function(mylist){
+  #if the named list is empty, we don't add anything
+  if(length(mylist)==0){
+    warning("namedlist should not be empty")
+    return(TRUE)
+  }
+  if(is.null(names(mylist))){
+    warning("namedlist must contain names")
+    return(FALSE)
+  }
+  if(any(gsub(" ","",names(mylist))%in%"")){
+    warning("namedlist names cannot be empty")
+    return(FALSE)
+  }
+  if(!all(do.call(c,lapply(mylist,class))%in%c("character","NULL"))){
+    warning("namedlist must be a named list of character vectors")
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+
+
 ##Not to be called directly by the user
 ##' SingleCellAssay represents an arbitrary single cell assay
 ##' It is meant to be flexible and can (and will) be subclassed to represent specific assay
 ##' types like Fluidigm and others. It should be constructed using the \code{SingleCellAssay} constructor, or ideally the \code{SCASet} constructor.
-##' Required mapNames for the SingleCellAssay class are in the object \code{SingleCellAssayMapNames}
-##' Required mapNames for the FluidigmAssay class are in the object \code{FluidigmMapNames}
+##' mapNames for the SingleCellAssay class are in the object \code{SingleCellAssay:::SingleCellAssayMapNames}
+##' mapNames for the FluidigmAssay class are in the object \code{SingleCellAssay:::FluidigmMapNames}
 ##' }
 ##' \section{Slots}{
 ##' \describe{
@@ -264,24 +284,21 @@ setMethod("show","Mapping",function(object){
 ##' @aliases FluidigmAssay-class
 ##' @rdname SingleCellAssay-class
 ##' @exportClass SingleCellAssay
-setClass("SingleCellAssay",
+setClass("SingleCellAssay",contains="SCA",
          representation=representation(featureData="AnnotatedDataFrame",
            phenoData="AnnotatedDataFrame",
            cellData="AnnotatedDataFrame",
-           mapNames='character',
-           mapping="Mapping",
+#           mapNames='character',
+ #          mapping="Mapping",
            description='data.frame',
            cellKey='numeric',
            id="ANY",                    #experiment descriptor
            env="environment"),		   
-         prototype=list(exprs=matrix(numeric(0),
-                          nrow=0,
-                          ncol=0),
-           phenoData=new("AnnotatedDataFrame"),
+         prototype=prototype(phenoData=new("AnnotatedDataFrame"),
            featureData=new("AnnotatedDataFrame"),
            cellData=new("AnnotatedDataFrame"),
-           mapNames=SingleCellAssayNames,
-           mapping=new("Mapping",mapping=SingleCellAssayMap),
+#           mapNames=SingleCellAssayNames,
+#           mapping=new("Mapping",mapping=SingleCellAssayMap),
            description=data.frame(),
            cellKey=numeric(0),
            id=numeric(0),
@@ -294,19 +311,19 @@ FluidigmMap<-vector('list',length(FluidigmMapNames))
 names(FluidigmMap)<-FluidigmMapNames
 
 ##' @exportClass FluidigmAssay
-setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(mapNames=FluidigmMapNames,mapping=new("Mapping",mapping=FluidigmMap)))
+setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(mapNames=FluidigmMapNames,mapping=new("Mapping",mapping=FluidigmMap)),validity=SingleCellAssayValidity)
 
 ##' @aliases getMapping,SingleCellAssay,missing-method
 ##' @rdname getMapping-methods
 ##' @export
-setMethod("getMapping",c("SingleCellAssay","missing"),function(object){
+setMethod("getMapping",c("SCA","missing"),function(object){
   return(object@mapping)
 })
 
-##' @aliases getMapping,SingleCellAssay,character-method
+##' @aliases getMapping,SCA,character-method
 ##' @rdname getMapping-methods
 ##' @export
-setMethod("getMapping",c("SingleCellAssay","character"),function(object,mapnames){
+setMethod("getMapping",c("SCA","character"),function(object,mapnames){
   mp<-getMapping(getMapping(object),mapnames)
   if(length(mp)>1){
     return(mp)
@@ -432,9 +449,38 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   return(protoassay)
 }
 
-FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells, geneid=NULL,id=NULL, mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  ## Factor out code that builds the mapping
+##' Constructor for a FluidigmAssay
+##'
+##' Constructs a FluidigmAssay object. Differs little from the SingleCellAssay constructor. Only the \code{ncells} parameter is additionally required.
+##' @title Fluidigm Assay Constructor
+##' @param dataframe A data frame containing the raw data
+##' @param idvars See \code{\link{SingleCellAssay}}
+##' @param primerid See \code{\link{SingleCellAssay}}
+##' @param measurement See \code{\link{SingleCellAssay}}
+##' @param ncells A \code{character} specifying the column which gives the number of cells per well
+##' @param geneid See \code{\link{SingleCellAssay}}
+##' @param id See \code{\link{SingleCellAssay}}
+##' @param mapping See \code{\link{SingleCellAssay}}
+##' @param cellvars See \code{\link{SingleCellAssay}}
+##' @param featurevars See \code{\link{SingleCellAssay}}
+##' @param phenovars See \code{\link{SingleCellAssay}}
+##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
+##' @return A FluidigmAssay object
+##' @author Andrew McDavid
+##' @export FluidigmAssay
+FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+  if(is.null(mapping)){
+    mapping<-try(get("mapping",list(...)),silent=TRUE)
+    if(inherits(mapping,"try-error")){
+      #no mapping provided so construct one
+      mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap)
+    }
+  }
+  if(!is.null(ncells)){
+    mapping<-addMapping(mapping,list(ncells=ncells))
+  }
   this.frame <- as.list(environment())
+  ## Factor out code that builds the mapping
   this.frame$cellvars <- c(ncells, cellvars)
   sc <- do.call(SingleCellAssay, this.frame)
   as(sc, 'FluidigmAssay')
@@ -454,7 +500,7 @@ FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells, geneid=NU
 ##' @aliases SCASet
 ##' @rdname SCAset-methods
 ##' @export
-SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,...){
+SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,contentClass="SingleCellAssay",...){
   if(is.character(splitby) && all(splitby %in% names(dataframe))){
   spl<-split(dataframe,dataframe[, splitby])
 } else if(is.factor(splitby) || is.list(splitby) || is.character(splitby)){
@@ -462,11 +508,22 @@ SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,..
 } else{
   stop("Invalid 'splitby' specification")
 }
-
+  ## mapping<-try(get("mapping",list(...)),silent=TRUE)
+  ## if(inherits(mapping,"try-error")){
+  ##   #Mapping wasn't passed to the constructor.. 
+  ## }else{
+    
+  ## }
   set<-vector("list",length(spl))
   names(set)<-names(spl)
   for(i in seq_along(set)){
-    set[[i]]<-SingleCellAssay(dataframe=spl[[i]],idvars=idvars,primerid=primerid,id=names(spl)[[i]], measurement=measurement,...)
+    ##construct a call using contentClass
+    F <- try(getFunction(contentClass),silent=TRUE)
+    if(inherits(F,"try-error"))
+      message("Can't construct a class of type ",contentClass[[1]],". Constructor of this name doesn't exist")
+    cl<-as.call(list(as.name(contentClass[[1]]),dataframe=spl[[i]],idvars=idvars,primerid=primerid,id=names(spl)[[i]], measurement=measurement,...))
+    set[[i]]<-eval(cl)
+#    set[[i]]<-SingleCellAssay(dataframe=spl[[i]],idvars=idvars,primerid=primerid,id=names(spl)[[i]], measurement=measurement,...)
   }
   new("SCASet",set=set)
 }

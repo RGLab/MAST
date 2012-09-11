@@ -35,10 +35,11 @@
 ##' @param well \code{character} name of a column that uniquely identifies a well. Default "Well".
 ##' @param measurement \code{character} name of the column that holds the measurement. Default "X40.Ct".
 ##' @param measurement.processed \code{character} one of "Ct","40-Ct", or "et". If not "Ct", the measurement will be transformed.
+##' @param ncells The column with the number of cells in this well.
 ##' @return \code{SCASet} holding the data.
 ##' @export read.fluidigm
 ##' @author Greg Finak
-read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.threshold=40,metadataColClasses=NULL,meta.key=NULL,idvars=NULL,splitby=NULL,unique.well.id="Chamber.ID",raw=TRUE,assay=NULL,geneid="Assay.Name",sample=NULL,well="Well",measurement="X40.Ct",measurement.processed="Ct"){
+read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.threshold=40,metadataColClasses=NULL,meta.key=NULL,idvars=NULL,splitby=NULL,unique.well.id="Chamber.ID",raw=TRUE,assay=NULL,geneid="Assay.Name",sample=NULL,well="Well",measurement="X40.Ct",measurement.processed="Ct",ncells="Number.of.Cells"){
   measurement.processed<-match.arg(measurement.processed,c("Ct","40-Ct","et"))
   if(raw){
     geneid<-"Gene"
@@ -198,8 +199,9 @@ read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.thre
   ##expression matrix should be cells x genes.
   ##splitby, idvars
   ##constructor for SCA set
-  ##constructor for single cell assay
-  set<-SCASet(dataframe=bound,splitby=splitby,idvars=idvars,primerid="primer.id",measurement="et",geneid=geneid)
+  ##constructor for single cell assay or other type of assay
+  
+  set<-SCASet(dataframe=bound,splitby=splitby,idvars=idvars,primerid="primer.id",measurement="et",geneid=geneid,ncells=ncells,contentClass="FluidigmAssay")
   return(set)
 }
 

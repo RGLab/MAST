@@ -1,5 +1,12 @@
 setAs("SCASet","list",function(from)from@set)
 
+##' @importMethodsFrom BiocGenerics lapply
+##' @export lapply
+##' @rdname lapply-methods
+##' @docType methods
+##' @aliases lapply,SCASet-method
+##' @title lapply
+##' @name lapply
 setMethod("lapply",c("SCASet"),function(X,FUN,...){
   FUN<-match.fun(FUN)
   X<-as(X,"list")
@@ -17,7 +24,7 @@ setMethod("lapply",c("SCASet"),function(X,FUN,...){
 ##' @param x object to be subscripted
 ##' @param i index
 ##' @param ... Ignored
-##' @return subscripted object
+##' @return subscripted SingleCellAssay or derived class
 ##' @details \code{signature(x="SCASet", i="ANY")}: \code{x[[i]]}, where \code{i} is length-1 integer or character matching sampleNames.  Returns the SingleCellAssay at position or with sampleName \code{i}.
 ##' @rdname doubleAngleBracket-methods
 ##' @aliases [[,SCASet,ANY-method

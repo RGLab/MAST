@@ -3,7 +3,8 @@
 \title{SCASet constructor}
 \usage{
   SCASet(dataframe, splitby, idvars = NULL,
-    primerid = NULL, measurement = NULL, ...)
+    primerid = NULL, measurement = NULL,
+    contentClass = "SingleCellAssay", ...)
 }
 \arguments{
   \item{dataframe}{flat data.frame ala SingleCellAssay}

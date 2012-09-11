@@ -1,0 +1,4 @@
+%\VignetteIndexEntry{SingleCellAssay-intro}
+\documentclass{article}
+\begin{document}
+\end{document}
