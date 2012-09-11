@@ -15,7 +15,7 @@ expect_that(F,is_a("character"))
 test_that("Can find metadata",{
 expect_that(metadatafile,is_a("character"))
 })
-data<-read.fluidigm(F,metadata=metadatafile,metadataColClasses=c("character","factor","factor","factor","factor","factor"),meta.key="Filename",idvars=c("sample","panel","plate"),splitby="donor")
+data<-read.fluidigm(F,metadata=metadatafile,metadataColClasses=c("character","factor","factor","factor","factor","factor"),meta.key="Filename",idvars=c("sample","panel","plate"),splitby="donor",ncells="SampleRConc")
 test_that("data can be loaded",{
 expect_that(data,is_a("SCASet"))
 })
@@ -35,11 +35,11 @@ F<-list.files(path=system.file("extdata/",package="SingleCellAssay",mustWork=TRU
 test_that("Can find data files",{
 expect_that(F,is_a("character"))
 })
-	metadatafile<-list.files(path=system.file("extdata/",package="SingleCellAssay",mustWork=TRUE),pattern="csv",full=T)
+	metadatafile<-list.files(path=system.file("extdata/",package="SingleCellAssay",mustWork=TRUE),pattern="metadata.csv",full=T)
 test_that("Can find metadata",{
 expect_that(metadatafile,is_a("character"))
 })
-data<-read.fluidigm(files=F,metadata=NULL,meta.key=NULL,idvars=c("Sample.ID","Stim.Condition","Stim.Agent"),splitby="Patient.ID",unique.well.id="Well",raw=FALSE,gene="Assay.Name",measurement.processed="40-Ct")
+data<-read.fluidigm(files=F,metadata=NULL,meta.key=NULL,idvars=c("Sample.ID","Stim.Condition","Stim.Agent"),splitby="Patient.ID",unique.well.id="Well",raw=FALSE,gene="Assay.Name",measurement.processed="40-Ct",ncells="Number.of.Cells")
 test_that("data can be loaded",{
 expect_that(data,is_a("SCASet"))
 })

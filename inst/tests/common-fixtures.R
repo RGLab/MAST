@@ -30,3 +30,11 @@ themap <- new("Mapping",mapping=list(idvars=idvars, geneid=geneid, primerid=prim
 cellvars <- c('Date.of.Sort', 'Sero.Status', 'Time.of.Stim', 'Stim.Agent', 'Number.of.Cells')
 featurevars <- c('Assay.Catalogue', 'Assay.Module')
 phenovars <- NULL
+
+
+##Tests depending on vbeta
+data(vbeta)
+test_that("vbeta can be loaded",{
+  expect_that(vbeta,is_a("data.frame"))
+})
+

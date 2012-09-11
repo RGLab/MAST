@@ -158,11 +158,11 @@ plotEtz <- function(mysc, groups, sigmaContinuous=c(3, 5, 7, 9)){
   p <- qqmath(~etz|gene, data=etzmelt, groups=eval(parse(text=groups)),
        panel=panel.qqall, pch="+", cex=1.3, ylim=c(-10, 10), layout=c(0, 48), main='Distribution of etz by group')
   print(p)
-  noutlier <- matrix(NA, nrow=nrow(mysc), ncol=length(sigmaContinuous), dimnames=list(getcellKey(mysc), sigmaContinuous))
+  noutlier <- matrix(NA, nrow=nrow(mysc), ncol=length(sigmaContinuous), dimnames=list(getwellKey(mysc), sigmaContinuous))
   for(i in seq_along(sigmaContinuous))
     noutlier[,i] <- apply(abs(fl$z.exprs)>sigmaContinuous[i], 1, sum, na.rm=TRUE)
 
-  moutlier <- melt(noutlier, varnames=c('cellkey', 'sigmaContinuous'))
+  moutlier <- melt(noutlier, varnames=c('wellkey', 'sigmaContinuous'))
   moutlier <- rename(moutlier, c('value'='noutlier'))
   p <- histogram(~noutlier|as.factor(sigmaContinuous), moutlier, subset=noutlier>0, breaks=c(0:10, 1000), type='count', main='Number of outliers at threshold', xlim=c(-1, 11))
   print(p)

@@ -39,7 +39,7 @@
 ##' @return \code{SCASet} holding the data.
 ##' @export read.fluidigm
 ##' @author Greg Finak
-read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.threshold=40,metadataColClasses=NULL,meta.key=NULL,idvars=NULL,splitby=NULL,unique.well.id="Chamber.ID",raw=TRUE,assay=NULL,geneid="Assay.Name",sample=NULL,well="Well",measurement="X40.Ct",measurement.processed="Ct",ncells="Number.of.Cells"){
+read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.threshold=40,metadataColClasses=NULL,meta.key=NULL,idvars=NULL,splitby=NULL,unique.well.id="Chamber.ID",raw=TRUE,assay=NULL,geneid="Assay.Name",sample=NULL,well="Well",measurement="X40.Ct",measurement.processed="Ct",ncells="SampleRConc"){
   measurement.processed<-match.arg(measurement.processed,c("Ct","40-Ct","et"))
   if(raw){
     geneid<-"Gene"

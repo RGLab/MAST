@@ -1,4 +1,4 @@
-setAs('SingleCellAssay', 'FluidigmAssay', function(from)  new("FluidigmAssay",env=from@env,mapping=addMapping(from@mapping,list(ncells=NULL)),id=from@id, cellKey=from@cellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
+setAs('SingleCellAssay', 'FluidigmAssay', function(from)  new("FluidigmAssay",env=from@env,mapping=addMapping(from@mapping,list(ncells=NULL)),id=from@id, wellKey=from@wellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
 
 expavg <- function(x) mean(2^x-1)
 logmean <- function(x) log2(mean(x)+1)
@@ -111,7 +111,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
         out <- do.call(combine, lapp)
       } else if(filt_control$filter){
         out <- do.call(rbind, lapp)     #Fix order, argh
-        scKey <- split(getcellKey(sc), cData(sc)[,groups])
+        scKey <- split(getwellKey(sc), cData(sc)[,groups])
         scKeybound <- do.call(c, scKey)
         out <- out[order(scKeybound),] #test this
       } else{                           #I'd reckon it's an unapplied filterset, we'll just keep it as a list

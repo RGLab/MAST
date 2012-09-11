@@ -9,7 +9,7 @@
     unique.well.id = "Chamber.ID", raw = TRUE,
     assay = NULL, geneid = "Assay.Name", sample = NULL,
     well = "Well", measurement = "X40.Ct",
-    measurement.processed = "Ct")
+    measurement.processed = "Ct", ncells = "SampleRConc")
 }
 \arguments{
   \item{files}{A \code{character} vector of files to read.}
@@ -72,6 +72,9 @@
   \item{measurement.processed}{\code{character} one of
   "Ct","40-Ct", or "et". If not "Ct", the measurement will
   be transformed.}
+
+  \item{ncells}{The column with the number of cells in this
+  well.}
 }
 \value{
   \code{SCASet} holding the data.

@@ -69,6 +69,18 @@ setMethod("getMapping",c("Mapping","character"),function(object,mapnames){
   return(object@mapping[mapnames])
 })
 
+##' Is this Mapping Empty
+##'
+##' Tests if a Mapping is empty
+##' @param object The \code{Mapping}
+##' @return A \code{logical}. \code{TRUE} if empty. \code{FALSE} otherwise.
+##' @title iEmpty
+##' @name isEmtpy
+##' @docType methods
+##' @rdname isEmpty-methods
+##' @exportMethod isEmpty
+##' @aliases isEmpty,Mapping-method
+##' @aliases isEmpty
 setGeneric("isEmpty",function(object){standardGeneric("isEmpty")})
 setMethod("isEmpty","Mapping",function(object){
   if(length(getMapNames(object))==0){
@@ -83,14 +95,13 @@ setMethod("isEmpty","Mapping",function(object){
 
 ##' @rdname addMapping-methods
 ##' @docType methods
-##' @export
+##' @exportMethod addMapping
 ##' @title addMapping
 ##' @name addMapping
 setGeneric("addMapping",function(object,namedlist,...){standardGeneric("addMapping")})
 
 ##' @rdname addMapping-methods
 ##' @docType methods
-##' @export
 ##' @aliases addMapping,Mapping,list-method
 setMethod("addMapping",c("Mapping","list"),function(object,namedlist,replace=FALSE){
   if(!.isValidNamedList(namedlist)){
@@ -259,7 +270,8 @@ names(SingleCellAssayMap)<-SingleCellAssayNames
 
 
 
-##Not to be called directly by the user
+##' SingleCellAssay class
+##' 
 ##' SingleCellAssay represents an arbitrary single cell assay
 ##' It is meant to be flexible and can (and will) be subclassed to represent specific assay
 ##' types like Fluidigm and others. It should be constructed using the \code{SingleCellAssay} constructor, or ideally the \code{SCASet} constructor.
@@ -291,7 +303,7 @@ setClass("SingleCellAssay",contains="SCA",
 #           mapNames='character',
  #          mapping="Mapping",
            description='data.frame',
-           cellKey='numeric',
+           wellKey='character',
            id="ANY",                    #experiment descriptor
            env="environment"),		   
          prototype=prototype(phenoData=new("AnnotatedDataFrame"),
@@ -300,7 +312,7 @@ setClass("SingleCellAssay",contains="SCA",
 #           mapNames=SingleCellAssayNames,
 #           mapping=new("Mapping",mapping=SingleCellAssayMap),
            description=data.frame(),
-           cellKey=numeric(0),
+           wellKey=NA_character_,
            id=numeric(0),
            env=new.env()),validity=SingleCellAssayValidity)
 
@@ -375,6 +387,7 @@ setClass("SCASet",
 ##' @rdname SingleCellAssay-constructor
 ##' @docType methods
 ##' @return SingleCellAssay object
+##' @importFrom digest digest
 SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,geneid=NULL,id=NULL, mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
   ### Add pheno key
   ### throw error if idvars isn't disjoint from geneid, probeid
@@ -428,13 +441,14 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   ord <- do.call(order, dataframe[, c(getMapping(mapping,"primerid")[[1]], getMapping(mapping,"idvars")[[1]])])
   dataframe <- dataframe[ord,]
   assign("data",dataframe,envir=env)
-  cellKey <- seq_along(cellCounts)
-  env$data$`__cellKey` <- rep(cellKey, times=cellCounts[1])
-  protoassay <- new("SingleCellAssay",env=env,mapping=mapping,id=id,cellKey=cellKey)
+  #wellKey <- seq_along(cellCounts)
+  wellKey <- sapply(names(cellCounts),digest)
+  env$data$`__wellKey` <- rep(wellKey, times=cellCounts[1])
+  protoassay <- new("SingleCellAssay",env=env,mapping=mapping,id=id,wellKey=wellKey)
   
     cell.adf  <- new("AnnotatedDataFrame")
     pData(cell.adf)<-melt(protoassay)[1:nrow(protoassay), getMapping(mapping,"cellvars")[[1]], drop=FALSE]
-    sampleNames(cell.adf) <- getcellKey(protoassay)
+    sampleNames(cell.adf) <- getwellKey(protoassay)
 
     ##pheno.adf <- new('AnnotatedDataFrame')
     ##need a phenokey into the melted data frame for this to make sense

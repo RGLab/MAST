@@ -15,24 +15,24 @@ counts <- table(do.call(paste, dat_incomplete[,idvars]))
 expect_that(all(counts == counts[1]), is_false())
 
 blank <- dat_complete[1,]
-blank$`__cellKey` <- 1
+blank$`__wellKey` <- 1
 blankinst <- SingleCellAssay(blank, idvars=idvars, geneid="Assay.Name", primerid='Assay.Name', measurement='ct')
-test_that("Can create empty instance with pre-existing cellKey",{
+test_that("Can create empty instance with pre-existing wellKey",{
   expect_that(blankinst, is_a("SingleCellAssay"))
 })
 
-test_that("Can get cellKey",{
-  expect_that(getcellKey(blankinst), equals(1))
+test_that("Can get wellKey",{
+  expect_that(getwellKey(blankinst)[[1]], equals(digest(paste(blankinst@env$data[,getMapping(blankinst@mapping)$idvars],collapse=" "))))
 })
           
 test_that("Can load complete data", {
   expect_that(sc, is_a("SingleCellAssay"))
-  tab <- table(melt(sc)$`__cellKey`)
+  tab <- table(melt(sc)$`__wellKey`)
   expect_that(tab, is_equivalent_to(countComplete))
 })
 
 test_that("Cellkey unique identifies a cell", {
-  tab <- table(melt(sc)$`__cellKey`, do.call(paste, melt(sc)[, idvars]))
+  tab <- table(melt(sc)$`__wellKey`, do.call(paste, melt(sc)[, idvars]))
   expect_true(all(tab %in% c(0,96)))
   
 })
@@ -67,20 +67,20 @@ test_that("Can subset complete data with integer indices",{
   ind<- seq(1, length(countComplete), by=5) 
   sub <- sc[[ind]]
   expect_that(sub, is_a("SingleCellAssay"))
-  expect_that(getcellKey(sub), equals(ind))
+  expect_that(getwellKey(sub), equals(getwellKey(sc)[ind]))
 })
 
   boolind<- rep(c(FALSE, TRUE, FALSE), length.out=length(countComplete))
 test_that("Can subset complete data with boolean indices",{
   sub <- sc[[boolind]]
   expect_that(sub, is_a("SingleCellAssay"))
-  expect_that(getcellKey(sub), equals(which(boolind)))
+  expect_that(getwellKey(sub), equals(getwellKey(sc)[which(boolind)]))
 })
 
 test_that('Subsetting preserves cell and featuredata',{
   sub <- scd[[boolind]]
   expect_that(sub, is_a("SingleCellAssay"))
-  expect_that(getcellKey(sub), equals(which(boolind)))
+  expect_that(getwellKey(sub), equals(getwellKey(scd)[which(boolind)]))
   expect_equal(featureData(sub), featureData(scd))
   expect_equivalent(cData(sub), cData(scd)[boolind,])
   sub2 <- sub[[boolind]]
@@ -90,10 +90,10 @@ test_that('Subsetting preserves cell and featuredata',{
 exprComplete <- exprs(sc)
 test_that("Exprs works", {
   expect_is(exprComplete, "matrix")
-  expect_equal(nrow(exprComplete), length(getcellKey(sc)))
+  expect_equal(nrow(exprComplete), length(getwellKey(sc)))
   ind <- seq(1, nrow(dat_complete), by=1042)
   expect_equal(melt(sc)$ct[ind], exprComplete[ind])
-  geneandrow <- melt(sc)[1054,c("Assay.Name", "__cellKey")]  
+  geneandrow <- melt(sc)[1054,c("Assay.Name", "__wellKey")]  
   thect <- melt(sc)[1054, "ct"]
   expect_equal(exprComplete[geneandrow[[2]], geneandrow[[1]]], thect)
 })
