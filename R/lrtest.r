@@ -1,3 +1,4 @@
+##' @export lrt
 lrtest <- function(w.x, w.y, x, y, signed){
   ## w.x, w.y vectors of zeros/ones for expressed or not in each group
   ## x, y vectors of the positive observations (must be of length sum(w.x) and sum(w.y))
@@ -7,7 +8,7 @@ lrtest <- function(w.x, w.y, x, y, signed){
   n.x <-  length(w.x)
   n.y <-  length(w.y)
   stopifnot(e.x == length(x) && e.y == length(y))
-  
+
 
   p.0 <- (e.x+e.y)/(n.x + n.y)
   p.x <- e.x/n.x
@@ -66,7 +67,6 @@ setGeneric("LRT",function(sca,comparison,referent,groups=NULL,...){
 })
 
 
-##' @importFrom plyr is.formula
 ##' @rdname LRT-methods
 ##' @aliases LRT,SingleCellAssay,character,character,character-method
 ##' @usage \code{LRT(sca,comparison,referent,groups)}
@@ -96,10 +96,10 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
   if (missing(comparison) || !checkGroups(sca, comparison))
     stop("'comparison' missing or incorrect")
   ## what happens if comparision has length >1?
-  
+
   if(!is.null(groups)){
     checkGroups(sca, groups)
-    ## we should check what happens if comparison has a different number of levels 
+    ## we should check what happens if comparison has a different number of levels
     scL <- split(sca, groups)
     lapp <- lapply(scL, lrt, comparison=comparison, referent=referent, groups=NULL, returnall=returnall)
     ## fix
@@ -113,7 +113,7 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
   #getMapping returns a list.. code expects a vector
   probeid <- getMapping(sca@mapping,"geneid")[[1]]
   measure <- getMapping(sca@mapping,"measurement")[[1]]
-  
+
   phenocol <- melt(sca)[[comparison]]
   if(is.factor(phenocol) && is.null(referent)){
    pheno.order <- phenocol
@@ -124,14 +124,14 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
   nlev <- nlevels(pheno.order)
 
   ssca <- split(cbind(melt(sca)[, c(measure, comparison)], pheno.order), melt(sca)[,probeid])
-  
+
   lrout <- vapply(ssca, FUN.VALUE=array(0, dim=c(nlev-1, 3, 4)), FUN=function(x){
     res <- array(NA, dim=c(nlev-1, 3, 4))
     phenosplit <- split(x[[measure]], x$pheno.order, drop=FALSE)
     unstim <- phenosplit[[1]]
     w.x <- (unstim>0)*1
     x <- unstim[w.x==1]
-    
+
     for(i in seq(from=2, to=nlev)){
     stim <- phenosplit[[i]]
     if (length(stim)==0){
@@ -159,5 +159,5 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
     return(m)
   }
   retme<-subset(m, test.type=='comb')
-  return(cast(rename(retme,c(metric="variable"))))                  
+  return(cast(rename(retme,c(metric="variable"))))
                 }

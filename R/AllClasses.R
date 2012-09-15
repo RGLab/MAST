@@ -197,7 +197,6 @@ setOldClass("ncdf")
 ##' @import Biobase
 ##' @import BiocGenerics
 ##' @importFrom plyr rbind.fill
-##' @importClassesFrom flowCore ncdfHandler NcdfOrMatrix
 setClass("SCA",
          representation=representation(env="environment",
            "VIRTUAL",mapping="Mapping",mapNames="character"),

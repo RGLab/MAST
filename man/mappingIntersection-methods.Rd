@@ -1,9 +1,9 @@
 \docType{methods}
 \name{mappingIntersection-methods}
 \alias{mappingIntersection}
+\alias{mappingIntersection-methods}
 \alias{mappingIntersection,Mapping,character,character-method}
 \alias{mappingIntersection,Mapping,missing,missing-method}
-\alias{mappingIntersection-methods}
 \title{mappingIntersection}
 \arguments{
   \item{object}{A \code{Mapping} object}

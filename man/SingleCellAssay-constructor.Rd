@@ -1,6 +1,7 @@
 \docType{methods}
-\name{SingleCellAssay}
+\name{SingleCellAssay-constructor}
 \alias{SingleCellAssay}
+\alias{SingleCellAssay-constructor}
 \title{SingleCellAssay: A constructor for an object of type SingleCellAssay.}
 \usage{
   SingleCellAssay(dataframe = NULL, idvars = NULL,

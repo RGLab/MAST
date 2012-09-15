@@ -1,6 +1,10 @@
 setAs('SingleCellAssay', 'FluidigmAssay', function(from)  new("FluidigmAssay",env=from@env,mapping=addMapping(from@mapping,list(ncells=NULL)),id=from@id, wellKey=from@wellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
 
+
+##' @export
 expavg <- function(x) mean(2^x-1)
+
+##' @export
 logmean <- function(x) log2(mean(x)+1)
 
 #try to throw an error if groups isn't in cellData
@@ -8,7 +12,7 @@ logmean <- function(x) log2(mean(x)+1)
 checkGroups <- function(sc, groups){
   if(!is.character(groups) || is.factor(groups))
     stop("'groups' must be character or factor")
-  sd <- setdiff(groups, names(cData(sc))) 
+  sd <- setdiff(groups, names(cData(sc)))
   if(length(sd)>0) stop(sprintf('%s not found in %s object', paste(sd, collapse=', '), class(sc)))
   invisible(TRUE)
 }
@@ -24,64 +28,97 @@ exprsNA <- exprs(sc)
 exprsNA[exprsNA==0] <- NA
 apply(exprsNA, 2, mean, na.rm=TRUE)
 }
-
+##' Get the concordance between two
+##'
+##' Return the concordance between two assays (i.e. single cell and hundred cell)
+##' @title getConcordance
+##' @param singleCellRef
+##' @param singleCellcomp
+##' @param groups
+##' @param fun.natural
+##' @param fun.cycle
+##' @return concordance between two assays
+##' @author Andrew McDavid
+##' @export getConcordance
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   ## stopifnot(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))
   mapL <- list(getMapping(singleCellRef), getMapping(singleCellcomp))
   scL <- list(singleCellRef, singleCellcomp)
   castL <- list()
-  
+
   for(i in seq_along(scL)){
     checkGroups(scL[[i]], groups)
-    terms1 <- union(groups, mapL[[i]]$ncells)
-    lhs1 <- paste(c(terms1, mapL[[i]]$primerid), collapse="+")
+    terms1 <- union(groups, getMapping(mapL[[i]],"ncells")[[1]])
+    lhs1 <- paste(c(terms1, getMapping(mapL[[i]],"primerid")[[1]]), collapse="+")
     firstForm <- formula(sprintf("%s ~.", lhs1))
     ##should look like Patient.ID + ... + n.cells ~ PrimerID
-    tmp <- cast(melt(scL[[i]]), firstForm, fun.aggregate=fun.natural, value=mapL[[i]]$measurement)
+    tmp <- cast(melt(scL[[i]]), firstForm, fun.aggregate=fun.natural, value=getMapping(mapL[[i]],"measurement")[[1]])
     ##exponential average per gene, scaled by number of cells
-    tmp["(all)"] <- tmp["(all)"]/tmp[mapL[[i]]$ncells]
-    rhs2 <- union(groups, mapL[[i]]$primerid)
+    tmp["(all)"] <- tmp["(all)"]/tmp[getMapping(mapL[[i]],"ncells")[[1]]]
+    rhs2 <- union(groups, getMapping(mapL[[i]],"primerid")[[1]])
     terms2 <- sprintf("%s ~ .", paste(rhs2, collapse="+"))
     secondForm <- formula(terms2)
-    nexp = cast(melt(scL[[i]]), secondForm, fun.aggregate=function(x){sum(x>0)}, value=mapL[[i]]$measurement)
+    nexp = cast(melt(scL[[i]]), secondForm, fun.aggregate=function(x){sum(x>0)}, value=getMapping(mapL[[i]],"measurement")[[1]])
+    #put back on Et scale. fun.cycle adds 1 so -Inf becomes 0 on natural scale
+    #Not sure this is what we want? Okay.. this will be fine
     castL[[i]] <- cast(melt(tmp), secondForm, fun.aggregate=fun.cycle)
     renamestr <- c('primerid', 'et')
-    names(renamestr) <- c(mapL[[i]]$primerid, '(all)')
+    names(renamestr) <- c(getMapping(mapL[[i]],"primerid")[[1]], '(all)')
     castL[[i]] <- rename(castL[[i]], renamestr)
     castL[[i]] <- cbind(castL[[i]], nexp=nexp$`(all)`)
   }
   concord <- merge(castL[[1]], castL[[2]], by=c(groups, 'primerid'), suffixes=c(".ref", ".comp"), all=T)
-  concord[is.na(concord)] <- 0
+  #This should not be done. Missing values should remain missing, not be artificially set to zero. We'll see what it does to the wss etc..
+ # concord[is.na(concord)] <- 0
   concord
 }
 
+##' @title getwss
+##' @param concord
+##' @param nexp
+##' @return weighted sum of squares
+##' @export getwss
 getwss <- function(concord, nexp){
   mean((concord$et.ref - concord$et.comp)^2*nexp, na.rm=TRUE)
+#    log2(mean(((2^concord$et.ref-1)-(2^concord$et.comp-1))^2*nexp,na.rm=TRUE))
+    ##another WSS function that takes into account the disagreement between wells.
+    #mean(with(concord,{a<-(et.ref>0);b<-(et.comp>0);a*b*(et.ref-et.comp)^2+a*(1-b)+b*(1-a)}),na.rm=TRUE)
 }
 
-
+##' @title getss
+##' @param concord
+##' @return sum of squares
+##' @export getss
+##' @note Ditto.. compute on the natural scale
 getss <- function(concord){
   mean((concord$et.ref - concord$et.comp)^2, na.rm=TRUE)
+  #  log2(mean(((2^concord$et.ref-1)-(2^concord$et.comp-1))^2,na.rm=TRUE))
+#  mean(with(concord,{a<-(et.ref>0);b<-(et.comp>0);a*b*(et.ref-et.comp)^2+a*(1-b)+b*(1-a)}),na.rm=TRUE)
+
 }
 
 ##' Concordance correlation coefficient lin 1989
-##' 
+##'
 ##' Return's Lin's intraclass correlation coefficient for concordance
 ##' @title getrc
 ##' @param concord data.frame returned by getConcordance
 ##' @return numeric
+##' @export getrc
 getrc <- function(concord){
-with(concord, 2*cov(et.ref, et.comp)/(var(et.ref)+var(et.comp)+(mean(et.ref)-mean(et.comp))^2))
+with(concord, {foo<-na.omit(cbind(et.ref=et.ref,et.comp=et.comp));2*cov(foo[,"et.ref"], foo[,"et.comp"])/(var(foo[,"et.ref"])+var(foo[,"et.comp"])+(mean(foo[,"et.ref"])-mean(foo[,"et.comp"]))^2)})
+    #concordance on log scale but treating NAs
+#    with(concord,{foo<-na.omit(2^cbind(et.ref,et.comp)-1);2*cov(foo[,"et.ref"],foo[,"et.comp"])/(var(foo[,"et.ref"])+var(foo[,"et.comp"])+(mean(foo[,"et.ref"])-mean(foo[,"et.comp"]))^2)})
 }
 
 ##' @import lattice
+##' @export panel.shifts
 panel.shifts <- function(x, y, groups, subscripts, comparison, ...){
   #vargs = list(...)
   #comparison = vargs$comparison
   #print(str(subscripts))
  panel.xyplot(x, y, subscripts=subscripts, ...)
- panel.segments(x, y, comparison[subscripts,1], comparison[subscripts,2], ..., alpha=.6)
+ panel.segments(x, y, comparison[subscripts,1], comparison[subscripts,2], ..., alpha=.5)
  panel.abline(a=0, b=1, col='gray')
 }
 
@@ -90,11 +127,23 @@ concordPlot <- function(concord0, concord1){
   #preconditions concord0, concord1 have row-correspondence
   #concord0 is plotted reference
   p<-xyplot(et.ref ~ et.comp, concord0)
-  
+
 }
 
 
 #TODO: remove multiple cells
+##' Function that filters a single cell assay
+##'
+##' The function filters wells that don't pass filtering criteria described in filter_control.
+##' @title Filter a SingleCellAssay or Fluidigm Assay
+##' @param sc The \code{SingleCellAssay} object
+##' @param groups The \code{character} naming the grouping variable (optional)
+##' @param filt_control The \code{list} with configuration parameters for the filter.
+##' @param apply_filter \code{logical} should the filter be applied?
+##' @return A filtered result
+##' @author Andrew McDavid
+##' @export filter
+##' @TODO make this S3 generic so we don't clobber filter in R
 filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 
     if (is.null(filt_control)){
@@ -119,14 +168,14 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
       }
       return(out)
   }
-    
+
   exprs <- exprs(sc)
-  filtered <- do.call(.internalfilter, c(list(exprs), filt_control))
+  filtered <- do.call(SingleCellAssay:::.internalfilter, c(list(exprs), filt_control))
   if(apply_filter){
     anyfilter <- apply(filtered, 1, any)
     scout <- sc[[!anyfilter]]
   } else{
-   scout <- filtered 
+   scout <- filtered
   }
   scout
 }
@@ -139,23 +188,23 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   medianC = apply(exprs, 2, median, na.rm=T)
   medianDev = apply(t(abs(t(exprs) - medianC)), 2, median,na.rm=T)
   z.exprs = t((t(exprs) - medianC)/(medianDev*K+.001))
-  
+
   ztot =apply(abs(z.exprs)>sigmaContinuous, 1, sum, na.rm=T)
-  
+
   outlier = ztot >= nOutlier
 
   if(!is.null(sigmaSum) && !is.na(sigmaSum)){
     zsum <- apply(abs(z.exprs), 1, sum, na.rm=T)
     outlier <- zsum > sigmaSum
   }
-  
+
   fet0 <- apply(!is.na(exprs), 1, mean)
   null<- fet0==0
   fet0 <- asin(sqrt(fet0))
   medianFet0 <- median(fet0[!null], na.rm=T)
   medianDev.fet0 <- median(abs(fet0[!null] - medianFet0), na.rm=T)
   z.fet0 <- (fet0 - medianFet0)/(medianDev.fet0*K + .001)
-  
+
   unlikely = abs(z.fet0) > sigmaProportion
 
 

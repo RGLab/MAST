@@ -1,6 +1,6 @@
 ## Set up standard filter set
 sigmaProportion = c(3, 5, 7, 9)
-filtercrit = rbind(expand.grid(filter=T, 
+filtercrit = rbind(expand.grid(filter=T,
   nOutlier = c(1, 2),
   sigmaContinuous=c(3, 5, 7, 9),
   sigmaProportion=sigmaProportion,
@@ -22,20 +22,20 @@ tryFilters <- function(mysc, myhc_filt, filtercrit, groups, doR2=TRUE, ...){
 
   ## Internal function called by tryFilters
 .tryFilters <- function(i){
-  thisfilt = filter(mysc, filt_control=filtercrit[i,]) 
+  thisfilt = filter(mysc, filt_control=filtercrit[i,])
   x = getConcordance(myhc_filt, thisfilt, groups)
   r2 <- NA
   ncells <- nref - nrow(thisfilt)
   if(doR2) r2 <- mean(getR2(thisfilt, ...), na.rm=TRUE)
   list(concord=x, r2=r2, ncells=ncells)
 }
-  
+
   if(any(grepl("parallel",loadedNamespaces()))){
    app <- mclapply(1:nrow(filtercrit), .tryFilters)
   } else{
     app <- lapply(1:nrow(filtercrit), .tryFilters)
   }
-  
+
   lo <- lapply(app, function(x) x$concord)
   filtercritout$r2 <- sapply(app, function(x) x$r2)
   filtercritout$ncells <- sapply(app, function(x) x$ncells)
@@ -65,7 +65,7 @@ getR2 <- function(sc, hkeepers=c('GAPDH', 'POLR2A'), what=function(x) summary(x)
     fit <- lm(form, as.data.frame(theexp))
     out[g] <- what(fit)
   }
-  out 
+  out
 }
 
 ## Plotting helpers
@@ -75,14 +75,14 @@ getReferents <- function(fc.sel, baseline, lo.sel){
   nlev <- sqrt(nrow(fc.sel))
   sigmap <- sort(unique(fc.sel$sigmaProportion))
   sigmac <- sort(unique(fc.sel$sigmaContinuous), decreasing=TRUE)
-  
+
   matc <- matco <- matrix(sigmac, nrow=nlev, ncol=nlev, byrow=TRUE) #it's easiest to assign the referents if we put everyone into matrices
   matp <- matpo <- matrix(sigmap, nrow=nlev, ncol=nlev) #then move things around 'ad-hoc'
   matc[,2:nlev] <- matc[, -nlev]
   matp[-nlev,1] <- matp[2:nlev,1]
   matp[nlev, 1] <- 'baseline'
   matc[nlev, 1] <- 'baseline'
-  
+
                                         #  contKey <- fc.sel$sigmaContinuous
                                         #  contKey[contKey == max(sigmac)] = 'baseline' #set leftmost column to baseline sigmaCont
                                         #  contKey[!contKey=='baseline'] = sigmac[match(contKey[!contKey=='baseline'], sigmac)+1] #set other columns to neighbors to the left
@@ -207,7 +207,7 @@ filtDiffs <- function(mysc, groups, filt_control=NULL){
   fo.med <- lapply(fo, '[[', f='et.med')
   fomelt <- melt(list(mad=fo.mad, med=fo.med))
   fomelt <- rename(fomelt, c('L2'=groups, 'L1'='metric'))
-    fomelt$gene <- fData(mysc)[, getMapping(mysc)$primerid]
+    fomelt$gene <- fData(mysc)[, getMapping(mysc,"primerid")]
   fomelt <- stringsAsFactors(fomelt)
   cb.lattice <- paste(groups, collapse=':')
  p <- barchart(~value|gene, groups=eval(parse(text=cb.lattice)), subset=metric=='med', data=fomelt, layout=c(0, 48), main='Filtering metrics by stratum (median)', auto.key=TRUE)
