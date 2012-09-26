@@ -10,7 +10,7 @@ logmean <- function(x) log2(mean(x)+1)
 #try to throw an error if groups isn't in cellData
 #groups can be character vector or symbol (quote(Group1:Group2), used for lattice)
 checkGroups <- function(sc, groups){
-if(is.null(groups)){
+if(!is.null(groups)){
   if(!is.character(groups) || is.factor(groups))
     stop("'groups' must be character or factor")
   sd <- setdiff(groups, names(cData(sc)))
