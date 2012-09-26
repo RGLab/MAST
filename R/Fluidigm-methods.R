@@ -10,13 +10,16 @@ logmean <- function(x) log2(mean(x)+1)
 #try to throw an error if groups isn't in cellData
 #groups can be character vector or symbol (quote(Group1:Group2), used for lattice)
 checkGroups <- function(sc, groups){
+if(is.null(groups)){
   if(!is.character(groups) || is.factor(groups))
     stop("'groups' must be character or factor")
   sd <- setdiff(groups, names(cData(sc)))
   if(length(sd)>0) stop(sprintf('%s not found in %s object', paste(sd, collapse=', '), class(sc)))
+ }
   invisible(TRUE)
 }
 
+##' @export
 freq <- function(sc){
  stopifnot(inherits(sc, 'SingleCellAssay'))
  apply(exprs(sc)>0, 2, mean)
