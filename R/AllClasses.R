@@ -432,7 +432,7 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   ##check if geneid exists in dataframe
   ##check if measurement exists in dataframe
   
-  cellCounts <- table(do.call(paste, dataframe[,getMapping(mapping,"idvars")[[1]]]))
+  cellCounts <- table(do.call(paste, dataframe[,getMapping(mapping,"idvars")[[1]], drop=FALSE]))
   incomplete <- !all(cellCounts == cellCounts[1])
   
   if(incomplete){

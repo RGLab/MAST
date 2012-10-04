@@ -220,7 +220,7 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
   checkGroups(sc, groups)
   conditionby <- NULL
   if(byGroup) conditionby <- groups
-  filt <- filter(sc, groups=conditionby, filt_control=NULL, apply_filter=FALSE)
+  filt <- filter(sc, groups=conditionby, filt_control=filt_control, apply_filter=FALSE)
   index <- apply(filt, 1, function(x){mx <- min(which(x)); if(!is.finite(mx)) mx <- 4; mx})
   outcome <- c(names(filt), 'none')[index]
   filt <- cbind(outcome, cData(sc))
