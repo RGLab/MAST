@@ -129,11 +129,19 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
     res <- array(NA, dim=c(nlev-1, 3, 4))
     phenosplit <- split(x[[measure]], x$pheno.order, drop=FALSE)
     unstim <- phenosplit[[1]]
+    if(any(is.na(unstim))){
+      warning('dropping NA measurements')
+      unstim <- unstim[!is.na(unstim)]
+    }
     w.x <- (unstim>0)*1
     x <- unstim[w.x==1]
 
     for(i in seq(from=2, to=nlev)){
     stim <- phenosplit[[i]]
+    if(any(is.na(stim))){
+      warning('dropping NA measurements')
+      stim <- stim[!is.na(stim)]
+    }
     if (length(stim)==0){
       res[i,,] <- NA
     } else{

@@ -19,18 +19,29 @@ if(!is.null(groups)){
   invisible(TRUE)
 }
 
-##' @export
-freq <- function(sc){
+##' Report the proportion of expression for each gene
+##'
+##' NAs can be optionally removed
+##' @param sc SingleCellAssay
+##' @param na.rm should NAs be removed, or carried through?
+##' @return vector of proportions
+freq <- function(sc, na.rm=TRUE){
  stopifnot(inherits(sc, 'SingleCellAssay'))
- apply(exprs(sc)>0, 2, mean)
+ apply(exprs(sc)>0, 2, mean, na.rm=na.rm)
 }
-
+##' Report the mean et value for each gene
+##'
+##' NAs are always removed
+##' @param sc SingleCellAssay
+##' @return vector of means
+##' @export
 condmean <- function(sc){
 stopifnot(inherits(sc, 'SingleCellAssay'))
 exprsNA <- exprs(sc)
 exprsNA[exprsNA==0] <- NA
 apply(exprsNA, 2, mean, na.rm=TRUE)
 }
+
 ##' Get the concordance between two
 ##'
 ##' Return the concordance between two assays (i.e. single cell and hundred cell)
