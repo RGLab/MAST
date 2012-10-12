@@ -123,7 +123,7 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
 }
   nlev <- nlevels(pheno.order)
 
-  ssca <- split(cbind(melt(sca)[, c(measure, comparison)], pheno.order), melt(sca)[,probeid])
+  ssca <- split(cbind(melt(sca)[, c(measure, comparison)], pheno.order), melt(sca)[,probeid], drop=TRUE) #drop=TRUE: seems like the more reasonable default if probeid is a factor and unused levels are present (after subsetting, for example)
 
   lrout <- vapply(ssca, FUN.VALUE=array(0, dim=c(nlev-1, 3, 4)), FUN=function(x){
     res <- array(NA, dim=c(nlev-1, 3, 4))
@@ -143,7 +143,9 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
       stim <- stim[!is.na(stim)]
     }
     if (length(stim)==0){
-      res[i,,] <- NA
+      res[i-1,,] <- NA
+      lrtmp <- lrtest(1, 1, 1, 1)        #needed to fill out dimnames of res
+                                        #in case all groups had zero measurements
     } else{
     w.y <- (stim>0)*1
     y <- stim[w.y==1]

@@ -10,7 +10,7 @@ expect_equal(nrow(c1), 2)
 c2 <- combine(spl[[1]], spl[[2]], spl[[3]])
 expect_that(c2, is_a('SingleCellAssay'))
 
-c2 <- do.call(combine, spl@set)
+c2 <- .SingleCellAssayCombine(spl@set)
 expect_that(c2, is_a('SingleCellAssay'))
 expect_equal(c2, smallsc)
 })

@@ -209,7 +209,7 @@ setMethod("melt","SingleCellAssay",function(data, ...) data@env$data )
 ##' @export
 try({ #this is needed to work around a bug in R that prevents redefining [[.
   ## see http://r.789695.n4.nabble.com/package-slot-of-generic-quot-quot-and-missing-env-target-td4634152.html
-setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, ...){
+setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=FALSE, ...){
 ### index by numeric index or boolean.
   if(inherits(i,"integer")|inherits(i,"logical")|inherits(i,"numeric")){
     selectedKeys <- getwellKey(x)[i]
@@ -270,8 +270,8 @@ covars <- function(sc, theCovars=NULL){
 ##' @docType methods
 ##' @rdname exprs-methods
 ##' @aliases exprs,SingleCellAssay-method
+##' @export exprs
 ##' @importMethodsFrom Biobase exprs
-##' @exportMethod exprs
 setMethod("exprs",signature(object="SingleCellAssay"),function(object){
   nentries <- nrow(melt(object))        
   objrow <- nrow(object)
@@ -337,20 +337,13 @@ setMethod('split', signature(x='SingleCellAssay', f='ANY', drop='ANY'), function
 })
 }, silent=TRUE)
 
-## FIXME: gdata (not sure why it's imported) shadows the generic definition
-##'Combine two SingleCellAssay or derived classes
-##'
-##' combines two single cell assays provided they share a common mapping
-##' @TODO combining based on a common mapping may be too restrictive. This may change depending on needs.
-##' @importMethodsFrom BiocGenerics combine
-##' @exportMethod combine
-##' @aliases combine,SingleCellAssay,SingleCellAssay-method
-##' @docType methods
-##' @rdname combine-methods
-setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
-  scalist <- list(x, y, ...)
-  scalist <- lapply(scalist, melt)
-  dfbind <- do.call(rbind.fill, scalist)
+
+.SingleCellAssayCombine <- function(scalist){
+  meltlist <- lapply(scalist, melt)
+  dfbind <- do.call(rbind.fill, meltlist)
+  stopifnot(length(scalist) >= 2)
+  x <- scalist[[1]]
+  y <- scalist[[2]]
   if(!all.equal(getMapping(x), getMapping(y))) stop('Can only combine alike SingleCellAssays')
   if(!all.equal(class(x),class(y))){
     stop("Cannot combine Assays of different classes")
@@ -362,6 +355,21 @@ setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), functi
   cl<-as.call(list(as.name(contentClass[[1]]),dataframe=dfbind,id=x@id,mapping=getMapping(x)))
   eval(cl)
   #SingleCellAssay(dfbind, idvars=NULL, primerid=NULL, measurement=NULL, geneid=NULL, id=x@id, mapping=getMapping(x),)
+}
+
+
+## FIXME: gdata (not sure why it's imported) shadows the generic definition
+##'Combine two SingleCellAssay or derived classes
+##'
+##' combines two single cell assays provided they share a common mapping
+##' @TODO combining based on a common mapping may be too restrictive. This may change depending on needs.
+##' @importMethodsFrom BiocGenerics combine
+##' @exportMethod combine
+##' @aliases combine,SingleCellAssay,SingleCellAssay-method
+##' @docType methods
+##' @rdname combine-methods
+setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
+  .SingleCellAssayCombine(list(x, y, ...))
 })
 
 

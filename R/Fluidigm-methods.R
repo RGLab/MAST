@@ -171,12 +171,12 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
       ## Do various things with lapp:
       if(apply_filter){
         ## list of SingleCellAssays
-        out <- do.call(combine, lapp)
+        out <- .SingleCellAssayCombine(lapp)
       } else if(filt_control$filter){
         out <- do.call(rbind, lapp)     #Fix order, argh
         scKey <- split(getwellKey(sc), cData(sc)[,groups])
         scKeybound <- do.call(c, scKey)
-        out <- out[order(scKeybound),] #test this
+        out <- out[match(getwellKey(sc), scKeybound),] #test this
       } else{                           #I'd reckon it's an unapplied filterset, we'll just keep it as a list
         out <- lapp
       }
