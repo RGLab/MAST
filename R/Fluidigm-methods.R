@@ -231,3 +231,25 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   }
 }
 
+##' Estimate Gene Frequency from experiments with pools with varying number-of-cells
+##'
+##' We use maximum likelihood estimation of a censored binomial distribution
+##' We return the standard error, as determined from the observed Fisher Information
+##' @title Pooled Gene Frequency Estimation
+##' @param fd FluidigmAssay object with ncells set appropriately
+##' @return Matrix with point estimates of frequency and standard deviation of estimate
+##' @author andrew
+freqFromPools <- function(fd){
+  stopifnot(inherits(fd, 'FluidigmAssay'))
+ncellID <- getMapping(fd, 'ncells')
+geneID <- getMapping(fd, 'primerid')
+genes <- fData(fd)[,geneID]
+ee <- exprs(fd)
+ncells <- cData(fd)[,ncellID]
+est.and.se <- apply(ee, 2, function(col){
+    est <- optimize(pooledModel, c(0, 1), maximum=TRUE, observed=col, ncells=ncells)$max
+    se <- 1/sqrt(pooledModel(est, col, ncells, info=TRUE, loglik=FALSE))
+    c(estimate=est, standard.err=se)
+})
+est.and.se
+}

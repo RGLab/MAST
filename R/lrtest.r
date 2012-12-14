@@ -1,5 +1,5 @@
 ##' @export lrt
-lrtest <- function(w.x, w.y, x, y, signed){
+lrtest <- function(w.x, w.y, x, y){
   ## w.x, w.y vectors of zeros/ones for expressed or not in each group
   ## x, y vectors of the positive observations (must be of length sum(w.x) and sum(w.y))
 
