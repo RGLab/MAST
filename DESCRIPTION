@@ -34,3 +34,4 @@ Collate:
     'SingleCellAssay-methods.R'
     'filterEval.R'
     'helper-methods.R'
+    'piest.R'
