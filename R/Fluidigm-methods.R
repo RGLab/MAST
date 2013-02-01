@@ -148,7 +148,7 @@ concordPlot <- function(concord0, concord1){
 #TODO: remove multiple cells
 ##' Function that filters a single cell assay
 ##'
-##' The function filters wells that don't pass filtering criteria described in filter_control.
+##' The function filters wells that don't pass filtering criteria described in filter_control. filter_control is a list with named elements nOutliers (minimum nmber of outlier cells for a cell to be filtered. sigmaContinuous (the z-score outlier threshold for the continuous part of the signal), and sigmaProportion (the z-score outlier threshold for the discrete part of the signal).
 ##' @title Filter a SingleCellAssay or Fluidigm Assay
 ##' @param sc The \code{SingleCellAssay} object
 ##' @param groups The \code{character} naming the grouping variable (optional)
