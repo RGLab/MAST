@@ -54,6 +54,8 @@ apply(exprsNA, 2, mean, na.rm=TRUE)
 ##' @return concordance between two assays
 ##' @author Andrew McDavid
 ##' @export getConcordance
+##' @importFrom plyr is.formula
+##' @import plyr
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   ## stopifnot(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))

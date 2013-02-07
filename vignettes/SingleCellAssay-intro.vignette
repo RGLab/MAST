@@ -204,9 +204,15 @@ combine(x=sp1[[1]],y=sp1[[2]])
 
 \subsection{Filtering and Significance Testing}
 We can filter and perform some significance tests on the \sca.
-We may want to filter any wells with at least two outlier cells where the discrete and continuous parts of the signal are at least 9 standard deviations from the mean. This is a very conservative filtering criteria.
-<<filter,warning=FALSE>>=
-vbeta.filtered<-filter(vbeta.fa,filt_control=list(nOutlier=2,sigmaContinuous=9,sigmaProportion=9))
-vbeta.filtered
+We may want to filter any wells with at least two outlier cells where the discrete and continuous parts of the signal are at least 9 standard deviations from the mean. This is a very conservative filtering criteria. We'll group the filtering by the number of cells.
+
+
+We'll split the assay by the number of cells and look at the concordance plot after filtering. 
+<<splitbyncells,warning=FALSE>>=
+vbeta.split<-split(vbeta.fa,"Number.of.Cells")
+#see default parameters for plotSCAConcordance
+plotSCAConcordance(vbeta.split[[1]],vbeta.split[[2]],filterCriteria=list(nOutlier = 1, sigmaContinuous = 9,sigmaProportion = 9))
 @
+
+
 \end{document}
