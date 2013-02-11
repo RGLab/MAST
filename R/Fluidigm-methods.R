@@ -10,7 +10,7 @@ logmean <- function(x) log2(mean(x)+1)
 #try to throw an error if groups isn't in cellData
 #groups can be character vector or symbol (quote(Group1:Group2), used for lattice)
 checkGroups <- function(sc, groups){
-if(!is.null(groups)){
+if(!missing(groups) && !is.null(groups)){
   if(!is.character(groups) || is.factor(groups))
     stop("'groups' must be character or factor")
   sd <- setdiff(groups, names(cData(sc)))
@@ -42,6 +42,11 @@ exprsNA[exprsNA==0] <- NA
 apply(exprsNA, 2, mean, na.rm=TRUE)
 }
 
+numexp <- function(sc){
+stopifnot(inherits(sc, 'SingleCellAssay'))
+apply(exprs(sc)>0, sum, na.rm=TRUE)
+}
+
 ##' Get the concordance between two
 ##'
 ##' Return the concordance between two assays (i.e. single cell and hundred cell)
@@ -57,28 +62,31 @@ apply(exprsNA, 2, mean, na.rm=TRUE)
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   ## stopifnot(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))
-  mapL <- list(getMapping(singleCellRef), getMapping(singleCellcomp))
+  #mapL <- list(getMapping(singleCellRef), getMapping(singleCellcomp))
   scL <- list(singleCellRef, singleCellcomp)
   castL <- list()
 
   for(i in seq_along(scL)){
     checkGroups(scL[[i]], groups)
-    terms1 <- union(groups, getMapping(mapL[[i]],"ncells")[[1]])
-    lhs1 <- paste(c(terms1, getMapping(mapL[[i]],"primerid")[[1]]), collapse="+")
+    terms1 <- union(groups, getMapping(scL[[i]],"ncells")[[1]])
+    lhs1 <- paste(c(terms1, getMapping(scL[[i]],"primerid")[[1]]), collapse="+")
     firstForm <- formula(sprintf("%s ~.", lhs1))
     ##should look like Patient.ID + ... + n.cells ~ PrimerID
-    tmp <- cast(melt(scL[[i]]), firstForm, fun.aggregate=fun.natural, value=getMapping(mapL[[i]],"measurement")[[1]])
+    tmp <- cast(melt(scL[[i]]), firstForm, fun.aggregate=fun.natural, value=getMapping(scL[[i]],"measurement")[[1]])
     ##exponential average per gene, scaled by number of cells
-    tmp["(all)"] <- tmp["(all)"]/tmp[getMapping(mapL[[i]],"ncells")[[1]]]
-    rhs2 <- union(groups, getMapping(mapL[[i]],"primerid")[[1]])
+    if(class(melt(scL[[i]])[[getMapping(scL[[i]],"ncells")]]) == 'factor'){
+      warning("ncells is a factor rather than numeric.\n I'll continue, but this may cause problems down the line")
+    }
+    tmp["(all)"] <- tmp["(all)"]/as.numeric(as.character(tmp[[getMapping(scL[[i]],"ncells")[[1]]]]))
+    rhs2 <- union(groups, getMapping(scL[[i]],"primerid")[[1]])
     terms2 <- sprintf("%s ~ .", paste(rhs2, collapse="+"))
     secondForm <- formula(terms2)
-    nexp = cast(melt(scL[[i]]), secondForm, fun.aggregate=function(x){sum(x>0)}, value=getMapping(mapL[[i]],"measurement")[[1]])
+    nexp = cast(melt(scL[[i]]), secondForm, fun.aggregate=function(x){sum(x>0)}, value=getMapping(scL[[i]],"measurement")[[1]])
     #put back on Et scale. fun.cycle adds 1 so -Inf becomes 0 on natural scale
     #Not sure this is what we want? Okay.. this will be fine
     castL[[i]] <- cast(melt(tmp), secondForm, fun.aggregate=fun.cycle)
     renamestr <- c('primerid', 'et')
-    names(renamestr) <- c(getMapping(mapL[[i]],"primerid")[[1]], '(all)')
+    names(renamestr) <- c(getMapping(scL[[i]],"primerid")[[1]], '(all)')
     castL[[i]] <- rename(castL[[i]], renamestr)
     castL[[i]] <- cbind(castL[[i]], nexp=nexp$`(all)`)
   }
@@ -252,4 +260,13 @@ est.and.se <- apply(ee, 2, function(col){
     c(estimate=est, standard.err=se)
 })
 est.and.se
+}
+
+summarize <- function(fd, groups){
+checkGroups(fd, groups)
+sp <- split(fd, groups)
+
+mu <- lapply(sp, condmean)
+pi <- lapply(sp, freq)
+num <- lapply(sp, numexp)
 }

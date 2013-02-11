@@ -171,3 +171,16 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
   retme<-subset(m, test.type=='comb')
   return(cast(rename(retme,c(metric="variable"))))
                 }
+
+plotlrt <- function(lr, adjust='fdr', thres=.1, trunc=6, groups=NULL, ...){
+lr$adj <- p.adjust(lr$p.value, method=adjust)
+posgene <- suppressMessages(cast(lr[, c('gene', 'adj')], gene ~ ., fun.aggregate=function(x) any(x<thres)))
+posgene <- posgene[posgene[,2],]
+pvalue <- with(lr, pmax(p.value, 10^(-trunc)))
+if(length(posgene)>0){
+dotplot(gene ~ -log10(pvalue)*direction, lr, auto.key=T, subset=gene %in% posgene$gene)
+} else{
+  warning("No significant genes")
+}
+
+}
