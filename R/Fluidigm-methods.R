@@ -59,6 +59,8 @@ apply(exprs(sc)>0, sum, na.rm=TRUE)
 ##' @return concordance between two assays
 ##' @author Andrew McDavid
 ##' @export getConcordance
+##' @importFrom plyr is.formula
+##' @import plyr
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   ## stopifnot(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))
@@ -156,7 +158,7 @@ concordPlot <- function(concord0, concord1){
 #TODO: remove multiple cells
 ##' Function that filters a single cell assay
 ##'
-##' The function filters wells that don't pass filtering criteria described in filter_control.
+##' The function filters wells that don't pass filtering criteria described in filter_control. filter_control is a list with named elements nOutliers (minimum nmber of outlier cells for a cell to be filtered. sigmaContinuous (the z-score outlier threshold for the continuous part of the signal), and sigmaProportion (the z-score outlier threshold for the discrete part of the signal).
 ##' @title Filter a SingleCellAssay or Fluidigm Assay
 ##' @param sc The \code{SingleCellAssay} object
 ##' @param groups The \code{character} naming the grouping variable (optional)
@@ -199,6 +201,13 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   } else{
    scout <- filtered
   }
+    #if filt_control$filter==TRUE & apply_filter==FALSE
+    #then rename the retured rows using the wellKey mapping
+    if(filt_control$filter==TRUE&apply_filter==FALSE){
+      wk<-as.list(names(getwellKey(sc)))
+      names(wk)<-getwellKey(sc)
+      rownames(scout)<-data.frame(idvars=do.call(rbind,wk[rownames(scout)]))[,1]
+    }
   scout
 }
 
