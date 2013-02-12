@@ -145,18 +145,10 @@ stringsAsFactors <- function(dataframe, otherfactors=NULL){
 }
 
 ## Make a bunch of plots of filtering metrics
-plotEtz <- function(mysc, groups, sigmaContinuous=c(3, 5, 7, 9)){
-  checkGroups(mysc, groups)
-  latticeGroups <- paste(groups, collapse=':')
-  fl <- filter(mysc, filt_control=list(filter=F), apply_filter=FALSE)
-  allna <- apply(is.na(fl$z.exprs), 2, all)
-  fl$z.exprs <- fl$z.exprs[,!allna]
-  flbind <- data.frame(cData(mysc), fl$z.exprs)
-  etzmelt <- melt(flbind, id.vars=names(cData(mysc)))
-  etzmelt <- rename(etzmelt, c('value'='etz', 'variable'='gene'))
-  etzmelt <- stringsAsFactors(etzmelt, c(groups, 'gene'))
+plotEtz <- function(mysc, groups, byGroup=FALSE, sigmaContinuous=c(3, 5, 7, 9)){
+  etzmelt <- .getEtz(mysc, groups, byGroup, 5)
   p <- qqmath(~etz|gene, data=etzmelt, groups=eval(parse(text=groups)),
-       panel=panel.qqall, pch="+", cex=1.3, ylim=c(-10, 10), layout=c(0, 48), main='Distribution of etz by group')
+       panel=panel.qqall, pch="+", cex=1.3, ylim=c(-10, 10), layout=c(0, 48), main='Distribution of etz by group', alpha=.5)
   print(p)
   noutlier <- matrix(NA, nrow=nrow(mysc), ncol=length(sigmaContinuous), dimnames=list(getwellKey(mysc), sigmaContinuous))
   for(i in seq_along(sigmaContinuous))
@@ -175,11 +167,49 @@ plotEtz <- function(mysc, groups, sigmaContinuous=c(3, 5, 7, 9)){
   print(p)
 }
 
-panel.qqall <- function(x, groups, distribution, ...){
+.getEtz <- function(mysc, groups=NULL, byGroup, minThres){
+ checkGroups(mysc, groups)
+ conditionby <- NULL
+  if(byGroup) conditionby <- groups
+  latticeGroups <- paste(groups, collapse=':')
+  fl <- filter(mysc, groups=conditionby, filt_control=list(filter=F), apply_filter=FALSE)
+  if(byGroup && !is.null(conditionby)){
+    z.exprs <- do.call(rbind, lapply(fl, function(x){x$z.exprs}))
+  } else{
+    z.exprs <- fl$z.exprs
+  }
+ 
+  allna <- apply(is.na(z.exprs), 2, all)
+  z.exprs <- z.exprs[,!allna]
+  anyOver <- apply(abs(z.exprs)>minThres, 1, any, na.rm=TRUE)
+  flbind <- data.frame(cData(mysc), wellKey=getwellKey(mysc), anyOver)
+  flbind <- merge(flbind, z.exprs, by=0)[,-1] #drop Row.names column
+  etzmelt <- melt(flbind, id.vars=c('anyOver', names(cData(mysc)), 'wellKey'))
+  etzmelt <- rename(etzmelt, c('value'='etz', 'variable'='gene'))
+  etzmelt <- stringsAsFactors(etzmelt, c(groups, 'gene'))
+  etzmelt
+}
+
+dotplotFilters <- function(mysc, groups, byGroup=FALSE, minThres=5){
+   etzmelt <- .getEtz(mysc, groups, byGroup=byGroup, minThres)
+   etzmelt$etztrunc <- with(etzmelt, sign(etz)*pmin(abs(etz), 10))
+   grp <- with(etzmelt, as.factor(ifelse(anyOver, wellKey, 'clean')))
+   nlev <- length(levels(grp))-1
+               
+   dotplot(~etztrunc|gene, groups=grp, etzmelt, jitter.y=TRUE, amount=.2, pch=c(rep(2:10, length.out=nlev), 1), cex=c(rep(.7, nlev), .3))
+   
+}
+
+
+
+panel.qqall <- function(x, subscripts, groups, distribution=qnorm, ...){
+  if(missing(subscripts) || is.null(subscripts)) subscripts <- TRUE
+  ord <- order(x)
   sx <- sort(x)
   py <- ppoints(sx)
-  panel.xyplot(x=distribution(py), y=sx, groups=groups, ...)
-  panel.qqmathline(x, y=x, distribution, groups=NULL, ...)
+  grp <- groups[subscripts][ord]
+  panel.xyplot(x=distribution(py), y=sx, groups=grp, subscripts=TRUE, ...)
+  panel.qqmathline(x, y=x, distribution, groups=NULL, subscripts=TRUE, ...)
   panel.abline(h=c(-5, -3, 3, 5), col="grey")
 }
 
