@@ -125,6 +125,7 @@ must use the \emph{expression threshold}, defined as $E_t = c_{\mbox{max}} - \ct
 Below, we load the package and the data, then compute the expression threshold from the $\ct$, and construct a \texttt{FluidigmAssay}.
 <<long-example,warning=FALSE>>=
 library(SingleCellAssay)
+require(plyr)
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
