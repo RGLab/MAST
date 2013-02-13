@@ -1,9 +1,9 @@
 \docType{methods}
 \name{LRT}
 \alias{LRT}
+\alias{LRT,SingleCellAssay,character,character,NULL-method}
 \alias{LRT,SingleCellAssay,character,character,character-method}
 \alias{LRT,SingleCellAssay,character,character,missing-method}
-\alias{LRT,SingleCellAssay,character,character,NULL-method}
 \title{Likelihood Ratio Tests for SingleCellAssays}
 \arguments{
   \item{sca}{A \code{SingleCellAssay} class object}
