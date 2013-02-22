@@ -9,7 +9,7 @@
 #'Metadata is present in the files. One lane per file.
 #'@param x is a \code{character} vector of full path names to RCC files
 #'@return a list
-#'@export`
+#'@export
 readNanoStringLanes<-function(x){
   nfiles<-length(x)
   lanes<-vector("list",nfiles)
