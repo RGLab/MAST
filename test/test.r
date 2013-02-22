@@ -6,7 +6,5 @@ datafiles<-list.files(pattern="RCC",path="/Users/gfinak/Documents/Projects/Nanos
 keyfiles<-"/Users/gfinak/Documents/Projects/Nanostring/h9key.csv"
 
 
-key<-read.csv(keyfiles)
-
-
-foo<-readNanoStringLanes(datafiles[1:20])
+rcc<-readNanoStringLanes(datafiles)
+rcc<-mergeWithKeyFile(rcc=rcc,keyfiles)

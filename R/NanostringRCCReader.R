@@ -132,3 +132,15 @@ readNanoStringLanes<-function(x){
   code_summary<-read.csv(textConnection(paste(curline[-c(1,length(curline))],collapse="\n")),header=TRUE)
   return(code_summary)
 }
+
+#'Merge NanoString lanes with a key file
+#'
+#'Reads in a key file and maps to nanostring lanes
+#'@param rcc is a list returned from readNanoStringLanes
+#'@param file is a character vector name of the key file
+#'@return mapped rcc list
+#'@export
+mergeWithKeyFile<-function(rcc,file){
+  key<-rename(read.csv(file,header=FALSE),c("V1"="Name","V2"="GeneID"))
+  return(lapply(rcc,function(x){x$code_summary<-merge(x$code_summary,key);x}))
+}
