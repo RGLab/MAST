@@ -36,3 +36,4 @@ Collate:
     'filterEval.R'
     'helper-methods.R'
     'piest.R'
+    'NanostringRCCReader.R'

@@ -1,0 +1,18 @@
+\name{freq}
+\alias{freq}
+\title{Report the proportion of expression for each gene}
+\usage{
+  freq(sc, na.rm = TRUE)
+}
+\arguments{
+  \item{sc}{SingleCellAssay}
+
+  \item{na.rm}{should NAs be removed, or carried through?}
+}
+\value{
+  vector of proportions
+}
+\description{
+  NAs can be optionally removed
+}
+

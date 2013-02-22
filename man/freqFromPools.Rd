@@ -1,0 +1,27 @@
+\name{freqFromPools}
+\alias{freqFromPools}
+\title{Pooled Gene Frequency Estimation}
+\usage{
+  freqFromPools(fd)
+}
+\arguments{
+  \item{fd}{FluidigmAssay object with ncells set
+  appropriately}
+}
+\value{
+  Matrix with point estimates of frequency and standard
+  deviation of estimate
+}
+\description{
+  Estimate Gene Frequency from experiments with pools with
+  varying number-of-cells
+}
+\details{
+  We use maximum likelihood estimation of a censored
+  binomial distribution We return the standard error, as
+  determined from the observed Fisher Information
+}
+\author{
+  andrew
+}
+
