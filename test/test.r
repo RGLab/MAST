@@ -6,5 +6,5 @@ datafiles<-list.files(pattern="RCC",path="/Users/gfinak/Documents/Projects/Nanos
 keyfiles<-"/Users/gfinak/Documents/Projects/Nanostring/h9key.csv"
 
 
-rcc<-readNanoStringLanes(datafiles)
-rcc<-mergeWithKeyFile(rcc=rcc,keyfiles)
+time<-system.time({rcc<-readNanoStringLanes(datafiles);
+rcc<-mergeWithKeyFile(rcc=rcc,keyfiles)})
