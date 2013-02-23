@@ -470,6 +470,7 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' Constructor for a FluidigmAssay
 ##'
 ##' Constructs a FluidigmAssay object. Differs little from the SingleCellAssay constructor. Only the \code{ncells} parameter is additionally required.
+##' Mapping argument has been removed for simplicity.
 ##' @title Fluidigm Assay Constructor
 ##' @param dataframe A data frame containing the raw data
 ##' @param idvars See \code{\link{SingleCellAssay}}
@@ -477,23 +478,22 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' @param measurement See \code{\link{SingleCellAssay}}
 ##' @param ncells A \code{character} specifying the column which gives the number of cells per well
 ##' @param geneid See \code{\link{SingleCellAssay}}
-##' @param id See \code{\link{SingleCellAssay}}
-##' @param mapping See \code{\link{SingleCellAssay}}
+##' @param id An identifier for the resulting object. Should be a meaningful name.
 ##' @param cellvars See \code{\link{SingleCellAssay}}
 ##' @param featurevars See \code{\link{SingleCellAssay}}
 ##' @param phenovars See \code{\link{SingleCellAssay}}
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @return A FluidigmAssay object
-##' @author Andrew McDavid
+##' @author Andrew McDavid and Greg Finak
 ##' @export FluidigmAssay
-FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  if(is.null(mapping)){
-    mapping<-try(get("mapping",list(...)),silent=TRUE)
-    if(inherits(mapping,"try-error")){
+FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+  #if(is.null(mapping)){
+   # mapping<-try(get("mapping",list(...)),silent=TRUE)
+    #if(inherits(mapping,"try-error")){
       #no mapping provided so construct one
       mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap)
-    }
-  }
+    #}
+  #}
   if(!is.null(ncells)){
     mapping<-addMapping(mapping,list(ncells=ncells))
   }
