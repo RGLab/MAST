@@ -60,7 +60,6 @@ apply(exprs(sc)>0, sum, na.rm=TRUE)
 ##' @author Andrew McDavid
 ##' @export getConcordance
 ##' @importFrom plyr is.formula
-##' @import plyr
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   ## stopifnot(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))

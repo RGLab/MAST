@@ -1,3 +1,9 @@
+##' @import Biobase
+##' @import BiocGenerics
+##' @importFrom plyr rbind.fill
+
+NULL
+
 ##' Mapping class for SingleCellAssay package
 ##'
 ##' A class that represents a mapping of columns in a raw data file to cell-leve, feature-level, and phenotype-level metadata, as well as unique identifiers for individual cells.
@@ -193,10 +199,7 @@ setMethod("show","Mapping",function(object){
 
 setOldClass("ncdf")
 
-##' @import reshape
-##' @import Biobase
-##' @import BiocGenerics
-##' @importFrom plyr rbind.fill
+
 setClass("SCA",
          representation=representation(env="environment",
            "VIRTUAL",mapping="Mapping",mapNames="character"),

@@ -4,8 +4,8 @@
 \usage{
   FluidigmAssay(dataframe, idvars, primerid, measurement,
     ncells = NULL, geneid = NULL, id = NULL,
-    mapping = NULL, cellvars = NULL, featurevars = NULL,
-    phenovars = NULL, ...)
+    cellvars = NULL, featurevars = NULL, phenovars = NULL,
+    ...)
 }
 \arguments{
   \item{dataframe}{A data frame containing the raw data}
@@ -21,9 +21,8 @@
 
   \item{geneid}{See \code{\link{SingleCellAssay}}}
 
-  \item{id}{See \code{\link{SingleCellAssay}}}
-
-  \item{mapping}{See \code{\link{SingleCellAssay}}}
+  \item{id}{An identifier for the resulting object. Should
+  be a meaningful name.}
 
   \item{cellvars}{See \code{\link{SingleCellAssay}}}
 
@@ -43,9 +42,10 @@
 \details{
   Constructs a FluidigmAssay object. Differs little from
   the SingleCellAssay constructor. Only the \code{ncells}
-  parameter is additionally required.
+  parameter is additionally required. Mapping argument has
+  been removed for simplicity.
 }
 \author{
-  Andrew McDavid
+  Andrew McDavid and Greg Finak
 }
 

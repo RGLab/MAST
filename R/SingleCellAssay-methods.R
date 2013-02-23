@@ -97,6 +97,7 @@ NULL
 ##' @docType methods
 ##' @rdname melt-methods
 ##' @keywords transformation
+##' @importFrom reshape melt
 ##' @exportMethod melt
 setGeneric("melt",function(data,...){
   standardGeneric("melt")
@@ -270,8 +271,8 @@ covars <- function(sc, theCovars=NULL){
 ##' @docType methods
 ##' @rdname exprs-methods
 ##' @aliases exprs,SingleCellAssay-method
-##' @export exprs
 ##' @importMethodsFrom Biobase exprs
+##' @export exprs
 setMethod("exprs",signature(object="SingleCellAssay"),function(object){
   nentries <- nrow(melt(object))        
   objrow <- nrow(object)
