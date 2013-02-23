@@ -8,9 +8,30 @@ keyfiles<-"/Users/gfinak/Documents/Projects/Nanostring/h9key.csv"
 
 
 
+
+
+
+process<-function(full=NULL){
+#Date
+full$Date<-as.Date(as.character(full$Date),format="%Y%m%d")
+
+#Plate to Cell Cycle mapping
+full<-merge(full,data.frame(Plate=factor(c(1,2,3,4,5,6)),CellCycle=c("G0/G1","G0/G1","S","S","G2/M","G2/M")))
+
+#Number of cells is constant (1 cell per lane)
+full$ncells<-1
+
+#parse the comments in the sample info to get the cell type, plate, and row ID
+full<-cbind(full,data.frame(CellType=substring(as.character(full$Comments),1,2),
+                            Plate=substring(as.character(full$Comments),3,3),
+                            RowID=substring(as.character(full$Comments),4,4)))
+full
+}
+F<-NanoStringAssay(rccfiles=datafiles[1:10],keyfile=keyfiles,idvars=c("Plate","CartridgeID","ID"),geneid="GeneID",measurement="Count",phenoVars=c("CellType","CellCycle"),ncells="ncells",primerid="GeneID",cellvars=c("ncells","CellType"),id="nanostring",post.process.function=process)
+
 #Could write a constructor that takes a post-processing function...
-##' @exportClass NanostringAssay
-setClass('NanostringAssay', contains='FluidigmAssay', prototype=prototype(mapNames=SingleCellAssay:::FluidigmMapNames,mapping=new("Mapping",mapping=SingleCellAssay:::FluidigmMap)),validity=SingleCellAssayValidity)
+##' @exportClass NanoStringAssay
+setClass('NanoStringAssay', contains='FluidigmAssay', prototype=prototype(mapNames=SingleCellAssay:::FluidigmMapNames,mapping=new("Mapping",mapping=SingleCellAssay:::FluidigmMap)),validity=SingleCellAssayValidity)
 
 
 ##' Constructor for a NanoStringAssay
@@ -70,26 +91,9 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   sc@mapping<-addMapping(getMapping(sc),list(raw="Count"))
   #TODO need a cast for NanoStringAssay
   sc<-as(sc, 'FluidigmAssay')
+  sc<-as(sc,'NanoStringAssay')
+  return(sc)
 }
 
-
-
-process<-function(full=NULL){
-#Date
-full$Date<-as.Date(as.character(full$Date),format="%Y%m%d")
-
-#Plate to Cell Cycle mapping
-full<-merge(full,data.frame(Plate=factor(c(1,2,3,4,5,6)),CellCycle=c("G0/G1","G0/G1","S","S","G2/M","G2/M")))
-
-#Number of cells is constant (1 cell per lane)
-full$ncells<-1
-
-#parse the comments in the sample info to get the cell type, plate, and row ID
-full<-cbind(full,data.frame(CellType=substring(as.character(full$Comments),1,2),
-                            Plate=substring(as.character(full$Comments),3,3),
-                            RowID=substring(as.character(full$Comments),4,4)))
-full
-}
-F<-FluidigmAssay(dataframe=full,idvars=c("Plate","CartridgeID","ID"),geneid="GeneID",measurement="Count",phenoVars=c("CellType","CellCycle"),ncells="ncells",primerid="GeneID",cellvars=c("ncells","CellType"),id="nanostring")
-F<-NanoStringAssay(rccfiles=datafiles,keyfile=keyfiles,idvars=c("Plate","CartridgeID","ID"),geneid="GeneID",measurement="Count",phenoVars=c("CellType","CellCycle"),ncells="ncells",primerid="GeneID",cellvars=c("ncells","CellType"),id="nanostring",post.process.funtion=process)
+setAs('FluidigmAssay', 'NanoStringAssay', function(from)  new("NanoStringAssay",env=from@env,mapping=addMapping(from@mapping,list(ncells=NULL)),id=from@id, wellKey=from@wellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
 
