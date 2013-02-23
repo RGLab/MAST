@@ -398,7 +398,12 @@ setClass("SCASet",
 SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,geneid=NULL,id=NULL, mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
   ### Add pheno key
   ### throw error if idvars isn't disjoint from geneid, probeid
-
+  #if geneid == primerid make a new primerid column ensuring it is unique
+  if(geneid==primerid|is.null(primerid)){
+    #creates a new column called primerid
+    dataframe<-ddply(dataframe,idvars,transform,primerid=make.unique(as.character(GeneID)))
+    primerid<-"primerid"
+  }
   env<-new.env()
   if(!is.null(mapping)){
     if(class(mapping)!="Mapping")
