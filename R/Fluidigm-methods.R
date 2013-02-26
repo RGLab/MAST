@@ -1,5 +1,9 @@
 setAs('SingleCellAssay', 'FluidigmAssay', function(from)  new("FluidigmAssay",env=from@env,mapping=addMapping(from@mapping,list(ncells=NULL)),id=from@id, wellKey=from@wellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
 
+## ###===========Generics===============
+## setGeneric('filter')
+
+
 
 ##' @export
 expavg <- function(x) mean(2^x-1)
@@ -44,18 +48,21 @@ apply(exprsNA, 2, mean, na.rm=TRUE)
 
 numexp <- function(sc){
 stopifnot(inherits(sc, 'SingleCellAssay'))
-apply(exprs(sc)>0, sum, na.rm=TRUE)
+apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 }
 
 ##' Get the concordance between two
 ##'
 ##' Return the concordance between two assays (i.e. single cell and hundred cell)
+##' The "average" of \code{singleCellRef} (after adjusting for the number of cells) and
+##' \code{singleCellComp} are taken per gene, per \code{groups}.
+##' A \code{data.frame} with one row per gene-\code{groups} is returned with some additional columns.
 ##' @title getConcordance
-##' @param singleCellRef
-##' @param singleCellcomp
-##' @param groups
-##' @param fun.natural
-##' @param fun.cycle
+##' @param singleCellRef "reference" SingleCellAssay
+##' @param singleCellcomp "comparison" SingleCellAssay
+##' @param groups character vector giving variable(s) on which the comparison is conditioned
+##' @param fun.natural function to transform the SingleCellAssays to a mRNA proportional level
+##' @param fun.cycle inverse function of fun.natural
 ##' @return concordance between two assays
 ##' @author Andrew McDavid
 ##' @export getConcordance
@@ -63,7 +70,6 @@ apply(exprs(sc)>0, sum, na.rm=TRUE)
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   ## stopifnot(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))
-  #mapL <- list(getMapping(singleCellRef), getMapping(singleCellcomp))
   scL <- list(singleCellRef, singleCellcomp)
   castL <- list()
 
@@ -154,7 +160,8 @@ concordPlot <- function(concord0, concord1){
 }
 
 
-#TODO: remove multiple cells
+###TODO: remove multiple cells,
+###make this S3 generic so we don't clobber filter in R
 ##' Function that filters a single cell assay
 ##'
 ##' The function filters wells that don't pass filtering criteria described in filter_control. filter_control is a list with named elements nOutliers (minimum nmber of outlier cells for a cell to be filtered. sigmaContinuous (the z-score outlier threshold for the continuous part of the signal), and sigmaProportion (the z-score outlier threshold for the discrete part of the signal).
@@ -166,7 +173,6 @@ concordPlot <- function(concord0, concord1){
 ##' @return A filtered result
 ##' @author Andrew McDavid
 ##' @export filter
-##' @TODO make this S3 generic so we don't clobber filter in R
 filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 
     if (is.null(filt_control)){
@@ -270,11 +276,35 @@ est.and.se <- apply(ee, 2, function(col){
 est.and.se
 }
 
-summarize <- function(fd, groups){
-checkGroups(fd, groups)
-sp <- split(fd, groups)
-
+##' Summarize expression parameters
+##'
+##' The mean of positive cells, mu, proportion of gene expression pi,
+##' and number of expressing cells per \code{groups} per gene is returned as a list
+##' @title 
+##' @param fd object inheriting from SingleCellAssay
+##' @param groups character vector of grouping variables
+##' @return list of mu, pi and num.
+setMethod('summary', 'SingleCellAssay', function(object, groups){
+  if(!missing(groups) && !is.null(groups)){
+checkGroups(object, groups)
+sp <- split(object, groups)
 mu <- lapply(sp, condmean)
 pi <- lapply(sp, freq)
 num <- lapply(sp, numexp)
+mu <- t(do.call(rbind, mu))
+pi <- t(do.call(rbind, pi))
+num <- t(do.call(rbind, num))
+} else{
+  mu <- condmean(object)
+pi <- freq(object)
+num <- numexp(object)
 }
+list(mu=mu, pi=pi, num=num)
+})
+
+
+## primerSummary <- function(fd, groups, geneGroups){
+##   rawSummary <- summary(fd, groups)
+##   lapply(rawSummary, 
+
+## }
