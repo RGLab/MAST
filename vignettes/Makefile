@@ -11,6 +11,6 @@ clean:
 %.pdf: %.vignette
 	cp symbols.foo symbols.tex
 	cp $*.vignette $*.Rnw
-	$(R_HOME)/bin/R --arch=x86_64 -e "library(knitr); knit2pdf('$*.Rnw')"
+	$(R_HOME)/bin/R  -e "library(knitr); knit2pdf('$*.Rnw')"
 	cp $*.dummy $*.Rnw
 	rm symbols.tex

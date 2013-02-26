@@ -11,6 +11,8 @@ expavg <- function(x) mean(2^x-1)
 ##' @export
 logmean <- function(x) log2(mean(x)+1)
 
+logshift <- function(x) log2(x+1)
+
 #try to throw an error if groups isn't in cellData
 #groups can be character vector or symbol (quote(Group1:Group2), used for lattice)
 checkGroups <- function(sc, groups){
@@ -280,7 +282,6 @@ est.and.se
 ##'
 ##' The mean of positive cells, mu, proportion of gene expression pi,
 ##' and number of expressing cells per \code{groups} per gene is returned as a list
-##' @title 
 ##' @param fd object inheriting from SingleCellAssay
 ##' @param groups character vector of grouping variables
 ##' @return list of mu, pi and num.
@@ -295,16 +296,32 @@ mu <- t(do.call(rbind, mu))
 pi <- t(do.call(rbind, pi))
 num <- t(do.call(rbind, num))
 } else{
-  mu <- condmean(object)
-pi <- freq(object)
-num <- numexp(object)
+  mu <- data.frame(condmean(object))
+pi <- data.frame(freq(object))
+num <- data.frame(numexp(object))
 }
 list(mu=mu, pi=pi, num=num)
 })
 
 
-## primerSummary <- function(fd, groups, geneGroups){
-##   rawSummary <- summary(fd, groups)
-##   lapply(rawSummary, 
+primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift){
+  fVars <- fData(fd)[, geneGroups, drop=FALSE]
+  geneset <- split(1:nrow(fVars), fVars)
+  fdOrder <- order(unlist(lapply(geneset, min)))
+  geneset <- geneset[fdOrder]           #maintain order of genes from original
+  genefirst <- unlist(lapply(geneset, function(x) x[1]))
+  skeleton <- fd[[TRUE,genefirst]]       #make smaller version of fd, then we'll replace exprs with the mean per geneset
 
-## }
+  exprs.orig <- exprs(fd)
+  exprs.new <- lapply(geneset, function(colidx){
+    cols <- exprs.orig[,colidx, drop=FALSE]
+    if(ncol(cols)>1){
+    return(fun.cycle(apply(cols, 1,fun.natural)))
+  }
+    return(cols)
+  })
+  exprs.new <- do.call(cbind, exprs.new)
+  exprs(skeleton) <- exprs.new
+  skeleton
+  ## TODO: fix primerids
+}
