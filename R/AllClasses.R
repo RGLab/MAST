@@ -398,19 +398,21 @@ setClass("SCASet",
 ##' @importFrom plyr ddply
 ##' @importFrom reshape expand.grid.df
 SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,geneid=NULL,id=NULL, mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  ### Add pheno key
-  ### throw error if idvars isn't disjoint from geneid, probeid
+  ## Add pheno key
+  ## throw error if idvars isn't disjoint from geneid, probeid
   #if geneid == primerid make a new primerid column ensuring it is unique
-  ## if(geneid==primerid||is.null(primerid)){
-  ##   #creates a new column called primerid
-  ##   mkunique<-function(x,G){
-  ##     cbind(x,primerid=make.unique(as.character(get(G,x))))
-  ##   }
-  ##   dataframe<-ddply(dataframe,idvars,mkunique,G=geneid)
-  ##   primerid<-"primerid"
-  ## }else{
-  ##   ddply(dataframe,idvars,mkunique,G=primerid)
-  ## }
+  if(!(is.null(geneid)&is.null(primerid))){
+   if((geneid==primerid)){
+     #creates a new column called primerid
+     mkunique<-function(x,G){
+       cbind(x,primerid=make.unique(as.character(get(G,x))))
+     }
+     dataframe<-ddply(dataframe,idvars,mkunique,G=geneid)
+     primerid<-"primerid"
+   }else{
+     dataframe<-ddply(dataframe,idvars,mkunique,G=primerid)
+   }
+  }
   env<-new.env()
   if(!is.null(mapping)){
     if(class(mapping)!="Mapping")
