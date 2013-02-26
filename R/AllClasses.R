@@ -424,6 +424,7 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   mapping<-addMapping(mapping,list(idvars=idvars,cellvars=cellvars,primerid=primerid,measurement=measurement,geneid=geneid,featurevars=featurevars,phenovars=phenovars)[notnull])
   if(! all(Mandatory_Fields %in% getMapNames(mapping)) )
       stop(paste('Mapping must contain at least ', paste(Mandatory_Fields, sep=', '), collapse=''))
+
   ## END: place into validObject method!
   #Update cellvars and featurevars with current mapping
   mapping<-addMapping(mapping,list(cellvars=unique(c(getMapping(mapping,"cellvars")[[1]],getMapping(mapping,"idvars")[[1]],getMapping(mapping,"phenovars")[[1]]))))
@@ -455,6 +456,11 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
     skeleton <- expand.grid.df(unique(dataframe[,getMapping(mapping,"featurevars")[[1]], drop=FALSE]), unique(dataframe[, getMapping(mapping,"cellvars")[[1]], drop=FALSE]))
     dataframe <- merge(skeleton, dataframe, all.x=TRUE, by=c(getMapping(mapping,"featurevars")[[1]], getMapping(mapping,"cellvars")[[1]]))
     cellCounts <- table(do.call(paste, dataframe[,getMapping(mapping,"idvars")[[1]]]))
+  }
+
+   primerCounts <- table(do.call(paste, dataframe[,getMapping(mapping,"primerid")[[1]], drop=FALSE]))
+  if(!all(primerCounts==primerCounts[1])){
+    stop('Some primers appear more often than others.  Either your data is incomplete or you have duplicate primerid')
   }
   
   ord <- do.call(order, dataframe[, c(getMapping(mapping,"primerid")[[1]], getMapping(mapping,"idvars")[[1]])])
