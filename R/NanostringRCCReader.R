@@ -9,128 +9,49 @@
 #'Metadata is present in the files. One lane per file.
 #'@param x is a \code{character} vector of full path names to RCC files
 #'@return a list
+#' @importFrom stringr str_trim
 #'@export
 readNanoStringLanes<-function(x){
   nfiles<-length(x)
   lanes<-vector("list",nfiles)
   for(i in 1:length(x)){
-    con<-file(x[i],open="r")#open read only
-    lanes[[i]]$header<-.readHeader(con)
-    lanes[[i]]$sample_attributes<-.readSampleAttributes(con)
-    lanes[[i]]$lane_attributes<-.readLaneAttributes(con)
-    lanes[[i]]$code_summary<-.readCodeSummary(con)
-    close(con)
+    this.file <- x[i]
+    con<-str_trim(readLines(this.file))
+    lanes[[i]]$header<-.readSection(con, this.file, 'Header', header=FALSE, as.is=TRUE)
+    lanes[[i]]$sample_attributes<-.readSection(con, this.file, 'Sample_Attributes', header=FALSE, as.is=TRUE)
+    lanes[[i]]$lane_attributes<-.readSection(con, this.file, 'Lane_Attributes', header=FALSE, as.is=TRUE)
+    lanes[[i]]$code_summary<-.readSection(con, this.file, 'Code_Summary', recast=FALSE, header=TRUE, as.is=TRUE)
   }
   return(lanes)
 }
 
-#'Read the RCC header
-#'
-#'@param x is a connection
-#'@return a data frame
-.readHeader<-function(x){
-  STARTHEADER<-"<Header>"
-  ENDHEADER<-"</Header>"
-  curline<-readLines(x,n=1)
-  if(curline!=STARTHEADER){
-    desc<-summary(con)$description
-    close(con)
-    stop("Oops.. failed reading RCC file header for ",desc)
-  }
-  repeat{
-    curline<-c(curline,readLines(x,n=1))
-    if(curline[length(curline)]==ENDHEADER){
-      break
-    } 
-  }
-  header<-read.csv(textConnection(paste(curline[-c(1,length(curline))],collapse="\n")),header=FALSE)
-  return(cast(melt(header,id="V1"),variable~V1)[,-1L])
+
+
+##' Read a section of a Nanostring RCC file
+##'
+##' The section is surrounded by <type> </type>
+##' @param x character vector of lines from RCC file, newlines stripped
+##' @param file name 
+##' @param type the section of the file to be read in
+##' @param recast should the section be transposed?
+##' @param ... argument spassed to read.csv
+##' @return data.frame of section
+.readSection <- function(x, file, type, recast=TRUE, ...){
+START <- sprintf('<%s>', type)
+END <- sprintf('</%s>', type)
+si <- match(START, x)
+ei <- match(END, x)
+if(is.na(si) || is.na(ei) || ei<si){
+  stop('Malformed ', type, ' in ', file)
 }
-
-
-#'Read the RCC Sample Attributes
-#'
-#'@param x is a connection
-#'@return a data frame
-.readSampleAttributes<-function(x){
-  START<-"<Sample_Attributes>"
-  END<-"</Sample_Attributes>"
-  repeat{
-    curline<-readLines(x,n=1)
-    if(curline!=""){
-      break
-    }
-  }
-  if(curline!=START){
-    desc<-summary(con)$description
-    close(con)
-    stop("Oops.. failed reading RCC file Sample Attributes for ",desc)
-  }
-  repeat{
-    curline<-c(curline,readLines(x,n=1))
-    if(curline[length(curline)]==END){
-      break
-    } 
-  }
-  sample_attributes<-read.csv(textConnection(paste(curline[-c(1,length(curline))],collapse="\n")),header=FALSE)
-  return(cast(melt(sample_attributes,id="V1"),variable~V1)[,-1L])
+  section<-read.csv(textConnection(x[(si+1):(ei-1)]),...)
+if(recast){
+  wide <- data.frame(t(section), stringsAsFactors=FALSE)[-1,]
+  names(wide) <- t(section)[1,]
+} else{
+  wide <- section
 }
-
-
-#'Read the RCC Lane Attributes
-#'
-#'@param x is a connection
-#'@return a data frame
-.readLaneAttributes<-function(x){
-  START<-"<Lane_Attributes>"
-  END<-"</Lane_Attributes>"
-  repeat{
-    curline<-readLines(x,n=1)
-    if(curline!=""){
-      break
-    }
-  }
-  if(curline!=START){
-    desc<-summary(con)$description
-    close(con)
-    stop("Oops.. failed reading RCC file Sample Attributes for ",desc)
-  }
-  repeat{
-    curline<-c(curline,readLines(x,n=1))
-    if(curline[length(curline)]==END){
-      break
-    } 
-  }
-  lane_attributes<-read.csv(textConnection(paste(curline[-c(1,length(curline))],collapse="\n")),header=FALSE)
-  return(cast(melt(lane_attributes,id="V1"),variable~V1)[,-1L])
-}
-
-#'Read the RCC Lane Attributes
-#'
-#'@param x is a connection
-#'@return a data frame
-.readCodeSummary<-function(x){
-  START<-"<Code_Summary>"
-  END<-"</Code_Summary>"
-  repeat{
-    curline<-readLines(x,n=1)
-    if(curline!=""){
-      break
-    }
-  }
-  if(curline!=START){
-    desc<-summary(con)$description
-    close(con)
-    stop("Oops.. failed reading RCC file Sample Attributes for ",desc)
-  }
-  repeat{
-    curline<-c(curline,readLines(x,n=1))
-    if(curline[length(curline)]==END){
-      break
-    } 
-  }
-  code_summary<-read.csv(textConnection(paste(curline[-c(1,length(curline))],collapse="\n")),header=TRUE)
-  return(code_summary)
+ wide
 }
 
 #'Merge NanoString lanes with a key file
@@ -140,6 +61,7 @@ readNanoStringLanes<-function(x){
 #'@param file is a character vector name of the key file
 #'@return mapped rcc list
 #'@export
+#' @importFrom reshape rename
 mergeWithKeyFile<-function(rcc,file){
   key<-rename(read.csv(file,header=FALSE),c("V1"="Name","V2"="GeneID"))
   return(lapply(rcc,function(x){x$code_summary<-merge(x$code_summary,key);x}))
@@ -182,15 +104,26 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   
   rcclist<-readNanoStringLanes(rccfiles);
   rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
-  dataframe<-do.call(rbind,lapply(1:length(rcclist),function(i){
-    cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes)  
+  suppressWarnings(
+    dataframe<-do.call(rbind,lapply(1:length(rcclist),function(i){
+    cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
   }))
+    )
+  ## dataframe <- lapply(dataframe, function(col){
+  ##   suppressWarnings(numTry <- as.numeric(col))
+  ##   ## non-numeric character vectors return NA
+  ##   ## if all entries that weren't originally NA are not NA, then we suppose everything was a numeric
+  ##   if( all(!is.na(numTry[!is.na(col)])) ){
+  ##     return(numTry)
+  ##   }
+  ##   return(col)
+  ## })
   if(!is.null(post.process.function)){
     dataframe<-post.process.function(dataframe) 
   }
   #reconstruct this for the next call
   #transform with log+1
-  dataframe$lCount<-log(get(measurement,dataframe)+1)
+  dataframe$lCount<-log2(get(measurement,dataframe)+1)
   
   #reame the mapping 
   raw<-measurement

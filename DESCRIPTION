@@ -20,7 +20,8 @@ Imports:
     latticeExtra,
     plyr,
     digest,
-    ggplot2
+    ggplot2,
+    stringr
 Suggests:
     parallel
 Description: Core data structures and methods for handling single cell assay
