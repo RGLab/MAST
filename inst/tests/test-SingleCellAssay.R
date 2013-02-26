@@ -44,12 +44,12 @@ expect_that(all(counts == counts[1]), is_false())
 sc <- fd
 test_that("Can load complete data", {
   expect_that(sc, is_a("SingleCellAssay"))
-  tab <- table(melt(sc)$`__wellKey`)
+  tab <- table(SingleCellAssay:::melt(sc)$`__wellKey`)
   expect_that(tab, is_equivalent_to(countComplete))
 })
 
 test_that("Cellkey unique identifies a cell", {
-  tab <- table(melt(sc)$`__wellKey`, do.call(paste, melt(sc)[, idvars]))
+  tab <- table(SingleCellAssay:::melt(sc)$`__wellKey`, do.call(paste, SingleCellAssay:::melt(sc)[, idvars]))
   expect_true(all(tab %in% c(0,75)))
   
 })
@@ -57,12 +57,13 @@ test_that("Cellkey unique identifies a cell", {
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, geneid=geneid, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
   expect_that(sci, is_a("SingleCellAssay"))
-  expect_equal(nrow(melt(sci)), nrow(dat_complete))
+  expect_equal(nrow(SingleCellAssay:::melt(sci)), nrow(dat_complete))
 })
 
 context('testing cell and feature dictionaries')
 
-scd <- SingleCellAssay(dat_complete, mapping=getMapping(sc))
+complete<-(SingleCellAssay:::melt(sc))[,setdiff(colnames(SingleCellAssay:::melt(sc)),"__wellKey"),drop=FALSE]
+scd <- SingleCellAssay(complete, mapping=getMapping(sc))
 
 test_that('Cell data has correct number of row/columns', {
   expect_that(cData(scd), is_a('data.frame'))
@@ -76,7 +77,8 @@ test_that('Feature data has correct number of row/columns', {
   expect_that(featureData(scd), is_a('AnnotatedDataFrame'))
    expect_equivalent(ncol(scd), nrow(fData(scd)))
   expect_equal(unique(fData(scd)), fData(scd))
-  expect_equivalent(ncol(fData(scd)), length(unique(c(featurevars, geneid, primerid))) )
+ #one extra column for the deduplicated primerid
+  expect_equivalent(ncol(fData(scd)), length(unique(c(featurevars, geneid, primerid)))+1 )
 })
 
 context("Testing methods")

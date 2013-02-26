@@ -13,7 +13,7 @@ test_that('Create a one-column id SingleCellAssay', {
   expect_that(tmp, is_a('SingleCellAssay'))
 })
 
-test_that('duplicate primers throws error', {
+test_that('duplicate primers doesn\'t throw error', {
   
-  expect_that(SingleCellAssay(duplicateprimers, idvars='id1', geneid='f1', primerid='f1', measurement='et'), throws_error('primer'))
+  expect_that(SingleCellAssay(duplicateprimers, idvars='id1', geneid='f1', primerid='f1', measurement='et'), is_a(class="SingleCellAssay"))
 })
