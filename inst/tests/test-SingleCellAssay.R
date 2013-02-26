@@ -195,3 +195,17 @@ c2 <- .SingleCellAssayCombine(spl@set)
 expect_that(c2, is_a('SingleCellAssay'))
 expect_equal(c2, smallsc)
 })
+
+context('Testing FluidigmAssay')
+fd <- as(scd, 'FluidigmAssay')
+back <- as(fd, 'SingleCellAssay')
+test_that('Can cast', {
+  expect_is(fd, "FluidigmAssay")
+  expect_is(back, 'SingleCellAssay')
+  expect_equivalent(back, scd)
+})
+
+test_that('Can split FluidigmAssays', {
+ splat.byfieldname <- split(fd, 'Subject.ID')
+    expect_that(splat.byfieldname, is_a('SCASet'))
+})

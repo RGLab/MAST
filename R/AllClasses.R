@@ -508,13 +508,13 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' @author Andrew McDavid and Greg Finak
 ##' @export FluidigmAssay
 FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  #if(is.null(mapping)){
-   # mapping<-try(get("mapping",list(...)),silent=TRUE)
-    #if(inherits(mapping,"try-error")){
+  
+   mapping<-try(get("mapping",list(...)),silent=TRUE)
+    if(inherits(mapping,"try-error")){
       #no mapping provided so construct one
       mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap)
-    #}
-  #}
+    }
+   
   if(!is.null(ncells)){
     mapping<-addMapping(mapping,list(ncells=ncells))
   }
