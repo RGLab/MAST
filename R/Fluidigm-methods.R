@@ -4,10 +4,22 @@ setAs('SingleCellAssay', 'FluidigmAssay', function(from)  new("FluidigmAssay",en
 ## setGeneric('filter')
 
 
-
+##' Exponential average
+##'
+##' Puts log transformed values onto natural scale and takes mean of vector.
+##' Calculates mean(2^x - 1)
+##' @param x \code{numeric}
+##' @return \code{numeric}
 ##' @export
 expavg <- function(x) mean(2^x-1)
 
+##' Log mean
+##'
+##' Takes mean of natural scaled values and then logrithm
+##' Approximately the inverse operation of \code{\link{expavg}}
+##' Calculates log2(mean(x) + 1)
+##' @param x \code{numeric}
+##' @return \code{numeric}
 ##' @export
 logmean <- function(x) log2(mean(x)+1)
 
@@ -48,6 +60,12 @@ exprsNA[exprsNA==0] <- NA
 apply(exprsNA, 2, mean, na.rm=TRUE)
 }
 
+##' Report number of expressing cells per gene
+##'
+##' NAs are removed
+##' @param sc \code{SingleCellAssay}
+##' @return \code{numeric} vector
+##' @export
 numexp <- function(sc){
 stopifnot(inherits(sc, 'SingleCellAssay'))
 apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
@@ -69,6 +87,7 @@ apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 ##' @author Andrew McDavid
 ##' @export getConcordance
 ##' @importFrom plyr is.formula
+##' @importFrom reshape cast
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   ## stopifnot(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))
@@ -106,8 +125,8 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
 }
 
 ##' @title getwss
-##' @param concord
-##' @param nexp
+##' @param concord output from \code{getConcordance}
+##' @param nexp number of expressed cells per row in \code{concord}
 ##' @return weighted sum of squares
 ##' @export getwss
 getwss <- function(concord, nexp){
@@ -118,7 +137,7 @@ getwss <- function(concord, nexp){
 }
 
 ##' @title getss
-##' @param concord
+##' @param concord output from \code{getConcordance}
 ##' @return sum of squares
 ##' @export getss
 ##' @note Ditto.. compute on the natural scale
@@ -142,8 +161,9 @@ with(concord, {foo<-na.omit(cbind(et.ref=et.ref,et.comp=et.comp));2*cov(foo[,"et
 #    with(concord,{foo<-na.omit(2^cbind(et.ref,et.comp)-1);2*cov(foo[,"et.ref"],foo[,"et.comp"])/(var(foo[,"et.ref"])+var(foo[,"et.comp"])+(mean(foo[,"et.ref"])-mean(foo[,"et.comp"]))^2)})
 }
 
-##' @import lattice
-##' @export panel.shifts
+## This might have been made obsolete by plotSCAConcordance
+## This is a panel function that draws lines between (x, y) pairs and comparison
+## comparison is a data.frame output from getConcordance
 panel.shifts <- function(x, y, groups, subscripts, comparison, ...){
   #vargs = list(...)
   #comparison = vargs$comparison
@@ -154,11 +174,11 @@ panel.shifts <- function(x, y, groups, subscripts, comparison, ...){
 }
 
 
+
 concordPlot <- function(concord0, concord1){
   #preconditions concord0, concord1 have row-correspondence
   #concord0 is plotted reference
   p<-xyplot(et.ref ~ et.comp, concord0)
-
 }
 
 
@@ -166,7 +186,7 @@ concordPlot <- function(concord0, concord1){
 ###make this S3 generic so we don't clobber filter in R
 ##' Function that filters a single cell assay
 ##'
-##' The function filters wells that don't pass filtering criteria described in filter_control. filter_control is a list with named elements nOutliers (minimum nmber of outlier cells for a cell to be filtered. sigmaContinuous (the z-score outlier threshold for the continuous part of the signal), and sigmaProportion (the z-score outlier threshold for the discrete part of the signal).
+##' The function filters wells that don't pass filtering criteria described in filt_control. filt_control is a list with named elements nOutliers (minimum nmber of outlier cells for a cell to be filtered. sigmaContinuous (the z-score outlier threshold for the continuous part of the signal), and sigmaProportion (the z-score outlier threshold for the discrete part of the signal).
 ##' @title Filter a SingleCellAssay or Fluidigm Assay
 ##' @param sc The \code{SingleCellAssay} object
 ##' @param groups The \code{character} naming the grouping variable (optional)
@@ -176,17 +196,19 @@ concordPlot <- function(concord0, concord1){
 ##' @author Andrew McDavid
 ##' @export filter
 filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
-
+  default_filt <- list(filter=T, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL, K=1.48)
     if (is.null(filt_control)){
-    filt_control <- list(filter=T, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL, K=1.48)
+    filt_control <- list()
   }
+  missingControl <- setdiff(names(default_filt), names(filt_control))
+  filt_control[missingControl] <- default_filt[missingControl]
 
   if (!is.null(groups)) {
     checkGroups(sc, groups)
       scL <- split(sc, groups)
       lapp <- lapply(scL, filter, groups=NULL, filt_control, apply_filter)
       ## Do various things with lapp:
-      if(apply_filter){
+      if(apply_filter && filt_control$filter){
         ## list of SingleCellAssays
         out <- .SingleCellAssayCombine(lapp)
       } else if(filt_control$filter){
@@ -202,7 +224,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 
   exprs <- exprs(sc)
   filtered <- do.call(SingleCellAssay:::.internalfilter, c(list(exprs), filt_control))
-  if(apply_filter){
+  if(apply_filter && filt_control$filter){
     anyfilter <- apply(filtered, 1, any)
     scout <- sc[[!anyfilter]]
   } else{
@@ -210,7 +232,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   }
     #if filt_control$filter==TRUE & apply_filter==FALSE
     #then rename the retured rows using the wellKey mapping
-    if(ifelse(exists("filter",filt_control),get("filter",filt_control),TRUE)&apply_filter==FALSE){
+    if(filt_control$filter && !apply_filter){
       wk<-as.list(names(getwellKey(sc)))
       names(wk)<-getwellKey(sc)
       rownames(scout)<-data.frame(idvars=do.call(rbind,wk[rownames(scout)]))[,1]
@@ -322,6 +344,8 @@ primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift
   })
   exprs.new <- do.call(cbind, exprs.new)
   exprs(skeleton) <- exprs.new
+  m <- addMapping(getMapping(fd), list(primerid=geneGroups), replace=TRUE)
+  skeleton@mapping <- m
   skeleton
   ## TODO: fix primerids
 }

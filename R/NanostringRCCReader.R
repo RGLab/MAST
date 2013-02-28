@@ -89,6 +89,7 @@ setClass('NanoStringAssay', contains='FluidigmAssay', prototype=prototype(mapNam
 ##' @param cellvars See \code{\link{SingleCellAssay}}
 ##' @param featurevars See \code{\link{SingleCellAssay}}
 ##' @param phenovars See \code{\link{SingleCellAssay}}
+##' @param post.process.function function applied to \code{data.frame} of all rcc files, before the NanostringAssay object is constructed.
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak

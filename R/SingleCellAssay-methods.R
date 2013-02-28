@@ -253,14 +253,6 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
 }) }, silent=TRUE)
 
 
-### Get cellular covariates in a SingleCellAssay object
-covars <- function(sc, theCovars=NULL){
-  warning('obsolete, use cData')
-  selected <- c(unlist(strsplit(getlhs(sc@mapping), split="[+]")), theCovars)
-  uniquerows <- unique(melt(sc)[, selected])
-  sort_df(uniquerows)
-}
-
 ##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
 ##'
 ##' Return or set a matrix of the measurement: cells by primerids
@@ -385,12 +377,6 @@ setMethod('copy', 'SingleCellAssay',
             o2
           })
 
-## OBSOLETE
-## Build the left hand side (variables that corresponds to a unique cell) of a formula
-## Still needed by covars...
-getlhs <- function(mapping){
-  paste(setdiff(mapping$idvars, mapping$primerid), collapse="+")
-}
 
 ## Probably do not want to offer replacement methods for the data
 ## setGeneric("melt<-", function(x, value) standardGeneric("melt<-"))

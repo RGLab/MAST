@@ -5,9 +5,10 @@
   getwss(concord, nexp)
 }
 \arguments{
-  \item{concord}{}
+  \item{concord}{output from \code{getConcordance}}
 
-  \item{nexp}{}
+  \item{nexp}{number of expressed cells per row in
+  \code{concord}}
 }
 \value{
   weighted sum of squares

@@ -35,6 +35,10 @@
 
   \item{phenovars}{See \code{\link{SingleCellAssay}}}
 
+  \item{post.process.function}{function applied to
+  \code{data.frame} of all rcc files, before the
+  NanostringAssay object is constructed.}
+
   \item{...}{Additional parameters passed to
   \code{SingleCellAssay} constructor}
 }

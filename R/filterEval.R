@@ -151,6 +151,7 @@ plotEtz <- function(mysc, groups, byGroup=FALSE, sigmaContinuous=c(3, 5, 7, 9)){
        panel=panel.qqall, pch="+", cex=1.3, ylim=c(-10, 10), layout=c(0, 48), main='Distribution of etz by group', alpha=.5)
   print(p)
   noutlier <- matrix(NA, nrow=nrow(mysc), ncol=length(sigmaContinuous), dimnames=list(getwellKey(mysc), sigmaContinuous))
+  fl <- filter(mysc, filt_control=list(filter=F), apply_filter=F)
   for(i in seq_along(sigmaContinuous))
     noutlier[,i] <- apply(abs(fl$z.exprs)>sigmaContinuous[i], 1, sum, na.rm=TRUE)
 
@@ -251,7 +252,7 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
   conditionby <- NULL
   if(byGroup) conditionby <- groups
   filt <- filter(sc, groups=conditionby, filt_control=filt_control, apply_filter=FALSE)
-  index <- apply(filt, 1, function(x){mx <- min(which(x)); if(!is.finite(mx)) mx <- 4; mx})
+  index <- apply(filt, 1, function(x){suppressWarnings(mx <- min(which(x))); if(!is.finite(mx)) mx <- 4; mx})
   outcome <- c(names(filt), 'none')[index]
   filt <- cbind(outcome, cData(sc))
   tab <- do.call(table, c(filt[, groups, drop=FALSE], filt[, 'outcome', drop=FALSE]))

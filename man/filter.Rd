@@ -25,7 +25,7 @@
 }
 \details{
   The function filters wells that don't pass filtering
-  criteria described in filter_control. filter_control is a
+  criteria described in filt_control. filt_control is a
   list with named elements nOutliers (minimum nmber of
   outlier cells for a cell to be filtered. sigmaContinuous
   (the z-score outlier threshold for the continuous part of

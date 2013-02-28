@@ -5,7 +5,7 @@
   getss(concord)
 }
 \arguments{
-  \item{concord}{}
+  \item{concord}{output from \code{getConcordance}}
 }
 \value{
   sum of squares

@@ -1,4 +1,3 @@
-##' @export lrt
 lrtest <- function(w.x, w.y, x, y){
   ## w.x, w.y vectors of zeros/ones for expressed or not in each group
   ## x, y vectors of the positive observations (must be of length sum(w.x) and sum(w.y))
@@ -73,6 +72,7 @@ setGeneric("LRT",function(sca,comparison,referent,groups=NULL,...){
 ##' @param sca A \code{SingleCellAssay} class object
 ##' @param comparison A \code{character} specifying the factor for comparison
 ##' @param referent A \code{character} specifying the reference level of \code{comparison}.
+##' @param groups A optional \code{character} specifying a variable on which to stratify the test.  For each level of \code{groups}, there will be a separate likelihood ratio test.
 ##' @param returnall A \code{logical} specifying if additional columns should be returned with information about the different componnetns of the test.
 ##' @docType methods
 setMethod("LRT",signature=c("SingleCellAssay","character","character","character"),function(sca,comparison,referent,groups=NULL,returnall=FALSE){
@@ -172,11 +172,25 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
   return(cast(rename(retme,c(metric="variable"))))
                 }
 
-plotlrt <- function(lr, adjust='fdr', thres=.1, trunc=6, groups=NULL, ...){
+
+##' Plot a likelihood ratio test object
+##'
+##' Constructs a forest-like plot of signed log10 p-values, possibly adjusted for multiple comparisons
+##' \code{adjust} can be one of  "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none".
+##' @seealso \code{\link{p.adjust}}, \code{\link{lrtest}}
+##' @param lr output from lrtest, with returnall=FALSE
+##' @param adjust \code{character}, passed along to \code{p.adjust}, see below
+##' @param thres \code{numeric} genes with adjusted pvalues above this value are not depicted
+##' @param trunc \code{numeric} p values below this value are truncated at this value 
+##' @param groups \code{character} grouping value.  If provided, must match groups argument passed to lrtest.  Plots done separately for each group.
+##' @return Constructs a dotplot
+##' @author andrew
+##' @export
+plotlrt <- function(lr, adjust='fdr', thres=.1, trunc=1e-6, groups=NULL){
 lr$adj <- p.adjust(lr$p.value, method=adjust)
 posgene <- suppressMessages(cast(lr[, c('gene', 'adj')], gene ~ ., fun.aggregate=function(x) any(x<thres)))
 posgene <- posgene[posgene[,2],]
-pvalue <- with(lr, pmax(p.value, 10^(-trunc)))
+pvalue <- with(lr, pmin(p.value, trunc))
 if(length(posgene)>0){
 dotplot(gene ~ -log10(pvalue)*direction, lr, auto.key=T, subset=gene %in% posgene$gene)
 } else{
