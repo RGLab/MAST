@@ -146,4 +146,36 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   return(sc)
 }
 
+## ##' Estimate thresholds for positive expression
+## ##'
+## ##' Estimates per-gene x unit thresholds for positive expression and truncates values below this threshold
+## ##' Uncertain values (in terms of posterior probability of membership) can be set to NA or rounded left or right
+## ##' Thresholds are estimated using a Gaussian mixture model with prior supplied by population estimates.
+## ##' @param nsa NanostringAssay object
+## ##' @param groups groups to apply thresholding
+## ##' @param thresholds data.frame of thresholds  of groups x genes user may specify
+## ##' @param posteriorprob Min posterior probability of cluster membership for an observation to be truncated 
+## ##' @param clip Should values with uncertain posterior probs be clipped 
+## ##' @return modifies nsa in place
+## setMethod('threshold', signature='NanostringAssay', function(nsa, groups, thresholds, posteriorprob, clip=c('left', 'right', 'NA'){
+##   exprs.all <- log2(melt(nsa)[, getMapping(nsa, 'raw')]+1)
+##   out <- Mclust(exprs.all, G=1:3, modelNames='V')
+##   if(out$G != 2)
+##     stop("Uhoh, didn't find two clusters in complete data set")
+##   means <- out$param$mean
+##   scales <- out$param$variance$scale
+
+##   exprs.split <- split(exprs.all, melt(nsa)[, c(groups, getMapping(nsa, 'primerid'))])
+
+##   lapp <- lapply(exprs.split, function(x){
+##     out <- Mclust(x, G=1:2, modelNames='V', prior=priorControl(shrinkage=.03, mean=means, scale=scales))
+##     print(out$G)
+##     if(out$G==1){
+##       print(out$param$mean)
+##     }
+##     out
+##   })
+  
+## })
+
 setAs('FluidigmAssay', 'NanoStringAssay', function(from)  new("NanoStringAssay",env=from@env,mapping=addMapping(from@mapping,list(ncells=NULL)),id=from@id, wellKey=from@wellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
