@@ -104,7 +104,7 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   }
   
   rcclist<-readNanoStringLanes(rccfiles);
-  rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
+  if(!is.null(keyfile)) rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
   suppressWarnings(
     dataframe<-do.call(rbind,lapply(1:length(rcclist),function(i){
     cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
@@ -146,17 +146,19 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   return(sc)
 }
 
-## ##' Estimate thresholds for positive expression
-## ##'
-## ##' Estimates per-gene x unit thresholds for positive expression and truncates values below this threshold
-## ##' Uncertain values (in terms of posterior probability of membership) can be set to NA or rounded left or right
-## ##' Thresholds are estimated using a Gaussian mixture model with prior supplied by population estimates.
-## ##' @param nsa NanostringAssay object
-## ##' @param groups groups to apply thresholding
-## ##' @param thresholds data.frame of thresholds  of groups x genes user may specify
-## ##' @param posteriorprob Min posterior probability of cluster membership for an observation to be truncated 
-## ##' @param clip Should values with uncertain posterior probs be clipped 
-## ##' @return modifies nsa in place
+#' Estimate thresholds for positive expression
+#'
+#' Estimates per-gene x unit thresholds for positive expression and truncates values below this threshold
+#' Uncertain values (in terms of posterior probability of membership) can be set to NA or rounded left or right
+#' Thresholds are estimated using a Gaussian mixture model with prior supplied by population estimates.
+#' @name threshold
+#' @param nsa NanostringAssay object
+#' @param groups groups to apply thresholding
+#' @param thresholds data.frame of thresholds  of groups x genes user may specify
+#' @param posteriorprob Min posterior probability of cluster membership for an observation to be truncated 
+#' @param clip Should values with uncertain posterior probs be clipped 
+#' @return modifies nsa in place
+NULL
 ## setMethod('threshold', signature='NanostringAssay', function(nsa, groups, thresholds, posteriorprob, clip=c('left', 'right', 'NA'){
 ##   exprs.all <- log2(melt(nsa)[, getMapping(nsa, 'raw')]+1)
 ##   out <- Mclust(exprs.all, G=1:3, modelNames='V')
