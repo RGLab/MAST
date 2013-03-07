@@ -94,15 +94,17 @@ NULL
 ##' row and column attributes and the values from the rectangular array
 ##' 
 ##' 
-##' @docType methods
-##' @rdname melt-methods
+##' @rdname melt
 ##' @keywords transformation
 ##' @importFrom reshape melt
-##' @exportMethod melt
-setGeneric("melt",function(data,...){
-  standardGeneric("melt")
-  })
-
+##' @S3method melt SingleCellAssay
+melt.SingleCellAssay<-function(data,...){
+  data@env$data
+}
+#setGeneric("melt",function(data,...){
+#standardGeneric("melt")
+#  UseMethod(generic="melt",data)
+#  },useAsDefault=reshape::melt)
 
 ##' Evaluate an expression (returning a \code{logical} vector in the context of
 ##' \code{x}
@@ -196,10 +198,11 @@ setMethod('fData', 'SingleCellAssay', function(object) pData(object@featureData)
 ##' @exportMethod featureData
 setMethod('featureData', 'SingleCellAssay', function(object)  object@featureData)
 
-##' @rdname melt-methods
+##' @rdname melt
 ##' @details \code{signature(data="SingleCellAssay")}: return a \code{data.frame}, which contains a melted version of \code{data}.
 ##' @aliases melt,SingleCellAssay-method
-setMethod("melt","SingleCellAssay",function(data, ...) data@env$data )
+##' @exportMethod melt
+setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 
 ##' @name [[
@@ -355,7 +358,7 @@ setMethod('split', signature(x='SingleCellAssay', f='ANY', drop='ANY'), function
 ##'Combine two SingleCellAssay or derived classes
 ##'
 ##' combines two single cell assays provided they share a common mapping
-##' @TODO combining based on a common mapping may be too restrictive. This may change depending on needs.
+##' TODO combining based on a common mapping may be too restrictive. This may change depending on needs.
 ##' @importMethodsFrom BiocGenerics combine
 ##' @exportMethod combine
 ##' @aliases combine,SingleCellAssay,SingleCellAssay-method

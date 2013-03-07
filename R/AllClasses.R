@@ -1,6 +1,5 @@
 ##' @import Biobase
 ##' @import BiocGenerics
-##' @import data.table
 ##' @importFrom plyr rbind.fill
 
 NULL
@@ -533,6 +532,7 @@ FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, gene
 ##' Constructs a SCASet
 ##'
 ##' An SCASet is a list of SingleCellAssays or objects inheriting from SingleCellAssay. The type of constructor called is determined by the value of contentClass, which should be the class of the SCA inheriting object contained in this SCASet. Both the class and the constructor should exist and have the same name. The code dynamically looks to see if the a function with the same name exists, and ASSUMES it is the constructor for the class.
+##' ##' ##' TODO SCASet constructor should perhaps take a SingleCellAssay class or FluidigmClass rather than a dataframe. Then we can learn the class type for construction.
 ##' @title SCASet constructor
 ##' @param dataframe flat data.frame ala SingleCellAssay
 ##' @param splitby either a character vector naming columns or a factor or a list of factors used to split dataframe into SingleCellAssays
@@ -545,8 +545,7 @@ FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, gene
 ##' @note The dynamic lookup of the constructor could be made more robust. 
 ##' @aliases SCASet
 ##' @rdname SCAset-methods
-##' @export
-##' @TODO SCASet constructor should perhaps take a SingleCellAssay class or FluidigmClass rather than a dataframe. Then we can learn the class type for construction.
+##' @export 
 SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,contentClass="SingleCellAssay",...){
   if(is.character(splitby) && all(splitby %in% names(dataframe))){
   spl<-split(dataframe,dataframe[, splitby])

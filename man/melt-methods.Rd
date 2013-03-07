@@ -1,8 +1,12 @@
 \docType{methods}
-\name{melt}
+\name{melt.SingleCellAssay}
 \alias{melt}
 \alias{melt,SingleCellAssay-method}
+\alias{melt.SingleCellAssay}
 \title{Melt a rectangular array}
+\usage{
+  melt.SingleCellAssay(data, ...)
+}
 \arguments{
   \item{data}{A rectangular array, with attributes attached
   to its rows and columns}

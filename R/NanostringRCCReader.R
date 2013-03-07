@@ -30,6 +30,7 @@ readNanoStringLanes<-function(x){
 ##' Read a section of a Nanostring RCC file
 ##'
 ##' The section is surrounded by <type> </type>
+##' @rdname readSection
 ##' @param x character vector of lines from RCC file, newlines stripped
 ##' @param file name 
 ##' @param type the section of the file to be read in
@@ -95,6 +96,7 @@ setClass('NanoStringAssay', contains='FluidigmAssay', prototype=prototype(mapNam
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
+##' @import data.table
 ##' @export NanoStringAssay
 NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, post.process.function=NULL,...){
   mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap)
@@ -112,7 +114,9 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
     #cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
     rcclist[[i]]<-data.table(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
   })
-  dataframe<-do.call(rbind,rcclist)
+  
+  #the explicit call to .rbind.data.table is necessary to resolve even though it's imported.
+  dataframe<-do.call(data.table:::.rbind.data.table,rcclist)
   ## dataframe <- lapply(dataframe, function(col){
   ##   suppressWarnings(numTry <- as.numeric(col))
   ##   ## non-numeric character vectors return NA
