@@ -47,6 +47,8 @@ if(is.na(si) || is.na(ei) || ei<si){
   section<-read.csv(textConnection(x[(si+1):(ei-1)]),...)
 if(recast){
   wide <- data.frame(t(section), stringsAsFactors=FALSE)[-1,]
+  #wide <- data.table(t(section))[-1L,]
+  #setnames(wide,old=colnames(wide),new=t(section)[1,])
   names(wide) <- t(section)[1,]
 } else{
   wide <- section
@@ -60,10 +62,10 @@ if(recast){
 #'@param rcc is a list returned from readNanoStringLanes
 #'@param file is a character vector name of the key file
 #'@return mapped rcc list
+#'@importFrom reshape rename
 #'@export
-#' @importFrom reshape rename
 mergeWithKeyFile<-function(rcc,file){
-  key<-rename(read.csv(file,header=FALSE),c("V1"="Name","V2"="GeneID"))
+  key<-data.frame(rename(read.csv(file,header=FALSE),c("V1"="Name","V2"="GeneID")))
   return(lapply(rcc,function(x){x$code_summary<-merge(x$code_summary,key);x}))
 }
  
@@ -106,10 +108,11 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   rcclist<-readNanoStringLanes(rccfiles);
   if(!is.null(keyfile)) rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
   suppressWarnings(
-    dataframe<-do.call(rbind,lapply(1:length(rcclist),function(i){
-    cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
-  }))
-    )
+    for(i in 1:length(rcclist)){
+    #cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
+    rcclist[[i]]<-data.table(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
+  })
+  dataframe<-do.call(rbind,rcclist)
   ## dataframe <- lapply(dataframe, function(col){
   ##   suppressWarnings(numTry <- as.numeric(col))
   ##   ## non-numeric character vectors return NA

@@ -1,5 +1,6 @@
 ##' @import Biobase
 ##' @import BiocGenerics
+##' @import data.table
 ##' @importFrom plyr rbind.fill
 
 NULL
@@ -450,14 +451,14 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   ##check if geneid exists in dataframe
   ##check if measurement exists in dataframe
   
-  cellCounts <- table(do.call(paste, dataframe[,getMapping(mapping,"idvars")[[1]], drop=FALSE]))
+  cellCounts <- table(do.call(paste, c(dataframe[,getMapping(mapping,"idvars")[[1]], drop=FALSE],sep=":")))
   incomplete <- !all(cellCounts == cellCounts[1])
   
   if(incomplete){
     message("dataframe appears incomplete, attempting to complete it with NAs")
     skeleton <- expand.grid.df(unique(dataframe[,getMapping(mapping,"featurevars")[[1]], drop=FALSE]), unique(dataframe[, getMapping(mapping,"cellvars")[[1]], drop=FALSE]))
     dataframe <- merge(skeleton, dataframe, all.x=TRUE, by=c(getMapping(mapping,"featurevars")[[1]], getMapping(mapping,"cellvars")[[1]]))
-    cellCounts <- table(do.call(paste, dataframe[,getMapping(mapping,"idvars")[[1]]]))
+    cellCounts <- table(do.call(paste, c(dataframe[,getMapping(mapping,"idvars")[[1]]],sep=":"))) #changed names
   }
 
    primerCounts <- table(do.call(paste, dataframe[,getMapping(mapping,"primerid")[[1]], drop=FALSE]))
@@ -469,7 +470,9 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   dataframe <- dataframe[ord,]
   assign("data",dataframe,envir=env)
   #wellKey <- seq_along(cellCounts)
-  wellKey <- sapply(names(cellCounts),digest)
+  #use the names rather than a hash
+  #wellKey <- sapply(names(cellCounts),digest)
+  wellKey<-names(cellCounts)
   env$data$`__wellKey` <- rep(wellKey, times=cellCounts[1])
   protoassay <- new("SingleCellAssay",env=env,mapping=mapping,id=id,wellKey=wellKey)
   
