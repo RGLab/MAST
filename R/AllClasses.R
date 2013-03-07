@@ -373,6 +373,11 @@ setClass("SCASet",
            return(TRUE)
          })
 
+#creates a new column called primerid
+.mkunique<-function(x,G){
+  cbind(x,primerid=make.unique(as.character(get(G,x))))
+}
+
 
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
 ##'
@@ -403,14 +408,10 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   #if geneid == primerid make a new primerid column ensuring it is unique
   if(!(is.null(geneid)&is.null(primerid))){
    if((geneid==primerid)){
-     #creates a new column called primerid
-     mkunique<-function(x,G){
-       cbind(x,primerid=make.unique(as.character(get(G,x))))
-     }
-     dataframe<-ddply(dataframe,idvars,mkunique,G=geneid)
+     dataframe<-ddply(dataframe,idvars,.mkunique,G=geneid)
      primerid<-"primerid"
    }else{
-     dataframe<-ddply(dataframe,idvars,mkunique,G=primerid)
+     dataframe<-ddply(dataframe,idvars,.mkunique,G=primerid)
    }
   }
   env<-new.env()
