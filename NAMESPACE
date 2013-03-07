@@ -1,6 +1,7 @@
 export(.isValidNamedList)
 export("[")
 export("[[")
+export(combine_recurse)
 export(computeEtFromCt)
 export(condmean)
 export(expavg)

@@ -12,3 +12,18 @@
 computeEtFromCt<-function(df,column='Ct',Cmax=40){
   within.data.frame(df, {Et <- Cmax-get(column); Et <- ifelse(is.na(Et), 0, Et)})
 }
+
+#'Recursive combine
+#'
+#'Combines single cell assays recursively
+#'@param dfs is a list of single-cell assays from an SCASet
+#'@export
+combine_recurse<-function (dfs=NULL, ...)
+{
+  if (length(dfs) == 2) {
+    combine(dfs[[1]], y=dfs[[2]])
+  }
+  else {
+    combine(dfs[[1]], Recall(dfs[-1]))
+  }
+}
