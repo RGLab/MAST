@@ -90,7 +90,7 @@ apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 ##' @importFrom reshape cast
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
-  if(!(inherits(singleCellRef, 'SingleCellAssay') && inherits(singleCellcomp, 'SingleCellAssay'))){
+  if(!(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))){
     stop("singleCellRef and singleCellComp should be SingleCellAssay objects")
   }
   scL <- list(singleCellRef, singleCellcomp)
