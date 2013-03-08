@@ -230,13 +230,6 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   } else{
    scout <- filtered
   }
-    #if filt_control$filter==TRUE & apply_filter==FALSE
-    #then rename the retured rows using the wellKey mapping
-    ## if(filt_control$filter && !apply_filter){
-    ##   wk<-as.list(names(getwellKey(sc)))
-    ##   names(wk)<-getwellKey(sc)
-    ##   rownames(scout)<-data.frame(idvars=do.call(rbind,wk[rownames(scout)]))[,1]
-    ## }
   scout
 }
 

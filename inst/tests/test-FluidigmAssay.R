@@ -9,4 +9,6 @@ ff2 <- filter(fd.small, groups='Number.of.Cells', filt_control=list(nOutlier=1, 
 expect_true(nrow(ff2)<nrow(ff))
 ff2 <- filter(fd.small, groups='Number.of.Cells', filt_control=list(nOutlier=1, sigmaContinuous=3, filter=FALSE), apply_filter=TRUE)
 expect_that(ff2, is_a('list'))
+ff3 <- filter(fd.small, apply_filter=FALSE)
+expect_that(ff3, is_a('dataframe'))
 })
