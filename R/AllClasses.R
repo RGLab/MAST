@@ -406,12 +406,18 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   ## Add pheno key
   ## throw error if idvars isn't disjoint from geneid, probeid
   #if geneid == primerid make a new primerid column ensuring it is unique
+
   if(!(is.null(geneid)&is.null(primerid))){
+	#creates a new column called primerid
+     mkunique<-function(x,G){
+       cbind(x,primerid=make.unique(as.character(get(G,x))))
+     }
    if((geneid==primerid)){
-     dataframe<-ddply(dataframe,idvars,.mkunique,G=geneid)
+     dataframe<-ddply(dataframe,idvars,mkunique,G=geneid)
      primerid<-"primerid"
    }else{
-     dataframe<-ddply(dataframe,idvars,.mkunique,G=primerid)
+     dataframe<-ddply(dataframe,idvars,mkunique,G=primerid)
+     primerid<-"primerid"
    }
   }
   env<-new.env()
