@@ -163,7 +163,7 @@ setMethod('ncol', 'SingleCellAssay', function(x) {
 ##' @rdname nrow-methods
 ##' @aliases nrow,SingleCellAssay-method
 ##' @keywords accessors
-setMethod('nrow', 'SingleCellAssay', function(x) length(getwellKey(x)))
+setMethod('nrow', 'SingleCellAssay', function(x) nrow(unique(melt(x)[,eval(todt(getwellKey(x)))])))
 
 ncells <- function(sc){
   warning('called obsolete ncells, use nrow')
