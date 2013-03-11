@@ -18,8 +18,9 @@ readNanoStringLanes<-function(x){
   lanes<-suppressWarnings(foreach(i=1:length(x),.combine=c) %dopar% {
     R<-NULL
     this.file<-x[i]
-    con<-suppressWarnings(
-    fread(this.file,sep="\n",sep2=",",header=FALSE,autostart=1)   
+    con<-suppressWarnings({
+    capture.output(r<-fread(this.file,sep="\n",sep2=",",header=FALSE,autostart=1,verbose=FALSE))
+    r}
     )
     #    con<-str_trim(readLines(this.file))
     R$header<-.readSection(con, this.file, 'Header', header=FALSE, as.is=TRUE)
@@ -86,7 +87,8 @@ readNanoStringLanes<-function(x){
 #'@importFrom reshape rename
 #'@export
 mergeWithKeyFile<-function(rcc,file){
-  key<-setnames(fread(file,header=F),c("V1","V2"),c("Name","GeneID"))
+  capture.output(f<-fread(file,header=F))
+  key<-setnames(f,c("V1","V2"),c("Name","GeneID"))
   setkey(key,"Name")
   for(i in 1:length(rcc)){
     setkey(rcc[[i]]$code_summary,"Name")
@@ -134,7 +136,7 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   
   rcclist<-readNanoStringLanes(rccfiles);
   if(!is.null(keyfile)) rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
-  suppressWarnings(
+  suppressMessages(
     for(i in 1:length(rcclist)){
       #cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
       rcclist[[i]]<-data.table(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
