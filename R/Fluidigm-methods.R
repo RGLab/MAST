@@ -211,11 +211,14 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
       if(apply_filter && filt_control$filter){
         ## list of SingleCellAssays
         out <- .SingleCellAssayCombine(lapp)
+        #don't need to do this anymore since data.tables preserve order and have nice names
       } else if(filt_control$filter){
-        out <- do.call(rbind, lapp)     #Fix order, argh
+        out <- do.call(rbind, lapp)
+        rownames(out)<-do.call(c,lapply(lapp,rownames))
         scKey <- split(getwellKey(sc), cData(sc)[,groups])
-        scKeybound <- do.call(c, scKey)
-        out <- out[match(getwellKey(sc), scKeybound),] #test this
+        scKeybound <- do.call(rbind, scKey)
+        #out <- out[match(getwellKey(sc), scKeybound),] #test this
+        out<-out[match(as.matrix(getwellKey(sc)),as.matrix(scKeybound)),]
       } else{                           #I'd reckon it's an unapplied filterset, we'll just keep it as a list
         out <- lapp
       }
@@ -232,11 +235,11 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   }
     #if filt_control$filter==TRUE & apply_filter==FALSE
     #then rename the retured rows using the wellKey mapping
-    if(filt_control$filter && !apply_filter){
-      wk<-as.list(names(getwellKey(sc)))
-      names(wk)<-getwellKey(sc)
-      rownames(scout)<-data.frame(idvars=do.call(rbind,wk[rownames(scout)]))[,1]
-    }
+    #if(filt_control$filter && !apply_filter){
+    #  wk<-as.list(names(getwellKey(sc)))
+    #  names(wk)<-getwellKey(sc)
+    #  rownames(scout)<-data.frame(idvars=do.call(rbind,wk[rownames(scout)]))[,1]
+    #}
   scout
 }
 

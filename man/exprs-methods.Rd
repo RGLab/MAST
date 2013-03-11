@@ -9,6 +9,9 @@
 }
 \value{
   numeric matrix
+
+  a \code{matrix} of measurment values with wells on the
+  rows and features on the columns
 }
 \description{
   Get or set a matrix of measurement values in a
