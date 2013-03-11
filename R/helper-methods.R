@@ -13,6 +13,15 @@ computeEtFromCt<-function(df,column='Ct',Cmax=40){
   within.data.frame(df, {Et <- Cmax-get(column); Et <- ifelse(is.na(Et), 0, Et)})
 }
 
+#'Convert a pair of character names to a list that can be placed into a data.table
+#'
+#'@param v a character vector
+#'@return a call that can be evaluated
+#'@export
+todt<-function(v){
+  as.call(c(list,sapply(v,as.name)))
+}
+
 #'Recursive combine
 #'
 #'Combines single cell assays recursively
