@@ -409,6 +409,13 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   if(!inherits(dataframe,"data.table")){
     dataframe<-data.table(dataframe)
   }
+  #this ensures that our dataframe is consistently ordered when we cbind things to it with the by=idvars argumens
+  if(!is.null(idvars)){
+    setkeyv(dataframe,idvars)
+  }else if(!is.null(mapping)){
+    idvars<-getMapping(mapping,"idvars")[[1]]
+    setkeyv(dataframe,idvars)
+  }
   if(!(is.null(geneid)&is.null(primerid))){
    if((geneid==primerid)){
      #creates a new column called primerid

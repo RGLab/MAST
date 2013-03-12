@@ -12,3 +12,23 @@ expect_that(ff2, is_a('list'))
 ff3 <- filter(fd.small, apply_filter=FALSE)
 expect_that(ff3, is_a('data.frame'))
 })
+
+context('Testing construction of reordered SingleCellAssay')
+test_that('Can construct reorderd Assay',{
+data(vbeta)
+vbeta <- computeEtFromCt(vbeta)
+# okay when data is ordered by wells, primers
+vbeta.sca <- SingleCellAssay(vbeta, idvars = c("Subject.ID", "Chip.Number", "Well"),
+                             primerid = "Gene", measurement = "Et", geneid = "Gene",
+                             cellvars = c("Number.of.Cells", "Population"), phenovars = c("Stim.Condition",
+                                                                                          "Time"), id = "vbeta all")
+expect_that(vbeta.sca,is_a("SingleCellAssay"))
+# fails after data is ordered by primers,wells
+reordering<-eval(as.call(c(order,as.list(vbeta[,c("Gene","Subject.ID", "Chip.Number", "Well")]))))
+vbeta.reordered=vbeta[reordering,]
+vbeta.reord.sca <- SingleCellAssay(vbeta.reordered, idvars = c("Subject.ID", "Chip.Number", "Well"),
+                                   primerid = "Gene", measurement = "Et", geneid = "Gene",
+                                   cellvars = c("Number.of.Cells", "Population"), phenovars = c("Stim.Condition",
+                                                                                                "Time"), id = "vbeta all reordered")
+expect_that(vbeta.reord.sca,is_a("SingleCellAssay"))
+})
