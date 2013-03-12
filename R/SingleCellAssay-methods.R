@@ -216,6 +216,9 @@ try({ #this is needed to work around a bug in R that prevents redefining [[.
 setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=FALSE, ...){
 ### index by numeric index or boolean.
   wk<-getwellKey(x)
+  if(missing(i)){
+	i<-1:nrow(x)
+  }
   if(inherits(i,"integer")|inherits(i,"logical")|inherits(i,"numeric")){
     if(inherits(i,"logical")){
       i<-which(i)
