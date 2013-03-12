@@ -22,6 +22,8 @@ Imports:
     digest,
     ggplot2,
     stringr
+Depends:
+    data.table
 Suggests:
     parallel
 Description: Core data structures and methods for handling single cell assay

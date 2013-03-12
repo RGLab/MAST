@@ -247,6 +247,15 @@ filtDiffs <- function(mysc, groups, filt_control=NULL){
   print(p)
 }
 
+#'Burden of filtering
+#'
+#'what proportions of wells are filtered due to different criteria
+#'
+#'@param sc SingleCellAssay or derived class
+#'@param gropus the groups by which to filter
+#'@param byGroup logical indicating whether to filter by group
+#'@param filt_control a list of control parameters.
+#'@export
 burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
   checkGroups(sc, groups)
   conditionby <- NULL

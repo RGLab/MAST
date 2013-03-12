@@ -43,10 +43,12 @@ if(!missing(groups) && !is.null(groups)){
 ##' @param sc SingleCellAssay
 ##' @param na.rm should NAs be removed, or carried through?
 ##' @return vector of proportions
+##' @export
 freq <- function(sc, na.rm=TRUE){
  stopifnot(inherits(sc, 'SingleCellAssay'))
  apply(exprs(sc)>0, 2, mean, na.rm=na.rm)
 }
+
 ##' Report the mean et value for each gene
 ##'
 ##' NAs are always removed

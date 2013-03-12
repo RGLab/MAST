@@ -1,8 +1,8 @@
 \docType{methods}
 \name{getwellKey-method}
 \alias{getwellKey}
-\alias{getwellKey,SingleCellAssay-method}
 \alias{getwellKey-method}
+\alias{getwellKey,SingleCellAssay-method}
 \title{getwellKey}
 \arguments{
   \item{sc}{An object with a \code{wellKey}}
