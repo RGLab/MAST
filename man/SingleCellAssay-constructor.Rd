@@ -10,7 +10,7 @@
     featurevars = NULL, phenovars = NULL, ...)
 }
 \arguments{
-  \item{dataframe}{A 'flattened' data.frame containing
+  \item{dataframe}{A 'flattened' data.table containing
   columns giving cell and feature identifiers and a
   measurement column}
 

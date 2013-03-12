@@ -137,7 +137,7 @@ setGeneric('copy', function(object) standardGeneric('copy'))
 
 ##' @rdname getwellKey-methods
 ##' @aliases getwellKey,SingleCellAssay-method
-setMethod('getwellKey', 'SingleCellAssay', function(sc) sc@wellKey)
+setMethod('getwellKey', 'SingleCellAssay', function(sc) {d<-data.table(unique(as.matrix(melt(sc)[,eval(SingleCellAssay:::todt(sc@wellKey))])));setkeyv(d,"__wellKey");d})
 
 
 nprimer <- function(sc){
@@ -163,7 +163,7 @@ setMethod('ncol', 'SingleCellAssay', function(x) {
 ##' @rdname nrow-methods
 ##' @aliases nrow,SingleCellAssay-method
 ##' @keywords accessors
-setMethod('nrow', 'SingleCellAssay', function(x) length(getwellKey(x)))
+setMethod('nrow', 'SingleCellAssay', function(x) nrow(getwellKey(x)))
 
 ncells <- function(sc){
   warning('called obsolete ncells, use nrow')
@@ -215,44 +215,64 @@ try({ #this is needed to work around a bug in R that prevents redefining [[.
   ## see http://r.789695.n4.nabble.com/package-slot-of-generic-quot-quot-and-missing-env-target-td4634152.html
 setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=FALSE, ...){
 ### index by numeric index or boolean.
+  wk<-getwellKey(x)
   if(inherits(i,"integer")|inherits(i,"logical")|inherits(i,"numeric")){
-    selectedKeys <- getwellKey(x)[i]
-  }else if(!all(i%in%getwellKey(x))){
-    stop("wellKeys not found in SingleCellAssay",i[!i%in%getwellKey(x)]);
+    if(inherits(i,"logical")){
+      i<-which(i)
+    }
+    if(any(i>nrow(wk))){
+      stop("well index out of bounds")
+    }
+    selectedKeys <- wk[i]
+    #selected<-melt(x)[i]
+  }else if(!all(i%in%wk)){
+    stop("wellKeys not found in SingleCellAssay",i[!i%in%wk]);
   }
-  meltKeys <- melt(x)[,"__wellKey"] %in% selectedKeys
-  selectedFeatures<-rep(TRUE,length(meltKeys));
+  m<-melt(x)
+  setkeyv(m,"__wellKey")
+  setkeyv(selectedKeys,"__wellKey")
+  selectedFeatures<-m[selectedKeys]
+  #meltKeys <- melt(x)[,"__wellKey",] %in% selectedKeys
+  #selectedFeatures<-rep(TRUE,length(meltKeys));
   if(!missing(j)){
     if(inherits(j,"integer")|inherits(j,"numeric")|inherits(j,"logical")){      
-      pk<-unique(melt(x)[,getMapping(x,"primerid")])
-      if(any(j>length(pk))){
+      setkeyv(m,getMapping(x,"primerid"))
+      pk<-unique(m[,key(m),with=FALSE])
+      #pk<-unique(melt(x)[,getMapping(x,"primerid")])
+      if(any(j>nrow(pk))){
         stop("feature index out of bounds")
       }else{
         pk<-pk[j]
-        selectedFeatures<-melt(x)[,getMapping(x,"primerid")]%in%pk
+        setkeyv(selectedFeatures,getMapping(x,"primerid"))
+        selectedFeatures<-selectedFeatures[pk]
+        #selectedFeatures<-melt(x)[,getMapping(x,"primerid")]%in%pk
       }
     }else if(inherits(j,"character")){
-      pk<-unique(melt(x)[,getMapping(x,"primerid")])
-      if(!(all(j%in%pk))){
-        stop("feature names \n",paste(j[!j%in%pk],collapse=" "), "\n not found!");
+      setkeyv(m,getMapping(x,"primerid"))
+      pk<-unique(m[,key(m),with=FALSE])
+      #pk<-unique(melt(x)[,getMapping(x,"primerid")])
+      if(!(all(j%in%as.matrix(pk)))){
+        stop("feature names \n",paste(j[!j%in%as.matrix(pk)],collapse=" "), "\n not found!");
       }
-      pk<-pk[pk%in%j]
-      selectedFeatures<-melt(x)[,getMapping(x,"primerid")]%in%pk
+      pk<-pk[primerid%in%j] #note this assumes the primer key is one column and a character.. this has always been the case I'm just noting it here.
+      setkeyv(selectedFeatures,getMapping(x,"primerid"))
+      selectedFeatures<-selectedFeatures[pk]
     }
     if(!missing(j)){
       newfdf <- featureData(x)[j,]
     }
   }
-  meltKeys<-meltKeys&selectedFeatures
+  #meltKeys<-meltKeys&selectedFeatures
   env <- new.env()
-  env$data <-melt(x)[meltKeys,]
+  #env$data <-melt(x)[meltKeys,]
+  env$data<-selectedFeatures
   ##TODO: update phenodata
   newcdf <- cellData(x)[i,]
   if(!exists("newfdf")){
     newfdf<-x@featureData
   }
   cls<-class(x)[[1]]
-  new(cls, env=env, mapping=x@mapping, id=x@id, wellKey=selectedKeys, featureData=newfdf, cellData=newcdf)
+  new(cls, env=env, mapping=x@mapping, id=x@id, wellKey="__wellKey", featureData=newfdf, cellData=newcdf)
 }) }, silent=TRUE)
 
 
@@ -267,13 +287,14 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
 ##' @rdname exprs-methods
 ##' @aliases exprs,SingleCellAssay-method
 ##' @importMethodsFrom Biobase exprs
+##' @return a \code{matrix} of measurment values with wells on the rows and features on the columns
 ##' @export exprs
 setMethod("exprs",signature(object="SingleCellAssay"),function(object){
   nentries <- nrow(melt(object))        
   objrow <- nrow(object)
   objcol <- ifelse(nentries==0, 0, nentries/objrow) #handle case that the SingleCellAssay is empty
-  matrix(melt(object)[,getMapping(object,"measurement")], nrow=objrow, ncol=objcol, 
-         dimnames=list(object@wellKey, unique(melt(object)[, getMapping(object,"primerid")])))
+  matrix(as.matrix(melt(object)[,eval(todt(getMapping(object,"measurement")))]), nrow=objrow, ncol=objcol, 
+         dimnames=list(as.matrix(getwellKey(object)), as.matrix(unique(melt(object)[, eval(todt(getMapping(object,"primerid")))]))))
 })
 
 ##' @importMethodsFrom Biobase "pData<-"
@@ -308,9 +329,16 @@ setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
   e <- substitute(thesubset)
   asBool <- try(eval(e, cData(x), parent.frame(n=2)), silent=TRUE)
   if(inherits(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
-                  
-  ## FIXME: makes the stack messy
-  x[[asBool]]
+  #this is a special case of "subset", not of the "[[" method, so..
+  if(length(asBool)==1){
+    if(asBool==TRUE){
+      x 
+    }else{
+      x[[asBool]]
+    }
+  }else{
+    x[[asBool]]
+  }
 })
 
 
@@ -376,7 +404,7 @@ setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), functi
 ##' @rdname copy-methods
 setMethod('copy', 'SingleCellAssay',
           function(object){
-            o2 <- object[[TRUE]]
+            o2 <- object[[1:nrow(object)]]
             o2
           })
 

@@ -382,7 +382,7 @@ setClass("SCASet",
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
 ##'
 ##' This is the constructor for the class. This class intends to ease the analysis of single cell assays, in which multiple, exchangible, cells from an experimental unit (patient, or organism) are assayed along several (or many) dimensions, such as genes. A few examples of this might be Fluidigm gene expression chips, or single cell sequencing experiments.  The chief functionality is to make it easy to keep cellular-level metadata linked to the measurements through \code{cellData} and \code{phenoData}.  There are also subsetting and splitting measures to coerce between a SingleCellAssay, and a \link{SCASet}.
-##' @param dataframe A 'flattened' data.frame containing columns giving cell and feature identifiers and  a measurement column
+##' @param dataframe A 'flattened' data.table containing columns giving cell and feature identifiers and  a measurement column
 ##' @param idvars character vector naming columns that uniquely identify a cell
 ##' @param primerid character vector of length 1 that names the column that identifies what feature (i.e. gene) was measured
 ##' @param measurement character vector of length 1 that names the column containing the measurement 
@@ -406,17 +406,28 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   ## Add pheno key
   ## throw error if idvars isn't disjoint from geneid, probeid
   #if geneid == primerid make a new primerid column ensuring it is unique
-
+  if(!inherits(dataframe,"data.table")){
+    dataframe<-data.table(dataframe)
+  }
   if(!(is.null(geneid)&is.null(primerid))){
-	#creates a new column called primerid
-     mkunique<-function(x,G){
-       cbind(x,primerid=make.unique(as.character(get(G,x))))
-     }
    if((geneid==primerid)){
-     dataframe<-ddply(dataframe,idvars,mkunique,G=geneid)
+     #creates a new column called primerid
+     #mkunique<-function(x,G){
+    #   cbind(x,primerid=make.unique(as.character(get(G,x))))
+    # }
+     gid<-as.name(geneid)
+     suppressWarnings(
+       dataframe$primerid<-dataframe[,list(primerid=make.unique(as.character((eval(gid,envir=.SD))))),by=idvars]$primerid
+     )
+     #dataframe<-ddply(dataframe,idvars,mkunique,G=geneid)
      primerid<-"primerid"
    }else{
-     dataframe<-ddply(dataframe,idvars,mkunique,G=primerid)
+     #mkunique<-function(x,G){
+      # cbind(x,primerid=make.unique(as.character(get(G,x))))
+     #}
+     gid<-as.name(primerid)
+     dataframe$primerid<-dataframe[,list(primerid=make.unique(as.character((eval(gid,envir=.SD))))),by=idvars]$primerid
+     #dataframe<-ddply(dataframe,idvars,mkunique,G=primerid)
      primerid<-"primerid"
    }
   }
@@ -442,55 +453,65 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   ##        cellvars <- unique(c(cellvars, idvars, phenovars))
   ##        featurevars <- unique(c(featurevars, primerid, geneid))
   ##        })
-  
     if(mappingIntersection(mapping,"cellvars","featurevars")>0)
       stop("'cellvars', 'idvars' must be disjoint from 'featurevars', 'primerid', 'geneid'")
     if(any(c(mappingIntersection(mapping,"phenovars","featurevars"),mappingIntersection(mapping,"phenovars","primerid"),mappingIntersection(mapping,"phenovars","geneid"))>0))
       stop("'phenovars' must be disjoint from 'featurevars', 'primerid', 'geneid'")
-   if(nrow(unique(dataframe[, getMapping(mapping,"featurevars")[[1]], drop=FALSE])) != nrow((unique(dataframe[, getMapping(mapping,"primerid")[[1]], drop=FALSE]))))
+  
+    nuniquef<-nrow(unique(dataframe[,eval(todt(getMapping(mapping,"featurevars")[[1]]))]))
+    nuniquep<-nrow(unique(dataframe[,eval(todt(getMapping(mapping,"primerid")[[1]]))]))
+    nuniquec<-nrow(unique(dataframe[,eval(todt(getMapping(mapping,"cellvars")[[1]]))]))
+    nuniquei<-nrow(unique(dataframe[,eval(todt(getMapping(mapping,"idvars")[[1]]))]))
+  
+   if(nuniquef != nuniquep)
        stop("'featurevars' must be keyed by 'primerid'")
-   if(nrow(unique(dataframe[, getMapping(mapping,"cellvars")[[1]], drop=FALSE])) != nrow((unique(dataframe[, getMapping(mapping,"idvars")[[1]], drop=FALSE]))))
+   if(nuniquec != nuniquei)
        stop("'cellvars' must be keyed by 'idvars'")
   
   ##check if idvars exists in dataframe
   ##check if probeid exists in dataframe
   ##check if geneid exists in dataframe
   ##check if measurement exists in dataframe
-  
-  cellCounts <- table(do.call(paste, c(dataframe[,getMapping(mapping,"idvars")[[1]], drop=FALSE],sep=":")))
-  incomplete <- !all(cellCounts == cellCounts[1])
-  
+  #cellCounts <- table(do.call(paste, c(dataframe[,eval(todt(getMapping(mapping,"idvars")[[1]]))],sep=":")))
+  #incomplete <- !all(cellCounts == cellCounts[1])
+  cellCount<-dataframe[,list(cellCount=nrow(.SD)),eval(todt(getMapping(mapping,"idvars")[[1]]))]$cellCount
+    incomplete<-!all(abs(cellCount-mean(cellCount))<=0)
   if(incomplete){
     message("dataframe appears incomplete, attempting to complete it with NAs")
-    skeleton <- expand.grid.df(unique(dataframe[,getMapping(mapping,"featurevars")[[1]], drop=FALSE]), unique(dataframe[, getMapping(mapping,"cellvars")[[1]], drop=FALSE]))
+    skeleton <- data.table(expand.grid.df(unique(dataframe[,eval(todt(getMapping(mapping,"featurevars")[[1]]))]), unique(dataframe[, eval(todt(getMapping(mapping,"cellvars")[[1]]))])))
     dataframe <- merge(skeleton, dataframe, all.x=TRUE, by=c(getMapping(mapping,"featurevars")[[1]], getMapping(mapping,"cellvars")[[1]]))
-    cellCounts <- table(do.call(paste, c(dataframe[,getMapping(mapping,"idvars")[[1]]],sep=":"))) #changed names
+#    cellCounts <- table(do.call(paste, c(dataframe[,eval(todt(getMapping(mapping,"idvars")[[1]]])),sep=":"))) #changed names
   }
 
-   primerCounts <- table(do.call(paste, dataframe[,getMapping(mapping,"primerid")[[1]], drop=FALSE]))
-  if(!all(primerCounts==primerCounts[1])){
-    stop('Some primers appear more often than others.  Either your data is incomplete or you have duplicate primerid')
+   primerCounts <- dataframe[,list(primerCount=nrow(.SD)),eval(todt(getMapping(mapping,"primerid")[[1]]))]$primerCount
+  #test only if length > 1
+  if(!all(abs(primerCounts-mean(primerCounts))<=0)){
+      stop('Some primers appear more often than others.  Either your data is incomplete or you have duplicate primerid')
   }
   
-  ord <- do.call(order, dataframe[, c(getMapping(mapping,"primerid")[[1]], getMapping(mapping,"idvars")[[1]])])
-  dataframe <- dataframe[ord,]
+  setkeyv(dataframe,c(getMapping(mapping,"primerid")[[1]], getMapping(mapping,"idvars")[[1]]))
+  #dataframe <- dataframe[ord,]
   assign("data",dataframe,envir=env)
   #wellKey <- seq_along(cellCounts)
   #use the names rather than a hash
   #wellKey <- sapply(names(cellCounts),digest)
-  wellKey<-names(cellCounts)
-  env$data$`__wellKey` <- rep(wellKey, times=cellCounts[1])
-  protoassay <- new("SingleCellAssay",env=env,mapping=mapping,id=id,wellKey=wellKey)
+  #cellCounts<-dataframe[,nrow(.SD),eval(todt(getMapping(mapping,"idvars")[[1]]))]
+  #wellKey<-names(cellCounts)
+  #env$data$`__wellKey` <- rep(wellKey, times=cellCounts[1])
+  wkfun<-as.call(c(as.name("paste"),as.list(sapply(getMapping(mapping,"idvars")[[1]],as.name)),sep=":"))
+  dataframe[,`__wellKey`:=eval(wkfun),by=eval(todt(getMapping(mapping,"idvars")[[1]]))]
+  protoassay <- new("SingleCellAssay",env=env,mapping=mapping,id=id,wellKey="__wellKey")#wellKey should be the actual key values?
   
     cell.adf  <- new("AnnotatedDataFrame")
-    pData(cell.adf)<-melt(protoassay)[1:nrow(protoassay), getMapping(mapping,"cellvars")[[1]], drop=FALSE]
-    sampleNames(cell.adf) <- getwellKey(protoassay)
+    #pData(cell.adf)<-melt(protoassay)[1:nrow(protoassay), getMapping(mapping,"cellvars")[[1]], drop=FALSE]
+    pData(cell.adf)<-unique(dataframe[,eval(todt(getMapping(mapping,"cellvars")[[1]]))])#automatically sorted by idvars
+    sampleNames(cell.adf) <- unique(melt(protoassay)[,`__wellKey`,])
 
     ##pheno.adf <- new('AnnotatedDataFrame')
     ##need a phenokey into the melted data frame for this to make sense
     f.adf <- new('AnnotatedDataFrame')
-    pData(f.adf) <- unique(melt(protoassay)[,getMapping(mapping,"featurevars")[[1]], drop=FALSE])
-    sampleNames(f.adf) <- unique(melt(protoassay)[,getMapping(mapping,"primerid")[[1]]])
+    pData(f.adf) <- unique(melt(protoassay)[,eval(todt(getMapping(mapping,"featurevars")[[1]]))])
+    sampleNames(f.adf) <- as.matrix(unique(melt(protoassay)[,eval(todt(getMapping(mapping,"primerid")[[1]]))])[,1,with=FALSE])
     protoassay@cellData<-cell.adf
     protoassay@featureData <- f.adf
     
@@ -504,7 +525,7 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' Constructs a FluidigmAssay object. Differs little from the SingleCellAssay constructor. Only the \code{ncells} parameter is additionally required.
 ##' Mapping argument has been removed for simplicity.
 ##' @title Fluidigm Assay Constructor
-##' @param dataframe A data frame containing the raw data
+##' @param dataframe A data.table containing the raw data
 ##' @param idvars See \code{\link{SingleCellAssay}}
 ##' @param primerid See \code{\link{SingleCellAssay}}
 ##' @param measurement See \code{\link{SingleCellAssay}}
@@ -518,8 +539,10 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
 ##' @export FluidigmAssay
-FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  
+FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+  if(!inherits(dataframe,"data.table")){
+    dataframe<-data.table(dataframe)
+  }
    mapping<-try(get("mapping",list(...)),silent=TRUE)
     if(inherits(mapping,"try-error")){
       #no mapping provided so construct one
@@ -555,7 +578,7 @@ FluidigmAssay<-function(dataframe,idvars,primerid,measurement, ncells=NULL, gene
 ##' @export 
 SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,contentClass="SingleCellAssay",...){
   if(is.character(splitby) && all(splitby %in% names(dataframe))){
-  spl<-split(dataframe,dataframe[, splitby])
+  spl<-split(dataframe,dataframe[, splitby,with=FALSE])
 } else if(is.factor(splitby) || is.list(splitby) || is.character(splitby)){
   spl <- split(dataframe, splitby)
 } else{

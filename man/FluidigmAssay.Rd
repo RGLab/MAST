@@ -2,13 +2,13 @@
 \alias{FluidigmAssay}
 \title{Fluidigm Assay Constructor}
 \usage{
-  FluidigmAssay(dataframe, idvars, primerid, measurement,
-    ncells = NULL, geneid = NULL, id = NULL,
+  FluidigmAssay(dataframe = NULL, idvars, primerid,
+    measurement, ncells = NULL, geneid = NULL, id = NULL,
     cellvars = NULL, featurevars = NULL, phenovars = NULL,
     ...)
 }
 \arguments{
-  \item{dataframe}{A data frame containing the raw data}
+  \item{dataframe}{A data.table containing the raw data}
 
   \item{idvars}{See \code{\link{SingleCellAssay}}}
 
