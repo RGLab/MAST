@@ -25,7 +25,8 @@ Imports:
 Depends:
     data.table
 Suggests:
-    parallel
+    parallel,
+    foreach
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0
