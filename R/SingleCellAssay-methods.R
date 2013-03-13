@@ -238,7 +238,10 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
   #meltKeys <- melt(x)[,"__wellKey",] %in% selectedKeys
   #selectedFeatures<-rep(TRUE,length(meltKeys));
   if(!missing(j)){
-    if(inherits(j,"integer")|inherits(j,"numeric")|inherits(j,"logical")){      
+    if(inherits(j,"integer")|inherits(j,"numeric")|inherits(j,"logical")){
+      if(is.logical(j)){
+        j<-which(j)
+      }
       setkeyv(m,getMapping(x,"primerid"))
       pk<-unique(m[,key(m),with=FALSE])
       #pk<-unique(melt(x)[,getMapping(x,"primerid")])
@@ -253,6 +256,7 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
     }else if(inherits(j,"character")){
       setkeyv(m,getMapping(x,"primerid"))
       pk<-unique(m[,key(m),with=FALSE])
+      J<-which(pk$primerid%in%j)
       #pk<-unique(melt(x)[,getMapping(x,"primerid")])
       if(!(all(j%in%as.matrix(pk)))){
         stop("feature names \n",paste(j[!j%in%as.matrix(pk)],collapse=" "), "\n not found!");
@@ -260,6 +264,7 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
       pk<-pk[primerid%in%j] #note this assumes the primer key is one column and a character.. this has always been the case I'm just noting it here.
       setkeyv(selectedFeatures,getMapping(x,"primerid"))
       selectedFeatures<-selectedFeatures[pk]
+      j<-J
     }
     if(!missing(j)){
       newfdf <- featureData(x)[j,]
@@ -268,6 +273,7 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
   #meltKeys<-meltKeys&selectedFeatures
   env <- new.env()
   #env$data <-melt(x)[meltKeys,]
+  setkeyv(selectedFeatures,getMapping(x,"idvars"))
   env$data<-selectedFeatures
   ##TODO: update phenodata
   newcdf <- cellData(x)[i,]
@@ -293,7 +299,8 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
 ##' @return a \code{matrix} of measurment values with wells on the rows and features on the columns
 ##' @export exprs
 setMethod("exprs",signature(object="SingleCellAssay"),function(object){
-  nentries <- nrow(melt(object))        
+  nentries <- nrow(melt(object))
+  setkeyv(melt(object),c(getMapping(object,"__wellKey"),getMapping(object,"primerid")))
   objrow <- nrow(object)
   objcol <- ifelse(nentries==0, 0, nentries/objrow) #handle case that the SingleCellAssay is empty
   matrix(as.matrix(melt(object)[,eval(todt(getMapping(object,"measurement")))]), nrow=objrow, ncol=objcol, 
