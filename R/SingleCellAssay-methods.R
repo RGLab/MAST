@@ -369,6 +369,15 @@ setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ..
   contentClass<-class(x)
   m<-melt(x)
   mp<-getMapping(x)
+  ###f must be a character naming a cData variable
+  if(!is.character(f)){
+    stop("splitby must be a character naming a cData variable")
+  }
+  if(!f%in%colnames(cData(x))){
+    stop(f," not in cData of x")
+  }
+  setkeyv(m,getMapping(x,"idvars"))
+  f<-factor(get(f,m))
   SCASet(dataframe=m, splitby=f, mapping=mp, contentClass=contentClass,...)
 })
 }, silent=TRUE)
