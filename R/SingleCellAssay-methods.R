@@ -367,7 +367,9 @@ try({
 setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ...){
   ## Split a SingleCellAssay by criteria
   contentClass<-class(x)
-  SCASet(melt(x), splitby=f, mapping=getMapping(x), contentClass=contentClass,...)
+  m<-melt(x)
+  mp<-getMapping(x)
+  SCASet(dataframe=m, splitby=f, mapping=mp, contentClass=contentClass,...)
 })
 }, silent=TRUE)
 

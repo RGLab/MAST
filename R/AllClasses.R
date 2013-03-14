@@ -597,6 +597,9 @@ SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,co
   ## }else{
     
   ## }
+#   if(is.null(primerid)&is.null(idvars)&exists("mapping",list(...))){
+#     mapping<-get("mapping",list(...))
+#   }
   set<-vector("list",length(spl))
   names(set)<-names(spl)
   for(i in seq_along(set)){

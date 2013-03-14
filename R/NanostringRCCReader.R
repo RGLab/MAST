@@ -125,13 +125,12 @@ setClass('NanoStringAssay', contains='FluidigmAssay', prototype=prototype(mapNam
 ##' @author Andrew McDavid and Greg Finak
 ##' @import data.table
 ##' @export NanoStringAssay
-NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, post.process.function=NULL,ltrans=FALSE...){
-  if("mapping"%in%names(match.call())){
-    mapping<-match.call()$mapping
-  }else{
-    mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap)
-  }
+NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, post.process.function=NULL,ltrans=FALSE,...){
   
+    mapping<-try(get("mapping",list(...)),silent=TRUE)
+  if(inherits(mapping,"try-error")){
+    mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap) 
+  }
   #transform the counts and rename the mapping for measurement to the new name
   #TODO fix the duplication of column names in a more reasonable way
   if(!is.null(ncells)){
@@ -149,9 +148,7 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
     if(!is.null(post.process.function)){
       dataframe<-post.process.function(dataframe) 
     }
-  }else if("dataframe"%in%names(match.call())){
-    dataframe<-match.call()$dataframe
-  }else{
+  }else if(inherits(dataframe<-get("dataframe",list(...)),"try-error")){
     stop("must provide either RCC files or a dataframe for NanoStringAssay")
   }
 

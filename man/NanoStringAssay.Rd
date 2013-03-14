@@ -5,7 +5,8 @@
   NanoStringAssay(rccfiles = NULL, keyfile = NULL, idvars,
     primerid, measurement, ncells = NULL, geneid = NULL,
     id = NULL, cellvars = NULL, featurevars = NULL,
-    phenovars = NULL, post.process.function = NULL, ...)
+    phenovars = NULL, post.process.function = NULL,
+    ltrans = FALSE...)
 }
 \arguments{
   \item{rccfiles}{A list of rcc files with full paths}
