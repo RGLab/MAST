@@ -364,7 +364,7 @@ setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
 ##' @name split
 ##' @exportMethod split
 try({
-setMethod('split', signature(x='SingleCellAssay', f='ANY', drop='ANY'), function(x, f, drop=FALSE, ...){
+setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ...){
   ## Split a SingleCellAssay by criteria
   contentClass<-class(x)
   SCASet(melt(x), splitby=f, mapping=getMapping(x), contentClass=contentClass,...)

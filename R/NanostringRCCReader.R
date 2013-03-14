@@ -125,25 +125,37 @@ setClass('NanoStringAssay', contains='FluidigmAssay', prototype=prototype(mapNam
 ##' @author Andrew McDavid and Greg Finak
 ##' @import data.table
 ##' @export NanoStringAssay
-NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, post.process.function=NULL,...){
-  mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap)
+NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, post.process.function=NULL,ltrans=FALSE...){
+  if("mapping"%in%names(match.call())){
+    mapping<-match.call()$mapping
+  }else{
+    mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap)
+  }
   
   #transform the counts and rename the mapping for measurement to the new name
   #TODO fix the duplication of column names in a more reasonable way
   if(!is.null(ncells)){
     mapping<-addMapping(mapping,list(ncells=ncells))
   }
-  
-  rcclist<-readNanoStringLanes(rccfiles);
-  if(!is.null(keyfile)) rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
-  suppressMessages(
-    for(i in 1:length(rcclist)){
-      #cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
-      rcclist[[i]]<-data.table(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
-    })
-  
+  if(!is.null(rccfiles)){
+    rcclist<-readNanoStringLanes(rccfiles);
+    if(!is.null(keyfile)) rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
+    suppressMessages(
+      for(i in 1:length(rcclist)){
+        #cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
+        rcclist[[i]]<-data.table(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
+      })
+    dataframe<-do.call(data.table:::.rbind.data.table,rcclist)
+    if(!is.null(post.process.function)){
+      dataframe<-post.process.function(dataframe) 
+    }
+  }else if("dataframe"%in%names(match.call())){
+    dataframe<-match.call()$dataframe
+  }else{
+    stop("must provide either RCC files or a dataframe for NanoStringAssay")
+  }
+
   #the explicit call to .rbind.data.table is necessary to resolve even though it's imported.
-  dataframe<-do.call(data.table:::.rbind.data.table,rcclist)
   ## dataframe <- lapply(dataframe, function(col){
   ##   suppressWarnings(numTry <- as.numeric(col))
   ##   ## non-numeric character vectors return NA
@@ -153,22 +165,25 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   ##   }
   ##   return(col)
   ## })
-  if(!is.null(post.process.function)){
-    dataframe<-post.process.function(dataframe) 
-  }
+
   #reconstruct this for the next call
   #transform with log+1
   #make sure the measurement column is numeric
+  if(is.null(measurement)){
+    measurement<-getMapping(mapping,"measurement")[[1]]
+  }
   nummeas<-as.numeric(as.character(dataframe[,eval(as.name(substitute(measurement)),envir=.SD)]))
   dataframe[,eval(substitute(measurement)):=nummeas]
   #need to programmatically construct the transform and then apply it. ugh.
-  f<-(substitute(lCount:=log(eval(as.name(substitute(measurement)),envir=.SD)+1)))
-  dataframe[,eval(f)]
-  #dataframe$lCount<-log2(get(measurement,dataframe)+1)
+  #specify flag whether to transform
+  if(ltrans){
+    f<-(substitute(lCount:=log(eval(as.name(substitute(measurement)),envir=.SD)+1)))
+    dataframe[,eval(f)]
+    raw<-measurement
+    measurement<-"lCount"
+  }
   
-  #reame the mapping 
-  raw<-measurement
-  measurement<-"lCount"
+
   this.frame <- as.list(environment())
   #remove unneeded variables
   this.frame$post.process.function<-NULL
@@ -177,9 +192,14 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   this.frame$keyfile<-NULL
   
   ## Factor out code that builds the mapping
-  this.frame$cellvars <- c(ncells, cellvars)
+  if(!is.null(ncells)&&!is.null(cellvars)){
+    this.frame$cellvars <- c(ncells, cellvars)
+  }
   sc <- do.call(SingleCellAssay, this.frame)
-  sc@mapping<-addMapping(getMapping(sc),list(raw="Count"))
+  if(is.null(getMapping(sc,"raw"))&ltrans){
+    #best guess given the above
+    sc@mapping<-addMapping(getMapping(sc),list(raw="Count"))
+  }
   #TODO need a cast for NanoStringAssay
   sc<-as(sc, 'FluidigmAssay')
   sc<-as(sc,'NanoStringAssay')
