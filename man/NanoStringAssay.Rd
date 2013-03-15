@@ -40,6 +40,8 @@
   \code{data.frame} of all rcc files, before the
   NanostringAssay object is constructed.}
 
+  \item{ltrans}{Should the counts be log2 + 1 transformed?}
+
   \item{...}{Additional parameters passed to
   \code{SingleCellAssay} constructor}
 

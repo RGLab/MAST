@@ -72,8 +72,8 @@ A \sca may be split into a list of \sca, which is known as a \texttt{SCASet}.
 <<split>>=
 sp1 <- split(vbeta.fa, 'Subject.ID')
 show(sp1)
-sp2 <- split(vbeta.fa, factor(rbinom(nrow(vbeta.fa), 1, prob=.2)))
-show(sp2)
+#sp2 <- split(vbeta.fa, factor(rbinom(nrow(vbeta.fa), 1, prob=.2)))
+#show(sp2)
 @
 The splitting variable can either be a character vector naming column(s) of the \sca, or may be a \texttt{factor} or \texttt{list} of \texttt{factor}s.
 

@@ -88,9 +88,13 @@ NULL
 ##'
 ##' Return a 'molten' (flat) representation of a rectangular array
 ##'
-##' @param data A rectangular array, with attributes attached to its rows and columns
-##' @param ... additional arguments
-##' @return A \code{data.frame} typically, with the cartesian product of the row and column attributes and the values from the rectangular array
+##' @param data A rectangular array, with attributes attached to its rows and
+##' columns
+##' @param ... ignored
+##' @return A \code{data.frame} typically, with the cartesian product of the
+##' row and column attributes and the values from the rectangular array
+##' 
+##' 
 ##' @rdname melt
 ##' @title melt
 ##' @aliases melt

@@ -120,6 +120,7 @@ setClass('NanoStringAssay', contains='FluidigmAssay', prototype=prototype(mapNam
 ##' @param featurevars See \code{\link{SingleCellAssay}}
 ##' @param phenovars See \code{\link{SingleCellAssay}}
 ##' @param post.process.function function applied to \code{data.frame} of all rcc files, before the NanostringAssay object is constructed.
+##' @param ltrans Should the counts be log2 + 1  transformed?
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @param ltrans logical indicating if the measurement should be log transformed. FALSE by default. Should be set to TRUE on construction from raw data.
 ##' @return A FluidigmAssay object

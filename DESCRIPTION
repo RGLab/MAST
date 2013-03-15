@@ -21,13 +21,13 @@ Imports:
     plyr,
     digest,
     ggplot2,
-    stringr
+    stringr,
+    foreach
 Depends:
     data.table,
     foreach
 Suggests:
-    parallel,
-    foreach
+    parallel
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0
