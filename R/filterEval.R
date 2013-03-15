@@ -252,7 +252,7 @@ filtDiffs <- function(mysc, groups, filt_control=NULL){
 #'what proportions of wells are filtered due to different criteria
 #'
 #'@param sc SingleCellAssay or derived class
-#'@param gropus the groups by which to filter
+#'@param groups the groups by which to filter
 #'@param byGroup logical indicating whether to filter by group
 #'@param filt_control a list of control parameters.
 #'@export

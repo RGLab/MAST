@@ -26,6 +26,7 @@ todt<-function(v){
 #'
 #'Combines single cell assays recursively
 #'@param dfs is a list of single-cell assays from an SCASet
+#'@param ... additional arguments to combine
 #'@export
 combine_recurse<-function (dfs=NULL, ...)
 {

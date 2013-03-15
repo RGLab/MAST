@@ -6,7 +6,7 @@
     primerid, measurement, ncells = NULL, geneid = NULL,
     id = NULL, cellvars = NULL, featurevars = NULL,
     phenovars = NULL, post.process.function = NULL,
-    ltrans = FALSE...)
+    ltrans = FALSE, ...)
 }
 \arguments{
   \item{rccfiles}{A list of rcc files with full paths}
@@ -42,6 +42,10 @@
 
   \item{...}{Additional parameters passed to
   \code{SingleCellAssay} constructor}
+
+  \item{ltrans}{logical indicating if the measurement
+  should be log transformed. FALSE by default. Should be
+  set to TRUE on construction from raw data.}
 }
 \value{
   A FluidigmAssay object

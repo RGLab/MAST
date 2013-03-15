@@ -2,13 +2,15 @@
 \alias{melt}
 \alias{melt,SingleCellAssay-method}
 \alias{melt.SingleCellAssay}
-\title{Melt a rectangular array}
+\title{melt}
 \usage{
   melt.SingleCellAssay(data, ...)
 }
 \arguments{
   \item{data}{A rectangular array, with attributes attached
   to its rows and columns}
+
+  \item{...}{additional arguments}
 }
 \value{
   A \code{data.frame} typically, with the cartesian product
@@ -16,10 +18,12 @@
   rectangular array
 }
 \description{
-  Return a 'molten' (flat) representation of a rectangular
-  array
+  Melt a rectangular array
 }
 \details{
+  Return a 'molten' (flat) representation of a rectangular
+  array
+
   \code{signature(data="SingleCellAssay")}: return a
   \code{data.frame}, which contains a melted version of
   \code{data}.

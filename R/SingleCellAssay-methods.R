@@ -88,19 +88,19 @@ NULL
 ##'
 ##' Return a 'molten' (flat) representation of a rectangular array
 ##'
-##' @param data A rectangular array, with attributes attached to its rows and
-##' columns
-##' @return A \code{data.frame} typically, with the cartesian product of the
-##' row and column attributes and the values from the rectangular array
-##' 
-##' 
+##' @param data A rectangular array, with attributes attached to its rows and columns
+##' @param ... additional arguments
+##' @return A \code{data.frame} typically, with the cartesian product of the row and column attributes and the values from the rectangular array
 ##' @rdname melt
+##' @title melt
+##' @aliases melt
 ##' @keywords transformation
 ##' @importFrom reshape melt
 ##' @S3method melt SingleCellAssay
 melt.SingleCellAssay<-function(data,...){
   data@env$data
 }
+
 #setGeneric("melt",function(data,...){
 #standardGeneric("melt")
 #  UseMethod(generic="melt",data)
@@ -370,14 +370,20 @@ setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ..
   m<-melt(x)
   mp<-getMapping(x)
   ###f must be a character naming a cData variable
-  if(!is.character(f)){
-    stop("splitby must be a character naming a cData variable")
+  if(length(f)==1&class(f)%in%"character"){
+    if(!f%in%colnames(cData(x))){
+      stop(f," not in cData of x")
+    }
+    f<-factor(get(f,m))
+  }else if(length(f)==nrow(cData(x))){
+    setkeyv(m,getMapping(x,"idvars"))
+    nc<-nrow(m)/nrow(cData(x))
+    f<-factor(rep(f,each=nc))
+  }else{
+    stop("splitby must be a of length nrow(cData(x)) or a character naming a cData variable")
   }
-  if(!f%in%colnames(cData(x))){
-    stop(f," not in cData of x")
-  }
+  
   setkeyv(m,getMapping(x,"idvars"))
-  f<-factor(get(f,m))
   SCASet(dataframe=m, splitby=f, mapping=mp, contentClass=contentClass,...)
 })
 }, silent=TRUE)

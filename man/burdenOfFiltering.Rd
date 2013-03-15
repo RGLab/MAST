@@ -8,7 +8,7 @@
 \arguments{
   \item{sc}{SingleCellAssay or derived class}
 
-  \item{gropus}{the groups by which to filter}
+  \item{groups}{the groups by which to filter}
 
   \item{byGroup}{logical indicating whether to filter by
   group}

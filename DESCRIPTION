@@ -23,7 +23,8 @@ Imports:
     ggplot2,
     stringr
 Depends:
-    data.table
+    data.table,
+    foreach
 Suggests:
     parallel,
     foreach
