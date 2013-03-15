@@ -9,6 +9,8 @@
 \arguments{
   \item{data}{A rectangular array, with attributes attached
   to its rows and columns}
+
+  \item{...}{ignored}
 }
 \value{
   A \code{data.frame} typically, with the cartesian product

@@ -7,6 +7,8 @@
 \arguments{
   \item{dfs}{is a list of single-cell assays from an
   SCASet}
+
+  \item{...}{ignored}
 }
 \description{
   Combines single cell assays recursively
