@@ -40,14 +40,12 @@
   \code{data.frame} of all rcc files, before the
   NanostringAssay object is constructed.}
 
-  \item{ltrans}{Should the counts be log2 + 1 transformed?}
+  \item{ltrans}{Should the counts be log2 + 1 transformed?
+  Default is FALSE. Set to TRUE when constructing from RAW
+  data.}
 
   \item{...}{Additional parameters passed to
   \code{SingleCellAssay} constructor}
-
-  \item{ltrans}{logical indicating if the measurement
-  should be log transformed. FALSE by default. Should be
-  set to TRUE on construction from raw data.}
 }
 \value{
   A FluidigmAssay object
