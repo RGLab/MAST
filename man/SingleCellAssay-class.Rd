@@ -11,8 +11,8 @@
   \code{SingleCellAssay} constructor, or ideally the
   \code{SCASet} constructor. mapNames for the
   SingleCellAssay class are in the object
-  \code{SingleCellAssay:::SingleCellAssayMapNames} mapNames
-  for the FluidigmAssay class are in the object
+  \code{SingleCellAssay:::Mandatory_Cellvars} mapNames for
+  the FluidigmAssay class are in the object
   \code{SingleCellAssay:::FluidigmMapNames} }
   \section{Slots}{ \describe{ \item{featureData}{an
   \code{AnnotatedDataFrame} that describes feature-level

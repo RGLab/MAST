@@ -1,0 +1,21 @@
+DataLayer extends array?	
+	METHODS:
+	exprs returns default layer
+	<- replace default layer, invalidate other layers?
+	put replcate other layers.
+
+SingleCellAssay extends DataLayer
+	adf	  cData
+	adf	  pData
+	adf 	  fData
+	DT	  pMap: for each row of DL, which row of pData
+	list	  Mapnames: mandatory columns in cData
+	df	  description
+	
+	METHODS:
+	exprs
+	split:	SCAset
+	[:	
+	subset: calls [, matching on fData or cData
+
+

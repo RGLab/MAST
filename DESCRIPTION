@@ -33,12 +33,9 @@ Description: Core data structures and methods for handling single cell assay
 License: Artistic-2.0
 Collate:
     'AllClasses.R'
-    'Fluidigm-methods.R'
     'lrtest.r'
     'Readers.R'
-    'SCASet-methods.R'
     'SingleCellAssay-methods.R'
     'filterEval.R'
-    'helper-methods.R'
     'piest.R'
-    'NanostringRCCReader.R'
+    'DataLayer.R'

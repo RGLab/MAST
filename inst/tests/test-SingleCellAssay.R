@@ -1,4 +1,4 @@
-source('common-fixtures.R')
+## source('common-fixtures.R')
 
 
 ## geneid="Gene"
@@ -15,12 +15,12 @@ source('common-fixtures.R')
 ##   expect_that(vbeta,is_a("data.frame"))
 ## })
 
-## vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
-## fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid)
-## test_that('could create FluidigmAssay', {
-##   expect_that(fd, is_a('SingleCellAssay'))
-##     expect_that(fd, is_a('FluidigmAssay'))
-## })
+context('Can construct')
+cdat <- as(data.frame(wellKey=c('A', 'B'), ncells=c(1, 1)), 'AnnotatedDataFrame')
+fdat <- as(data.frame(primerid=LETTERS[1:4], meta=TRUE), 'AnnotatedDataFrame')
+val <- array(1:8, c(2, 4, 1), dimnames=list(wellKey=cdat$wellKey, primerid=fdat$primerid, measurement='et'))
+sc <- new('SingleCellAssay', .Data=val, cellData=cdat, featureData=fdat)
+fd <- new('FluidigmAssay', .Data=val, cellData=cdat, featureData=fdat)
 
 
 context("Generating a complete and incomplete subset")
@@ -31,30 +31,39 @@ dat_incomplete <- dat_complete[-seq(1, nrow(dat_complete), by=101),]
 counts <- table(do.call(paste, dat_incomplete[,idvars]))
 expect_that(all(counts == counts[1]), is_false())
 
-## blank <- dat_complete[1,]
-## blankinst <- SingleCellAssay(blank, idvars=idvars, geneid=geneid, primerid=geneid, measurement=measurement)
-## test_that("Can create empty instance with pre-existing wellKey",{
-##   expect_that(blankinst, is_a("SingleCellAssay"))
-## })
+blank <- dat_complete[1,]
+blankinst <- new('SingleCellAssay', dataframe=blank, idvars=idvars, primerid=geneid, measurement=measurement)
+blankinst.fd <- FluidigmAssay(dataframe=blank, idvars=idvars, primerid=geneid, measurement=measurement, ncells=ncells)
+test_that("Can create empty instance with pre-existing wellKey",{
+  expect_that(blankinst, is_a("SingleCellAssay"))
+})
 
 ## test_that("Can get wellKey",{
 ##   expect_that(getwellKey(blankinst)[[1]], equals(digest(paste(blankinst@env$data[,getMapping(blankinst@mapping)$idvars],collapse=" "))))
 ## })
 
+vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
+fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid)
+test_that('could create FluidigmAssay', {
+  expect_that(fd, is_a('SingleCellAssay'))
+    expect_that(fd, is_a('FluidigmAssay'))
+})
+
+
 sc <- fd
 test_that("Can load complete data", {
   expect_that(sc, is_a("SingleCellAssay"))
-  tab <- table(SingleCellAssay:::melt(sc)$`__wellKey`)
+  tab <- table(melt(sc)$wellKey)
   expect_that(tab, is_equivalent_to(countComplete))
 })
 
 test_that("Cellkey unique identifies a cell", {
-  tab <- table(SingleCellAssay:::melt(sc)$`__wellKey`, do.call(paste, SingleCellAssay:::melt(sc)[, idvars,with=FALSE]))
+  tab <- table(SingleCellAssay:::melt(sc)$wellKey, do.call(paste, SingleCellAssay:::melt(sc)[, idvars]))
   expect_true(all(tab %in% c(0,75)))
   
 })
 
-sci<- SingleCellAssay(dat_incomplete, idvars=idvars, geneid=geneid, primerid=geneid, measurement=measurement)
+sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
   expect_that(sci, is_a("SingleCellAssay"))
   expect_equal(nrow(SingleCellAssay:::melt(sci)), nrow(dat_complete))

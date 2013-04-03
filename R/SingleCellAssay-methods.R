@@ -102,8 +102,130 @@ NULL
 ##' @importFrom reshape melt
 ##' @S3method melt SingleCellAssay
 melt.SingleCellAssay<-function(data,...){
-  data@env$data
+  m <- melt.data.frame(cbind(cData(data), exprs(data)), id.vars=names(cData(data)), variable_name='primerid')
+  merge(m, fData(data), by='primerid')
 }
+
+
+mkunique<-function(x,G){
+    cbind(x,primerid=make.unique(as.character(get(G,x))))
+     }
+
+
+check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
+  if( any(cellvars %in% featurevars))
+    stop("'cellvars', 'idvars' must be disjoint from 'featurevars', 'primerid', 'geneid'")
+  cvars.in <- cellvars %in% names(dataframe)
+  fvars.in <- featurevars %in% names(dataframe)
+  if( !all(cvars.in)) stop(cellvars[!cvars.in][1], ' not found')
+  if( !all(fvars.in)) stop(featurevars[!fvars.in][1], ' not found')
+  
+  nuniquef<-nrow(unique(dataframe[,featurevars, drop=FALSE]))
+  nuniquec<-nrow(unique(dataframe[,cellvars, drop=FALSE]))  
+  if(nuniquef != nc)
+    stop("'featurevars' must be keyed by 'primerid'")
+  if(nuniquec != nr)
+    stop("'cellvars' must be keyed by 'idvars'")
+}
+
+## might have bad complexity, but could construct one at time, then glue cheaply
+fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
+  if(!inherits(df,"data.frame")){
+    stop("Argument `dataframe` should be a data.frame.")
+  }
+  if(!all(idvars %in% colnames(df))){
+    stop("Invalid idvars column name. Not in data.frame")
+  }
+  if(!all(primerid%in%colnames(df))){
+    stop("Invalid primerid column name. Not in data.frame")
+  }
+  if(!all(measurement%in%colnames(df))){
+    stop("Invalid measurement column name. Not in data.frame")
+  }
+  ## FIXME: should check if cmap and fmap are in df and throw intelligible error
+
+  bothMap <- c(cmap, fmap)
+  for(nm in names(bothMap)){
+    if(nm %in% colnames(df) && bothMap[[nm]] != nm){
+      names(df) <- make.unique(c(nm, colnames(df)))[-1]
+    warning("renaming column ", nm)
+    }
+      if(!all(bothMap[[nm]] %in% names(df))){
+        stop('could not find column named ', bothMap[[nm]], ' in dataframe')
+      }
+    rn <- nm
+    names(rn) <- as.character(bothMap[[nm]])
+    df <- rename(df, rn)
+  }
+
+  wk <- do.call(paste, df[,idvars, drop=FALSE])
+  cellCounts <- table(wk)
+  pid <- do.call(paste, df[,primerid, drop=FALSE])
+  primerCounts <- table(pid)
+  df[,'wellKey'] <- wk
+  df[,'primerid'] <- pid
+  incomplete <- !all(cellCounts == cellCounts[1])
+  dupPrimers <- table(df$wellKey, df$primerid, exclude=NULL) #cross tab of primerid x wellKey
+  duped.primers <- apply(dupPrimers>1, 2, which)
+  
+  if(length(duped.primers)>0){
+    message("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
+    df <- ddply(dataframe,'wellKey',mkunique,G='primerid')
+  }
+  
+  if(incomplete){
+    message("dataframe appears incomplete, attempting to complete it with NAs")
+    skeleton <- expand.grid.df(unique(df[,"primerid", drop=FALSE]), unique(df[, "wellKey", drop=FALSE]))
+    df <- merge(skeleton, df, all.x=TRUE, by=c('primerid', 'wellKey'))
+  }
+
+  ord <- do.call(order, df[, c("primerid", "wellKey")])
+  df <- df[ord,]
+  list(df=df, rn=unique(df$wellKey), cn=unique(df$primerid))
+}
+
+##' @importFrom plyr ddply
+##' @importFrom reshape expand.grid.df
+## unnamed arguments get passed along to callNextMethod
+## which eventually just sets the slots
+setMethod('initialize', 'SingleCellAssay',
+          function(.Object, dataframe, idvars, primerid, measurement, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+            .Object <- callNextMethod()
+            if(!missing(dataframe)){              #called using melted dataframe
+              if(missing(idvars) || missing(primerid) || missing(measurement)){
+                stop("Must supply all of 'idvars', 'primerid' and 'measurement' if 'dataframe' is passed")
+              }
+            ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
+            ## .Object@fmap[['primerid']] <- primerid
+            ## .Object@cmap[['wellKey']] <- idvars
+            fixed <- fixdf(dataframe, idvars, primerid, measurement, .Object@cmap, .Object@fmap)
+            dl <- array(fixed$df[,measurement],
+                        dim=c(length(fixed$rn), length(fixed$cn), length(measurement)),
+                        dimnames=list(wellKey=fixed$rn, primerid=fixed$cn, layer=measurement))
+            .Object@.Data <- dl
+            cellvars <- union(cellvars, c('wellKey', idvars, phenovars, names(.Object@cmap))) #fixme when we support phenovars
+            featurevars <- union(c('primerid', primerid, featurevars), names(.Object@fmap))
+            check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
+            cell.adf  <- new("AnnotatedDataFrame")
+            pData(cell.adf)<-unique(fixed$df[,cellvars, drop=FALSE]) #automatically sorted by idvars
+            sampleNames(cell.adf) <- unique(fixed$df$wellKey)
+
+    ##pheno.adf <- new('AnnotatedDataFrame')
+    ##need a phenokey into the melted data frame for this to make sense
+    f.adf <- new('AnnotatedDataFrame')
+            pData(f.adf) <- unique(fixed$df[,featurevars, drop=FALSE])
+            sampleNames(f.adf) <- unique(fixed$df$primerid)
+                                         .Object@cellData<-cell.adf
+    .Object@featureData <- f.adf
+            }
+            
+
+            .Object
+          })
+
+
+
+
 
 #setGeneric("melt",function(data,...){
 #standardGeneric("melt")
@@ -149,25 +271,6 @@ nprimer <- function(sc){
   ncol(sc)
 }
 
-##' @export
-##' ncol
-##'
-##' @title ncol
-##' @rdname ncol-methods
-##' @aliases ncol,SingleCellAssay-method
-##' @author andrew
-setMethod('ncol', 'SingleCellAssay', function(x) {
-    return (nrow(fData(x)))
-})
-
-##' @export
-##' nrow
-##'
-##' @title nrow
-##' @rdname nrow-methods
-##' @aliases nrow,SingleCellAssay-method
-##' @keywords accessors
-setMethod('nrow', 'SingleCellAssay', function(x) nrow(getwellKey(x)))
 
 ncells <- function(sc){
   warning('called obsolete ncells, use nrow')
@@ -187,10 +290,10 @@ setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
 ##' @aliases cellData,SingleCellAssay-method
 setMethod('cellData', 'SingleCellAssay', function(sc) sc@cellData)
 
-##' @rdname getMapNames-methods
-##' @aliases getMapNames,SCA-method
-setMethod('getMapNames', 'SCA', function(object) object@mapNames)
-
+## @rdname getMapNames-methods
+## @aliases getMapNames,SCA-method
+#setMethod('getMapNames', 'SCA', function(object) object@mapNames)
+NULL
 
 ##' @rdname fData-methods
 ##' @aliases fData,SingleCellAssay-method
@@ -210,6 +313,7 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 
 ##' @name [[
+##' @title subset methods
 ##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[[i]]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique. 
 ##' @aliases [[,SingleCellAssay,ANY-method
 ##' @keywords transform
@@ -288,53 +392,6 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
   new(cls, env=env, mapping=x@mapping, id=x@id, wellKey="__wellKey", featureData=newfdf, cellData=newcdf)
 }) }, silent=TRUE)
 
-
-##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
-##'
-##' Return or set a matrix of the measurement: cells by primerids
-##' @title exprs
-##' @name exprs
-##' @param object SingleCellAssay
-##' @return numeric matrix
-##' @docType methods
-##' @rdname exprs-methods
-##' @aliases exprs,SingleCellAssay-method
-##' @importMethodsFrom Biobase exprs
-##' @return a \code{matrix} of measurment values with wells on the rows and features on the columns
-##' @export exprs
-setMethod("exprs",signature(object="SingleCellAssay"),function(object){
-  nentries <- nrow(melt(object))
-  setkeyv(melt(object),c(getMapping(object,"__wellKey"),getMapping(object,"primerid")))
-  objrow <- nrow(object)
-  objcol <- ifelse(nentries==0, 0, nentries/objrow) #handle case that the SingleCellAssay is empty
-  matrix(as.matrix(melt(object)[,eval(todt(getMapping(object,"measurement")))]), nrow=objrow, ncol=objcol, 
-         dimnames=list(as.matrix(getwellKey(object)), as.matrix(unique(melt(object)[, eval(todt(getMapping(object,"primerid")))]))))
-})
-
-##' @importMethodsFrom Biobase "pData<-"
-##' @importMethodsFrom Biobase pData
-##' @importMethodsFrom Biobase "exprs<-"
-##' @rdname exprs-methods
-##' @name exprs
-##' @exportMethod "exprs<-"
-##' @docType methods
-##' @aliases exprs<-,SingleCellAssay,ANY-method
-setReplaceMethod('exprs', c('SingleCellAssay', 'ANY'),
-                 function(object, value){
-                   measure <- getMapping(object,"measurement")
-                   object@env$data[, measure] <- as.vector(value)
-                   object
-                 })
-
-##' show methods
-##' @exportMethod show
-##' @aliases show,SingleCellAssay-method
-##' @rdname show-methods
-##'
-setMethod("show","SingleCellAssay",function(object){
-  cat(class(object), " id: ", object@id, "\n", nrow(object), " wells; ", ncol(object), " features\n")
-  invisible(NULL)
-})
 
 ##' @rdname subset-methods
 ##' @aliases subset,SingleCellAssay-method
@@ -439,12 +496,3 @@ setMethod('copy', 'SingleCellAssay',
             o2
           })
 
-
-## Probably do not want to offer replacement methods for the data
-## setGeneric("melt<-", function(x, value) standardGeneric("melt<-"))
-## setReplaceMethod("melt", "SingleCellAssay",
-##                  function(x, value){
-##                    x@env$data <- value
-## ### TODO: update cellData?
-##                    x
-##                  })

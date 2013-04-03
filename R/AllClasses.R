@@ -4,206 +4,27 @@
 
 NULL
 
-##' Mapping class for SingleCellAssay package
-##'
-##' A class that represents a mapping of columns in a raw data file to cell-leve, feature-level, and phenotype-level metadata, as well as unique identifiers for individual cells.
-##' mapNames for the SingleCellAssay class are in the object \code{SingleCellAssay:::SingleCellAssayMapNames}
-##' mapNames for the FluidigmAssay class are in the object \code{SingleCellAssay:::FluidigmMapNames}
-##' }
-##' \section{Slots}{
-##' \describe{
-##' \item{mapping}{A named list providing the mapping from required fields in a SingleCellAssay or FluidigmAssay to column names in the data file}
-##' }
-##' 
-##' @docType class
-##' @name Mapping-class
-##' @aliases Mapping
-##' @aliases Mapping-class
-##' @rdname Mapping-class
-##' @title Column Mapping for SingleCellAssays
-##' @seealso \code{\link{SingleCellAssay}},\code{\link{FluidigmAssay}}, \code{\link{getMapping}},\code{\link{addMapping}},\code{\link{getMapNames}},\code{\link{isEmpty}},\code{\link{mappingIntersection}}
-setClass("Mapping",representation(mapping="list"),prototype=list(mapping=list("_empty_mapping_"=NULL)),validity=function(object){
-  return(.isValidNamedList(object@mapping))
-})
-
-##' Accessor for mapNames
-##'
-##' This returns the mapNames, which are fields recognized in the names of mapping
-##' @title getMapNames
-##' @param object An object with a \code{Mapping} or \code{mapNames} slot
-##' @return character vector of map names
-##'
-##' @exportMethod getMapNames
-##' @docType methods
-##' @rdname getMapNames-methods
-##' @keywords accessor
-setGeneric('getMapNames', function(object) standardGeneric('getMapNames'))
-
-##' ##' @rdname getMapNames-methods
-##' @aliases getMapNames,Mapping-method
-setMethod("getMapNames","Mapping",function(object){
-  return(names(object@mapping))
-})
-
-##' Accessor for mapping
-##'
-##' This returns the mapping, which is a named list.  The names of the list are keywords, while the contents of the list are column names in the melted \code{SingleCellAssay}.  The \code{mapping} identifies columns in the melted  which trigger special object behavior. Names recognized by the class are contained in \link[=getMapNames]{mapNames}, but additional names may be defined.
-##' @title getMapping
-##' @usage \code{getMapping(object)}
-##' @usage \code{getMapping(object, mapnames)}
-##' @param object A \code{Mapping} object or a \code{SingleCellAssay} or object inheriting from \code{SingleCellAssay}
-##' @param mapnames A \code{character} vector of map names. Can be empty
-##' @return A \code{Mapping} object if \code{object} is a \code{SingleCellAssay}. A character vector of mapped columns if \code{mapnames} is provided.
-##' 
-##' @export
-##' @docType methods
-##' @rdname getMapping-methods
-##' @keywords accessor
-setGeneric("getMapping",function(object,mapnames){standardGeneric("getMapping")})
-
-##' @rdname getMapping-methods
-##' @aliases getMapping,Mapping,missing-method
-##' @export
-setMethod("getMapping",c("Mapping","missing"),function(object){
-  return(object@mapping)
-})
-
-##' @aliases getMapping,Mapping,character-method
-##' @rdname getMapping-methods
-##' @export
-setMethod("getMapping",c("Mapping","character"),function(object,mapnames){
-  return(object@mapping[mapnames])
-})
-
-##' Is this Mapping Empty
-##'
-##' Tests if a Mapping is empty
-##' @param object The \code{Mapping}
-##' @return A \code{logical}. \code{TRUE} if empty. \code{FALSE} otherwise.
-##' @title iEmpty
-##' @name isEmtpy
-##' @docType methods
-##' @rdname isEmpty-methods
-##' @exportMethod isEmpty
-##' @aliases isEmpty,Mapping-method
-##' @aliases isEmpty
-setGeneric("isEmpty",function(object){standardGeneric("isEmpty")})
-setMethod("isEmpty","Mapping",function(object){
-  if(length(getMapNames(object))==0){
-    return(TRUE)
-  }
-  if(any(getMapNames(object)%in%"_empty_mapping_")&length(getMapNames(object))==1){
-    return(TRUE)
-  }else{
-    return(FALSE)
-  }
- })
-
-##' @rdname addMapping-methods
-##' @docType methods
-##' @exportMethod addMapping
-##' @title addMapping
-##' @name addMapping
-setGeneric("addMapping",function(object,namedlist,...){standardGeneric("addMapping")})
-
-##' @rdname addMapping-methods
-##' @docType methods
-##' @aliases addMapping,Mapping,list-method
-setMethod("addMapping",c("Mapping","list"),function(object,namedlist,replace=FALSE){
-  if(!.isValidNamedList(namedlist)){
-    stop("namedlist is not a valid named list for a Mapping")
-  }
-  if(isEmpty(object)){
-    object@mapping<-namedlist
-    return(object)
-  }else if(!replace){
-    inmapping<-getMapNames(object)
-    idx<-!names(namedlist)%in%inmapping
-    object@mapping<-c(object@mapping,namedlist[idx])
-    append<-namedlist[!idx]
-    for(nm in names(append)){
-      object@mapping[[nm]]<-unique(c(object@mapping[[nm]],append[[nm]]))
-    }
-  }else{
-    inmapping<-getMapNames(object)
-    idx<-!names(namedlist)%in%inmapping
-    object@mapping<-c(object@mapping,namedlist[idx])
-    repl<-namedlist[!idx]
-    for(nm in names(repl)){
-      object@mapping[[nm]]<-repl[[nm]]
-    }
-    
-  }
-    return(object)
-})
-
-setGeneric("removeMapping",function(object,namedlist){standardGeneric("removeMapping")})
-setMethod("removeMapping",c("Mapping","character"),function(object,namedlist){
-  idx<-!getMapNames(object)%in%namedlist
-  object@mapping<-object@mapping[idx]
-  if(length(object@mapping)==0){
-    object@mapping<-list("_empty_mapping_"=NULL)
-  }
-  return(object)
-})
-
-##' mappingIntersection checks the intersection of two maps in a \code{Mapping} object.
-##' @param object A \code{Mapping} object
-##' @param name1 An optional \code{character} map name
-##' @param name2 Another optional \code{character} map name to be compared against \code{name1}
-##' @return A matrix of intersecitons between different mappings if \code{name1} and \code{name2} are omitted, or a numeric value otherwise.
-##' @usage \code{mappingIntersection(object)
-##' @usage \code{mappingIntersection(object,name1,name2)
-##' @rdname mappingIntersection-methods
-##' @docType methods
-##' @export
-##' @title mappingIntersection
-##' @name mappingIntersection-methods
-##' @aliases mappingIntersection
-setGeneric("mappingIntersection",function(object,name1,name2){standardGeneric("mappingIntersection")})
-
-##' @rdname mappingIntersection-methods
-##' @export
-##' @aliases mappingIntersection,Mapping,missing,missing-method
-setMethod("mappingIntersection",c("Mapping","missing","missing"),function(object){
-  mapping<-getMapping(object)
-  M<-matrix(0,nrow=length(mapping),ncol=length(mapping))
-  colnames(M)<-names(mapping)
-  rownames(M)<-names(mapping)
-  for(i in 1:length(mapping)){
-    for(j in 1:length(mapping)){
-      M[i,j] <- length(intersect(mapping[[i]],mapping[[j]]))
-    }
-  }
-  return(M)
-})
-
-##' @rdname mappingIntersection-methods
-##' @aliases mappingIntersection,Mapping,character,character-method
-##' @export
-setMethod("mappingIntersection",c("Mapping","character","character"),function(object,name1,name2){
-  return(length(intersect(getMapping(object,name1)[[1]],getMapping(object,name2)[[1]])))
-})
-
-##' show method for Mapping
-##' @rdname show-methods
-##' @aliases show,Mapping-method
-setMethod("show","Mapping",function(object){
-  if(isEmpty(object)){
-    cat("An Empty Mapping\n")
-  }else{
-    cat("Mapping of size ",length(object@mapping),"\n")
-    cat("With maps: ",getMapNames(object),"\n")
-  }
-})
-
 setOldClass("ncdf")
 
+setClass('DataLayer', contains='array', representation=representation(layer='numeric', valid='logical'), prototype=prototype(array(NA, dim=c(0, 0, 0)), layer=1L, valid=TRUE))
 
-setClass("SCA",
-         representation=representation(env="environment",
-           "VIRTUAL",mapping="Mapping",mapNames="character"),
-         prototype=list(env=new.env(),mapping=new("Mapping"),mapNames=""))
+setClass('Mapping', contains='list')
+setMethod('initialize', 'Mapping', function(.Object, keys=NULL, values=NULL, ...){
+  .Object <- callNextMethod()
+  if(!is.null(keys)){
+    if(is.null(values)) values <- rep(NA, length(keys))
+    if(!is.character(keys)) stop('keys must be character')
+    .Object@.Data <- vector(mode='list', length=length(keys))
+    names(.Object@.Data) <- keys
+    for(i in seq_along(.Object@.Data)) .Object@.Data[[i]] <- values[[i]]
+  }
+  
+  .Object
+})
+
+setMethod('show', 'Mapping', function(object){
+  cat(class(object), ' containing : ', names(object), '\n')
+})
 
 
 ##' Vbeta Data Set
@@ -213,78 +34,39 @@ setClass("SCA",
 ##' @format a data frame with 11 columns
 NULL
 
-### SingleCellAssay validity method
-##'
-##' Function to check the validity of SingleCellAssay objects. More specific functionality can wrap this function.
-##' @export
-##' @title SingleCellAssayValidity
-##' @param object A \code{SingleCellAssay} object or object inheriting from SingleCellAssay
-##' @return A \code{logical}. \code{TRUE} if the object is valid, \code{FALSE} otherwise.
+
+Mandatory_Featurevars <- NULL#c('primerid')
+Mandatory_Cellvars <- NULL#c('wellKey')
+
+
+
 SingleCellAssayValidity <- function(object){
-  if(!inherits(get("data",envir=object@env),"data.frame")){
-    message("Argument `dataframe` should be a data.frame.")
-    return(FALSE)
-  }
-  if(!any(getMapping(object,"idvars") %in% colnames(object@env$data))){
-    warning("Invalid idvars column name. Not in data.frame")
-    return(FALSE)
-  }
-  if(! ( getMapping(object,"geneid")%in%colnames(object@env$data))){
-    warning("Invalid geneid column name. Not in data.frame")
-    return(FALSE)
-  }
-  if(!(getMapping(object,"primerid")%in%colnames(object@env$data))){
-    warning("Invalid primerid column name. Not in data.frame")
-    return(FALSE)
-  }
-  if(!(getMapping(object,"measurement")%in%colnames(object@env$data))){
-    warning("Invalid measurement column name. Not in data.frame")
-    return(FALSE)
-  }
-  ##are the required mappings present...
-  if(!all(object@mapNames%in%getMapNames(object)))
-    return(FALSE)
-  
-  return(TRUE)
+  ## if(nrow(object)!=nrow(cData(object))){
+  ##   message('dimension mismatch between cData and nrows')
+  ##   return(FALSE)
+  ##   }
+  ## if(ncol(object)!=nrow(fData(object))){
+  ##   message('dimension mismatch between fData and ncols')
+  ##   return(FALSE)
+  ## }
+  ## if(!all(names(object@cmap) %in% names(cData(object)))){
+  ##   message('some expected fields in cData are missing')
+  ##   return(FALSE)
+  ## }
+  ## if(!all(names(object@fmap) %in% names(fData(object)))){
+  ##   message('some expected fields in fData are missing')
+  ##   return(FALSE)
+  ## }
+  TRUE                                  #this stuff might not belong in the validity, it's getting called too early when subclasses of SingleCellAssay are constructed
 }
-
-
-Mandatory_Fields <- c('primerid', 'geneid', 'measurement', 'idvars')
-SingleCellAssayMapNames <- c(Mandatory_Fields, 'cellvars', 'featurevars', 'phenovars')
-SingleCellAssayMap<-vector('list',length(SingleCellAssayMapNames))
-names(SingleCellAssayMap)<-SingleCellAssayMapNames
-                           
-
-#Mapping Class Related Functions and Methods and the Class Definition
-##'@export
-.isValidNamedList<-function(mylist){
-  #if the named list is empty, we don't add anything
-  if(length(mylist)==0){
-    return(TRUE)
-  }
-  if(is.null(names(mylist))){
-    warning("namedlist must contain names")
-    return(FALSE)
-  }
-  if(any(gsub(" ","",names(mylist))%in%"")){
-    warning("namedlist names cannot be empty")
-    return(FALSE)
-  }
-  if(!all(do.call(c,lapply(mylist,class))%in%c("character","NULL"))){
-    warning("namedlist must be a named list of character vectors")
-    return(FALSE)
-  }
-  return(TRUE)
-}
-
-
+                                          
 
 ##' SingleCellAssay class
 ##' 
 ##' SingleCellAssay represents an arbitrary single cell assay
 ##' It is meant to be flexible and can (and will) be subclassed to represent specific assay
 ##' types like Fluidigm and others. It should be constructed using the \code{SingleCellAssay} constructor, or ideally the \code{SCASet} constructor.
-##' mapNames for the SingleCellAssay class are in the object \code{SingleCellAssay:::SingleCellAssayMapNames}
+##' mapNames for the SingleCellAssay class are in the object \code{SingleCellAssay:::Mandatory_Cellvars}
 ##' mapNames for the FluidigmAssay class are in the object \code{SingleCellAssay:::FluidigmMapNames}
 ##' }
 ##' \section{Slots}{
@@ -305,51 +87,28 @@ names(SingleCellAssayMap)<-SingleCellAssayMapNames
 ##' @aliases FluidigmAssay-class
 ##' @rdname SingleCellAssay-class
 ##' @exportClass SingleCellAssay
-setClass("SingleCellAssay",contains="SCA",
+setClass("SingleCellAssay",contains="DataLayer",
          representation=representation(featureData="AnnotatedDataFrame",
            phenoData="AnnotatedDataFrame",
            cellData="AnnotatedDataFrame",
            description='data.frame',
-           wellKey='character',
-           id="ANY",                    #experiment descriptor
-           env="environment"),		   
+           id="ANY",
+           cmap='Mapping', fmap='Mapping'),
          prototype=prototype(phenoData=new("AnnotatedDataFrame"),
            featureData=new("AnnotatedDataFrame"),
            cellData=new("AnnotatedDataFrame"),
            description=data.frame(),
-           wellKey=NA_character_,
            id=numeric(0),
-           env=new.env()),validity=SingleCellAssayValidity)
+           cmap=new('Mapping', keys=Mandatory_Cellvars),
+           fmap=new('Mapping', keys=Mandatory_Featurevars),
+         validity=SingleCellAssayValidity))
 
 
 ## Same as SingleCellAssay, but with additional mapNames
-FluidigmMapNames <- c(SingleCellAssayMapNames, 'ncells')
-FluidigmMap<-vector('list',length(FluidigmMapNames))
-names(FluidigmMap)<-FluidigmMapNames
+FluidigmMapNames <- c(Mandatory_Cellvars, 'ncells')
 
 ##' @exportClass FluidigmAssay
-setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(mapNames=FluidigmMapNames,mapping=new("Mapping",mapping=FluidigmMap)),validity=SingleCellAssayValidity)
-
-##' @aliases getMapping,SingleCellAssay,missing-method
-##' @aliases getMapping,SCA,missing-method
-##' @rdname getMapping-methods
-##' @export
-setMethod("getMapping",c("SCA","missing"),function(object){
-  return(object@mapping)
-})
-
-##' @aliases getMapping,SCA,character-method
-##' @aliases getMapping,SingleCellAssay,character-method
-##' @rdname getMapping-methods
-##' @export
-setMethod("getMapping",c("SCA","character"),function(object,mapnames){
-  mp<-getMapping(getMapping(object),mapnames)
-  if(length(mp)>1){
-    return(mp)
-  }else{
-    return(mp[[1]])
-  }
-})
+setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping', keys=FluidigmMapNames)),validity=SingleCellAssayValidity)
 
 ##'SCASet is a set of SingleCellAssay objects or objects of its subclasses (i.e. FluidigmAssay)
 ##'The constructor \code{SCASet} should be used to make objects of this class.
@@ -373,12 +132,6 @@ setClass("SCASet",
            return(TRUE)
          })
 
-#creates a new column called primerid
-.mkunique<-function(x,G){
-  cbind(x,primerid=make.unique(as.character(get(G,x))))
-}
-
-
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
 ##'
 ##' This is the constructor for the class. This class intends to ease the analysis of single cell assays, in which multiple, exchangible, cells from an experimental unit (patient, or organism) are assayed along several (or many) dimensions, such as genes. A few examples of this might be Fluidigm gene expression chips, or single cell sequencing experiments.  The chief functionality is to make it easy to keep cellular-level metadata linked to the measurements through \code{cellData} and \code{phenoData}.  There are also subsetting and splitting measures to coerce between a SingleCellAssay, and a \link{SCASet}.
@@ -399,132 +152,8 @@ setClass("SCASet",
 ##' @rdname SingleCellAssay-constructor
 ##' @docType methods
 ##' @return SingleCellAssay object
-##' @importFrom digest digest
-##' @importFrom plyr ddply
-##' @importFrom reshape expand.grid.df
-SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,geneid=NULL,id=NULL, mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  ## Add pheno key
-  ## throw error if idvars isn't disjoint from geneid, probeid
-  #if geneid == primerid make a new primerid column ensuring it is unique
-  if(!inherits(dataframe,"data.table")){
-    dataframe<-data.table(dataframe)
-  }
-  #this ensures that our dataframe is consistently ordered when we cbind things to it with the by=idvars argumens
-  if(!is.null(idvars)){
-    setkeyv(dataframe,idvars)
-  }else if(!is.null(mapping)){
-    idvars<-getMapping(mapping,"idvars")[[1]]
-    setkeyv(dataframe,idvars)
-  }
-  if(!(is.null(geneid)&is.null(primerid))){
-   if((geneid==primerid)){
-     #creates a new column called primerid
-     #mkunique<-function(x,G){
-    #   cbind(x,primerid=make.unique(as.character(get(G,x))))
-    # }
-     gid<-as.name(geneid)
-     suppressWarnings(
-       dataframe$primerid<-dataframe[,list(primerid=make.unique(as.character((eval(gid,envir=.SD))))),by=idvars]$primerid
-     )
-     #dataframe<-ddply(dataframe,idvars,mkunique,G=geneid)
-     primerid<-"primerid"
-   }else{
-     #mkunique<-function(x,G){
-      # cbind(x,primerid=make.unique(as.character(get(G,x))))
-     #}
-     gid<-as.name(primerid)
-     dataframe$primerid<-dataframe[,list(primerid=make.unique(as.character((eval(gid,envir=.SD))))),by=idvars]$primerid
-     #dataframe<-ddply(dataframe,idvars,mkunique,G=primerid)
-     primerid<-"primerid"
-   }
-  }
-  env<-new.env()
-  if(!is.null(mapping)){
-    if(class(mapping)!="Mapping")
-      stop("mapping argument must be a Mapping object")
-  }else{
-    mapping<-new("Mapping")
-  }
-  ## BEGIN: place into a validObject method!
-  mapping.args<-list(idvars,cellvars,primerid,measurement,geneid,featurevars,phenovars)
-  notnull<-unlist(lapply(mapping.args,function(x)!is.null(x)),use.names=FALSE)
-  mapping<-addMapping(mapping,list(idvars=idvars,cellvars=cellvars,primerid=primerid,measurement=measurement,geneid=geneid,featurevars=featurevars,phenovars=phenovars)[notnull])
-  if(! all(Mandatory_Fields %in% getMapNames(mapping)) )
-      stop(paste('Mapping must contain at least ', paste(Mandatory_Fields, sep=', '), collapse=''))
-
-  ## END: place into validObject method!
-  #Update cellvars and featurevars with current mapping
-  mapping<-addMapping(mapping,list(cellvars=unique(c(getMapping(mapping,"cellvars")[[1]],getMapping(mapping,"idvars")[[1]],getMapping(mapping,"phenovars")[[1]]))))
-  mapping<-addMapping(mapping,list(featurevars=unique(c(getMapping(mapping,"featurevars")[[1]],getMapping(mapping,"primerid")[[1]],getMapping(mapping,"geneid")[[1]]))))
-  ## mapping <- within(mapping, {
-  ##        cellvars <- unique(c(cellvars, idvars, phenovars))
-  ##        featurevars <- unique(c(featurevars, primerid, geneid))
-  ##        })
-    if(mappingIntersection(mapping,"cellvars","featurevars")>0)
-      stop("'cellvars', 'idvars' must be disjoint from 'featurevars', 'primerid', 'geneid'")
-    if(any(c(mappingIntersection(mapping,"phenovars","featurevars"),mappingIntersection(mapping,"phenovars","primerid"),mappingIntersection(mapping,"phenovars","geneid"))>0))
-      stop("'phenovars' must be disjoint from 'featurevars', 'primerid', 'geneid'")
-  
-    nuniquef<-nrow(unique(dataframe[,eval(todt(getMapping(mapping,"featurevars")[[1]]))]))
-    nuniquep<-nrow(unique(dataframe[,eval(todt(getMapping(mapping,"primerid")[[1]]))]))
-    nuniquec<-nrow(unique(dataframe[,eval(todt(getMapping(mapping,"cellvars")[[1]]))]))
-    nuniquei<-nrow(unique(dataframe[,eval(todt(getMapping(mapping,"idvars")[[1]]))]))
-  
-   if(nuniquef != nuniquep)
-       stop("'featurevars' must be keyed by 'primerid'")
-   if(nuniquec != nuniquei)
-       stop("'cellvars' must be keyed by 'idvars'")
-  
-  ##check if idvars exists in dataframe
-  ##check if probeid exists in dataframe
-  ##check if geneid exists in dataframe
-  ##check if measurement exists in dataframe
-  #cellCounts <- table(do.call(paste, c(dataframe[,eval(todt(getMapping(mapping,"idvars")[[1]]))],sep=":")))
-  #incomplete <- !all(cellCounts == cellCounts[1])
-  cellCount<-dataframe[,list(cellCount=nrow(.SD)),eval(todt(getMapping(mapping,"idvars")[[1]]))]$cellCount
-    incomplete<-!all(abs(cellCount-mean(cellCount))<=0)
-  if(incomplete){
-    message("dataframe appears incomplete, attempting to complete it with NAs")
-    skeleton <- data.table(expand.grid.df(unique(dataframe[,eval(todt(getMapping(mapping,"featurevars")[[1]]))]), unique(dataframe[, eval(todt(getMapping(mapping,"cellvars")[[1]]))])))
-    dataframe <- merge(skeleton, dataframe, all.x=TRUE, by=c(getMapping(mapping,"featurevars")[[1]], getMapping(mapping,"cellvars")[[1]]))
-#    cellCounts <- table(do.call(paste, c(dataframe[,eval(todt(getMapping(mapping,"idvars")[[1]]])),sep=":"))) #changed names
-  }
-
-   primerCounts <- dataframe[,list(primerCount=nrow(.SD)),eval(todt(getMapping(mapping,"primerid")[[1]]))]$primerCount
-  #test only if length > 1
-  if(!all(abs(primerCounts-mean(primerCounts))<=0)){
-      stop('Some primers appear more often than others.  Either your data is incomplete or you have duplicate primerid')
-  }
-  
-  setkeyv(dataframe,c(getMapping(mapping,"primerid")[[1]], getMapping(mapping,"idvars")[[1]]))
-  #dataframe <- dataframe[ord,]
-  assign("data",dataframe,envir=env)
-  #wellKey <- seq_along(cellCounts)
-  #use the names rather than a hash
-  #wellKey <- sapply(names(cellCounts),digest)
-  #cellCounts<-dataframe[,nrow(.SD),eval(todt(getMapping(mapping,"idvars")[[1]]))]
-  #wellKey<-names(cellCounts)
-  #env$data$`__wellKey` <- rep(wellKey, times=cellCounts[1])
-  wkfun<-as.call(c(as.name("paste"),as.list(sapply(getMapping(mapping,"idvars")[[1]],as.name)),sep=":"))
-  dataframe[,`__wellKey`:=eval(wkfun),by=eval(todt(getMapping(mapping,"idvars")[[1]]))]
-  protoassay <- new("SingleCellAssay",env=env,mapping=mapping,id=id,wellKey="__wellKey")#wellKey should be the actual key values?
-  
-    cell.adf  <- new("AnnotatedDataFrame")
-    #pData(cell.adf)<-melt(protoassay)[1:nrow(protoassay), getMapping(mapping,"cellvars")[[1]], drop=FALSE]
-    pData(cell.adf)<-unique(dataframe[,eval(todt(getMapping(mapping,"cellvars")[[1]]))])#automatically sorted by idvars
-    sampleNames(cell.adf) <- unique(melt(protoassay)[,`__wellKey`,])
-
-    ##pheno.adf <- new('AnnotatedDataFrame')
-    ##need a phenokey into the melted data frame for this to make sense
-    f.adf <- new('AnnotatedDataFrame')
-    pData(f.adf) <- unique(melt(protoassay)[,eval(todt(getMapping(mapping,"featurevars")[[1]]))])
-    sampleNames(f.adf) <- as.matrix(unique(melt(protoassay)[,eval(todt(getMapping(mapping,"primerid")[[1]]))])[,1,with=FALSE])
-    protoassay@cellData<-cell.adf
-    protoassay@featureData <- f.adf
-    
-
-  
-  return(protoassay)
+SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,geneid=NULL,id=numeric(0), mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+  new('SingleCellAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=c(geneid, featurevars), phenovars=phenovars)
 }
 
 ##' Constructor for a FluidigmAssay
@@ -546,24 +175,9 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
 ##' @export FluidigmAssay
-FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells=NULL, geneid=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  if(!inherits(dataframe,"data.table")){
-    dataframe<-data.table(dataframe)
-  }
-   mapping<-try(get("mapping",list(...)),silent=TRUE)
-    if(inherits(mapping,"try-error")){
-      #no mapping provided so construct one
-      mapping<-new("Mapping",mapping=SingleCellAssay:::FluidigmMap)
-    }
-   
-  if(!is.null(ncells)){
-    mapping<-addMapping(mapping,list(ncells=ncells))
-  }
-  this.frame <- as.list(environment())
-  ## Factor out code that builds the mapping
-  this.frame$cellvars <- c(ncells, cellvars)
-  sc <- do.call(SingleCellAssay, this.frame)
-  as(sc, 'FluidigmAssay')
+FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, geneid=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+  cmap <- new('Mapping', .Data=list('ncells'=ncells))
+    new('FluidigmAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=c(geneid, featurevars), phenovars=phenovars, cmap=cmap)
 }
 
 ##' Constructs a SCASet
@@ -613,7 +227,3 @@ SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,co
   }
   new("SCASet",set=set)
 }
-
-
-
-

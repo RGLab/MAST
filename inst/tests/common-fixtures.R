@@ -1,6 +1,7 @@
 library(testthat)
 library(devtools)
 library(Biobase)
+library(reshape)
 
 geneid="Gene"
 primerid='Gene'
@@ -18,8 +19,9 @@ test_that("vbeta can be loaded",{
 })
 
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
-fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid)
-test_that('could create FluidigmAssay', {
-  expect_that(fd, is_a('SingleCellAssay'))
-    expect_that(fd, is_a('FluidigmAssay'))
-})
+
+## fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid)
+## test_that('could create FluidigmAssay', {
+##   expect_that(fd, is_a('SingleCellAssay'))
+##     expect_that(fd, is_a('FluidigmAssay'))
+## })
