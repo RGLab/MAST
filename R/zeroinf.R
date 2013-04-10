@@ -60,13 +60,12 @@ zlm.SingleCellAssay <- function(formula, sca, scope, ...){
 
     m <- SingleCellAssay:::melt(sca)
     ssca <- split(m, m[,probeid], drop=TRUE)
-    browser()
     ll <- lapply(ssca, function(x){
       raw <- test.zlm(zlm(formula, x, ...), scope)
       out <- raw[-1,][,c('Df', 'LRT')]
-      out$P <- pchisq(out$LRT, df=out$df, lower.tail=FALSE)
+      out <- rename(out, c('LRT'='lrstat'))
+      out$p.value <- pchisq(out$lrstat, df=out$Df, lower.tail=FALSE)
       out
     })
     do.call(rbind, ll)
-
 }
