@@ -5,7 +5,7 @@ zlm <- function(formula, data, ...){
   cont <- try(glm(formula, data, subset=pos, family='gaussian', ...))
   if(inherits(cont, 'try-error')){
     warning('Some factors were not present among the positive part')
-    
+    cont <- lm(0~0)
   }                                     
   
   init[[1L]] <- (init[[1L]]>0)*1            #apparently the response goes first in the model.frame
@@ -60,12 +60,43 @@ zlm.SingleCellAssay <- function(formula, sca, scope, ...){
 
     m <- SingleCellAssay:::melt(sca)
     ssca <- split(m, m[,probeid], drop=TRUE)
-    ll <- lapply(ssca, function(x){
-      raw <- test.zlm(zlm(formula, x, ...), scope)
+
+    for( i in seq_along(ssca)){
+      x <- ssca[[i]]
+      this.fit <- zlm(formula, x, ...)
+      z.disc <- summary(this.fit$disc)$coef[,3]
+      z.cont <- try(summary(this.fit$cont)$coef[,3], silent=TRUE)
+
+      if(inherits(z.cont, 'try-error'))
+        z.cont <- rep(NA, length(z.disc))
+      
+      raw <- test.zlm(this.fit, scope)
       out <- raw[-1,][,c('Df', 'LRT')]
       out <- rename(out, c('LRT'='lrstat'))
       out$p.value <- pchisq(out$lrstat, df=out$Df, lower.tail=FALSE)
-      out
-    })
-    do.call(rbind, ll)
+      if( i == 1){                      #this will fail if the first gene was exceptional in some way, but trying to guess the dimension of the result is hard...
+        tests <- lapply(1:nrow(out), function(vIdx){
+          var <- labels(terms(this.fit$disc))[vIdx]
+          coefNames <- names(coef(this.fit$disc))
+          coefMatch <- str_match(pattern=var, string=coefNames) # covar.names x coefficient lookup table
+          coefForThisVar <- coefNames[!is.na(coefMatch)]
+          df.skeleton <- data.frame(c(out[1,], rep(NA, length(coefForThisVar))))
+          names(df.skeleton)[-1:-length(out[1,])] <- coefForThisVar
+          cbind(gene=names(ssca), df.skeleton[rep(1,length(ssca)),])        
+      })
+        names(tests) <- labels(terms(this.fit$disc))
+      }
+      
+      for(vIdx in seq_len(nrow(out))){
+        tests[[vIdx]][i,][names(out[vIdx,])] <- out[vIdx,]
+        var <- labels(terms(this.fit$disc))[vIdx]
+         coefNames <- names(coef(this.fit$disc))
+          coefMatch <- str_match(pattern=var, string=coefNames) # covar.names x coefficient lookup table
+          coefForThisVar <- coefNames[!is.na(coefMatch)]
+        tests[[vIdx]][i,][coefForThisVar] <- z.disc[coefForThisVar]+z.cont[coefForThisVar]
+      }
+                    
+    }
+    
+    tests
 }
