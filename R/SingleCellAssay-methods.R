@@ -120,8 +120,8 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
   if( !all(cvars.in)) stop(cellvars[!cvars.in][1], ' not found')
   if( !all(fvars.in)) stop(featurevars[!fvars.in][1], ' not found')
   
-  nuniquef<-nrow(unique(dataframe[,featurevars, drop=FALSE]))
-  nuniquec<-nrow(unique(dataframe[,cellvars, drop=FALSE]))  
+  nuniquef<-nrow(uniqueModNA(dataframe[,featurevars, drop=FALSE]))
+  nuniquec<-nrow(uniqueModNA(dataframe[,cellvars, drop=FALSE]))  
   if(nuniquef != nc)
     stop("'featurevars' must be keyed by 'primerid'")
   if(nuniquec != nr)
@@ -170,7 +170,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
   
   if(length(duped.primers)>0){
     message("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
-    df <- ddply(dataframe,'wellKey',mkunique,G='primerid')
+    df <- ddply(df,'wellKey',mkunique,G='primerid')
   }
   
   if(incomplete){
@@ -186,12 +186,15 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 
 ##' @importFrom plyr ddply
 ##' @importFrom reshape expand.grid.df
+##' @importFrom reshape rename
 ## unnamed arguments get passed along to callNextMethod
 ## which eventually just sets the slots
 setMethod('initialize', 'SingleCellAssay',
           function(.Object, dataframe, idvars, primerid, measurement, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+            message(class(.Object), ' calling SingleCellAssay Initialize')
             .Object <- callNextMethod()
             if(!missing(dataframe)){              #called using melted dataframe
+              message('...with dataframe')
               if(missing(idvars) || missing(primerid) || missing(measurement)){
                 stop("Must supply all of 'idvars', 'primerid' and 'measurement' if 'dataframe' is passed")
               }
@@ -207,13 +210,13 @@ setMethod('initialize', 'SingleCellAssay',
             featurevars <- union(c('primerid', primerid, featurevars), names(.Object@fmap))
             check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
             cell.adf  <- new("AnnotatedDataFrame")
-            pData(cell.adf)<-unique(fixed$df[,cellvars, drop=FALSE]) #automatically sorted by idvars
+            pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars, drop=FALSE]) #automatically sorted by idvars
             sampleNames(cell.adf) <- unique(fixed$df$wellKey)
 
     ##pheno.adf <- new('AnnotatedDataFrame')
     ##need a phenokey into the melted data frame for this to make sense
     f.adf <- new('AnnotatedDataFrame')
-            pData(f.adf) <- unique(fixed$df[,featurevars, drop=FALSE])
+            pData(f.adf) <- uniqueModNA(fixed$df[,featurevars, drop=FALSE])
             sampleNames(f.adf) <- unique(fixed$df$primerid)
                                          .Object@cellData<-cell.adf
     .Object@featureData <- f.adf
@@ -225,7 +228,11 @@ setMethod('initialize', 'SingleCellAssay',
 
 
 
-
+uniqueModNA <- function(df){
+  u <- unique(df)
+  anyNa <- apply(is.na(u), 1, any)
+  u[!anyNa,]
+}
 
 #setGeneric("melt",function(data,...){
 #standardGeneric("melt")
@@ -263,7 +270,7 @@ setGeneric('copy', function(object) standardGeneric('copy'))
 
 ##' @rdname getwellKey-methods
 ##' @aliases getwellKey,SingleCellAssay-method
-setMethod('getwellKey', 'SingleCellAssay', function(sc) {d<-data.table(unique(as.matrix(melt(sc)[,eval(SingleCellAssay:::todt(sc@wellKey))])));setkeyv(d,"__wellKey");d})
+setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 
 
 nprimer <- function(sc){
@@ -312,16 +319,20 @@ setMethod('featureData', 'SingleCellAssay', function(object)  object@featureData
 setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 
-##' @name [[
+setMethod('[[', signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=FALSE, ...){
+  x[i,j, drop=drop, ...]
+})
+
+##' @name [
 ##' @title subset methods
-##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[[i]]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique. 
-##' @aliases [[,SingleCellAssay,ANY-method
+##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[i]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique. 
+##' @aliases [,SingleCellAssay,ANY-method
 ##' @keywords transform
-##' @rdname doubleAngleBracket-methods
+##' @rdname angleBracket-methods
 ##' @export
-try({ #this is needed to work around a bug in R that prevents redefining [[.
-  ## see http://r.789695.n4.nabble.com/package-slot-of-generic-quot-quot-and-missing-env-target-td4634152.html
-setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=FALSE, ...){
+## try({ #this is needed to work around a bug in R that prevents redefining [[.
+##   ## see http://r.789695.n4.nabble.com/package-slot-of-generic-quot-quot-and-missing-env-target-td4634152.html
+setMethod("[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, ..., drop=FALSE){
 ### index by numeric index or boolean.
   wk<-getwellKey(x)
   if(missing(i)){
@@ -335,63 +346,39 @@ setMethod("[[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
       stop("well index out of bounds")
     }
     selectedKeys <- wk[i]
-    #selected<-melt(x)[i]
   }else if(!all(i%in%wk)){
     stop("wellKeys not found in SingleCellAssay",i[!i%in%wk]);
   }
-  m<-melt(x)
-  setkeyv(m,"__wellKey")
-  setkeyv(selectedKeys,"__wellKey")
-  selectedFeatures<-m[selectedKeys]
-  #meltKeys <- melt(x)[,"__wellKey",] %in% selectedKeys
-  #selectedFeatures<-rep(TRUE,length(meltKeys));
   if(!missing(j)){
+    pk<-fData(x)$primerid
     if(inherits(j,"integer")|inherits(j,"numeric")|inherits(j,"logical")){
       if(is.logical(j)){
         j<-which(j)
       }
-      setkeyv(m,getMapping(x,"primerid"))
-      pk<-unique(m[,key(m),with=FALSE])
-      #pk<-unique(melt(x)[,getMapping(x,"primerid")])
-      if(any(j>nrow(pk))){
-        stop("feature index out of bounds")
-      }else{
-        pk<-pk[j]
-        setkeyv(selectedFeatures,getMapping(x,"primerid"))
-        selectedFeatures<-selectedFeatures[pk]
-        #selectedFeatures<-melt(x)[,getMapping(x,"primerid")]%in%pk
-      }
-    }else if(inherits(j,"character")){
-      setkeyv(m,getMapping(x,"primerid"))
-      pk<-unique(m[,key(m),with=FALSE])
-      J<-which(pk$primerid%in%j)
-      #pk<-unique(melt(x)[,getMapping(x,"primerid")])
-      if(!(all(j%in%as.matrix(pk)))){
+      if(any(j>nrow(pk))) stop("feature index out of bounds")
+      pk<-pk[j]
+    } else if(inherits(j,"character")){
+      J<-which(pk%in%j)
+      if(!(all(j%in%pk))){
         stop("feature names \n",paste(j[!j%in%as.matrix(pk)],collapse=" "), "\n not found!");
       }
-      pk<-pk[primerid%in%j] #note this assumes the primer key is one column and a character.. this has always been the case I'm just noting it here.
-      setkeyv(selectedFeatures,getMapping(x,"primerid"))
-      selectedFeatures<-selectedFeatures[pk]
       j<-J
     }
-    if(!missing(j)){
       newfdf <- featureData(x)[j,]
-    }
+  }else {                               #j missing
+    j <- TRUE
   }
-  #meltKeys<-meltKeys&selectedFeatures
-  env <- new.env()
-  #env$data <-melt(x)[meltKeys,]
-  setkeyv(selectedFeatures,getMapping(x,"idvars"))
-  env$data<-selectedFeatures
-  ##TODO: update phenodata
   newcdf <- cellData(x)[i,]
   if(!exists("newfdf")){
     newfdf<-x@featureData
   }
-  cls<-class(x)[[1]]
-  new(cls, env=env, mapping=x@mapping, id=x@id, wellKey="__wellKey", featureData=newfdf, cellData=newcdf)
-}) }, silent=TRUE)
-
+  .Data <- callNextMethod(x, i, j)
+  x@featureData <- newfdf
+  x@cellData <- newcdf
+  x@.Data <- .Data
+  x
+})
+                                        #}, silent=TRUE)
 
 ##' @rdname subset-methods
 ##' @aliases subset,SingleCellAssay-method
@@ -427,9 +414,7 @@ setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
 try({
 setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ...){
   ## Split a SingleCellAssay by criteria
-  contentClass<-class(x)
-  m<-melt(x)
-  mp<-getMapping(x)
+  m<-cData(x)
   ###f must be a character naming a cData variable
   if(length(f)==1&class(f)%in%"character"){
     if(!f%in%colnames(cData(x))){
@@ -437,36 +422,25 @@ setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ..
     }
     f<-factor(get(f,m))
   }else if(length(f)==nrow(cData(x))){
-    setkeyv(m,getMapping(x,"idvars"))
-    nc<-nrow(m)/nrow(cData(x))
-    f<-factor(rep(f,each=nc))
+    f<-factor(f)
   }else{
     stop("splitby must be a of length nrow(cData(x)) or a character naming a cData variable")
   }
-  
-  setkeyv(m,getMapping(x,"idvars"))
-  SCASet(dataframe=m, splitby=f, mapping=mp, contentClass=contentClass,...)
+  out <- callNextMethod()
+  cD <- split(x@cellData, f)
+  for(i in seq_along(out)){
+    out[[i]]@cellData <- cD[[i]]
+    out[[i]]@id <- levels(f)[i]
+  }
+  new('SCASet', set=out)
 })
 }, silent=TRUE)
 
 
+## ##' @importFrom plyr rbind.fill
 .SingleCellAssayCombine <- function(scalist){
-  meltlist <- lapply(scalist, melt)
-  dfbind <- do.call(rbind.fill, meltlist)
-  stopifnot(length(scalist) >= 2)
-  x <- scalist[[1]]
-  y <- scalist[[2]]
-  if(!all.equal(getMapping(x), getMapping(y))) stop('Can only combine alike SingleCellAssays')
-  if(!all.equal(class(x),class(y))){
-    stop("Cannot combine Assays of different classes")
-  }
-  contentClass<-class(x)[[1]]
-  F <- try(getFunction(contentClass),silent=TRUE)
-  if(inherits(F,"try-error"))
-    message("Can't construct a class of type ",contentClass[[1]],". Constructor of this name doesn't exist")
-  cl<-as.call(list(as.name(contentClass[[1]]),dataframe=dfbind,id=x@id,mapping=getMapping(x)))
-  eval(cl)
-  #SingleCellAssay(dfbind, idvars=NULL, primerid=NULL, measurement=NULL, geneid=NULL, id=x@id, mapping=getMapping(x),)
+  names(scalist)[1:2] <- c('x', 'y')
+  do.call(combine, scalist)
 }
 
 
@@ -481,7 +455,12 @@ setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ..
 ##' @docType methods
 ##' @rdname combine-methods
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
-  .SingleCellAssayCombine(list(x, y, ...))
+  proto <- callNextMethod()
+  cellData <- combine(cellData(x), cellData(y))
+  featureData <- combine(featureData(x), featureData(y))
+  proto@cellData <- cellData
+  proto@featureData <- featureData
+  proto
 })
 
 
@@ -496,3 +475,8 @@ setMethod('copy', 'SingleCellAssay',
             o2
           })
 
+
+setMethod('show', 'SingleCellAssay', function(object){
+callNextMethod()
+cat(' id: ', object@id, '\n')
+})

@@ -28,9 +28,8 @@ setMethod("exprs",signature(object="DataLayer"),function(object){
 
 setMethod('initialize', 'DataLayer',
           function(.Object, ...){
+            message('init DataLayer')
             .Object <- getMethod('initialize', 'ANY')(.Object, ...)
-            if(length(.Object@.Data)==1)
-              dim(.Object@.Data) <- c(1, 1, 1)
             .Object
           })
 
@@ -45,26 +44,43 @@ setMethod('initialize', 'DataLayer',
 
 setReplaceMethod('exprs', c('DataLayer', 'ANY'),
                  function(object, value){
-                   if(!conform(object, value)) stop('Replacement must be same dimension as target')
-                   object[,] <- value
+                   #if(!conform(object, value)) stop('Replacement must be same dimension as target')
+                   object[[,]] <- value
                    object@valid <- FALSE
                    object
                  })
 
+
+##' Do two objects conform in dimension and type?
+##'
+##' Returns false if:
+##' other does not inherit from Matrix
+##' Otherwise returns a bitmask, which is the sum of:
+##' 1: objects have same number of rows
+##' 2: objects have same number of columns
+##' 4: objects have same number of layers (when compareLayers is TRUE)
+##' @title conform
+##' @param dl DataLayer
+##' @param other Another object
+##' @param compareLayers Should the number of layers be tested?
+##' @return bitmask containing number of dimensions that agree
+##' @author andrew
 setMethod('conform', c('DataLayer', 'ANY'),
           function(dl, other){
-            inherits(other, 'matrix') && nrow(dl) == nrow(other) && ncol(dl) == ncol(other)
+            if(!(inherits(other, 'matrix') || inherits(other, 'array'))) return(FALSE)
+            (nrow(dl) == nrow(other))*1 + (ncol(dl) == ncol(other))*2 +
+              ifelse(inherits(other, 'DataLayer'),(nlayer(dl)==nlayer(other))*4, 0)
           })
 
 setMethod('ncol', 'DataLayer',
           function(x){
-            if(length(x)==0) return(0)
+            #if(length(x)==0) return(0)
             ncol(x@.Data[,,x@layer,drop=FALSE])
           })
 
 setMethod('nrow', 'DataLayer',
           function(x){
-            if(length(x)==0) return(0)
+            #if(length(x)==0) return(0)
             nrow(x@.Data[,,x@layer,drop=FALSE])
           })
 
@@ -74,26 +90,39 @@ setMethod('nlayer', 'DataLayer',
             dim(x@.Data)[3]
           })
 
-setMethod('[', 'DataLayer', function(x, i, j, ..., drop=TRUE){
-  vargs <- list(...)
-  if(length(vargs)>0 || (is.matrix(i) && ncol(i)>2)) stop('incorrect number of dimensions')
-  if(length(x)==0) return(numeric(0))
-  
-  if(is.matrix(i) && ncol(i)==2){                        #matrix indexing
+setMethod('[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
+  if(!missing(i) && is.matrix(i)) stop('Only rectangular selections permitted')
+ out <- .subsetHelper(x, i, j, ..., drop=drop)
+  new('DataLayer', out, valid=x@valid, layer=x@layer)
+})
+
+.subsetHelper <- function(x, i, j, ..., drop=FALSE){
+ vargs <- list(...)
+  if(length(vargs)>0 || (!missing(i) && is.matrix(i) && ncol(i)>2)) stop('incorrect number of dimensions')
+  #if(length(x)==0) return(numeric(0))
+  out <- x@.Data[i,j,,drop=FALSE]
+}
+
+setMethod('[[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
+    if(!missing(i) && is.matrix(i) && ncol(i)==2){                        #matrix indexing
+    ## i <- cbind(i[rep(1:nrow(i), times=nlayer(x)),], #make nlayer copies of i, appending 1...nlayer onto it
+    ##            rep(seq_len(nlayer(x)), each=nrow(i)))
     i <- cbind(i, layer(x))
-    out <- x@.Data[i,drop=drop]
+    out <- x@.Data[i,drop=FALSE]
   } else{
-  out <- x@.Data[i,j,layer(x),drop=drop]
+  out <- .subsetHelper(x, i, j, ..., drop=drop)
+  out <- out[,,layer(x), drop=drop]
 }
   if(!drop) dim(out) <- dim(out)[-length(dim(out))] #kill layer dimension
   out
 })
 
 
-setMethod('[<-', 'DataLayer', function(x, i, j, ..., value){
+
+setMethod('[[<-', 'DataLayer', function(x, i, j, ..., value){
    vargs <- list(...)
-  if(length(vargs)>0 || (is.matrix(i) && ncol(i)>2)) stop('incorrect number of dimensions')
-  if(is.matrix(i) && ncol(i)==2){                        #matrix indexing
+  if(length(vargs)>0 || (!missing(i) && is.matrix(i) && ncol(i)>2)) stop('incorrect number of dimensions')
+  if(!missing(i) && is.matrix(i) && ncol(i)==2){                        #matrix indexing
     i <- cbind(i, layer(x))
     x@.Data[i] <- value
   } else{
@@ -118,7 +147,7 @@ setMethod("show","DataLayer",function(object){
 })
 
 setMethod('get', c('DataLayer', 'ANY'), function(x, pos){
-  if(length(x)==0) return(numeric(0))
+  #if(length(x)==0) return(numeric(0))
   x[,,pos]
 })
 
@@ -132,3 +161,38 @@ setReplaceMethod('layer', c('DataLayer', 'numeric'), function(x, value){
   x@layer <- value
   x
 })
+
+## FIXME: gdata (not sure why it's imported) shadows the generic definition
+##'Combine two SingleCellAssay or derived classes
+##'
+##' Combines two Single Cell-like objects provided they have the same number of Features and Layers.
+##' The union of columns from featureData will be taken
+##' The union (padded if necessary with NA) will be taken from cellData.
+##' @importMethodsFrom BiocGenerics combine
+##' @importFrom abind abind
+##' @exportMethod combine
+##' @aliases combine,SingleCellAssay,SingleCellAssay-method
+##' @docType methods
+##' @rdname combine-methods
+setMethod('combine', signature(x='DataLayer', y='DataLayer'), function(x, y, ...) {
+   if(!conform(x, y)>=6){
+     stop('Objects must have same number of features and layers; x has dim ', paste(dim(x), ' '), '; y has dim ', paste(dim(y),' '))
+   }
+   .Data <- abind(x@.Data, y@.Data, along=1)
+   proto <- new(class(x), .Data=.Data, valid=x@valid&y@valid)
+     for( sl in setdiff(names(getSlots(class(x))), c('valid', '.Data'))){
+        slot(proto, sl) <- slot(x, sl)
+    }
+   proto
+ })
+
+
+## 
+## .DLCombine <- function(x){
+##   stopifnot(is.list(x))
+##   stopifnot(all(sapply(x, inherits, what='DataLayer')))
+##   example <- x[[1]]
+##   stopifnot(all(lapply(x, conform, example)>=6)) #same number of columns and layers
+##   proto <- do.call(abind, c(x, along=1))
+##   
+## }

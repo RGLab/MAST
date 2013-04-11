@@ -1,4 +1,7 @@
-setAs('SingleCellAssay', 'FluidigmAssay', function(from)  new("FluidigmAssay",env=from@env,mapping=addMapping(from@mapping,list(ncells=NULL)),id=from@id, wellKey=from@wellKey, featureData=from@featureData, phenoData=from@phenoData, cellData=from@cellData, description=from@description))
+## setMethod('coerce', signature=c('SingleCellAssay', 'FluidigmAssay'), function(from, to, strict=TRUE){
+##   ncells <- 'ncells'
+##   if(!(ncells %in% names(cData(from)))) stop('A ncells field must be present in the cellData')
+## })
 
 ## ###===========Generics===============
 ## setGeneric('filter')

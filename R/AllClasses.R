@@ -6,7 +6,10 @@ NULL
 
 setOldClass("ncdf")
 
-setClass('DataLayer', contains='array', representation=representation(layer='numeric', valid='logical'), prototype=prototype(array(NA, dim=c(0, 0, 0)), layer=1L, valid=TRUE))
+setClass('DataLayer', contains='array', representation=representation(layer='numeric', valid='logical'), prototype=prototype(array(NA, dim=c(0, 0, 1)), layer=1L, valid=TRUE), validity=function(object){
+  #cat('DL dim ', dim(object@.Data), '\n')
+  length(dim(object@.Data))==3
+  })
 
 setClass('Mapping', contains='list')
 setMethod('initialize', 'Mapping', function(.Object, keys=NULL, values=NULL, ...){
@@ -41,22 +44,24 @@ Mandatory_Cellvars <- NULL#c('wellKey')
 
 
 SingleCellAssayValidity <- function(object){
-  ## if(nrow(object)!=nrow(cData(object))){
-  ##   message('dimension mismatch between cData and nrows')
-  ##   return(FALSE)
-  ##   }
-  ## if(ncol(object)!=nrow(fData(object))){
-  ##   message('dimension mismatch between fData and ncols')
-  ##   return(FALSE)
-  ## }
-  ## if(!all(names(object@cmap) %in% names(cData(object)))){
-  ##   message('some expected fields in cData are missing')
-  ##   return(FALSE)
-  ## }
-  ## if(!all(names(object@fmap) %in% names(fData(object)))){
-  ##   message('some expected fields in fData are missing')
-  ##   return(FALSE)
-  ## }
+  message('SingleCellAssayValidity')
+  if(nrow(cData(object))==0 || nrow(fData(object) == 0)) return(TRUE)
+  if(nrow(object)!=nrow(cData(object))){
+    message('dimension mismatch between cData and nrows')
+    return(FALSE)
+    }
+  if(ncol(object)!=nrow(fData(object))){
+    message('dimension mismatch between fData and ncols')
+    return(FALSE)
+  }
+  if(!all(names(object@cmap) %in% names(cData(object)))){
+    message('some expected fields in cData are missing')
+    return(FALSE)
+  }
+  if(!all(names(object@fmap) %in% names(fData(object)))){
+    message('some expected fields in fData are missing')
+    return(FALSE)
+  }
   TRUE                                  #this stuff might not belong in the validity, it's getting called too early when subclasses of SingleCellAssay are constructed
 }
                                           
@@ -199,21 +204,13 @@ FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, gene
 ##' @export 
 SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,contentClass="SingleCellAssay",...){
   if(is.character(splitby) && all(splitby %in% names(dataframe))){
-  spl<-split(dataframe,dataframe[, splitby,with=FALSE])
+  spl<-split(dataframe,dataframe[, splitby])
 } else if(is.factor(splitby) || is.list(splitby) || is.character(splitby)){
   spl <- split(dataframe, splitby)
 } else{
   stop("Invalid 'splitby' specification")
 }
-  ## mapping<-try(get("mapping",list(...)),silent=TRUE)
-  ## if(inherits(mapping,"try-error")){
-  ##   #Mapping wasn't passed to the constructor.. 
-  ## }else{
-    
-  ## }
-#   if(is.null(primerid)&is.null(idvars)&exists("mapping",list(...))){
-#     mapping<-get("mapping",list(...))
-#   }
+ 
   set<-vector("list",length(spl))
   names(set)<-names(spl)
   for(i in seq_along(set)){
@@ -223,7 +220,6 @@ SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,co
       message("Can't construct a class of type ",contentClass[[1]],". Constructor of this name doesn't exist")
       cl<-as.call(list(as.name(contentClass[[1]]),dataframe=spl[[i]],idvars=idvars,primerid=primerid,id=names(spl)[[i]], measurement=measurement,...))
     set[[i]]<-eval(cl)
-#    set[[i]]<-SingleCellAssay(dataframe=spl[[i]],idvars=idvars,primerid=primerid,id=names(spl)[[i]], measurement=measurement,...)
   }
   new("SCASet",set=set)
 }
