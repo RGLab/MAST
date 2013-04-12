@@ -54,6 +54,23 @@ test.zlm <- function(model, scope){
   d.n
 }
 
+##' zero-inflated regression for SingleCellAssay 
+##'
+##' Fits a hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
+##' Conducts likelihood ratio tests for each predictor in \code{formula} that does not appear in
+##' \code{scope}.
+##'
+##' A \code{list} of \code{data.frame}s, is returned, with one \code{data.frame} per tested predictor.
+##' Rows of each \code{data.frame} are genes, the columns give the value of the LR test and its P-value, and the sum of the T-statistics for each level of the factor (when the predictor is categorical).
+##' @title zlm.SingleCellAssay
+##' @param formula a formula with the measurement variable on the LHS and predictors present in cData on the RHS
+##' @param sca SingleCellAssay object
+##' @param scope (optional) a formula giving the size of the smaller model to be fit.  If omitted, each predictor will be dropped in turn.
+##' @param ... passed to lm and glm. 
+##' @return a \code{list} of \code{data.frame}, one per tested predictor.  See details.
+##' @export
+##' @importFrom reshape rename
+##' @importFrom stringr str_match
 zlm.SingleCellAssay <- function(formula, sca, scope, ...){
     probeid <- getMapping(sca@mapping,"primerid")[[1]]
     measure <- getMapping(sca@mapping,"measurement")[[1]]
