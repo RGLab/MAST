@@ -3,10 +3,9 @@
 \title{NanoString Assay Constructor}
 \usage{
   NanoStringAssay(rccfiles = NULL, keyfile = NULL, idvars,
-    primerid, measurement, ncells = NULL, geneid = NULL,
-    id = NULL, cellvars = NULL, featurevars = NULL,
-    phenovars = NULL, post.process.function = NULL,
-    ltrans = FALSE, ...)
+    primerid, measurement, ncells = NULL, id = NULL,
+    cellvars = NULL, featurevars = NULL, phenovars = NULL,
+    post.process.function = NULL, ltrans = FALSE, ...)
 }
 \arguments{
   \item{rccfiles}{A list of rcc files with full paths}
@@ -39,10 +38,6 @@
   \item{post.process.function}{function applied to
   \code{data.frame} of all rcc files, before the
   NanostringAssay object is constructed.}
-
-  \item{ltrans}{Should the counts be log2 + 1 transformed?
-  Default is FALSE. Set to TRUE when constructing from RAW
-  data.}
 
   \item{...}{Additional parameters passed to
   \code{SingleCellAssay} constructor}

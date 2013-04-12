@@ -183,7 +183,7 @@ plotEtz <- function(mysc, groups, byGroup=FALSE, sigmaContinuous=c(3, 5, 7, 9)){
   allna <- apply(is.na(z.exprs), 2, all)
   z.exprs <- z.exprs[,!allna]
   anyOver <- apply(abs(z.exprs)>minThres, 1, any, na.rm=TRUE)
-  flbind <- data.frame(cData(mysc), wellKey=getwellKey(mysc), anyOver)
+  flbind <- data.frame(cData(mysc), anyOver)
   flbind <- merge(flbind, z.exprs, by=0)[,-1] #drop Row.names column
   etzmelt <- melt(flbind, id.vars=c('anyOver', names(cData(mysc)), 'wellKey'))
   etzmelt <- rename(etzmelt, c('value'='etz', 'variable'='gene'))

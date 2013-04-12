@@ -3,7 +3,7 @@
 \title{Fluidigm Assay Constructor}
 \usage{
   FluidigmAssay(dataframe = NULL, idvars, primerid,
-    measurement, ncells, geneid = NULL, id = NULL,
+    measurement, ncells, geneid = NULL, id = numeric(0),
     cellvars = NULL, featurevars = NULL, phenovars = NULL,
     ...)
 }

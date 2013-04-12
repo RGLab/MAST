@@ -18,7 +18,7 @@
 context('Can construct')
 cdat <- as(data.frame(wellKey=c('A', 'B'), ncells=c(1, 1)), 'AnnotatedDataFrame')
 fdat <- as(data.frame(primerid=LETTERS[1:4], meta=TRUE), 'AnnotatedDataFrame')
-val <- array(1:8, c(2, 4, 1), dimnames=list(wellKey=cdat$wellKey, primerid=fdat$primerid, measurement='et'))
+val <- new('DataLayer', array(1:8, c(2, 4, 1), dimnames=list(wellKey=cdat$wellKey, primerid=fdat$primerid, measurement='et')))
 sc <- new('SingleCellAssay', .Data=val, cellData=cdat, featureData=fdat)
 fd <- new('FluidigmAssay', .Data=val, cellData=cdat, featureData=fdat)
 
@@ -69,31 +69,32 @@ test_that("Completes incomplete data", {
   expect_equal(nrow(SingleCellAssay:::melt(sci)), nrow(dat_complete))
 })
 
-context('testing cell and feature dictionaries')
+## No more mapping, hurray!
+## context('testing cell and feature dictionaries')
 
-complete<-(SingleCellAssay:::melt(sc))[,setdiff(colnames(SingleCellAssay:::melt(sc)),"__wellKey"),with=FALSE]
-scd <- SingleCellAssay(complete, mapping=getMapping(sc))
+## complete<-(SingleCellAssay:::melt(sc))[,setdiff(colnames(SingleCellAssay:::melt(sc)),"__wellKey")]
+## scd <- SingleCellAssay(complete, mapping=getMapping(sc))
 
-test_that('Cell data has correct number of row/columns', {
-  expect_that(cData(scd), is_a('data.frame'))
-  expect_equivalent(nrow(scd), nrow(cData(scd)))
-  expect_equal(unique(cData(scd)), cData(scd))
-  expect_equivalent(ncol(cData(scd)), length(unique(c(phenovars, idvars, cellvars))))
-})
-
+## test_that('Cell data has correct number of row/columns', {
+##   expect_that(cData(scd), is_a('data.frame'))
+##   expect_equivalent(nrow(scd), nrow(cData(scd)))
+##   expect_equal(unique(cData(scd)), cData(scd))
+##   expect_equivalent(ncol(cData(scd)), length(unique(c(phenovars, idvars, cellvars))))
+## })
+scd <- new('SingleCellAssay', .Data=sc@.Data, cellData=cellData(sc), featureData=featureData(sc))
 test_that('Feature data has correct number of row/columns', {
  expect_that(fData(scd), is_a('data.frame'))
   expect_that(featureData(scd), is_a('AnnotatedDataFrame'))
    expect_equivalent(ncol(scd), nrow(fData(scd)))
   expect_equal(unique(fData(scd)), fData(scd))
- #one extra column for the deduplicated primerid
-  expect_equivalent(ncol(fData(scd)), length(unique(c(featurevars, geneid, primerid)))+1 )
+ #one extra column for the primerid
+  expect_equivalent(ncol(fData(scd)), length(unique(c(featurevars, geneid, primerid)))+1) 
 })
 
 context("Testing methods")
 test_that("Can subset complete data with integer indices",{
   ind<- seq(1, length(countComplete), by=5) 
-  sub <- sc[[ind]]
+  sub <- sc[[ind,]]
   expect_that(sub, is_a("SingleCellAssay"))
   expect_that(getwellKey(sub), equals(getwellKey(sc)[ind]))
   sub <- sc[[ind,"B3GAT1"]]
@@ -101,32 +102,39 @@ test_that("Can subset complete data with integer indices",{
   expect_that(getwellKey(sub), equals(getwellKey(sc)[ind]))
 })
 
-  boolind<- rep(c(FALSE, TRUE, FALSE), length.out=length(countComplete))
+  boolind<- c(FALSE, TRUE, FALSE)
 test_that("Can subset complete data with boolean indices",{
   sub <- sc[[boolind]]
   expect_that(sub, is_a("SingleCellAssay"))
-  expect_that(getwellKey(sub), equals(getwellKey(sc)[which(boolind)]))
+  expect_that(getwellKey(sub), equals(getwellKey(sc)[boolind]))
+})
+
+test_that('can subset by character', {
+  sub <- sc[,'GAPDH']
+  expect_equal(ncol(sub), 1)
+  expect_error(sc[,'NOT_PRESENT'], 'NOT_PRESENT')
+  expect_error(sc['NOT_PRESENT',], 'NOT_PRESENT')
+  expect_equal(getwellKey(fd["Sub02 3 Stim(SEB) VbetaResponsive C02",]), "Sub02 3 Stim(SEB) VbetaResponsive C02")
 })
 
 test_that('Subsetting preserves cell and featuredata',{
-  sub <- scd[[boolind]]
+  sub <- sc[[boolind]]
   expect_that(sub, is_a("SingleCellAssay"))
-  expect_that(getwellKey(sub), equals(getwellKey(scd)[which(boolind)]))
+  expect_that(getwellKey(sub), equals(getwellKey(scd)[boolind]))
   expect_equal(featureData(sub), featureData(scd))
   expect_equivalent(cData(sub), cData(scd)[boolind,])
-#  sub2 <- sub[[boolind]] #this did not make sense to me with the test defined below
-#  expect_equivalent(cData(sub2), cData(sub)[boolind,])
-  expect_equivalent(cData(sub),cData(scd)[boolind,]) #this makes sense..no?
+#expect_equivalent(cData(sub2), cData(sub)[boolind,]) #check if the cData subset is the same as the subset of the cData
 })
 
 exprComplete <- exprs(sc)
 test_that("Exprs works", {
+  measurement <- 'value'                #fix so melt renames column correctly
   expect_is(exprComplete, "matrix")
-  expect_equal(nrow(exprComplete), nrow(getwellKey(sc)))
+  expect_equal(nrow(exprComplete), length(getwellKey(sc)))
   ind <- seq(1, nrow(dat_complete), by=1042)
-  expect_equal(melt(sc)[ind,eval(as.name(measurement))], exprComplete[ind])
-  geneandrow <- melt(sc)[1054,eval(SingleCellAssay:::todt(c(geneid, "__wellKey")))]  
-  thect <- melt(sc)[1054, eval(SingleCellAssay:::todt(measurement))]
+  expect_equal(melt(sc)[ind,measurement], as.vector(exprComplete)[ind])
+  geneandrow <- melt(sc)[1054,c(geneid, "wellKey")]  
+  thect <- melt(sc)[1054, measurement]
   expect_equivalent(exprComplete[geneandrow[[2]], geneandrow[[1]]], thect)
 })
 
@@ -154,7 +162,7 @@ test_that('Subset throws an intelligent error if thesubset cannot be evaluated',
 
 context("SCASet works")
 test_that('Can construct', {
-aset <- SCASet(melt(scd), splitby='Subject.ID', mapping=getMapping(scd))
+aset <- SCASet(melt(scd), primerid=primerid, idvars=idvars, measurement='value', splitby='Subject.ID')
 })
 
 test_that('Can split',{
@@ -198,18 +206,23 @@ test_that('Copy works', {
 context('Combine works')
 doubleid <- data.frame(id1=1:3, id2=1:3, et=rep(3, 3), f1=rep('A', 3))
 smallsc <- SingleCellAssay(doubleid, idvars='id1', geneid='f1', primerid='f1', measurement='et', id='1')
+
 test_that('combine works', {
 spl <- split(smallsc, 'id1')
 c1 <- combine(spl[[1]], spl[[2]])
 expect_that(c1, is_a('SingleCellAssay'))
 expect_equal(nrow(c1), 2)
-## c2 <- combine(spl[[1]], spl[[2]], spl[[3]])
-## expect_that(c2, is_a('SingleCellAssay'))
-
-c2 <- .SingleCellAssayCombine(spl@set)
+c2 <- combine(spl[[1]], spl[[2]], spl[[3]])
 expect_that(c2, is_a('SingleCellAssay'))
-expect_equal(c2, smallsc)
 })
+
+test_that('combine throws error for non-conforming',{
+  expect_error(combine(fd, spl[[1]]))
+})
+
+
+
+
 
 context('Testing FluidigmAssay')
 fd <- as(scd, 'FluidigmAssay')

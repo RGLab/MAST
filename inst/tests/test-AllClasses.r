@@ -15,5 +15,5 @@ test_that('Create a one-column id SingleCellAssay', {
 
 test_that('duplicate primers doesn\'t throw error', {
   
-  expect_that(SingleCellAssay(duplicateprimers, idvars='id1', geneid='f1', primerid='f1', measurement='et'), is_a(class="SingleCellAssay"))
+  expect_that(SingleCellAssay(dataframe=duplicateprimers, idvars='id1', geneid='f1', primerid='f1', measurement='et'), is_a(class="SingleCellAssay"))
 })

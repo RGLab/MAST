@@ -6,7 +6,7 @@
 \usage{
   SingleCellAssay(dataframe = NULL, idvars = NULL,
     primerid = NULL, measurement = NULL, geneid = NULL,
-    id = NULL, mapping = NULL, cellvars = NULL,
+    id = numeric(0), mapping = NULL, cellvars = NULL,
     featurevars = NULL, phenovars = NULL, ...)
 }
 \arguments{

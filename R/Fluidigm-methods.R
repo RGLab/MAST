@@ -107,16 +107,16 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
     lhs1 <- paste(c(terms1, getMapping(scL[[i]],"primerid")[[1]]), collapse="+")
     firstForm <- formula(sprintf("%s ~.", lhs1))
     ##should look like Patient.ID + ... + n.cells ~ PrimerID
-    tmp <- cast(melt(scL[[i]]), firstForm, fun.aggregate=fun.natural, value=getMapping(scL[[i]],"measurement")[[1]])
+    tmp <- cast(melt(scL[[i]]), firstForm, fun.aggregate=fun.natural, value=getMapping(scL[[i]],"value")[[1]])
     ##exponential average per gene, scaled by number of cells
-    if(class(melt(scL[[i]])[[getMapping(scL[[i]],"ncells")]]) == 'factor'){
+    if(class(melt(scL[[i]])['ncells']) == 'factor'){
       warning("ncells is a factor rather than numeric.\n I'll continue, but this may cause problems down the line")
     }
     tmp["(all)"] <- tmp["(all)"]/as.numeric(as.character(tmp[[getMapping(scL[[i]],"ncells")[[1]]]]))
     rhs2 <- union(groups, getMapping(scL[[i]],"primerid")[[1]])
     terms2 <- sprintf("%s ~ .", paste(rhs2, collapse="+"))
     secondForm <- formula(terms2)
-    nexp = cast(melt(scL[[i]]), secondForm, fun.aggregate=function(x){sum(x>0)}, value=getMapping(scL[[i]],"measurement")[[1]])
+    nexp = cast(melt(scL[[i]]), secondForm, fun.aggregate=function(x){sum(x>0)}, value=getMapping(scL[[i]],"value")[[1]])
     #put back on Et scale. fun.cycle adds 1 so -Inf becomes 0 on natural scale
     #Not sure this is what we want? Okay.. this will be fine
     castL[[i]] <- cast(melt(tmp), secondForm, fun.aggregate=fun.cycle)
@@ -220,12 +220,10 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
         out <- .SingleCellAssayCombine(lapp)
         #don't need to do this anymore since data.tables preserve order and have nice names
       } else if(filt_control$filter){
-        out <- do.call(rbind, lapp)
-        rownames(out)<-do.call(c,lapply(lapp,rownames))
+        out <- do.call(rbind, lapp)     #Fix order, argh
         scKey <- split(getwellKey(sc), cData(sc)[,groups])
-        scKeybound <- do.call(rbind, scKey)
-        #out <- out[match(getwellKey(sc), scKeybound),] #test this
-        out<-out[match(as.matrix(getwellKey(sc)),as.matrix(scKeybound)),]
+        scKeybound <- do.call(c, scKey)
+        out <- out[match(getwellKey(sc), scKeybound),] #test this
       } else{                           #I'd reckon it's an unapplied filterset, we'll just keep it as a list
         out <- lapp
       }
@@ -298,8 +296,8 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 ##' @author andrew
 freqFromPools <- function(fd){
   stopifnot(inherits(fd, 'FluidigmAssay'))
-ncellID <- getMapping(fd, 'ncells')
-geneID <- getMapping(fd, 'primerid')
+ncellID <- 'ncells'
+geneID <- 'primerid'
 genes <- fData(fd)[,geneID]
 ee <- exprs(fd)
 ncells <- cData(fd)[,ncellID]
@@ -355,8 +353,6 @@ primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift
   })
   exprs.new <- do.call(cbind, exprs.new)
   exprs(skeleton) <- exprs.new
-  m <- addMapping(getMapping(fd), list(primerid=geneGroups), replace=TRUE)
-  skeleton@mapping <- m
-  skeleton
-  ## TODO: fix primerids
+  skeleton@featureData$primerid <- fData(skeleton)[,geneGroups]
+  skeleton <- .sortSingleCellAssay(skeleton)
 }

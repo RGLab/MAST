@@ -54,6 +54,17 @@ SingleCellAssayValidity <- function(object){
     message('dimension mismatch between fData and ncols')
     return(FALSE)
   }
+
+  if(!all(fData(object)$primerid == colnames(object))){
+    message("'DataLayer' column names mismatch featureData 'primerid' field")
+    return(FALSE)
+  }
+  
+  if(!all(cData(object)$wellKey == row.names(object))){
+    message("'DataLayer' row names mismatch cellData 'wellKey' field")
+    return(FALSE)
+  }
+  
   if(!all(names(object@cmap) %in% names(cData(object)))){
     message('some expected fields in cData are missing')
     return(FALSE)
@@ -179,7 +190,7 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
-##' @export FluidigmAssay
+##' @export
 FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, geneid=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
   cmap <- new('Mapping', .Data=list('ncells'=ncells))
     new('FluidigmAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=c(geneid, featurevars), phenovars=phenovars, cmap=cmap)

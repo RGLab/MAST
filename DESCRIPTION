@@ -1,7 +1,7 @@
 Package: SingleCellAssay
 Type: Package
 Title: Core data structures for single-cell assays
-Version: 0.5
+Version: 0.6
 Date: 2012-07-02
 Author: Andrew McDavid <amcdavid@fhcrc.org>, Greg Finak <gfinak@fhcrc.org>
 Maintainer: Greg Finak <gfinak@fhcrc.org>
@@ -19,10 +19,10 @@ Imports:
     gplots,
     latticeExtra,
     plyr,
-    digest,
     ggplot2,
     stringr,
-    foreach
+    foreach,
+    abind
 Depends:
     data.table,
     foreach
@@ -39,3 +39,7 @@ Collate:
     'filterEval.R'
     'piest.R'
     'DataLayer.R'
+    'Fluidigm-methods.R'
+    'SCASet-methods.R'
+    'helper-methods.R'
+    'NanostringRCCReader.R'

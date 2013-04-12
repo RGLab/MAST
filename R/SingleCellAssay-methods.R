@@ -120,8 +120,8 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
   if( !all(cvars.in)) stop(cellvars[!cvars.in][1], ' not found')
   if( !all(fvars.in)) stop(featurevars[!fvars.in][1], ' not found')
   
-  nuniquef<-nrow(uniqueModNA(dataframe[,featurevars, drop=FALSE]))
-  nuniquec<-nrow(uniqueModNA(dataframe[,cellvars, drop=FALSE]))  
+  nuniquef<-nrow(uniqueModNA(dataframe[,featurevars, drop=FALSE], 'primerid'))
+  nuniquec<-nrow(uniqueModNA(dataframe[,cellvars, drop=FALSE], 'wellKey'))  
   if(nuniquef != nc)
     stop("'featurevars' must be keyed by 'primerid'")
   if(nuniquec != nr)
@@ -190,9 +190,10 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ## unnamed arguments get passed along to callNextMethod
 ## which eventually just sets the slots
 setMethod('initialize', 'SingleCellAssay',
-          function(.Object, dataframe, idvars, primerid, measurement, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+          function(.Object, dataframe, idvars, primerid, measurement, cellvars=NULL, featurevars=NULL, phenovars=NULL, sort=TRUE, ...){
             message(class(.Object), ' calling SingleCellAssay Initialize')
             .Object <- callNextMethod()
+            if(sort) .Object <- .sortSingleCellAssay(.Object)
             if(!missing(dataframe)){              #called using melted dataframe
               message('...with dataframe')
               if(missing(idvars) || missing(primerid) || missing(measurement)){
@@ -210,13 +211,13 @@ setMethod('initialize', 'SingleCellAssay',
             featurevars <- union(c('primerid', primerid, featurevars), names(.Object@fmap))
             check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
             cell.adf  <- new("AnnotatedDataFrame")
-            pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars, drop=FALSE]) #automatically sorted by idvars
+            pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars, drop=FALSE], 'wellKey') #automatically sorted by idvars
             sampleNames(cell.adf) <- unique(fixed$df$wellKey)
 
     ##pheno.adf <- new('AnnotatedDataFrame')
     ##need a phenokey into the melted data frame for this to make sense
     f.adf <- new('AnnotatedDataFrame')
-            pData(f.adf) <- uniqueModNA(fixed$df[,featurevars, drop=FALSE])
+            pData(f.adf) <- uniqueModNA(fixed$df[,featurevars, drop=FALSE], 'primerid')
             sampleNames(f.adf) <- unique(fixed$df$primerid)
                                          .Object@cellData<-cell.adf
     .Object@featureData <- f.adf
@@ -227,10 +228,26 @@ setMethod('initialize', 'SingleCellAssay',
           })
 
 
+.sortSingleCellAssay <- function(object){
+  if(nrow(cData(object))>0){
+    rowOrd <- order(cData(object)$wellKey)
+    object@.Data <- as(object, 'DataLayer')[rowOrd,]
+    object@cellData <- object@cellData[rowOrd,]
+  }
+  if(nrow(fData(object))>0){
+     colOrd <- order(fData(object)$primerid)
+    object@.Data <- as(object, 'DataLayer')[,colOrd]
+    object@featureData <- object@featureData[colOrd,]
+  }
+  stopifnot(validObject(object))
+  object
+}
 
-uniqueModNA <- function(df){
+uniqueModNA <- function(df, exclude){
+  #browser()
+  w.exclude <- which(names(df) %in% exclude)
   u <- unique(df)
-  anyNa <- apply(is.na(u), 1, any)
+  anyNa <- apply(is.na(u)[,-w.exclude, drop=FALSE], 1, all)
   u[!anyNa,]
 }
 
@@ -330,35 +347,22 @@ setMethod('[[', signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
 ##' @keywords transform
 ##' @rdname angleBracket-methods
 ##' @export
-## try({ #this is needed to work around a bug in R that prevents redefining [[.
-##   ## see http://r.789695.n4.nabble.com/package-slot-of-generic-quot-quot-and-missing-env-target-td4634152.html
 setMethod("[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, ..., drop=FALSE){
 ### index by numeric index or boolean.
-  wk<-getwellKey(x)
   if(missing(i)){
 	i<-1:nrow(x)
   }
-  if(inherits(i,"integer")|inherits(i,"logical")|inherits(i,"numeric")){
-    if(inherits(i,"logical")){
-      i<-which(i)
+  if(inherits(i,"character")){
+    wk<-getwellKey(x)
+    if(length(setdiff(i, wk))>0){
+      stop('wellKeys \n', paste(setdiff(i, wk), sep=','), '\n not found!')
     }
-    if(any(i>nrow(wk))){
-      stop("well index out of bounds")
+    i <- match(i, wk)
     }
-    selectedKeys <- wk[i]
-  }else if(!all(i%in%wk)){
-    stop("wellKeys not found in SingleCellAssay",i[!i%in%wk]);
-  }
   if(!missing(j)){
     pk<-fData(x)$primerid
-    if(inherits(j,"integer")|inherits(j,"numeric")|inherits(j,"logical")){
-      if(is.logical(j)){
-        j<-which(j)
-      }
-      if(any(j>nrow(pk))) stop("feature index out of bounds")
-      pk<-pk[j]
-    } else if(inherits(j,"character")){
-      J<-which(pk%in%j)
+    if(inherits(j,"character")){
+      J <- match(j, pk)
       if(!(all(j%in%pk))){
         stop("feature names \n",paste(j[!j%in%as.matrix(pk)],collapse=" "), "\n not found!");
       }
@@ -378,7 +382,6 @@ setMethod("[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, ..., dr
   x@.Data <- .Data
   x
 })
-                                        #}, silent=TRUE)
 
 ##' @rdname subset-methods
 ##' @aliases subset,SingleCellAssay-method
@@ -457,13 +460,22 @@ setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ..
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
   proto <- callNextMethod()
   cellData <- combine(cellData(x), cellData(y))
-  featureData <- combine(featureData(x), featureData(y))
+  ## Combine wants to do a rbind-like operation with ADFs
+  ## But we want a Cbind
+  nx <- names(fData(x))
+  ny <- names(fData(y))
+  featureData <- featureData(x)
+  pData(featureData) <- cbind(fData(x), fData(y)[,setdiff(ny, nx)])
   proto@cellData <- cellData
   proto@featureData <- featureData
   proto
 })
 
 
+##' @export
+getMapping <- function(x, map){
+  return(list(map))
+}
 
 
 ##' @exportMethod copy
