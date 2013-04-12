@@ -247,6 +247,8 @@ filtDiffs <- function(mysc, groups, filt_control=NULL){
   print(p)
 }
 
+
+#' @export
 burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
   checkGroups(sc, groups)
   conditionby <- NULL
