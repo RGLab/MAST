@@ -332,7 +332,7 @@ setMethod('featureData', 'SingleCellAssay', function(object)  object@featureData
 setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 
-setMethod('[[', signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=FALSE, ...){
+setMethod('[[', signature(x="SingleCellAssay"), function(x, i,j, drop=FALSE, ...){
   x[i,j, drop=drop, ...]
 })
 
@@ -344,7 +344,7 @@ setMethod('[[', signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
 ##' @keywords transform
 ##' @rdname angleBracket-methods
 ##' @export
-setMethod("[", signature(x="SingleCellAssay", i="ANY"), function(x, i,j, ..., drop=FALSE){
+setMethod("[", signature(x="SingleCellAssay"), function(x, i,j, ..., drop=FALSE){
 ### index by numeric index or boolean.
   if(missing(i)){
 	i<-1:nrow(x)
