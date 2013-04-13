@@ -97,6 +97,7 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
     stop("'comparison' missing or incorrect")
   ## what happens if comparision has length >1?
 
+  sca@keep.names <- FALSE
   if(!is.null(groups)){
     checkGroups(sca, groups)
     ## we should check what happens if comparison has a different number of levels

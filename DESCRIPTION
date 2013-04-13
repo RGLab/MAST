@@ -1,7 +1,7 @@
 Package: SingleCellAssay
 Type: Package
 Title: Core data structures for single-cell assays
-Version: 0.6
+Version: 0.61
 Date: 2012-07-02
 Author: Andrew McDavid <amcdavid@fhcrc.org>, Greg Finak <gfinak@fhcrc.org>
 Maintainer: Greg Finak <gfinak@fhcrc.org>
@@ -43,3 +43,4 @@ Collate:
     'SCASet-methods.R'
     'helper-methods.R'
     'NanostringRCCReader.R'
+    'zeroinf.R'
