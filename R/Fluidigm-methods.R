@@ -93,6 +93,7 @@ apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 ##' @export getConcordance
 ##' @importFrom plyr is.formula
 ##' @importFrom reshape cast
+##' @importFrom reshape melt.data.frame
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   if(!(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))){
@@ -102,6 +103,7 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
   castL <- list()
 
   for(i in seq_along(scL)){
+    scL[[i]]@keep.names <- FALSE
     checkGroups(scL[[i]], groups)
     terms1 <- union(groups, getMapping(scL[[i]],"ncells")[[1]])
     lhs1 <- paste(c(terms1, getMapping(scL[[i]],"primerid")[[1]]), collapse="+")

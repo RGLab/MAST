@@ -43,11 +43,24 @@ test_that("Can create empty instance with pre-existing wellKey",{
 ## })
 
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
-fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid)
+fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid, keep.names=TRUE)
 test_that('could create FluidigmAssay', {
   expect_that(fd, is_a('SingleCellAssay'))
     expect_that(fd, is_a('FluidigmAssay'))
 })
+
+
+context('Testing legacy behavior')
+test_that('sort unsorted SingleCellAssay', {
+  ss <- fd[,c(5, 1, 4, 10, 15)]         #or should we return a sorted object here?
+  sorted <- new('SingleCellAssay', .Data=as(ss, 'DataLayer'), cellData=cellData(ss), featureData=featureData(ss), sort=TRUE)
+  expect_equal(sort(fData(sorted)$primerid), fData(sorted)$primerid)
+})
+test_that('keep field names',{
+  m <- melt(fd)
+  expect_true(all(c(primerid, measurement, ncells, geneid) %in% names(m)))
+})
+
 
 
 sc <- fd
@@ -128,7 +141,7 @@ test_that('Subsetting preserves cell and featuredata',{
 
 exprComplete <- exprs(sc)
 test_that("Exprs works", {
-  measurement <- 'value'                #fix so melt renames column correctly
+  measurement <- 'et'                #fix so melt renames column correctly
   expect_is(exprComplete, "matrix")
   expect_equal(nrow(exprComplete), length(getwellKey(sc)))
   ind <- seq(1, nrow(dat_complete), by=1042)
@@ -162,7 +175,7 @@ test_that('Subset throws an intelligent error if thesubset cannot be evaluated',
 
 context("SCASet works")
 test_that('Can construct', {
-aset <- SCASet(melt(scd), primerid=primerid, idvars=idvars, measurement='value', splitby='Subject.ID')
+aset <- SCASet(melt(scd), primerid=primerid, idvars=idvars, measurement='et', splitby='Subject.ID')
 })
 
 test_that('Can split',{

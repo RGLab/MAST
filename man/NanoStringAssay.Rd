@@ -24,8 +24,6 @@
   \item{ncells}{A \code{character} specifying the column
   which gives the number of cells per well}
 
-  \item{geneid}{See \code{\link{SingleCellAssay}}}
-
   \item{id}{An identifier for the resulting object. Should
   be a meaningful name}
 
@@ -38,6 +36,8 @@
   \item{post.process.function}{function applied to
   \code{data.frame} of all rcc files, before the
   NanostringAssay object is constructed.}
+
+  \item{ltrans}{Should the counts be log2 + 1 transformed?}
 
   \item{...}{Additional parameters passed to
   \code{SingleCellAssay} constructor}

@@ -103,7 +103,9 @@ NULL
 ##' @S3method melt SingleCellAssay
 melt.SingleCellAssay<-function(data,...){
   m <- melt.data.frame(cbind(cData(data), exprs(data)), id.vars=names(cData(data)), variable_name='primerid')
-  merge(m, fData(data), by='primerid')
+  m <- merge(m, fData(data), by='primerid')
+  if(data@keep.names) return(rename(m, c('value'=dimnames(data)[[3]][layer(data)])))
+  return(m)
 }
 
 
@@ -129,7 +131,7 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
 }
 
 ## might have bad complexity, but could construct one at time, then glue cheaply
-fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
+fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   if(!inherits(df,"data.frame")){
     stop("Argument `dataframe` should be a data.frame.")
   }
@@ -155,7 +157,8 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
       }
     rn <- nm
     names(rn) <- as.character(bothMap[[nm]])
-    df <- rename(df, rn)
+    if(keep.names){ df[,rn] <- df[,names(rn)]}
+    else{ df <- rename(df, rn)}
   }
 
   wk <- do.call(paste, df[,idvars, drop=FALSE])
@@ -199,31 +202,39 @@ setMethod('initialize', 'SingleCellAssay',
               if(missing(idvars) || missing(primerid) || missing(measurement)){
                 stop("Must supply all of 'idvars', 'primerid' and 'measurement' if 'dataframe' is passed")
               }
-            ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
-            ## .Object@fmap[['primerid']] <- primerid
-            ## .Object@cmap[['wellKey']] <- idvars
-            fixed <- fixdf(dataframe, idvars, primerid, measurement, .Object@cmap, .Object@fmap)
-            dl <- array(fixed$df[,measurement],
-                        dim=c(length(fixed$rn), length(fixed$cn), length(measurement)),
-                        dimnames=list(wellKey=fixed$rn, primerid=fixed$cn, layer=measurement))
-            .Object@.Data <- dl
-            cellvars <- union(cellvars, c('wellKey', idvars, phenovars, names(.Object@cmap))) #fixme when we support phenovars
-            featurevars <- union(c('primerid', primerid, featurevars), names(.Object@fmap))
-            check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
-            cell.adf  <- new("AnnotatedDataFrame")
-            pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars, drop=FALSE], 'wellKey') #automatically sorted by idvars
-            sampleNames(cell.adf) <- unique(fixed$df$wellKey)
+              ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
+              fixed <- fixdf(dataframe, idvars, primerid, measurement, .Object@cmap, .Object@fmap, .Object@keep.names)
+              dl <- array(fixed$df[,measurement],
+                          dim=c(length(fixed$rn), length(fixed$cn), length(measurement)),
+                          dimnames=list(wellKey=fixed$rn, primerid=fixed$cn, layer=measurement))
+              .Object@.Data <- dl
+              cellvars <- union(cellvars, c('wellKey', idvars, phenovars, names(.Object@cmap))) #fixme when we support phenovars
+              featurevars <- union(c('primerid', primerid, featurevars), names(.Object@fmap))
+              if(.Object@keep.names){
+                featurevars <- union(featurevars, unlist(.Object@fmap))
+                cellvars <- union(cellvars, unlist(.Object@cmap))
+              }
+              check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
+              cell.adf  <- new("AnnotatedDataFrame")
+              pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars, drop=FALSE], 'wellKey') #automatically sorted by idvars
+              sampleNames(cell.adf) <- unique(fixed$df$wellKey)
+              ##pheno.adf <- new('AnnotatedDataFrame')
+              ##need a phenokey into the melted data frame for this to make sense
+              f.adf <- new('AnnotatedDataFrame')
+              pData(f.adf) <- uniqueModNA(fixed$df[,featurevars, drop=FALSE], 'primerid')
+              sampleNames(f.adf) <- unique(fixed$df$primerid)
 
-    ##pheno.adf <- new('AnnotatedDataFrame')
-    ##need a phenokey into the melted data frame for this to make sense
-    f.adf <- new('AnnotatedDataFrame')
-            pData(f.adf) <- uniqueModNA(fixed$df[,featurevars, drop=FALSE], 'primerid')
-            sampleNames(f.adf) <- unique(fixed$df$primerid)
-                                         .Object@cellData<-cell.adf
-    .Object@featureData <- f.adf
+              ## currently take care of this in fixdf
+              ## if(.Object@keep.names){
+              ##   pData(cell.adf)[,unlist(.Object@cmap)] <- pData(cell.adf)[,names(.Object@cmap)]
+              ##   pData(f.adf)[,unlist(.Object@fmap)] <- pData(f.adf)[,names(.Object@fmap)]
+              ##   pData(f.adf)[,primerid] <- pData(f.adf)[,'primerid']
+              ## }
+  
+              .Object@cellData<-cell.adf
+              .Object@featureData <- f.adf
             }
             
-
             .Object
           })
 
@@ -290,17 +301,6 @@ setGeneric('copy', function(object) standardGeneric('copy'))
 setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 
 
-nprimer <- function(sc){
-  warning('called obsolete nprimer, use ncol')
-  ncol(sc)
-}
-
-
-ncells <- function(sc){
-  warning('called obsolete ncells, use nrow')
-  nrow(sc)
-}
-
 
 ##' @rdname cData-methods
 ##' @aliases cData,SingleCellAssay-method
@@ -314,10 +314,6 @@ setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
 ##' @aliases cellData,SingleCellAssay-method
 setMethod('cellData', 'SingleCellAssay', function(sc) sc@cellData)
 
-## @rdname getMapNames-methods
-## @aliases getMapNames,SCA-method
-#setMethod('getMapNames', 'SCA', function(object) object@mapNames)
-NULL
 
 ##' @rdname fData-methods
 ##' @aliases fData,SingleCellAssay-method
@@ -344,6 +340,7 @@ setMethod('[[', signature(x="SingleCellAssay", i="ANY"), function(x, i,j, drop=F
 ##' @title subset methods
 ##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[i]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique. 
 ##' @aliases [,SingleCellAssay,ANY-method
+##' @aliases [,DataLayer,ANY-method
 ##' @keywords transform
 ##' @rdname angleBracket-methods
 ##' @export

@@ -109,7 +109,8 @@ setClass("SingleCellAssay",contains="DataLayer",
            cellData="AnnotatedDataFrame",
            description='data.frame',
            id="ANY",
-           cmap='Mapping', fmap='Mapping'),
+           cmap='Mapping', fmap='Mapping',
+           keep.names='logical'),
          prototype=prototype(phenoData=new("AnnotatedDataFrame"),
            featureData=new("AnnotatedDataFrame"),
            cellData=new("AnnotatedDataFrame"),
@@ -117,7 +118,8 @@ setClass("SingleCellAssay",contains="DataLayer",
            id=numeric(0),
            cmap=new('Mapping', keys=Mandatory_Cellvars),
            fmap=new('Mapping', keys=Mandatory_Featurevars),
-         validity=SingleCellAssayValidity))
+           keep.names=TRUE),
+         validity=SingleCellAssayValidity)
 
 
 ## Same as SingleCellAssay, but with additional mapNames

@@ -16,7 +16,7 @@ setGeneric('layer<-', function(x, value) standardGeneric('layer<-'))
 ##' @aliases exprs,DataLayer-method
 ##' @importMethodsFrom Biobase exprs
 ##' @return a \code{matrix} of measurement values with wells on the rows and features on the columns of the default layer
-##' @export exprs
+##' @export
 setMethod("exprs",signature(object="DataLayer"),function(object){
   o <- object@.Data[,,layer(object), drop=FALSE]
   dn <- dimnames(o)
@@ -103,6 +103,13 @@ setMethod('[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
   out <- x@.Data[i,j,,drop=FALSE]
 }
 
+
+##' @name [[
+##' @title subset methods
+##' @details Returns the matrix representation (of the current layer) of the \code{DataLayer}
+##' @return \code{matrix}
+##' @exportMethod '[['
+##' @aliases [[,DataLayer,ANY-method
 setMethod('[[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
     if(!missing(i) && is.matrix(i) && ncol(i)==2){                        #matrix indexing
     ## i <- cbind(i[rep(1:nrow(i), times=nlayer(x)),], #make nlayer copies of i, appending 1...nlayer onto it
@@ -162,7 +169,6 @@ setReplaceMethod('layer', c('DataLayer', 'numeric'), function(x, value){
   x
 })
 
-## FIXME: gdata (not sure why it's imported) shadows the generic definition
 ##'Combine two SingleCellAssay or derived classes
 ##'
 ##' Combines two Single Cell-like objects provided they have the same number of Features and Layers.

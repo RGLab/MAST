@@ -84,12 +84,12 @@ setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayVal
 ##' @param primerid See \code{\link{SingleCellAssay}}
 ##' @param measurement The measurement column for raw data. Will be placed in a variable named \code{raw} in the environment storing the data. The transformed and thresholded data will be placed in data.
 ##' @param ncells A \code{character} specifying the column which gives the number of cells per well
-##' @param geneid See \code{\link{SingleCellAssay}}
 ##' @param id An identifier for the resulting object. Should be a meaningful name
 ##' @param cellvars See \code{\link{SingleCellAssay}}
 ##' @param featurevars See \code{\link{SingleCellAssay}}
 ##' @param phenovars See \code{\link{SingleCellAssay}}
 ##' @param post.process.function function applied to \code{data.frame} of all rcc files, before the NanostringAssay object is constructed.
+##' @param ltrans Should the counts be log2 + 1 transformed?
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
