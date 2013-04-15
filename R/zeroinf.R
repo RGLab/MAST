@@ -73,7 +73,6 @@ test.zlm <- function(model, scope){
 ##' @importFrom stringr str_match
 zlm.SingleCellAssay <- function(formula, sca, scope, ...){
     probeid <- getMapping(sca@mapping,"primerid")[[1]]
-    measure <- getMapping(sca@mapping,"measurement")[[1]]
 
     m <- SingleCellAssay:::melt(sca)
     ssca <- split(m, m[,probeid], drop=TRUE)
@@ -99,7 +98,7 @@ zlm.SingleCellAssay <- function(formula, sca, scope, ...){
           coefForThisVar <- coefNames[!is.na(coefMatch)]
           df.skeleton <- data.frame(c(out[1,], rep(NA, length(coefForThisVar))))
           names(df.skeleton)[-1:-length(out[1,])] <- coefForThisVar
-          cbind(gene=names(ssca), df.skeleton[rep(1,length(ssca)),])        
+          cbind(primerid=names(ssca), df.skeleton[rep(1,length(ssca)),])        
       })
         names(tests) <- labels(terms(this.fit$disc))
       }
