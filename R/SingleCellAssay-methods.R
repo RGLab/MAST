@@ -332,20 +332,7 @@ setMethod('featureData', 'SingleCellAssay', function(object)  object@featureData
 setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 
-setMethod('[[', signature(x="SingleCellAssay"), function(x, i,j, drop=FALSE, ...){
-  x[i,j, drop=drop, ...]
-})
-
-##' @name [
-##' @title subset methods
-##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[i]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique. 
-##' @aliases [,SingleCellAssay,ANY-method
-##' @aliases [,DataLayer,ANY-method
-##' @keywords transform
-##' @rdname angleBracket-methods
-##' @export
-setMethod("[", signature(x="SingleCellAssay"), function(x, i,j, ..., drop=FALSE){
-### index by numeric index or boolean.
+.scaSubset <- function(x, i, j, ..., drop=FALSE){
   if(missing(i)){
 	i<-1:nrow(x)
   }
@@ -373,12 +360,28 @@ setMethod("[", signature(x="SingleCellAssay"), function(x, i,j, ..., drop=FALSE)
   if(!exists("newfdf")){
     newfdf<-x@featureData
   }
-  .Data <- callNextMethod(x, i, j)
+  ## Not callNextMethod, because we want to dispatch [ not [[
+  ## And we don't want to wrap this method 
+  .Data <- selectMethod('[', signature='DataLayer')(x, i, j, ..., drop=drop)
   x@featureData <- newfdf
   x@cellData <- newcdf
   x@.Data <- .Data
   x
-})
+}
+
+
+setMethod('[[', signature(x="SingleCellAssay"), .scaSubset)
+
+##' @name [
+##' @title subset methods
+##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[i]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique. 
+##' @aliases [,SingleCellAssay,ANY-method
+##' @aliases [,DataLayer,ANY-method
+##' @keywords transform
+##' @rdname angleBracket-methods
+##' @export
+setMethod("[", signature(x="SingleCellAssay"), .scaSubset)
+  
 
 ##' @rdname subset-methods
 ##' @aliases subset,SingleCellAssay-method

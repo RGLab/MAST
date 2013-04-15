@@ -122,6 +122,19 @@ test_that("Can subset complete data with boolean indices",{
   expect_that(getwellKey(sub), equals(getwellKey(sc)[boolind]))
 })
 
+test_that("loading Matrix package doesn't clobber generic table", {
+  ## Matrix dispatches [[ and [ on x, i, j, drop
+  ## The distinction between ANY and missing doesn't matter for
+  ## i and j until Matrix is loaded due to method caching
+  ## but then the dispatch occurs separately and things can break
+  library(Matrix)
+  sub <- sc[[boolind]]
+  sub2 <- sc[boolind]
+  expect_that(sub, is_a("SingleCellAssay"))
+  expect_equal(sub, sub2)
+  detach('package:Matrix')
+})
+
 test_that('can subset by character', {
   sub <- sc[,'GAPDH']
   expect_equal(ncol(sub), 1)
