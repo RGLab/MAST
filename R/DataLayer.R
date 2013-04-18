@@ -4,7 +4,8 @@ setGeneric('layer', function(x) standardGeneric('layer'))
 setGeneric('layer<-', function(x, value) standardGeneric('layer<-'))
 setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
 #setGeneric('dellayer', function(x, i) standardGeneric('dellayer'))
-
+setGeneric('layername', function(x) standardGeneric('layername'))
+setGeneric('layername<-', function(x, value) standardGeneric('layername<-'))
 
 
 setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, name){
@@ -12,6 +13,19 @@ setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, na
   x@.Data <- abind(x@.Data, newLayer)
   x
 })
+
+
+setMethod('layername', signature(x='DataLayer'), function(x){
+  if(length(dimnames(x)[[3]])>0) return(dimnames(x)[[3]][layer(x)])
+  return(NULL)
+})
+
+
+setReplaceMethod('layername', signature(x='DataLayer', 'character'), function(x, value){
+  dimnames(x)[[3]][layer(x)] <- value
+  x
+})
+
 
 ##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
 ##'
@@ -37,7 +51,7 @@ setMethod("exprs",signature(object="DataLayer"),function(object){
 
 setMethod('initialize', 'DataLayer',
           function(.Object, ...){
-            ##message('init DataLayer') #DEBUG
+            message('init DataLayer') #DEBUG
             .Object <- getMethod('initialize', 'ANY')(.Object, ...)
             .Object
           })

@@ -101,12 +101,23 @@ NULL
 ##' @keywords transformation
 ##' @importFrom reshape melt
 ##' @S3method melt SingleCellAssay
+## melt.SingleCellAssay<-function(data,...){
+##   m <- melt.data.frame(cbind(cData(data), exprs(data)), id.vars=names(cData(data)), variable_name='primerid')
+##   m <- merge(m, fData(data), by='primerid')
+##   if(data@keep.names) return(rename(m, c('value'=dimnames(data)[[3]][layer(data)])))
+##   return(m)
+## }
 melt.SingleCellAssay<-function(data,...){
-  m <- melt.data.frame(cbind(cData(data), exprs(data)), id.vars=names(cData(data)), variable_name='primerid')
-  m <- merge(m, fData(data), by='primerid')
-  if(data@keep.names) return(rename(m, c('value'=dimnames(data)[[3]][layer(data)])))
+  m <- cbind(
+    cData(data)[rep(seq_len(nrow(data)), ncol(data)),],
+    fData(data)[rep(seq_len(ncol(data)), each=nrow(data)),],
+    value=as.vector(exprs(data)))
+  rn <-  c('value'=dimnames(data)[[3]][SingleCellAssay:::layer(data)])
+  if(data@keep.names) return(rename(m,rn))
   return(m)
 }
+
+
 
 
 mkunique<-function(x,G){
