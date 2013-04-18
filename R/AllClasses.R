@@ -80,29 +80,27 @@ SingleCellAssayValidity <- function(object){
 ##' SingleCellAssay class
 ##' 
 ##' SingleCellAssay represents an arbitrary single cell assay
-##' It is meant to be flexible and can (and will) be subclassed to represent specific assay
-##' types like Fluidigm and others. It should be constructed using the \code{SingleCellAssay} constructor, or ideally the \code{SCASet} constructor.
+##' It is meant to be flexible and is subclassed to represent specific assay
+##' types like Fluidigm and NanoString. It should be constructed using the \code{SingleCellAssay}, \code{SCASet} or subclass constructors.
 ##' mapNames for the SingleCellAssay class are in the object \code{SingleCellAssay:::Mandatory_Cellvars}
 ##' mapNames for the FluidigmAssay class are in the object \code{SingleCellAssay:::FluidigmMapNames}
 ##' }
 ##' \section{Slots}{
+##' SingleCellAssay extends class \code{\link{DataLayer}}, so inherits its slots and methods.  It also contains the following additional slots:
 ##' \describe{
 ##'   \item{featureData}{an \code{AnnotatedDataFrame} that describes feature-level metadata (i.e. genes)}
-##'   \item{phenoData}{an \code{AnnotatedDataFrame} that describes the phenotype-level metadata (i.e. subject or experimental unit)}
+##'   \item{phenoData}{an \code{AnnotatedDataFrame} that describes the phenotype-level metadata (i.e. subject or experimental unit)} (not yet implemented)
 ##'   \item{cellData}{an \code{AnnotatedDataFrame} that describes the cell-level metadata (i.e. per individual cell)}
-##'   \item{mapNames}{a \code{character} vector that describes some mandatory fields used by the class to map data from the raw file to the object. These are defined in the package, class definintion and subclasses.}
-##'   \item{mapping}{a named \code{character} vector that maps \code{mapNames} to column names in the raw data file or data frame. This provides some flexibility for changing file formats and future assay types.}
 ##'   \item{description}{a \code{data.frame}}
-##'   \item{wellKey}{A unique key that identifies the well, which USUALLY contains a single cell being measured.}
 ##'   \item{id}{a vector of type \code{character} that identifies the set of columns acting as a primary key to uniquely identify a single-cell or single-well across all wells / cells / assays / subjects / conditions in the data set.}
-##'   \item{env}{an environment that will hold the data}
 ##' }
 ##' @name SingleCellAssay-class
 ##' @docType class 
 ##' @aliases SingleCellAssay-class
 ##' @aliases FluidigmAssay-class
+##' @aliases NanoStringAssay-class
 ##' @rdname SingleCellAssay-class
-##' @exportClass SingleCellAssay
+##' @seealso \code{\link{SingleCellAssay}}, \code{\link{NanoStringAssay}}, \code{\link{FluidigmAssay}}, \code{\link{DataLayer}}
 setClass("SingleCellAssay",contains="DataLayer",
          representation=representation(featureData="AnnotatedDataFrame",
            phenoData="AnnotatedDataFrame",
@@ -125,7 +123,6 @@ setClass("SingleCellAssay",contains="DataLayer",
 ## Same as SingleCellAssay, but with additional mapNames
 FluidigmMapNames <- c(Mandatory_Cellvars, 'ncells')
 
-##' @exportClass FluidigmAssay
 setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping', keys=FluidigmMapNames)),validity=SingleCellAssayValidity)
 
 ##'SCASet is a set of SingleCellAssay objects or objects of its subclasses (i.e. FluidigmAssay)

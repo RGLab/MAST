@@ -16,7 +16,8 @@
   be clipped}
 }
 \value{
-  modifies nsa in place
+  modified nsa or list with elements nsa and debugging info
+  regarding the clustering
 }
 \description{
   Estimates per-gene x unit thresholds for positive

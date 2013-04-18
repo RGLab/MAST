@@ -3,9 +3,9 @@
 \title{NanoString Assay Constructor}
 \usage{
   NanoStringAssay(rccfiles = NULL, keyfile = NULL, idvars,
-    primerid, measurement, ncells = NULL, id = NULL,
-    cellvars = NULL, featurevars = NULL, phenovars = NULL,
-    post.process.function = NULL, ltrans = FALSE, ...)
+    primerid, measurement = "Count", ncells = NULL,
+    id = NULL, cellvars = NULL, featurevars = NULL,
+    phenovars = NULL, post.process.function = NULL, ...)
 }
 \arguments{
   \item{rccfiles}{A list of rcc files with full paths}
@@ -16,10 +16,7 @@
 
   \item{primerid}{See \code{\link{SingleCellAssay}}}
 
-  \item{measurement}{The measurement column for raw data.
-  Will be placed in a variable named \code{raw} in the
-  environment storing the data. The transformed and
-  thresholded data will be placed in data.}
+  \item{measurement}{The measurement column for raw data.}
 
   \item{ncells}{A \code{character} specifying the column
   which gives the number of cells per well}
@@ -36,8 +33,6 @@
   \item{post.process.function}{function applied to
   \code{data.frame} of all rcc files, before the
   NanostringAssay object is constructed.}
-
-  \item{ltrans}{Should the counts be log2 + 1 transformed?}
 
   \item{...}{Additional parameters passed to
   \code{SingleCellAssay} constructor}

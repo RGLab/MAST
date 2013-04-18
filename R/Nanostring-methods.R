@@ -11,8 +11,6 @@ setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdN
 #' @param thresholds data.frame of thresholds  of groups x genes user may specify
 #' @param posteriorprob Min posterior probability of cluster membership for an observation to be truncated 
 #' @param clip Should values with uncertain posterior probs be clipped
-#' @importFrom flowClust flowClust
-#' @importFrom flowClust flowClust2Prior
 #' @return modified nsa or list with elements nsa and debugging info regarding the clustering
 setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE){
   layer(nsa) <- 'lCount'
@@ -27,35 +25,36 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   m <- melt(nsa)
   dat <- subset(m, primerid %in% include.primers)$lCount
   
-  fc <- flowClust(dat, K=2, trans=0)
-  prior<-flowClust2Prior(fc,kappa=1,Nt=50) ## Lambda and Omega both scale by kappa*Nt.  w0 scales by Nt alone (but we don't use w0)
-prior$Omega0 <- prior$Omega0*5        #vague mean hyperprior
-prior$Lambda0 <- prior$Lambda0/2     #smaller variances
-prior$w0 <- c(5, 5)                     #vague cluster membership prior, but weighted towards noise cluster
-          dats <- split(m$lCount, m$primerid)
-          fitgene <- mclapply(dats, function(set){
-  fc.tmp <- flowClust(set, K=2, prior=prior, level=.9, usePrior='yes', trans=0, z.cutoff=.95)
-  fc.tmp
+  fc <- flowClust::flowClust(dat, K=2, trans=0)
+  prior<-flowClust::flowClust2Prior(fc,kappa=1,Nt=50) ## Lambda and Omega both scale by kappa*Nt.  w0 scales by Nt alone (but we don't use w0)
+  prior$Omega0 <- prior$Omega0*5        #vague mean hyperprior
+  prior$Lambda0 <- prior$Lambda0/2     #smaller variances
+  prior$w0 <- c(5, 5)                     #vague cluster membership prior, but weighted towards noise cluster
+  dats <- split(m$lCount, m$primerid)
+  fitgene <- mclapply(dats, function(set){
+    fc.tmp <- flowClust::flowClust(set, K=2, prior=prior, level=.9, usePrior='yes', trans=0, z.cutoff=.95)
+    fc.tmp
   })
-means <- do.call(rbind, lapply(fitgene, function(x){t(x@mu)}))
-w.max <- apply(means, 1, which.max)
-p.signal <- do.call(c, lapply(1:length(fitgene), function(x){
-  fitgene[[x]]@z[,w.max[x]]
-})) #genes in alpha-order, then each idvars in alpha order, same as melted nsa
+  means <- do.call(rbind, lapply(fitgene, function(x){t(x@mu)}))
+  w.max <- apply(means, 1, which.max)
+  p.signal <- do.call(c, lapply(1:length(fitgene), function(x){
+    fitgene[[x]]@z[,w.max[x]]
+  })) #genes in alpha-order, then each idvars in alpha order, same as melted nsa
 
-lab <- do.call(c, lapply(1:length(fitgene), function(x){
-  if(w.max[x]==1){
-    fitgene[[x]]@label
-  } else if(w.max[x]==2){
-    c(2, 1)[fitgene[[x]]@label]
-  } else{
-    stop('ruhroh, there should only be two clusters')
-  }
-})) #genes in alpha-order, then each idvars in alpha order, same as melted nsa
+  lab <- do.call(c, lapply(1:length(fitgene), function(x){
+    if(w.max[x]==1){
+      fitgene[[x]]@label
+    } else if(w.max[x]==2){
+      c(2, 1)[fitgene[[x]]@label]
+    } else{
+      stop('ruhroh, there should only be two clusters')
+    }
+  })) #genes in alpha-order, then each idvars in alpha order, same as melted nsa
 
 
-m <- cbind(m, ps=p.signal, clusterID=as.factor(ifelse(is.na(lab), 3, lab)))
-          layer(nsa) <- 'et'
-          exprs(nsa) <- ifelse(m$clusterID==1, m$lCount, 0) #fix rounding
-          nsa
+  m <- cbind(m, ps=p.signal, clusterID=as.factor(ifelse(is.na(lab), 3, lab)))
+  layer(nsa) <- 'et'
+  exprs(nsa) <- ifelse(m$clusterID==1, m$lCount, 0) #fix rounding
+  if(debug) return(list(m=m, nsa=nsa))
+  else return(nsa)
 })

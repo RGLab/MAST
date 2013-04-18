@@ -462,7 +462,6 @@ setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ..
 }, silent=TRUE)
 
 
-## ##' @importFrom plyr rbind.fill
 .SingleCellAssayCombine <- function(scalist){
   names(scalist)[1:2] <- c('x', 'y')
   do.call(combine, scalist)

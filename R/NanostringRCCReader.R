@@ -35,6 +35,7 @@ readNanoStringLanes<-function(x){
 ##' @param type the section of the file to be read in
 ##' @param recast should the section be transposed?
 ##' @param ... argument spassed to read.csv
+##' @rdname readSection
 ##' @return data.frame of section
 .readSection <- function(x, file, type, recast=TRUE, ...){
 START <- sprintf('<%s>', type)
@@ -69,13 +70,12 @@ mergeWithKeyFile<-function(rcc,file){
  
 
 #Could write a constructor that takes a post-processing function...
-##' @exportClass NanoStringAssay
 setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayValidity)
 
 setMethod('initialize', signature='NanoStringAssay', function(.Object, ...){
   .Object <- callNextMethod()
   if(max(exprs(.Object))>100) warning('log Counts > 100 found; are you sure the data was log2 + 1 transformed?')
-  dimnames(.Object)[[3]][1] <- 'lCount'
+  layername(.Object) <- 'lCount'
   .Object
 })
 

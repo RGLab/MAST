@@ -51,7 +51,7 @@ setMethod("exprs",signature(object="DataLayer"),function(object){
 
 setMethod('initialize', 'DataLayer',
           function(.Object, ...){
-            message('init DataLayer') #DEBUG
+            ## message('init DataLayer') #DEBUG
             .Object <- getMethod('initialize', 'ANY')(.Object, ...)
             .Object
           })
@@ -131,6 +131,7 @@ setMethod('[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
 ##' @title subset methods
 ##' @details Returns the matrix representation (of the current layer) of the \code{DataLayer}
 ##' @return \code{matrix}
+##' @rdname doubleBracketMethods
 ##' @exportMethod '[['
 ##' @aliases [[,DataLayer,ANY-method
 setMethod('[[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
@@ -178,7 +179,7 @@ setMethod("show","DataLayer",function(object){
 
 setMethod('get', c('DataLayer', 'ANY'), function(x, pos){
   #if(length(x)==0) return(numeric(0))
-  x[,,pos]
+  as(x, 'array')[,,pos]
 })
 
 setMethod('layer', c('DataLayer'), function(x){
