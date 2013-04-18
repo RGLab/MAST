@@ -2,7 +2,16 @@ setGeneric('conform', function(dl, other) standardGeneric('conform'))
 setGeneric('nlayer', function(x) standardGeneric('nlayer'))
 setGeneric('layer', function(x) standardGeneric('layer'))
 setGeneric('layer<-', function(x, value) standardGeneric('layer<-'))
+setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
+#setGeneric('dellayer', function(x, i) standardGeneric('dellayer'))
 
+
+
+setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, name){
+  newLayer <- array(NA, dim=c(nrow(x), ncol(x), 1), dimnames=c(dimnames(x)[-3], name))
+  x@.Data <- abind(x@.Data, newLayer)
+  x
+})
 
 ##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
 ##'
@@ -28,7 +37,7 @@ setMethod("exprs",signature(object="DataLayer"),function(object){
 
 setMethod('initialize', 'DataLayer',
           function(.Object, ...){
-            message('init DataLayer')
+            ##message('init DataLayer') #DEBUG
             .Object <- getMethod('initialize', 'ANY')(.Object, ...)
             .Object
           })
@@ -169,6 +178,13 @@ setReplaceMethod('layer', c('DataLayer', 'numeric'), function(x, value){
   x
 })
 
+setReplaceMethod('layer', c('DataLayer', 'character'), function(x, value){
+  if(length(intersect(value, dimnames(x)[[3]]))!=1) stop('Bad index ', value)
+  x@layer <- match(value, dimnames(x)[[3]])
+  x
+})
+
+
 ##'Combine two SingleCellAssay or derived classes
 ##'
 ##' Combines two Single Cell-like objects provided they have the same number of Features and Layers.
@@ -191,14 +207,3 @@ setMethod('combine', signature(x='DataLayer', y='DataLayer'), function(x, y, ...
     }
    proto
  })
-
-
-## 
-## .DLCombine <- function(x){
-##   stopifnot(is.list(x))
-##   stopifnot(all(sapply(x, inherits, what='DataLayer')))
-##   example <- x[[1]]
-##   stopifnot(all(lapply(x, conform, example)>=6)) #same number of columns and layers
-##   proto <- do.call(abind, c(x, along=1))
-##   
-## }

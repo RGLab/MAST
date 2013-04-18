@@ -1,8 +1,3 @@
-## setMethod('coerce', signature=c('SingleCellAssay', 'FluidigmAssay'), function(from, to, strict=TRUE){
-##   ncells <- 'ncells'
-##   if(!(ncells %in% names(cData(from)))) stop('A ncells field must be present in the cellData')
-## })
-
 ## ###===========Generics===============
 ## setGeneric('filter')
 
@@ -356,5 +351,5 @@ primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift
   exprs.new <- do.call(cbind, exprs.new)
   exprs(skeleton) <- exprs.new
   skeleton@featureData$primerid <- fData(skeleton)[,geneGroups]
-  skeleton <- .sortSingleCellAssay(skeleton)
+  skeleton <- sort(skeleton)
 }

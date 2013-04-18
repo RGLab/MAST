@@ -6,7 +6,7 @@ NULL
 
 setOldClass("ncdf")
 
-setClass('DataLayer', contains='array', representation=representation(layer='numeric', valid='logical'), prototype=prototype(array(NA, dim=c(0, 0, 1)), layer=1L, valid=TRUE), validity=function(object){
+setClass('DataLayer', contains='array', representation=representation(layer='numeric', valid='logical'), prototype=prototype(array(NA, dim=c(0, 0, 1), dimnames=list(NULL, NULL, 'layer'='et')), layer=1L, valid=TRUE), validity=function(object){
   #cat('DL dim ', dim(object@.Data), '\n')
   length(dim(object@.Data))==3
   })
@@ -44,7 +44,7 @@ Mandatory_Cellvars <- NULL#c('wellKey')
 
 
 SingleCellAssayValidity <- function(object){
-  message('SingleCellAssayValidity')
+  ##message('SingleCellAssayValidity') #DEBUG
   if(nrow(cData(object))==0 || nrow(fData(object) == 0)) return(TRUE)
   if(nrow(object)!=nrow(cData(object))){
     message('dimension mismatch between cData and nrows')

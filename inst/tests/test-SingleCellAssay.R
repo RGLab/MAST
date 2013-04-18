@@ -76,6 +76,14 @@ test_that("Cellkey unique identifies a cell", {
   
 })
 
+
+context('test construction helper funcs')
+test_that("uniqueModNA doesn't include NA", {
+  naframe <- data.frame(var=rep(c(1, 2), each=2), na=c(NA, -9, NA, -9))
+  expect_equal(nrow(uniqueModNA(naframe, exclude='var')), 2)
+  expect_equal(nrow(as.data.frame(uniqueModNA(naframe[,-2, drop=FALSE], exclude='var'))), 2)
+})
+
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
   expect_that(sci, is_a("SingleCellAssay"))

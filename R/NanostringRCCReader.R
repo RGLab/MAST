@@ -72,6 +72,12 @@ mergeWithKeyFile<-function(rcc,file){
 ##' @exportClass NanoStringAssay
 setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayValidity)
 
+setMethod('initialize', signature='NanoStringAssay', function(.Object, ...){
+  .Object <- callNextMethod()
+  if(max(exprs(.Object))>100) warning('log Counts > 100 found; are you sure the data was log2 + 1 transformed?')
+  dimnames(.Object)[[3]][1] <- 'lCount'
+  .Object
+})
 
 ##' Constructor for a NanoStringAssay
 ##'
@@ -82,19 +88,18 @@ setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayVal
 ##' @param keyfile A full path to a keyfile
 ##' @param idvars See \code{\link{SingleCellAssay}}
 ##' @param primerid See \code{\link{SingleCellAssay}}
-##' @param measurement The measurement column for raw data. Will be placed in a variable named \code{raw} in the environment storing the data. The transformed and thresholded data will be placed in data.
+##' @param measurement The measurement column for raw data. 
 ##' @param ncells A \code{character} specifying the column which gives the number of cells per well
 ##' @param id An identifier for the resulting object. Should be a meaningful name
 ##' @param cellvars See \code{\link{SingleCellAssay}}
 ##' @param featurevars See \code{\link{SingleCellAssay}}
 ##' @param phenovars See \code{\link{SingleCellAssay}}
 ##' @param post.process.function function applied to \code{data.frame} of all rcc files, before the NanostringAssay object is constructed.
-##' @param ltrans Should the counts be log2 + 1 transformed?
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
 ##' @export NanoStringAssay
-NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement, ncells=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, post.process.function=NULL,ltrans=FALSE, ...){
+NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement='Count', ncells=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, post.process.function=NULL, ...){
   
   rcclist<-readNanoStringLanes(rccfiles);
   if(!is.null(keyfile)) rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
@@ -107,13 +112,8 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   if(!is.null(post.process.function)){
     dataframe<-post.process.function(dataframe) 
   }
-  #reconstruct this for the next call
-  #transform with log+1
-  if(ltrans){
-  dataframe$lCount<-log2(get(measurement,dataframe)+1)
-  measurement<-"lCount"
-}
-  
+  dataframe$lCount <- log2(dataframe[,measurement]+1)
+  measurement <- 'lCount'
   #reame the mapping 
   this.frame <- as.list(environment())
   #remove unneeded variables
@@ -121,44 +121,15 @@ NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement
   this.frame$rcclist<-NULL
   this.frame$rccfiles<-NULL
   this.frame$keyfile<-NULL
+  this.frame$keep.names <- FALSE
+  this.frame$sort <- FALSE
   
   ## Factor out code that builds the mapping
   this.frame$cellvars <- c(ncells, cellvars)
-  sc <- do.call(FluidigmAssay, this.frame)
-  sc<-as(sc,'NanoStringAssay')
+  #sc <- do.call(SingleCellAssay, this.frame)
+  #sc<-as(sc,'NanoStringAssay')
+  cmap <- new('Mapping')
+  cmap['ncells'] <- ncells
+  sc <- new('NanoStringAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars, cmap=cmap)
   return(sc)
 }
-
-#' Estimate thresholds for positive expression
-#'
-#' Estimates per-gene x unit thresholds for positive expression and truncates values below this threshold
-#' Uncertain values (in terms of posterior probability of membership) can be set to NA or rounded left or right
-#' Thresholds are estimated using a Gaussian mixture model with prior supplied by population estimates.
-#' @name threshold
-#' @param nsa NanostringAssay object
-#' @param groups groups to apply thresholding
-#' @param thresholds data.frame of thresholds  of groups x genes user may specify
-#' @param posteriorprob Min posterior probability of cluster membership for an observation to be truncated 
-#' @param clip Should values with uncertain posterior probs be clipped 
-#' @return modifies nsa in place
-NULL
-## setMethod('threshold', signature='NanostringAssay', function(nsa, groups, thresholds, posteriorprob, clip=c('left', 'right', 'NA'){
-##   exprs.all <- log2(melt(nsa)[, getMapping(nsa, 'raw')]+1)
-##   out <- Mclust(exprs.all, G=1:3, modelNames='V')
-##   if(out$G != 2)
-##     stop("Uhoh, didn't find two clusters in complete data set")
-##   means <- out$param$mean
-##   scales <- out$param$variance$scale
-
-##   exprs.split <- split(exprs.all, melt(nsa)[, c(groups, getMapping(nsa, 'primerid'))])
-
-##   lapp <- lapply(exprs.split, function(x){
-##     out <- Mclust(x, G=1:2, modelNames='V', prior=priorControl(shrinkage=.03, mean=means, scale=scales))
-##     print(out$G)
-##     if(out$G==1){
-##       print(out$param$mean)
-##     }
-##     out
-##   })
-  
-## })

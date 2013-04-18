@@ -110,7 +110,7 @@ melt.SingleCellAssay<-function(data,...){
 
 
 mkunique<-function(x,G){
-    cbind(x,primerid=make.unique(as.character(get(G,x))))
+    cbind(x,primerid.unk=make.unique(as.character(get(G,x))))
      }
 
 
@@ -170,10 +170,14 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   incomplete <- !all(cellCounts == cellCounts[1])
   dupPrimers <- table(df$wellKey, df$primerid, exclude=NULL) #cross tab of primerid x wellKey
   duped.primers <- apply(dupPrimers>1, 2, which)
-  
+  duped.primers <- duped.primers[sapply(duped.primers, length)>0]
   if(length(duped.primers)>0){
-    message("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
+    warning("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
     df <- ddply(df,'wellKey',mkunique,G='primerid')
+    df[,'primerid.orig'] <- df[,'primerid']
+    df[,'primerid'] <- df[,'primerid.unk']
+    df[,'primerid.unk'] <- NULL
+    fmap['primerid.orig'] <- 'primerid.orig'
   }
   
   if(incomplete){
@@ -184,7 +188,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
 
   ord <- do.call(order, df[, c("primerid", "wellKey")])
   df <- df[ord,]
-  list(df=df, rn=unique(df$wellKey), cn=unique(df$primerid))
+  list(df=df, rn=unique(df$wellKey), cn=unique(df$primerid), fmap=fmap, cmap=cmap)
 }
 
 ##' @importFrom plyr ddply
@@ -194,16 +198,19 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
 ## which eventually just sets the slots
 setMethod('initialize', 'SingleCellAssay',
           function(.Object, dataframe, idvars, primerid, measurement, cellvars=NULL, featurevars=NULL, phenovars=NULL, sort=TRUE, ...){
-            message(class(.Object), ' calling SingleCellAssay Initialize')
+            ##message(class(.Object), ' calling SingleCellAssay Initialize')  #DEBUG
             .Object <- callNextMethod()
-            if(sort) .Object <- .sortSingleCellAssay(.Object)
+            if(sort) .Object <- sort(.Object)
             if(!missing(dataframe)){              #called using melted dataframe
-              message('...with dataframe')
+              ##message('...with dataframe') #DEBUG
               if(missing(idvars) || missing(primerid) || missing(measurement)){
                 stop("Must supply all of 'idvars', 'primerid' and 'measurement' if 'dataframe' is passed")
               }
+              if(nrow(.Object) > 0 || ncol(.Object)>0) warning('slots will be overwritten when dataframe is provided')
               ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
               fixed <- fixdf(dataframe, idvars, primerid, measurement, .Object@cmap, .Object@fmap, .Object@keep.names)
+              .Object@fmap <- fixed$fmap        #needed if we deduplicated primerid
+              .Object@cmap <- fixed$cmap
               dl <- array(fixed$df[,measurement],
                           dim=c(length(fixed$rn), length(fixed$cn), length(measurement)),
                           dimnames=list(wellKey=fixed$rn, primerid=fixed$cn, layer=measurement))
@@ -238,28 +245,32 @@ setMethod('initialize', 'SingleCellAssay',
             .Object
           })
 
-
-.sortSingleCellAssay <- function(object){
-  if(nrow(cData(object))>0){
-    rowOrd <- order(cData(object)$wellKey)
-    object@.Data <- as(object, 'DataLayer')[rowOrd,]
-    object@cellData <- object@cellData[rowOrd,]
+sort.SingleCellAssay <- function(x, decreasing=FALSE, ...){
+  if(nrow(cData(x))>0){
+    rowOrd <- order(cData(x)$wellKey)
+    x@.Data <- as(x, 'DataLayer')[rowOrd,]
+    x@cellData <- x@cellData[rowOrd,]
   }
-  if(nrow(fData(object))>0){
-     colOrd <- order(fData(object)$primerid)
-    object@.Data <- as(object, 'DataLayer')[,colOrd]
-    object@featureData <- object@featureData[colOrd,]
+  if(nrow(fData(x))>0){
+     colOrd <- order(fData(x)$primerid)
+    x@.Data <- as(x, 'DataLayer')[,colOrd]
+    x@featureData <- x@featureData[colOrd,]
   }
-  stopifnot(validObject(object))
-  object
+  stopifnot(validObject(x))
+  x
 }
+
+setMethod('sort', signature=c(x='SingleCellAssay'), sort.SingleCellAssay)
 
 uniqueModNA <- function(df, exclude){
   #browser()
-  w.exclude <- which(names(df) %in% exclude)
+  w.include <- names(df)
+  if(ncol(df)>1){
+  w.include <- setdiff(w.include, exclude)
+}
   u <- unique(df)
-  anyNa <- apply(is.na(u)[,-w.exclude, drop=FALSE], 1, all)
-  u[!anyNa,]
+  anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+  u[!anyNa,,drop=FALSE]
 }
 
 #setGeneric("melt",function(data,...){
