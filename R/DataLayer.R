@@ -173,7 +173,7 @@ setMethod('[[<-', 'DataLayer', function(x, i, j, ..., value){
 ##' @rdname show-methods
 ##'
 setMethod("show","DataLayer",function(object){
-  cat(class(object), '\n', nlayer(object), " Layers; ", nrow(object), " wells; ", ncol(object), " features\n")
+  cat(class(object), ' on layer ', layername(object), '\n', nlayer(object), " Layers; ", nrow(object), " wells; ", ncol(object), " features\n")
   invisible(NULL)
 })
 
