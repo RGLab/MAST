@@ -513,3 +513,31 @@ setMethod('show', 'SingleCellAssay', function(object){
 callNextMethod()
 cat(' id: ', object@id, '\n')
 })
+
+setMethod('combine', signature=c(x='SingleCellAssay', y='ANY'), function(x, y, ..., along){
+  adf <- new('AnnotatedDataFrame')
+  df <- data.frame(y)
+  names(df) <- deparse(substitute(y))
+  pData(adf) <- df
+  selectMethod('combine', c(x=class(x), y='AnnotatedDataFrame'))(x, adf, along=along)
+})
+
+setMethod('combine', signature=c(x='SingleCellAssay', y='data.frame'), function(x, y, ..., along){
+  adf <- new('AnnotatedDataFrame')
+  pData(adf) <- y
+  selectMethod('combine', c(x=class(x), y='AnnotatedDataFrame'))(x, adf, along=along)
+})
+
+setMethod('combine', signature=c(x='SingleCellAssay', y='AnnotatedDataFrame'), function(x, y, ..., along){
+  if(missing(along) || is.null(along)){
+    if(nrow(x) == ncol(x)) stop("x has same number of rows and columns, must explicitly specify 'along'")
+    if(nrow(y) == nrow(x)) along <- 'cellData'
+    else if(nrow(y) == ncol(y)) along <- 'featureData'
+    else stop('Dimension mismatch between y and x')
+  }
+  if(length(intersect(along , c('cellData', 'featureData')))!=1) stop("If specified, along must be either 'cellData', or 'featureData'")
+  newdata <- slot(x, along)
+  pData(newdata) <- cbind(pData(newdata), pData(y))
+  slot(x, along) <- newdata
+  x
+})

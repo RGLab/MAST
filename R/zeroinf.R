@@ -1,8 +1,8 @@
 
-zlm <- function(formula, data, ...){
+zlm <- function(formula, data, silent=TRUE, ...){
   init <- lm(formula, data, method='model.frame', ...) #run lm initially just to get pull response vector
   data$pos <-   model.response(init)>0
-  cont <- try(glm(formula, data, subset=pos, family='gaussian', ...))
+  cont <- try(glm(formula, data, subset=pos, family='gaussian', ...), silent=silent)
   if(inherits(cont, 'try-error')){
     warning('Some factors were not present among the positive part')
     cont <- lm(0~0)
@@ -54,6 +54,23 @@ test.zlm <- function(model, scope){
   d.n
 }
 
+## terms: output from terms(formula)
+## var: character of a variable that appeared in a formula (including interactions)
+## mm: model matrix (output of model.matrix(formula, data))
+## returns names
+coefsForVar <- function(terms, mm, term){
+ assignIdx <- which(labels(terms) == term) #gives us index into assign attribute
+          varCoefIdx <- which(attr(mm, 'assign') == assignIdx)     #gives coefficient idx corresponding to term in formula
+          coefForThisVar <- colnames(mm)[varCoefIdx]
+ coefForThisVar
+
+}
+
+naToZero <- function(numeric){
+  numeric[is.na(numeric)] <- 0
+  numeric
+}
+
 ##' zero-inflated regression for SingleCellAssay 
 ##'
 ##' Fits a hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
@@ -90,26 +107,25 @@ zlm.SingleCellAssay <- function(formula, sca, scope, ...){
       out <- raw[-1,][,c('Df', 'LRT')]
       out <- rename(out, c('LRT'='lrstat'))
       out$p.value <- pchisq(out$lrstat, df=out$Df, lower.tail=FALSE)
+      coef.types <- c('disc', 'cont', 'sum') #what do we report about the regressions
       if( i == 1){                      #this will fail if the first gene was exceptional in some way, but trying to guess the dimension of the result is hard...
-        tests <- lapply(1:nrow(out), function(vIdx){
-          var <- labels(terms(this.fit$disc))[vIdx]
-          coefNames <- names(coef(this.fit$disc))
-          coefMatch <- str_match(pattern=var, string=coefNames) # covar.names x coefficient lookup table
-          coefForThisVar <- coefNames[!is.na(coefMatch)]
-          df.skeleton <- data.frame(c(out[1,], rep(NA, length(coefForThisVar))))
-          names(df.skeleton)[-1:-length(out[1,])] <- coefForThisVar
+         mm <- model.matrix(formula, x, ...)
+         message('Coefficients in model: \n', paste(colnames(mm), collapse = ' '))
+        tests <- lapply(row.names(out), function(term){
+         coefForThisVar <- coefsForVar(terms(this.fit$disc), mm, term)
+          df.skeleton <- data.frame(c(out[1,], rep(NA, length(coef.types)*length(coefForThisVar))))
+          names(df.skeleton)[-1:-length(out[1,])] <- outer(coefForThisVar, coef.types, FUN=paste, sep='.')
           cbind(primerid=names(ssca), df.skeleton[rep(1,length(ssca)),])        
       })
-        names(tests) <- labels(terms(this.fit$disc))
+         names(tests) <- row.names(out)
       }
       
-      for(vIdx in seq_len(nrow(out))){
-        tests[[vIdx]][i,][names(out[vIdx,])] <- out[vIdx,]
-        var <- labels(terms(this.fit$disc))[vIdx]
-         coefNames <- names(coef(this.fit$disc))
-          coefMatch <- str_match(pattern=var, string=coefNames) # covar.names x coefficient lookup table
-          coefForThisVar <- coefNames[!is.na(coefMatch)]
-        tests[[vIdx]][i,][coefForThisVar] <- z.disc[coefForThisVar]+z.cont[coefForThisVar]
+      for(term in row.names(out)){
+        tests[[term]][i,][names(out[term,])] <- out[term,]
+        coefForThisVar <- coefsForVar(terms(this.fit$disc), mm, term)
+        tests[[term]][i,][paste(coefForThisVar, coef.types[1], sep='.')] <- z.disc[coefForThisVar]
+        tests[[term]][i,][paste(coefForThisVar, coef.types[2], sep='.')] <- z.cont[coefForThisVar]
+        tests[[term]][i,][paste(coefForThisVar, coef.types[3], sep='.')] <- naToZero(abs(z.disc[coefForThisVar])) + naToZero(abs(z.cont[coefForThisVar]))
       }
                     
     }
