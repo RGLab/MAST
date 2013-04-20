@@ -88,7 +88,7 @@ naToZero <- function(numeric){
 ##' @export
 ##' @importFrom reshape rename
 ##' @importFrom stringr str_match
-zlm.SingleCellAssay <- function(formula, sca, scope, ...){
+zlm.SingleCellAssay <- function(formula, sca, scope, keep.zlm=FALSE, ...){
     probeid <- getMapping(sca@mapping,"primerid")[[1]]
 
     m <- SingleCellAssay:::melt(sca)
@@ -118,7 +118,8 @@ zlm.SingleCellAssay <- function(formula, sca, scope, ...){
           cbind(primerid=names(ssca), df.skeleton[rep(1,length(ssca)),])        
       })
          names(tests) <- row.names(out)
-      }
+         if(keep.zlm) zlm.fit <- ssca
+       }
       
       for(term in row.names(out)){
         tests[[term]][i,][names(out[term,])] <- out[term,]
@@ -127,8 +128,13 @@ zlm.SingleCellAssay <- function(formula, sca, scope, ...){
         tests[[term]][i,][paste(coefForThisVar, coef.types[2], sep='.')] <- z.cont[coefForThisVar]
         tests[[term]][i,][paste(coefForThisVar, coef.types[3], sep='.')] <- naToZero(abs(z.disc[coefForThisVar])) + naToZero(abs(z.cont[coefForThisVar]))
       }
-                    
+
+      if(keep.zlm){
+        zlm.fit[[i]] <- this.fit
+      }
     }
     
-    tests
+    if(keep.zlm) return(list(tests=tests, zlm.fit=zlm.fit))
+
+    return(tests)
 }
