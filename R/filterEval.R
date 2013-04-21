@@ -266,7 +266,7 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
   filt <- cbind(outcome, cData(sc))
   tab <- do.call(table, c(filt[, groups, drop=FALSE], filt[, 'outcome', drop=FALSE]))
 
-  barchart(tab, main=sprintf('Burden of filtering by %s', paste(groups, collapse=" and ")), auto.key=TRUE)
+  barchart(tab, main=sprintf('Burden of filtering by %s', paste(groups, collapse=" and ")), auto.key=TRUE, horizontal=FALSE, stack=FALSE)
 }
 
 #'Concordance plots of filtered single vs n-cell assays

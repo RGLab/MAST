@@ -96,18 +96,25 @@ setMethod('initialize', signature='NanoStringAssay', function(.Object, ...){
 ##' @param phenovars See \code{\link{SingleCellAssay}}
 ##' @param post.process.function function applied to \code{data.frame} of all rcc files, before the NanostringAssay object is constructed.
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
-##' @return A FluidigmAssay object
+##' @return A NanoStringAssay object
 ##' @author Andrew McDavid and Greg Finak
 ##' @export NanoStringAssay
 NanoStringAssay<-function(rccfiles=NULL,keyfile=NULL,idvars,primerid,measurement='Count', ncells=NULL,id=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, post.process.function=NULL, ...){
   
   rcclist<-readNanoStringLanes(rccfiles);
   if(!is.null(keyfile)) rcclist<-mergeWithKeyFile(rcc=rcclist,keyfile)
+  
+  ## lengths <- sapply(rcclist, function(rccout){max(nrow(rccout$code_summary), nrow(rccout$lane_attributes), nrow(rccout$sample_attributes))})
+  ## widths <- sapply(rcclist
+  ## if(length(rcclist)>1) skeleton <- cbind(
+                                               
+                    
   suppressWarnings(
-    dataframe<-do.call(rbind,lapply(1:length(rcclist),function(i){
-    cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)  
+    dataframe<-rbindlist(lapply(1:length(rcclist),function(i){
+    cbind(rcclist[[i]]$code_summary,rcclist[[i]]$lane_attributes,rcclist[[i]]$sample_attributes, stringsAsFactors=FALSE)
   }))
     )
+  dataframe <- as.data.frame(dataframe)
  
   if(!is.null(post.process.function)){
     dataframe<-post.process.function(dataframe) 
