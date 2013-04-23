@@ -60,6 +60,19 @@ exprsNA[exprsNA==0] <- NA
 apply(exprsNA, 2, mean, na.rm=TRUE)
 }
 
+##' Report standard deviation of et, for positive et for each gene
+##'
+##' NAs are always removed
+##' @param sc SingleCellAssay
+##' @return vector of standard deviations
+##' @export
+condSd <- function(sc){
+stopifnot(inherits(sc, 'SingleCellAssay'))
+exprsNA <- exprs(sc)
+exprsNA[exprsNA==0] <- NA
+sqrt(apply(exprsNA, 2, var, na.rm=TRUE))
+}
+
 ##' Report number of expressing cells per gene
 ##'
 ##' NAs are removed
