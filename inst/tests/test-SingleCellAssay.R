@@ -204,6 +204,11 @@ test_that('Can split',{
   expect_that(splat, is_a('SCASet'))
   splat.byfieldname <- split(scd, 'Subject.ID')
     expect_that(splat.byfieldname, is_a('SCASet'))
+    splat <- split(scd, c('Subject.ID', 'Population'))
+  expect_that(splat, is_a('SCASet'))
+    splat <- split(scd, list(factor(cData(scd)$Subject.ID), factor(cData(scd)$Population)))
+  expect_that(splat, is_a('SCASet'))
+  
 })
 
 context('Copy and replace')

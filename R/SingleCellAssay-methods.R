@@ -436,30 +436,30 @@ setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
 ##' @aliases split,SingleCellAssay,ANY-method
 ##' @name split
 ##' @exportMethod split
-try({
 setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ...){
   ## Split a SingleCellAssay by criteria
-  m<-cData(x)
   ###f must be a character naming a cData variable
-  if(length(f)==1&class(f)%in%"character"){
-    if(!f%in%colnames(cData(x))){
-      stop(f," not in cData of x")
+  if(inherits(f, 'character')){
+    if(length(f) != nrow(x)){
+      f <- lapply(cData(x)[,f, drop=FALSE], as.factor)
+    } else{
+      f <- list(as.factor(f))
     }
-    f<-factor(get(f,m))
-  }else if(length(f)==nrow(cData(x))){
-    f<-factor(f)
-  }else{
-    stop("splitby must be a of length nrow(cData(x)) or a character naming a cData variable")
+  } else if(inherits(f, 'factor')){
+    f <- list(f)
   }
+     all.factor <- all(sapply(f, is.factor))
+     if(!all.factor) stop('f must be character vector naming columns of x; or factor; or list of factors')
+     all.length <- all(sapply(f, length)==nrow(x))
+     if(!all.length) stop('each element in f must be length nrow(x)')
   out <- callNextMethod()
   cD <- split(x@cellData, f)
   for(i in seq_along(out)){
     out[[i]]@cellData <- cD[[i]]
-    out[[i]]@id <- levels(f)[i]
+    out[[i]]@id <- names(out)[i]
   }
   new('SCASet', set=out)
 })
-}, silent=TRUE)
 
 
 .SingleCellAssayCombine <- function(scalist){
