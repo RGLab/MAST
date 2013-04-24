@@ -2,7 +2,8 @@
 \alias{zlm.SingleCellAssay}
 \title{zlm.SingleCellAssay}
 \usage{
-  zlm.SingleCellAssay(formula, sca, scope, ...)
+  zlm.SingleCellAssay(formula, sca, scope,
+    keep.zlm = FALSE, ...)
 }
 \arguments{
   \item{formula}{a formula with the measurement variable on

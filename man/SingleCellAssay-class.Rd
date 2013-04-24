@@ -15,7 +15,9 @@
   the FluidigmAssay class are in the object
   \code{SingleCellAssay:::FluidigmMapNames} }
   \section{Slots}{ SingleCellAssay extends class
-  \code{DataLayer}. \describe{ \item{featureData}{an
+  \code{\link{DataLayer}}, so inherits its slots and
+  methods.  It also contains the following additional
+  slots: \describe{ \item{featureData}{an
   \code{AnnotatedDataFrame} that describes feature-level
   metadata (i.e. genes)} \item{phenoData}{an
   \code{AnnotatedDataFrame} that describes the
@@ -32,6 +34,6 @@
 \seealso{
   \code{\link{SingleCellAssay}},
   \code{\link{NanoStringAssay}},
-  \code{\link{FluidigmAssay}}
+  \code{\link{FluidigmAssay}}, \code{\link{DataLayer}}
 }
 

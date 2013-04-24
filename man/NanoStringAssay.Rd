@@ -38,7 +38,7 @@
   \code{SingleCellAssay} constructor}
 }
 \value{
-  A FluidigmAssay object
+  A NanoStringAssay object
 }
 \description{
   Constructor for a NanoStringAssay
