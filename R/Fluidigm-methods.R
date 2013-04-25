@@ -345,6 +345,7 @@ list(mu=mu, pi=pi, num=num)
 })
 
 
+#'@export
 primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift){
   fVars <- fData(fd)[, geneGroups, drop=FALSE]
   geneset <- split(1:nrow(fVars), fVars)

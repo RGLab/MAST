@@ -1,3 +1,4 @@
+#'@exportMethod thresholdNanoString
 setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
 
 #' Estimate thresholds for positive expression

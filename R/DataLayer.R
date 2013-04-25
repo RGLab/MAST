@@ -1,10 +1,24 @@
+#'@exportMethod conform
 setGeneric('conform', function(dl, other) standardGeneric('conform'))
+
+#'@exportMethod nlayer
 setGeneric('nlayer', function(x) standardGeneric('nlayer'))
+
+#'@exportMethod layer
 setGeneric('layer', function(x) standardGeneric('layer'))
+
+#'@exportMethod 'layer<-'
 setGeneric('layer<-', function(x, value) standardGeneric('layer<-'))
+
+#'@exportMethod addlayer
 setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
+
 #setGeneric('dellayer', function(x, i) standardGeneric('dellayer'))
+
+#'@exportMethod layername
 setGeneric('layername', function(x) standardGeneric('layername'))
+
+#'@exportMethod 'layername<-'
 setGeneric('layername<-', function(x, value) standardGeneric('layername<-'))
 
 
