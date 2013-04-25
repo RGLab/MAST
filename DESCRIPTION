@@ -5,6 +5,7 @@ Version: 0.62
 Date: 2012-07-02
 Author: Andrew McDavid <amcdavid@fhcrc.org>, Greg Finak <gfinak@fhcrc.org>
 Maintainer: Greg Finak <gfinak@fhcrc.org>
+VignetteBuilder: knitr
 Imports:
     Biobase,
     BiocGenerics,
@@ -17,9 +18,9 @@ Imports:
     utils,
     lattice,
     gplots,
+    ggplot2,
     latticeExtra,
     plyr,
-    ggplot2,
     stringr,
     foreach,
     abind
@@ -28,7 +29,8 @@ Depends:
     foreach
 Suggests:
     parallel,
-    flowClust(>= 2.99)
+    flowClust(>= 2.99),
+    knitr
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0

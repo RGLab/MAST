@@ -1,4 +1,5 @@
 %\VignetteIndexEntry{SingleCellAssay-intro}
+%\VignetteEngine{knitr}
 \documentclass{article}
 \usepackage{url, graphicx}
 \usepackage{color}
@@ -198,6 +199,7 @@ The splitting variable can either be a character vector naming column(s) of the 
 It's possible to combine \sca objects with the \texttt{combine} method.
 
 <<combine,warning=FALSE>>=
+unloadNamespace("gplots")
 combine(x=sp1[[1]],y=sp1[[2]])
 @ 
 

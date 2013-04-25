@@ -1,6 +1,7 @@
 \docType{methods}
 \name{split}
 \alias{split}
+\alias{split,DataLayer,ANY-method}
 \alias{split,SingleCellAssay,ANY-method}
 \title{Split into SCASet}
 \arguments{

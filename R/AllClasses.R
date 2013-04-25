@@ -4,7 +4,7 @@
 
 NULL
 
-setOldClass("ncdf")
+#setOldClass("ncdf")
 
 setClass('DataLayer', contains='array', representation=representation(layer='numeric', valid='logical'), prototype=prototype(array(NA, dim=c(0, 0, 1)), layer=1L, valid=TRUE), validity=function(object){
   #cat('DL dim ', dim(object@.Data), '\n')
@@ -40,6 +40,20 @@ NULL
 
 Mandatory_Featurevars <- NULL#c('primerid')
 Mandatory_Cellvars <- NULL#c('wellKey')
+
+##' Accessor for cellData \code{data.frame}
+##'
+##' Returns the \code{cellData} \code{data.frame}.
+##' @title cData
+##' @param sc An object with \code{cellData}
+##' @return \code{data.frame}
+##'
+##' 
+##' @export
+##' @docType methods
+##' @rdname cData-methods
+##' @keywords accessor
+setGeneric('cData', function(sc) standardGeneric('cData'))
 
 
 

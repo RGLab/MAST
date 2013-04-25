@@ -276,7 +276,7 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
 #'@param NCellAssay is a SingleCellAssay for the n-cell per well assay
 #'@param filterCriteria is a list of filtering criteria to apply to the SCellAssay and NCellAssay
 #'@param groups is a character vector naming the group within which to perform filtering. NULL by default.
-#'@import ggplot2
+#'@importFrom ggplot2 ggplot geom_point theme_bw scale_x_continuous scale_y_continuous aes geom_segment 
 #'@export
 plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlier = 2, sigmaContinuous = 9,sigmaProportion = 9), groups=NULL){
   if(!(inherits(SCellAssay,"SingleCellAssay")&inherits(NCellAssay,"SingleCellAssay"))){

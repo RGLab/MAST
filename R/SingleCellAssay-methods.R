@@ -27,19 +27,6 @@ NULL
 setGeneric('getwellKey', function(sc) standardGeneric('getwellKey'))
 
 
-##' Accessor for cellData \code{data.frame}
-##'
-##' Returns the \code{cellData} \code{data.frame}.
-##' @title cData
-##' @param sc An object with \code{cellData}
-##' @return \code{data.frame}
-##'
-##' 
-##' @export
-##' @docType methods
-##' @rdname cData-methods
-##' @keywords accessor
-setGeneric('cData', function(sc) standardGeneric('cData'))
 
 ##' Accessor for cellData \code{AnnotatedDataFrame}
 ##'
@@ -424,7 +411,6 @@ setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
   }
 })
 
-
 ##' Split into SCASet
 ##'
 ##' Splits a \code{SingleCellAssay} into a \code{SCASet} by a factor (or something coercible into a factor) or a character giving a column of the melted SingleCellAssay
@@ -434,9 +420,11 @@ setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
 ##' @docType methods
 ##' @rdname split-methods
 ##' @aliases split,SingleCellAssay,ANY-method
+##' @aliases split,DataLayer,ANY-method
 ##' @name split
 ##' @exportMethod split
-setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ...){
+setMethod('split', signature(x='SingleCellAssay'), 
+          function(x, f, drop=FALSE, ...){
   ## Split a SingleCellAssay by criteria
   ###f must be a character naming a cData variable
   if(inherits(f, 'character')){
@@ -453,7 +441,7 @@ setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ..
      all.length <- all(sapply(f, length)==nrow(x))
      if(!all.length) stop('each element in f must be length nrow(x)')
   out <- callNextMethod()
-  cD <- split(x@cellData, f)
+  cD <- split.data.frame(x@cellData, f)
   for(i in seq_along(out)){
     out[[i]]@cellData <- cD[[i]]
     out[[i]]@id <- names(out)[i]
@@ -461,6 +449,28 @@ setMethod('split', signature(x='SingleCellAssay'), function(x, f, drop=FALSE, ..
   new('SCASet', set=out)
 })
 
+#'Split a DataLayer correctly
+#'
+#'split.default doesn't seem to do the right thing for an array
+setMethod("split",signature(x="DataLayer"),function(x,f,drop=FALSE,...){
+  if (!missing(...)) 
+    .NotYetUsed(deparse(...), error = FALSE)
+  if (is.list(f)) 
+    f <- interaction(f)
+  else if (!is.factor(f)) 
+    f <- as.factor(f)
+  else if (drop) 
+    f <- factor(f)
+  storage.mode(f) <- "integer"
+  if (is.null(attr(x, "class"))) 
+    return(.Internal(split(x, f)))
+  lf <- levels(f)
+  y <- vector("list", length(lf))
+  names(y) <- lf
+  ind<-.Internal(split(seq_along(1:nrow(x)),f)) #Here we are only splitting on the ROWS!
+  for (k in lf) y[[k]] <- x[ind[[k]]]
+  y
+})
 
 .SingleCellAssayCombine <- function(scalist){
   names(scalist)[1:2] <- c('x', 'y')
