@@ -541,7 +541,7 @@ setMethod('combine', signature=c(x='SingleCellAssay', y='data.frame'), function(
 setMethod('combine', signature=c(x='SingleCellAssay', y='AnnotatedDataFrame'), function(x, y, ...){
     if(nrow(x) == ncol(x)) stop("x has same number of rows and columns, must explicitly specify 'along'")
     if(nrow(y) == nrow(x)) along <- 'cellData'
-    else if(nrow(y) == ncol(y)) along <- 'featureData'
+    else if(nrow(y) == ncol(x)) along <- 'featureData'
     else stop('Dimension mismatch between y and x')
     
   if(length(intersect(along , c('cellData', 'featureData')))!=1) stop("If specified, along must be either 'cellData', or 'featureData'")
