@@ -236,3 +236,26 @@ setMethod('combine', signature(x='DataLayer', y='DataLayer'), function(x, y, ...
     }
    proto
  })
+
+
+#'Split a DataLayer correctly
+#'
+#'split.default doesn't seem to do the right thing for an array
+setMethod("split",signature(x="DataLayer"),function(x,f,drop=FALSE,...){
+  if (!missing(...)) 
+    .NotYetUsed(deparse(...), error = FALSE)
+  if (is.list(f)) 
+    f <- interaction(f)
+  else if (!is.factor(f)) 
+    f <- as.factor(f)
+  else if (drop) 
+    f <- factor(f)
+  storage.mode(f) <- "integer"
+  lf <- levels(f)
+  y <- vector("list", length(lf))
+  names(y) <- lf
+  ind<-split(seq_len(nrow(x)),f) #Here we are only splitting on the ROWS!
+  for (k in lf) y[[k]] <- x[ind[[k]]]
+  y
+})
+

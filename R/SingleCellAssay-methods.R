@@ -449,29 +449,6 @@ setMethod('split', signature(x='SingleCellAssay'),
   new('SCASet', set=out)
 })
 
-#'Split a DataLayer correctly
-#'
-#'split.default doesn't seem to do the right thing for an array
-setMethod("split",signature(x="DataLayer"),function(x,f,drop=FALSE,...){
-  if (!missing(...)) 
-    .NotYetUsed(deparse(...), error = FALSE)
-  if (is.list(f)) 
-    f <- interaction(f)
-  else if (!is.factor(f)) 
-    f <- as.factor(f)
-  else if (drop) 
-    f <- factor(f)
-  storage.mode(f) <- "integer"
-  if (is.null(attr(x, "class"))) 
-    return(.Internal(split(x, f)))
-  lf <- levels(f)
-  y <- vector("list", length(lf))
-  names(y) <- lf
-  ind<-.Internal(split(seq_along(1:nrow(x)),f)) #Here we are only splitting on the ROWS!
-  for (k in lf) y[[k]] <- x[ind[[k]]]
-  y
-})
-
 .SingleCellAssayCombine <- function(scalist){
   names(scalist)[1:2] <- c('x', 'y')
   do.call(combine, scalist)
