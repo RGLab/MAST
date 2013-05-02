@@ -113,31 +113,29 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
   for(i in seq_along(scL)){
     scL[[i]]@keep.names <- FALSE
     checkGroups(scL[[i]], groups)
-    terms1 <- union(groups, getMapping(scL[[i]],"ncells")[[1]])
-    lhs1 <- paste(c(terms1, getMapping(scL[[i]],"primerid")[[1]]), collapse="+")
+    terms1 <- union(groups, "ncells")
+    lhs1 <- paste(c(terms1, "primerid"), collapse="+")
     firstForm <- formula(sprintf("%s ~.", lhs1))
     ##should look like Patient.ID + ... + n.cells ~ PrimerID
-    tmp <- cast(melt(scL[[i]]), firstForm, fun.aggregate=fun.natural, value=getMapping(scL[[i]],"value")[[1]])
+    m <- melt(scL[[i]])
+    tmp <- cast(m, firstForm, fun.aggregate=fun.natural, value=getMapping(scL[[i]],"value")[[1]])
     ##exponential average per gene, scaled by number of cells
-    if(class(melt(scL[[i]])['ncells']) == 'factor'){
+    if(class(m['ncells']) == 'factor'){
       warning("ncells is a factor rather than numeric.\n I'll continue, but this may cause problems down the line")
     }
-    tmp["(all)"] <- tmp["(all)"]/as.numeric(as.character(tmp[[getMapping(scL[[i]],"ncells")[[1]]]]))
-    rhs2 <- union(groups, getMapping(scL[[i]],"primerid")[[1]])
+    tmp["(all)"] <- tmp["(all)"]/as.numeric(as.character(tmp[["ncells"]]))
+    rhs2 <- union(groups, "primerid")
     terms2 <- sprintf("%s ~ .", paste(rhs2, collapse="+"))
     secondForm <- formula(terms2)
-    nexp = cast(melt(scL[[i]]), secondForm, fun.aggregate=function(x){sum(x>0)}, value=getMapping(scL[[i]],"value")[[1]])
+    nexp = cast(m, secondForm, fun.aggregate=function(x){sum(x>0)}, value="value")
     #put back on Et scale. fun.cycle adds 1 so -Inf becomes 0 on natural scale
-    #Not sure this is what we want? Okay.. this will be fine
     castL[[i]] <- cast(melt(tmp), secondForm, fun.aggregate=fun.cycle)
     renamestr <- c('primerid', 'et')
-    names(renamestr) <- c(getMapping(scL[[i]],"primerid")[[1]], '(all)')
+    names(renamestr) <- c("primerid", '(all)')
     castL[[i]] <- rename(castL[[i]], renamestr)
     castL[[i]] <- cbind(castL[[i]], nexp=nexp$`(all)`)
   }
   concord <- merge(castL[[1]], castL[[2]], by=c(groups, 'primerid'), suffixes=c(".ref", ".comp"), all=T)
-  #This should not be done. Missing values should remain missing, not be artificially set to zero. We'll see what it does to the wss etc..
- # concord[is.na(concord)] <- 0
   concord
 }
 
