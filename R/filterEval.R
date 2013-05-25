@@ -125,8 +125,9 @@ print(p)
   p <- levelplot(ss~sigmaContinuous*sigmaProportion, tf[[1]], main='Sum of Squares', col.regions=gray.colors)
   print(p)
 
-print(p)
-p <- levelplot(R2~sigmaContinuous*sigmaProportion, tf[[1]], main='Average R2', col.regions=gray.colors)
+if(any(!is.na(tf[[1]]$r2))){
+p <- levelplot(r2~sigmaContinuous*sigmaProportion, tf[[1]], main='Average R2', col.regions=gray.colors)
+}
 
 print(p)
 p <- xyplot(et.ref~et.comp|sigmaContinuous*sigmaProportion, concat[[1]], comparison=concat[[2]][, c('et.comp', 'et.ref')], panel=panel.shifts, pch='.', cex=2, strip=strip.custom(style=3, strip.names=c(T, T)))

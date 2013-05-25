@@ -48,3 +48,4 @@ Collate:
     'NanostringRCCReader.R'
     'zeroinf.R'
     'Nanostring-methods.R'
+    'MultidimensionalScaling.R'
