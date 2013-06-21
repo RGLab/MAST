@@ -34,10 +34,10 @@ test_that('zlm can run lmer', {
 
 test_that('test.zlm works', {
     out <- zlm(y ~ x1 + x2, dat)
-    test.zlm(out, matchCoefs(out$disc, 'x1'))
+    test.zlm(out, car::matchCoefs(out$disc, 'x1'))
 
     if(require('lme4')){
-      test.zlm(lrout2, matchCoefs(lrout2$disc, 'Population'))
+      test.zlm(lrout2, car::matchCoefs(lrout2$disc, 'Population'))
     }
     
 })

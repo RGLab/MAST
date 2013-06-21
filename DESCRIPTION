@@ -8,10 +8,10 @@ Maintainer: Greg Finak <gfinak@fhcrc.org>
 VignetteBuilder: knitr
 Imports:
     Biobase,
+    data.table,
     BiocGenerics,
     testthat,
     gdata,
-    flowCore,
     methods,
     reshape,
     stats,

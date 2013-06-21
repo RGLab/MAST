@@ -105,6 +105,9 @@ naToZero <- function(numeric){
 ##' @return either an array of tests (one per primer) or a list
 ##' @export
 ##' @importFrom car lht
+##' @importFrom plyr laply
+##' @importFrom plyr llply
+##' @importFrom plyr dlply
 zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, ...){
 
   
