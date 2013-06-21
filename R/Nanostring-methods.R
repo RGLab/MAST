@@ -13,24 +13,26 @@ setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdN
 #' @param posteriorprob Min posterior probability of cluster membership for an observation to be truncated 
 #' @param clip Should values with uncertain posterior probs be clipped
 #' @return modified nsa or list with elements nsa and debugging info regarding the clustering
-setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE){
+setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE, location.strength=1, pseudo.counts=5){
   layer(nsa) <- 'lCount'
   if(!('et' %in% dimnames(nsa)[[3]])) nsa <- addlayer(nsa, 'et')
-
+  
   if(missing(include.primers)){
     include.primers <- fData(nsa)$primerid
   } else if(length(setdiff(include.primers, fData(nsa)$primerid))>0){
     warning('include.primers member ', setdiff(include.primers, fData(nsa)$primerid), ' not found.')
   }
   if(!missing(exclude.primers)) include.primers <- setdiff(include.primers, exclude.primers)
+  nsa <- sort(nsa)
   m <- melt(nsa)
   dat <- subset(m, primerid %in% include.primers)$lCount
   
   fc <- flowClust::flowClust(dat, K=2, trans=0)
-  prior<-flowClust::flowClust2Prior(fc,kappa=1,Nt=50) ## Lambda and Omega both scale by kappa*Nt.  w0 scales by Nt alone (but we don't use w0)
-  prior$Omega0 <- prior$Omega0*5        #vague mean hyperprior
+  prior<-flowClust::flowClust2Prior(fc,kappa=3,Nt=5) ## Lambda and Omega both scale by kappa*Nt.  w0 scales by Nt alone (but we don't use w0)
+  prior$Omega0 <- prior$Omega0*5/location.strength        #vague mean hyperprior
   prior$Lambda0 <- prior$Lambda0/2     #smaller variances
-  prior$w0 <- c(5, 5)                     #vague cluster membership prior, but weighted towards noise cluster
+  prior$w0 <- c(pseudo.counts, pseudo.counts)                     #vague cluster membership prior, but weighted towards noise cluster
+  if(debug) cat('Omega0', prior$Omega0, ' Lambda0 ', prior$Lambda0)
   dats <- split(m$lCount, m$primerid)
   fitgene <- mclapply(dats, function(set){
     fc.tmp <- flowClust::flowClust(set, K=2, prior=prior, level=.9, usePrior='yes', trans=0, z.cutoff=.95)
@@ -52,10 +54,21 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
     }
   })) #genes in alpha-order, then each idvars in alpha order, same as melted nsa
 
+  densities <- lapply(fitgene, function(x){
+      mu <- x@mu
+      sigma <- x@sigma
+      w <- x@w
+      f <- function(y){
+          
+          dnorm(y, mu[1], sigma[1])*w[1] + dnorm(y, mu[2], sigma[2])*w[2]
+      }
+      return(f)
+  })
 
   m <- cbind(m, ps=p.signal, clusterID=as.factor(ifelse(is.na(lab), 3, lab)))
   layer(nsa) <- 'et'
   exprs(nsa) <- ifelse(m$clusterID==1, m$lCount, 0) #fix rounding
-  if(debug) return(list(m=m, nsa=nsa))
+  if(debug) return(list(m=m, nsa=nsa, densities=densities))
+  ## TODO: return function giving density estimates for each gene
   else return(nsa)
 })
