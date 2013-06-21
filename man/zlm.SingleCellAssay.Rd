@@ -2,8 +2,9 @@
 \alias{zlm.SingleCellAssay}
 \title{zlm.SingleCellAssay}
 \usage{
-  zlm.SingleCellAssay(formula, sca, scope,
-    keep.zlm = FALSE, ...)
+  zlm.SingleCellAssay(formula, sca, lm.fun = glm,
+    hypothesis.matrix, hypo.fun = NULL, keep.zlm = FALSE,
+    .parallel = FALSE, ...)
 }
 \arguments{
   \item{formula}{a formula with the measurement variable on
@@ -11,15 +12,24 @@
 
   \item{sca}{SingleCellAssay object}
 
-  \item{scope}{(optional) a formula giving the size of the
-  smaller model to be fit.  If omitted, each predictor will
-  be dropped in turn.}
+  \item{lm.fun}{a function accepting lm-style arguments and
+  a family argument}
 
-  \item{...}{passed to lm and glm.}
+  \item{hypothesis.matrix}{names of coefficients to test in
+  lht form}
+
+  \item{hypo.fun}{a function taking a model as input and
+  returning output suitable for hypothesis.matrix}
+
+  \item{keep.zlm}{should the model objects be kept}
+
+  \item{.parallel}{run fits using parallel processing.
+  must have doParallel}
+
+  \item{...}{passed to lm.fun}
 }
 \value{
-  a \code{list} of \code{data.frame}, one per tested
-  predictor.  See details.
+  either an array of tests (one per primer) or a list
 }
 \description{
   zero-inflated regression for SingleCellAssay
@@ -27,8 +37,7 @@
 \details{
   Fits a hurdle model in \code{formula} (linear for et>0),
   logistic for et==0 vs et>0. Conducts likelihood ratio
-  tests for each predictor in \code{formula} that does not
-  appear in \code{scope}.
+  tests using hypothesis.matrix.
 
   A \code{list} of \code{data.frame}s, is returned, with
   one \code{data.frame} per tested predictor. Rows of each
