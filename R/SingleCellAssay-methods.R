@@ -129,6 +129,7 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
 }
 
 ## might have bad complexity, but could construct one at time, then glue cheaply
+## Not too bad except for deduplication.. will use data.table
 fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   if(!inherits(df,"data.frame")){
     stop("Argument `dataframe` should be a data.frame.")
@@ -171,10 +172,14 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   duped.primers <- duped.primers[sapply(duped.primers, length)>0]
   if(length(duped.primers)>0){
     warning("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
-    df <- ddply(df,'wellKey',mkunique,G='primerid')
-    df[,'primerid.orig'] <- df[,'primerid']
-    df[,'primerid'] <- df[,'primerid.unk']
-    df[,'primerid.unk'] <- NULL
+    dt<-data.table(df)
+    dt[,primer.orig:=primerid,]
+    dt[,primerid:=make.unique(.SD$primer.orig),wellKey]
+    df<-as.data.frame(dt)
+#    df <- ddply(df,'wellKey',mkunique,G='primerid')
+#    df[,'primerid.orig'] <- df[,'primerid']
+#    df[,'primerid'] <- df[,'primerid.unk']
+#    df[,'primerid.unk'] <- NULL
     fmap['primerid.orig'] <- 'primerid.orig'
   }
   
