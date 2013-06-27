@@ -130,6 +130,12 @@ test_that("Can subset complete data with boolean indices",{
   expect_that(getwellKey(sub), equals(getwellKey(sc)[boolind]))
 })
 
+## This makes more sense to me than to propagate new wells/features consisting entirely of NA
+test_that('NAs throw error when subsetting', {
+  expect_error(sc[, c(1:4, NA)])
+  expect_error(sc[c(boolind, NA), ])
+})
+
 test_that("loading Matrix package doesn't clobber generic table", {
   ## Matrix dispatches [[ and [ on x, i, j, drop
   ## The distinction between ANY and missing doesn't matter for

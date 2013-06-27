@@ -350,17 +350,20 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 .scaSubset <- function(x, i, j, ..., drop=FALSE){
   if(missing(i)){
-	i<-1:nrow(x)
+    i<-1:nrow(x)
   }
+  if(any(is.na(i))) stop("NAs not permitted in 'i' index")
+  
   if(inherits(i,"character")){
     wk<-getwellKey(x)
-    if(length(setdiff(i, wk))>0){
-      stop('wellKeys \n', paste(setdiff(i, wk), sep=','), '\n not found!')
-    }
+    if(length(setdiff(i, wk))>0) stop('wellKeys \n', paste(setdiff(i, wk), sep=','), '\n not found!')
     i <- match(i, wk)
-    }
+  }
+  
   if(!missing(j)){
+    if(any(is.na(j))) stop("NAs not permitted in 'j' index")  
     pk<-fData(x)$primerid
+    
     if(inherits(j,"character")){
       J <- match(j, pk)
       if(!(all(j%in%pk))){
@@ -368,10 +371,12 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
       }
       j<-J
     }
-      newfdf <- featureData(x)[j,]
+    newfdf <- featureData(x)[j,] 
   }else {                               #j missing
     j <- TRUE
   }
+
+  
   newcdf <- cellData(x)[i,]
   if(!exists("newfdf")){
     newfdf<-x@featureData
