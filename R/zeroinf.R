@@ -2,11 +2,15 @@
 zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   #if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
   if(!missing(subset)) warning('subset ignored')
+  if(!inherits(formula, 'formula')) stop("'formula' must be class 'formula'")
 
+  ## lm initially just to get pull response vector
+  ## Turn glmer grouping "|" into "+" to get correct model frame
   sanitize.formula <- as.formula(gsub('[|]', '+', deparse(formula)))
-  init <- model.frame(sanitize.formula, data) #lm initially just to get pull response vector
+  ## Throw error on NA, because otherwise the next line will fail mysteriously
+  init <- tryCatch(model.frame(sanitize.formula, data, na.action=na.fail), error=function(e) stop('NAs in response or predictors not allowed; please remove before fitting'))
   
-  data$pos <-   model.response(init)>0
+  data[,'pos'] <-   model.response(init)>0
   cont <- try(lm.fun(formula, data, subset=pos, family='gaussian', ...), silent=silent)
   if(inherits(cont, 'try-error')){
     warning('Some factors were not present among the positive part')
@@ -50,7 +54,7 @@ test.zlm <- function(model, hypothesis.matrix){
   }, TRUE)
   
   disc <- lht(model$disc, hypothesis.matrix, test=chisq, singular.ok=TRUE)
-  if(inherits(tt, 'try-error')){
+  if(inherits(tt, 'try-error') || !all(dim(cont) == dim(disc))){
     cont <- rep(0, length(as.matrix(disc)))
     dim(cont) <- dim(disc)
     dimnames(cont) <- dimnames(disc)
@@ -108,28 +112,31 @@ naToZero <- function(numeric){
 ##' @importFrom plyr laply
 ##' @importFrom plyr llply
 ##' @importFrom plyr dlply
-zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, ...){
+zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, .drop=TRUE, .inform=FALSE, ...){
 
   
     m <- SingleCellAssay:::melt(sca)
 
+    if(.drop) m <- droplevels(m)
 
-    test.models <- dlply(m, ~primerid, function(x, ...){
-      model <- zlm(formula, x, lm.fun, ...)
+    fit.primerid <- function(melted.gene, ...){
+            model <- zlm(formula, melted.gene, lm.fun, ...)
             if(!is.null(hypo.fun) && inherits(hypo.fun, 'function')){
               hypothesis.matrix <- hypo.fun(model)
             }
-      test <- test.zlm(model, hypothesis.matrix)
-      list(model=model, test=test)
-    }, .parallel=.parallel)
+            test <- test.zlm(model, hypothesis.matrix)
+            list(model=model, test=test)
+    }
+    
+    test.models <- dlply(m, ~primerid, fit.primerid, .drop=.drop, .inform=.inform, ...)
 
     tests <- laply(test.models, function(x){
       x$test[2,-1,]
-    })
+    }, .inform=.inform)
 
     if(keep.zlm){
-      models <-  llply(test.models, '[[', 'model')
-      return(list(tests, models))
+      models <-  llply(test.models, '[[', 'model', .inform=.inform)
+      return(list(tests=tests, models=models))
     }
 
     return(tests)

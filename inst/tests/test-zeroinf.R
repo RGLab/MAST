@@ -13,6 +13,11 @@ test_that('zlm throws meaningful error with matrix', {
   expect_error(zlm( y ~ x2, as.matrix(dat[, -2])), 'data.frame')
 })
 
+test_that('zlm throws error on NA', {
+  dat$y[1] <- NA
+  expect_error(zlm( y ~ x2, dat), 'NA')
+})
+
 test_that('zlm can run linear regression', {
   out <- zlm(y ~ x1 + x2, dat)
   expect_equal(coef(disc), coef(out$disc))
@@ -42,6 +47,27 @@ test_that('test.zlm works', {
     
 })
 
+  fd@keep.names <- FALSE
+  fd2 <- fd[, 1:20]
+
 test_that('zlm.SingleCellAssay works', {
-  zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd, hypothesis.matrix='PopulationVbetaResponsive')
+  zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE)
+  expect_that(zz, is_a('array'))
+  expect_equal(dim(zz)[1], 20)
+})
+
+test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
+  ee <- exprs(fd2)
+  ee[,1] <- rnorm(nrow(fd))+20
+  exprs(fd2) <- ee
+  zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE)
+  expect_that(zz, is_a('array'))
+  expect_equal(dim(zz)[1], 20)
+
+  w.resp <- which(cData(fd2)$Population=='VbetaResponsive')
+  ee[,1][w.resp] <- rbinom(length(w.resp), 1, .1)
+  exprs(fd2) <- ee
+  zz <- zlm.SingleCellAssay(value ~ Population, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE, keep.zlm=TRUE)
+  expect_that(zz$tests, is_a('array'))
+  expect_equal(dim(zz$tests)[1], 20)  
 })
