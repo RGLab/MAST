@@ -14,8 +14,9 @@ test_that('zlm throws meaningful error with matrix', {
 })
 
 test_that('zlm throws error on NA', {
-  dat$y[1] <- NA
-  expect_error(zlm( y ~ x2, dat), 'NA')
+  dat2 <- dat
+  dat2$y[1] <- NA
+  expect_error(zlm( y ~ x2, dat2), 'NA')
 })
 
 test_that('zlm can run linear regression', {
@@ -71,3 +72,5 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   expect_that(zz$tests, is_a('array'))
   expect_equal(dim(zz$tests)[1], 20)  
 })
+
+if(require('lme4')) detach('package:lme4')

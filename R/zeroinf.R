@@ -1,4 +1,17 @@
-
+##' Run a zero-inflated regression
+##'
+##' Fits a hurdle model on zero-inflated continuous data in which the zero process
+##' is modeled as a logistic regression
+##' and (conditional on the the response being >0), the continuous process is Gaussian, ie, a linear regression.
+##' @param formula model formula
+##' @param data a data.frame, list or environment in which formula is evaluated
+##' @param lm.fun a function that takes a formula and data the arguments family='binomial' and family='gaussian', eg, \code{glm} or \code{glmer}.
+##' @param silent if TRUE suppress common errors from fitting continuous part
+##' @param subset ignored
+##' @param ... passed to lm.fun
+##' @return list of class 'zlm' with "disc"rete part and "cont"inuous part 
+##' @export
+##' @importFrom stringr str_detect
 zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   #if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
   if(!missing(subset)) warning('subset ignored')
@@ -8,21 +21,23 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   ## Turn glmer grouping "|" into "+" to get correct model frame
   sanitize.formula <- as.formula(gsub('[|]', '+', deparse(formula)))
   ## Throw error on NA, because otherwise the next line will fail mysteriously
-  init <- tryCatch(model.frame(sanitize.formula, data, na.action=na.fail), error=function(e) stop('NAs in response or predictors not allowed; please remove before fitting'))
+  init <- tryCatch(model.frame(sanitize.formula, data, na.action=na.fail), error=function(e) if(str_detect(as.character(e), 'missing')) stop('NAs in response or predictors not allowed; please remove before fitting') else stop(e) )
   
   data[,'pos'] <-   model.response(init)>0
   cont <- try(lm.fun(formula, data, subset=pos, family='gaussian', ...), silent=silent)
   if(inherits(cont, 'try-error')){
     warning('Some factors were not present among the positive part')
-    cont <- NULL
+    cont <- lm(0~0)
   }                                     
   
   init[[1L]] <- (init[[1L]]>0)*1            #apparently the response goes first in the model.frame
-  disc <- lm.fun(formula, init, family='binomial')
+  disc <- lm.fun(formula, init, family='binomial', ...)
   out <- list(cont=cont, disc=disc)
   class(out) <- 'zlm'
   out
 }
+
+is.empty.fit <- function(fit) return(length(coef(fit))==0)
 
 summary.zlm <- function(out){
   summary(out$cont)
@@ -72,22 +87,6 @@ test.zlm <- function(model, hypothesis.matrix){
   }
       dimnames(res) <- dm
   res
-}
-## terms: output from terms(formula)
-## var: character of a variable that appeared in a formula (including interactions)
-## mm: model matrix (output of model.matrix(formula, data))
-## returns names
-coefsForVar <- function(terms, mm, term){
- assignIdx <- which(labels(terms) == term) #gives us index into assign attribute
-          varCoefIdx <- which(attr(mm, 'assign') == assignIdx)     #gives coefficient idx corresponding to term in formula
-          coefForThisVar <- colnames(mm)[varCoefIdx]
- coefForThisVar
-
-}
-
-naToZero <- function(numeric){
-  numeric[is.na(numeric)] <- 0
-  numeric
 }
 
 ##' zero-inflated regression for SingleCellAssay 
