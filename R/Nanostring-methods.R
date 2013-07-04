@@ -1,19 +1,23 @@
 #'@exportMethod thresholdNanoString
 setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
 
-#' Estimate thresholds for positive expression
-#'
-#' Estimates per-gene x unit thresholds for positive expression and truncates values below this threshold
-#' Uncertain values (in terms of posterior probability of membership) can be set to NA or rounded left or right
-#' Thresholds are estimated using a Gaussian mixture model with prior supplied by population estimates.
-#' @name threshold
-#' @param nsa NanostringAssay object
-#' @param groups groups to apply thresholding
-#' @param thresholds data.frame of thresholds  of groups x genes user may specify
-#' @param posteriorprob Min posterior probability of cluster membership for an observation to be truncated 
-#' @param clip Should values with uncertain posterior probs be clipped
-#' @return modified nsa or list with elements nsa and debugging info regarding the clustering
-setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE, location.strength=1, pseudo.counts=5){
+##' Estimate thresholds for positive expression
+##'
+##' Estimates per-gene x unit thresholds for positive expression and truncates values below this threshold
+##' Uncertain values (in terms of posterior probability of membership) can be set to NA or rounded left or right
+##' Thresholds are estimated using a Gaussian mixture model with prior supplied by population estimates.
+##' @name threshold
+##' @param nsa NanostringAssay object
+##' @param include.primers primeris to use for population estimates.  If missing, then all primers are used.
+##' @param exclude.primers primers to exclude from population estimates
+##' @param posteriorprob currently ignored
+##' @param clip currently ignored
+##' @param debug should extra fields helpful for examining the thresholding be returned as a list?
+##' @param location.strength scaling of prior on location
+##' @param pseudo.counts total strength of prior vs data
+##' @param hard.threshold location estimates less than this value will be treated as belonging to the "noise cluster"
+##' @return modified nsa or list with elements nsa and debugging info regarding the clustering
+setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE, location.strength=1, pseudo.counts=5, hard.threshold=3){
   layer(nsa) <- 'lCount'
   if(!('et' %in% dimnames(nsa)[[3]])) nsa <- addlayer(nsa, 'et')
   
@@ -31,7 +35,7 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   prior<-flowClust::flowClust2Prior(fc,kappa=3,Nt=5) ## Lambda and Omega both scale by kappa*Nt.  w0 scales by Nt alone (but we don't use w0)
   prior$Omega0 <- prior$Omega0*5/location.strength        #vague mean hyperprior
   prior$Lambda0 <- prior$Lambda0/2     #smaller variances
-  prior$w0 <- c(pseudo.counts, pseudo.counts)                     #vague cluster membership prior, but weighted towards noise cluster
+  prior$w0 <- c(pseudo.counts, pseudo.counts)                     #cluster membership prior
   if(debug) cat('Omega0', prior$Omega0, ' Lambda0 ', prior$Lambda0)
   dats <- split(m$lCount, m$primerid)
   fitgene <- mclapply(dats, function(set){
@@ -39,13 +43,16 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
     fc.tmp
   })
   means <- do.call(rbind, lapply(fitgene, function(x){t(x@mu)}))
+  props <- do.call(rbind, lapply(fitgene, function(x){t(x@w)}))
   w.max <- apply(means, 1, which.max)
   p.signal <- do.call(c, lapply(1:length(fitgene), function(x){
     fitgene[[x]]@z[,w.max[x]]
   })) #genes in alpha-order, then each idvars in alpha order, same as melted nsa
 
   lab <- do.call(c, lapply(1:length(fitgene), function(x){
-    if(w.max[x]==1){
+    if(means[x,w.max[x]] < hard.threshold){
+      rep(2, length(fitgene[[x]]@label)) #truncate all if both cluster means are less than hard.treshold
+    } else if(w.max[x]==1){
       fitgene[[x]]@label
     } else if(w.max[x]==2){
       c(2, 1)[fitgene[[x]]@label]
@@ -68,7 +75,6 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   m <- cbind(m, ps=p.signal, clusterID=as.factor(ifelse(is.na(lab), 3, lab)))
   layer(nsa) <- 'et'
   exprs(nsa) <- ifelse(m$clusterID==1, m$lCount, 0) #fix rounding
-  if(debug) return(list(m=m, nsa=nsa, densities=densities))
-  ## TODO: return function giving density estimates for each gene
+  if(debug) return(list(m=m, nsa=nsa, densities=densities, means=means, props=props))
   else return(nsa)
 })
