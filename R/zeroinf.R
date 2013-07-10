@@ -56,6 +56,7 @@ summary.zlm <- function(out){
 ##' @return array containing the discrete, continuous and combined tests
 ##' @importFrom car linearHypothesis
 ##' @importFrom car lht
+##' @export
 test.zlm <- function(model, hypothesis.matrix){
   mer.variant <- any('chisq' %in% eval(formals(getS3method('linearHypothesis', class(model$disc)))$test)) #don't ask
   chisq <- 'Chisq'
