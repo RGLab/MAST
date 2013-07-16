@@ -4,16 +4,26 @@
 \arguments{
   \item{nsa}{NanostringAssay object}
 
-  \item{groups}{groups to apply thresholding}
+  \item{include.primers}{primeris to use for population
+  estimates.  If missing, then all primers are used.}
 
-  \item{thresholds}{data.frame of thresholds of groups x
-  genes user may specify}
+  \item{exclude.primers}{primers to exclude from population
+  estimates}
 
-  \item{posteriorprob}{Min posterior probability of cluster
-  membership for an observation to be truncated}
+  \item{posteriorprob}{currently ignored}
 
-  \item{clip}{Should values with uncertain posterior probs
-  be clipped}
+  \item{clip}{currently ignored}
+
+  \item{debug}{should extra fields helpful for examining
+  the thresholding be returned as a list?}
+
+  \item{location.strength}{scaling of prior on location}
+
+  \item{pseudo.counts}{total strength of prior vs data}
+
+  \item{hard.threshold}{location estimates less than this
+  value will be treated as belonging to the "noise
+  cluster"}
 }
 \value{
   modified nsa or list with elements nsa and debugging info
