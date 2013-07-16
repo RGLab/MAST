@@ -39,7 +39,7 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   if(debug) cat('Omega0', prior$Omega0, ' Lambda0 ', prior$Lambda0)
   dats <- split(m$lCount, m$primerid)
   fitgene <- mclapply(dats, function(set){
-    fc.tmp <- flowClust::flowClust(set, K=2, prior=prior, level=.9, usePrior='yes', trans=0, z.cutoff=.95)
+    fc.tmp <- flowClust::flowClust(set, K=2, prior=prior, u.cutoff=NULL, level=1, usePrior='yes', trans=0, z.cutoff=0)
     fc.tmp
   })
   means <- do.call(rbind, lapply(fitgene, function(x){t(x@mu)}))
@@ -50,12 +50,13 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   })) #genes in alpha-order, then each idvars in alpha order, same as melted nsa
 
   lab <- do.call(c, lapply(1:length(fitgene), function(x){
+      label <- flowClust::Map(fitgene[[x]])
     if(means[x,w.max[x]] < hard.threshold){
-      rep(2, length(fitgene[[x]]@label)) #truncate all if both cluster means are less than hard.treshold
+      rep(2, length(label)) #truncate all if both cluster means are less than hard.treshold
     } else if(w.max[x]==1){
-      fitgene[[x]]@label
+      label
     } else if(w.max[x]==2){
-      c(2, 1)[fitgene[[x]]@label]
+      c(2, 1)[label]
     } else{
       stop('ruhroh, there should only be two clusters')
     }
