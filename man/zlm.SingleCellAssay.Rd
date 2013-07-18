@@ -3,8 +3,9 @@
 \title{zlm.SingleCellAssay}
 \usage{
   zlm.SingleCellAssay(formula, sca, lm.fun = glm,
-    hypothesis.matrix, hypo.fun = NULL, keep.zlm = FALSE,
-    .parallel = FALSE, .drop = TRUE, .inform = FALSE, ...)
+    hypothesis.matrix, type = "Wald", hypo.fun = NULL,
+    keep.zlm = FALSE, .parallel = FALSE, .drop = TRUE,
+    .inform = FALSE, ...)
 }
 \arguments{
   \item{formula}{a formula with the measurement variable on

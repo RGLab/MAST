@@ -57,19 +57,44 @@ summary.zlm <- function(out){
 ##' @importFrom car linearHypothesis
 ##' @importFrom car lht
 ##' @export
-test.zlm <- function(model, hypothesis.matrix){
+test.zlm <- function(model, hypothesis.matrix, type='Wald'){
+    if(length(type)!= 1 || (type != 'Wald'&& type != 'LRT')) stop("'type' must equal 'Wald' or 'LRT'")
+    if(type=='LRT'){
+        if(length(hypothesis.matrix) != 1) stop("Currently only support testing single factors when 'type'='LRT' and length of 'hypothesis.matrix' > 1")
+        if(!inherits(model$disc, 'lm')) stop('Currently only support type=LRT with glm fits')
+    }
+    
   mer.variant <- any('chisq' %in% eval(formals(getS3method('linearHypothesis', class(model$disc)))$test)) #don't ask
+    ## Get names to agree from output of all the different variants
   chisq <- 'Chisq'
   pchisq <- 'Pr(>Chisq)'
+  names.drop1.cont <- c('Df', 'scaled dev.', 'Pr(>Chi)')
+  names.drop1.disc <- c('Df', 'LRT', 'Pr(>Chi)')
+  rename.drop1.cont <- c('scaled dev.'='Chisq', 'Pr(>Chi)'='Pr(>Chisq)')
+  rename.drop1.disc <- c('LRT'='Chisq', 'Pr(>Chi)'='Pr(>Chisq)')
   if(mer.variant) {
     chisq <- 'chisq'
     pchisq <- 'Pr(> Chisq)'
   }
+  if(type=='Wald'){
   tt <- try({
     cont <- lht(model$cont, hypothesis.matrix, test=chisq, singular.ok=TRUE)
   }, TRUE)
-  
   disc <- lht(model$disc, hypothesis.matrix, test=chisq, singular.ok=TRUE)
+} else if(type=='LRT'){
+    tt <- try({
+    cont <- rename(
+        cbind(Res.df=NA, drop1(model$cont, hypothesis.matrix, test='LRT')[, names.drop1.cont]),
+        rename.drop1.cont)
+})
+        disc <- rename(
+        cbind(Res.df=NA, drop1(model$disc, hypothesis.matrix, test='LRT')[, names.drop1.disc]),
+        rename.drop1.disc)
+    } else{
+ stop('ruhroh')
+}
+
+    
   if(inherits(tt, 'try-error') || !all(dim(cont) == dim(disc))){
     cont <- rep(0, length(as.matrix(disc)))
     dim(cont) <- dim(disc)
@@ -112,7 +137,7 @@ test.zlm <- function(model, hypothesis.matrix){
 ##' @importFrom plyr laply
 ##' @importFrom plyr llply
 ##' @importFrom plyr dlply
-zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, .drop=TRUE, .inform=FALSE, ...){
+zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, type='Wald', hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, .drop=TRUE, .inform=FALSE, ...){
 
   
     m <- SingleCellAssay:::melt(sca)
@@ -124,7 +149,7 @@ zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hyp
             if(!is.null(hypo.fun) && inherits(hypo.fun, 'function')){
               hypothesis.matrix <- hypo.fun(model)
             }
-            test <- test.zlm(model, hypothesis.matrix)
+            test <- test.zlm(model, hypothesis.matrix, type=type)
             list(model=model, test=test)
     }
     
