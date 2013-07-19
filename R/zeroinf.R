@@ -37,7 +37,7 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   out
 }
 
-is.empty.fit <- function(fit) return(length(coef(fit))==0)
+is.empty.fit <- function(fit) return(length(coef(fit))==0 || summary(fit)$df.residual==0)
 
 summary.zlm <- function(out){
   summary(out$cont)
@@ -83,6 +83,7 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald'){
   disc <- lht(model$disc, hypothesis.matrix, test=chisq, singular.ok=TRUE)
 } else if(type=='LRT'){
     tt <- try({
+    stopifnot(summary(model$cont)$df.residual>0) #otherwise drop1 throws an obscure error
     cont <- rename(
         cbind(Res.df=NA, drop1(model$cont, hypothesis.matrix, test='LRT')[, names.drop1.cont]),
         rename.drop1.cont)

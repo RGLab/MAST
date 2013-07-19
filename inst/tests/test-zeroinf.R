@@ -48,6 +48,11 @@ test_that('test.zlm works', {
     
 })
 
+test_that("test.zlm handles 0-DoF cases gracefully", {
+    out <- zlm(y~x1 + x2, dat[1:3,])
+    test.zlm(out, 'x1', type='LRT')
+})
+
   fd@keep.names <- FALSE
   fd2 <- fd[, 1:20]
 
