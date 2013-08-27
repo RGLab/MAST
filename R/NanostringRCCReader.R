@@ -64,7 +64,7 @@ if(recast){
 #'@export
 #' @importFrom reshape rename
 mergeWithKeyFile<-function(rcc,file){
-  key<-rename(read.csv(file,header=FALSE),c("V1"="Name","V2"="GeneID"))
+  key<-rename(read.csv(file,header=FALSE, as.is=TRUE),c("V1"="Name","V2"="GeneID"))
   return(lapply(rcc,function(x){x$code_summary<-merge(x$code_summary,key);x}))
 }
  

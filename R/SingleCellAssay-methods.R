@@ -353,6 +353,7 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
     i<-1:nrow(x)
   }
   if(any(is.na(i))) stop("NAs not permitted in 'i' index")
+  if(is.factor(i)) stop("Factors not permitted in 'i' index")
   
   if(inherits(i,"character")){
     wk<-getwellKey(x)
@@ -361,7 +362,8 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
   }
   
   if(!missing(j)){
-    if(any(is.na(j))) stop("NAs not permitted in 'j' index")  
+    if(any(is.na(j))) stop("NAs not permitted in 'j' index")
+    if(is.factor(j)) stop("Factors not permitted in 'j' index")
     pk<-fData(x)$primerid
     
     if(inherits(j,"character")){

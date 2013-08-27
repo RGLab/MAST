@@ -136,6 +136,11 @@ test_that('NAs throw error when subsetting', {
   expect_error(sc[c(boolind, NA), ])
 })
 
+test_that("Throw error when indexing with factors", {
+    expect_error(sc[, factor(c('B3GAT1'))])
+    expect_error(sc[factor('A'),])
+})
+
 test_that("loading Matrix package doesn't clobber generic table", {
   ## Matrix dispatches [[ and [ on x, i, j, drop
   ## The distinction between ANY and missing doesn't matter for
