@@ -30,8 +30,14 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
     cont <- lm(0~0)
   }                                     
   
-  init[[1L]] <- (init[[1L]]>0)*1            #apparently the response goes first in the model.frame
-  disc <- lm.fun(formula, init, family='binomial', ...)
+  formula.split <- strsplit(deparse(formula), '~')[[1]]
+  lhs <- formula.split[1]
+  if(str_detect(lhs, '[()]')) stop("Left hand side of formula must be unadorned variable name from 'data'")
+  lhs <- 'pos'
+  rhs <- formula.split[2]
+  disc.formula <- paste(lhs, '~', rhs)
+  disc <- lm.fun(disc.formula, data, family='binomial', ...)
+  
   out <- list(cont=cont, disc=disc)
   class(out) <- 'zlm'
   out

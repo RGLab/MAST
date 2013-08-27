@@ -25,6 +25,10 @@ test_that('zlm can run linear regression', {
   expect_equal(coef(cont), coef(out$cont))
 })
 
+test_that('zlm accepts expressions in formulae', {
+    out <- zlm(y ~ cut(x2, 3) + x1, dat)
+})
+
 if(require('lme4')){
   m <- melt(fd)
   m$Subject.ID <- factor(m$Subject.ID)
