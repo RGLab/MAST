@@ -17,8 +17,8 @@ setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdN
 ##' @param pseudo.counts total strength of prior vs data
 ##' @param hard.threshold location estimates less than this value will be treated as belonging to the "noise cluster"
 ##' @return modified nsa or list with elements nsa and debugging info regarding the clustering
-setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE, location.strength=1, pseudo.counts=5, hard.threshold=3){
-  layer(nsa) <- 'lCount'
+setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE, location.strength=1, pseudo.counts=5, hard.threshold=3, startLayer='lCount'){
+  layer(nsa) <- startLayer
   if(!('et' %in% dimnames(nsa)[[3]])) nsa <- addlayer(nsa, 'et')
   
   if(missing(include.primers)){
@@ -29,7 +29,7 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   if(!missing(exclude.primers)) include.primers <- setdiff(include.primers, exclude.primers)
   nsa <- sort(nsa)
   m <- melt(nsa)
-  dat <- subset(m, primerid %in% include.primers)$lCount
+  dat <- subset(m, primerid %in% include.primers)[, startLayer]
   
   fc <- flowClust::flowClust(dat, K=2, trans=0)
   prior<-flowClust::flowClust2Prior(fc,kappa=3,Nt=5) ## Lambda and Omega both scale by kappa*Nt.  w0 scales by Nt alone (but we don't use w0)
@@ -37,7 +37,7 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   prior$Lambda0 <- prior$Lambda0/2     #smaller variances
   prior$w0 <- c(pseudo.counts, pseudo.counts)                     #cluster membership prior
   if(debug) cat('Omega0', prior$Omega0, ' Lambda0 ', prior$Lambda0)
-  dats <- split(m$lCount, m$primerid)
+  dats <- split(m[, startLayer], m$primerid)
   fitgene <- mclapply(dats, function(set){
     fc.tmp <- flowClust::flowClust(set, K=2, prior=prior, u.cutoff=NULL, level=1, usePrior='yes', trans=0, z.cutoff=0)
     fc.tmp
@@ -75,7 +75,7 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
 
   m <- cbind(m, ps=p.signal, clusterID=as.factor(ifelse(is.na(lab), 3, lab)))
   layer(nsa) <- 'et'
-  exprs(nsa) <- ifelse(m$clusterID==1, m$lCount, 0) #fix rounding
+  exprs(nsa) <- ifelse(m$clusterID==1, m[,startLayer], 0) #fix rounding
   if(debug) return(list(m=m, nsa=nsa, densities=densities, means=means, props=props))
   else return(nsa)
 })
