@@ -210,8 +210,8 @@ test_that('Can construct', {
 aset <- SCASet(melt(scd), primerid=primerid, idvars=idvars, measurement='et', splitby='Subject.ID')
 })
 
+splat <- split(scd, cData(scd)$Subject.ID)
 test_that('Can split',{
-  splat <- split(scd, cData(scd)$Subject.ID)
   expect_that(splat, is_a('SCASet'))
   splat.byfieldname <- split(scd, 'Subject.ID')
     expect_that(splat.byfieldname, is_a('SCASet'))
@@ -220,6 +220,12 @@ test_that('Can split',{
     splat <- split(scd, list(factor(cData(scd)$Subject.ID), factor(cData(scd)$Population)))
   expect_that(splat, is_a('SCASet'))
   
+})
+
+test_that('Can coerce to/from list', {
+   tolist <- as(splat, 'list')
+  expect_that(tolist, is_a('list'))
+  expect_that(as(tolist, 'SCASet'), is_a('SCASet'))
 })
 
 context('Copy and replace')
@@ -264,11 +270,13 @@ expect_that(c1, is_a('SingleCellAssay'))
 expect_equal(nrow(c1), 2)
 c2 <- combine(spl[[1]], spl[[2]], spl[[3]])
 expect_that(c2, is_a('SingleCellAssay'))
+expect_that(combine(spl), is_a('SingleCellAssay'))
 })
 
 test_that('combine throws error for non-conforming',{
   expect_error(combine(fd, spl[[1]]))
 })
+
 
 
 

@@ -463,11 +463,15 @@ setMethod('split', signature(x='SingleCellAssay'),
   new('SCASet', set=out)
 })
 
-.SingleCellAssayCombine <- function(scalist){
-  names(scalist)[1:2] <- c('x', 'y')
-  do.call(combine, scalist)
-}
-
+setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
+    
+    skeleton <- x[[1]]
+    if(length(x) == 1) return(skeleton)
+    for(i in seq(from=2, to=length(x))){
+        skeleton <- combine(skeleton, x[[i]])
+    }
+    return(skeleton)
+})
 
 ## FIXME: gdata (not sure why it's imported) shadows the generic definition
 ##'Combine two SingleCellAssay or derived classes
