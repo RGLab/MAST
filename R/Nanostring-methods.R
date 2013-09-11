@@ -1,4 +1,5 @@
-#'@exportMethod thresholdNanoString
+
+##'@exportMethod thresholdNanoString
 setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
 
 ##' Estimate thresholds for positive expression
@@ -16,6 +17,9 @@ setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdN
 ##' @param location.strength scaling of prior on location
 ##' @param pseudo.counts total strength of prior vs data
 ##' @param hard.threshold location estimates less than this value will be treated as belonging to the "noise cluster"
+##' @docType methods
+##' @rdname thresholdNanoString-methods
+##' @aliases thresholdNanoString,NanoStringAssay-method
 ##' @return modified nsa or list with elements nsa and debugging info regarding the clustering
 setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE, location.strength=1, pseudo.counts=5, hard.threshold=3, startLayer='lCount'){
   layer(nsa) <- startLayer
