@@ -139,7 +139,8 @@ FluidigmMapNames <- c(Mandatory_Cellvars, 'ncells')
 
 setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping', keys=FluidigmMapNames)),validity=SingleCellAssayValidity)
 
-##RNASeqAssay class. Doesn't require ncells
+##'RNASeqAssay class. Doesn't require ncells
+##'@exportClass RNASeqAssay
 setClass('RNASeqAssay',contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping',keys=Mandatory_Cellvars)),validity=SingleCellAssayValidity)
 
 ##'SCASet is a set of SingleCellAssay objects or objects of its subclasses (i.e. FluidigmAssay)
