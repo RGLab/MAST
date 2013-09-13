@@ -225,7 +225,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
       ## Do various things with lapp:
       if(apply_filter && filt_control$filter){
         ## list of SingleCellAssays
-        out <- .SingleCellAssayCombine(lapp)
+        out <- combine(as(lapp, 'SCASet'))
         #don't need to do this anymore since data.tables preserve order and have nice names
       } else if(filt_control$filter){
         out <- do.call(rbind, lapp)     #Fix order, argh

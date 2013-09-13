@@ -1,140 +1,175 @@
+##' Run a zero-inflated regression
+##'
+##' Fits a hurdle model on zero-inflated continuous data in which the zero process
+##' is modeled as a logistic regression
+##' and (conditional on the the response being >0), the continuous process is Gaussian, ie, a linear regression.
+##' @param formula model formula
+##' @param data a data.frame, list or environment in which formula is evaluated
+##' @param lm.fun a function that takes a formula and data the arguments family='binomial' and family='gaussian', eg, \code{glm} or \code{glmer}.
+##' @param silent if TRUE suppress common errors from fitting continuous part
+##' @param subset ignored
+##' @param ... passed to lm.fun
+##' @return list of class 'zlm' with "disc"rete part and "cont"inuous part 
+##' @export
+##' @importFrom stringr str_detect
+zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
+  #if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
+  if(!missing(subset)) warning('subset ignored')
+  if(!inherits(formula, 'formula')) stop("'formula' must be class 'formula'")
 
-zlm <- function(formula, data, silent=TRUE, ...){
-  init <- lm(formula, data, method='model.frame', ...) #run lm initially just to get pull response vector
-  data$pos <-   model.response(init)>0
-  cont <- try(glm(formula, data, subset=pos, family='gaussian', ...), silent=silent)
+  ## lm initially just to get pull response vector
+  ## Turn glmer grouping "|" into "+" to get correct model frame
+  sanitize.formula <- as.formula(gsub('[|]', '+', deparse(formula)))
+  ## Throw error on NA, because otherwise the next line will fail mysteriously
+  init <- tryCatch(model.frame(sanitize.formula, data, na.action=na.fail), error=function(e) if(str_detect(as.character(e), 'missing')) stop('NAs in response or predictors not allowed; please remove before fitting') else stop(e) )
+  
+  data[,'pos'] <-   model.response(init)>0
+  cont <- try(lm.fun(formula, data, subset=pos, family='gaussian', ...), silent=silent)
   if(inherits(cont, 'try-error')){
     warning('Some factors were not present among the positive part')
     cont <- lm(0~0)
   }                                     
   
-  init[[1L]] <- (init[[1L]]>0)*1            #apparently the response goes first in the model.frame
-  disc <- glm(formula, init, family='binomial')
+  formula.split <- strsplit(deparse(formula), '~')[[1]]
+  lhs <- formula.split[1]
+  if(str_detect(lhs, '[()]')) stop("Left hand side of formula must be unadorned variable name from 'data'")
+  lhs <- 'pos'
+  rhs <- formula.split[2]
+  disc.formula <- paste(lhs, '~', rhs)
+  disc <- lm.fun(disc.formula, data, family='binomial', ...)
+  
   out <- list(cont=cont, disc=disc)
   class(out) <- 'zlm'
   out
 }
+
+is.empty.fit <- function(fit) return(length(coef(fit))==0 || summary(fit)$df.residual==0)
 
 summary.zlm <- function(out){
   summary(out$cont)
   summary(out$disc)
 }
 
-## Do LR test separately on continuous and discrete portions
-test.zlm <- function(model, scope){
+##' Likelihood ratio test for hurdle model
+##'
+##' Do LR test separately on continuous and discrete portions
+##' Combine for testing hypothesis.matrix
+##'
+##' This just internally calls lht from package car on the discrete and continuous models.
+##' It tests the provided hypothesis.matrix using a Chi-Squared 
+##' @param model output from zlm
+##' @param hypothesis.matrix argument passed to lht
+##' @return array containing the discrete, continuous and combined tests
+##' @importFrom car linearHypothesis
+##' @importFrom car lht
+##' @export
+test.zlm <- function(model, hypothesis.matrix, type='Wald'){
+    if(length(type)!= 1 || (type != 'Wald'&& type != 'LRT')) stop("'type' must equal 'Wald' or 'LRT'")
+    if(type=='LRT'){
+        if(length(hypothesis.matrix) != 1) stop("Currently only support testing single factors when 'type'='LRT' and length of 'hypothesis.matrix' > 1")
+        if(!inherits(model$disc, 'lm')) stop('Currently only support type=LRT with glm fits')
+    }
+    
+  mer.variant <- any('chisq' %in% eval(formals(getS3method('linearHypothesis', class(model$disc)))$test)) #don't ask
+    ## Get names to agree from output of all the different variants
+  chisq <- 'Chisq'
+  pchisq <- 'Pr(>Chisq)'
+  names.drop1.cont <- c('Df', 'scaled dev.', 'Pr(>Chi)')
+  names.drop1.disc <- c('Df', 'LRT', 'Pr(>Chi)')
+  rename.drop1.cont <- c('scaled dev.'='Chisq', 'Pr(>Chi)'='Pr(>Chisq)')
+  rename.drop1.disc <- c('LRT'='Chisq', 'Pr(>Chi)'='Pr(>Chisq)')
+  if(mer.variant) {
+    chisq <- 'chisq'
+    pchisq <- 'Pr(> Chisq)'
+  }
+  if(type=='Wald'){
   tt <- try({
-    if(missing(scope)){
-      d.c <- drop1(model$cont, scope=scope, test='LRT')
-} else{
- d.c <- drop1(model$cont, test='LRT')
-}
+    cont <- lht(model$cont, hypothesis.matrix, test=chisq, singular.ok=TRUE)
   }, TRUE)
-  
-  if(inherits(tt, 'try-error')){
-    d.c <- 0
+  disc <- lht(model$disc, hypothesis.matrix, test=chisq, singular.ok=TRUE)
+} else if(type=='LRT'){
+    tt <- try({
+    stopifnot(summary(model$cont)$df.residual>0) #otherwise drop1 throws an obscure error
+    cont <- rename(
+        cbind(Res.df=NA, drop1(model$cont, hypothesis.matrix, test='LRT')[, names.drop1.cont]),
+        rename.drop1.cont)
+})
+        disc <- rename(
+        cbind(Res.df=NA, drop1(model$disc, hypothesis.matrix, test='LRT')[, names.drop1.disc]),
+        rename.drop1.disc)
+    } else{
+ stop('ruhroh')
+}
+
+    
+  if(inherits(tt, 'try-error') || !all(dim(cont) == dim(disc))){
+    cont <- rep(0, length(as.matrix(disc)))
+    dim(cont) <- dim(disc)
+    dimnames(cont) <- dimnames(disc)
+    cont[,pchisq] <- NA 
   }
 
-  tt <- try({
-    if(missing(scope)){
-      d.d <- drop1(model$disc, scope=scope, test='LRT')
-} else{
- d.d <- drop1(model$disc, test='LRT')
-}
-  }, TRUE)
-  
-  if(inherits(tt, 'try-error')){
-    d.d <- 0
+  res <- abind(disc, cont, disc+cont, rev.along=0)
+  dimnames(res)[[3]] <- c('disc', 'cont', 'hurdle')
+  res[,pchisq,3] <- sapply(seq_len(nrow(disc)), function(i)
+                                 pchisq(res[i,'Chisq',3], df=res[i, 'Df', 3], lower.tail=FALSE))
+      dm <- dimnames(res)
+      names(dm) <- c('', 'metric', 'test.type')
+  if(mer.variant) {
+    dm[[2]][dm[[2]]==pchisq] <- 'Pr(>Chisq)'
   }
-
-  
-  
-  d.n <- d.d+d.c
-  
-  d.n[,'Pr(>Chi)'] <- NA
-  d.n
-}
-
-## terms: output from terms(formula)
-## var: character of a variable that appeared in a formula (including interactions)
-## mm: model matrix (output of model.matrix(formula, data))
-## returns names
-coefsForVar <- function(terms, mm, term){
- assignIdx <- which(labels(terms) == term) #gives us index into assign attribute
-          varCoefIdx <- which(attr(mm, 'assign') == assignIdx)     #gives coefficient idx corresponding to term in formula
-          coefForThisVar <- colnames(mm)[varCoefIdx]
- coefForThisVar
-
-}
-
-naToZero <- function(numeric){
-  numeric[is.na(numeric)] <- 0
-  numeric
+      dimnames(res) <- dm
+  res
 }
 
 ##' zero-inflated regression for SingleCellAssay 
 ##'
 ##' Fits a hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
-##' Conducts likelihood ratio tests for each predictor in \code{formula} that does not appear in
-##' \code{scope}.
+##' Conducts likelihood ratio tests using hypothesis.matrix.
 ##'
 ##' A \code{list} of \code{data.frame}s, is returned, with one \code{data.frame} per tested predictor.
 ##' Rows of each \code{data.frame} are genes, the columns give the value of the LR test and its P-value, and the sum of the T-statistics for each level of the factor (when the predictor is categorical).
 ##' @title zlm.SingleCellAssay
 ##' @param formula a formula with the measurement variable on the LHS and predictors present in cData on the RHS
 ##' @param sca SingleCellAssay object
-##' @param scope (optional) a formula giving the size of the smaller model to be fit.  If omitted, each predictor will be dropped in turn.
-##' @param ... passed to lm and glm. 
-##' @return a \code{list} of \code{data.frame}, one per tested predictor.  See details.
+##' @param lm.fun a function accepting lm-style arguments and a family argument
+##' @param hypothesis.matrix names of coefficients to test in lht form
+##' @param hypo.fun a function taking a model as input and returning output suitable for hypothesis.matrix
+##' @param keep.zlm should the model objects be kept
+##' @param .parallel run fits using parallel processing.  must have doParallel
+##' @param ... passed to lm.fun
+##' @return either an array of tests (one per primer) or a list
 ##' @export
-##' @importFrom reshape rename
-##' @importFrom stringr str_match
-zlm.SingleCellAssay <- function(formula, sca, scope, keep.zlm=FALSE, ...){
-    probeid <- getMapping(sca@mapping,"primerid")[[1]]
+##' @importFrom car lht
+##' @importFrom plyr laply
+##' @importFrom plyr llply
+##' @importFrom plyr dlply
+zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, type='Wald', hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, .drop=TRUE, .inform=FALSE, ...){
 
+  
     m <- SingleCellAssay:::melt(sca)
-    ssca <- split(m, m[,probeid], drop=TRUE)
 
-    for( i in seq_along(ssca)){
-      x <- ssca[[i]]
-      this.fit <- zlm(formula, x, ...)
-      z.disc <- summary(this.fit$disc)$coef[,3]
-      z.cont <- try(summary(this.fit$cont)$coef[,3], silent=TRUE)
+    if(.drop) m <- droplevels(m)
 
-      if(inherits(z.cont, 'try-error'))
-        z.cont <- rep(NA, length(z.disc))
-      
-      raw <- test.zlm(this.fit, scope)
-      out <- raw[-1,][,c('Df', 'LRT')]
-      out <- rename(out, c('LRT'='lrstat'))
-      out$p.value <- pchisq(out$lrstat, df=out$Df, lower.tail=FALSE)
-      coef.types <- c('disc', 'cont', 'sum') #what do we report about the regressions
-      if( i == 1){                      #this will fail if the first gene was exceptional in some way, but trying to guess the dimension of the result is hard...
-         mm <- model.matrix(formula, x, ...)
-         message('Coefficients in model: \n', paste(colnames(mm), collapse = ' '))
-        tests <- lapply(row.names(out), function(term){
-         coefForThisVar <- coefsForVar(terms(this.fit$disc), mm, term)
-          df.skeleton <- data.frame(c(out[1,], rep(NA, length(coef.types)*length(coefForThisVar))))
-          names(df.skeleton)[-1:-length(out[1,])] <- outer(coefForThisVar, coef.types, FUN=paste, sep='.')
-          cbind(primerid=names(ssca), df.skeleton[rep(1,length(ssca)),])        
-      })
-         names(tests) <- row.names(out)
-         if(keep.zlm) zlm.fit <- ssca
-       }
-      
-      for(term in row.names(out)){
-        tests[[term]][i,][names(out[term,])] <- out[term,]
-        coefForThisVar <- coefsForVar(terms(this.fit$disc), mm, term)
-        tests[[term]][i,][paste(coefForThisVar, coef.types[1], sep='.')] <- z.disc[coefForThisVar]
-        tests[[term]][i,][paste(coefForThisVar, coef.types[2], sep='.')] <- z.cont[coefForThisVar]
-        tests[[term]][i,][paste(coefForThisVar, coef.types[3], sep='.')] <- naToZero(abs(z.disc[coefForThisVar])) + naToZero(abs(z.cont[coefForThisVar]))
-      }
-
-      if(keep.zlm){
-        zlm.fit[[i]] <- this.fit
-      }
+    fit.primerid <- function(melted.gene, ...){
+            model <- zlm(formula, melted.gene, lm.fun, ...)
+            if(!is.null(hypo.fun) && inherits(hypo.fun, 'function')){
+              hypothesis.matrix <- hypo.fun(model)
+            }
+            test <- test.zlm(model, hypothesis.matrix, type=type)
+            list(model=model, test=test)
     }
     
-    if(keep.zlm) return(list(tests=tests, zlm.fit=zlm.fit))
+    test.models <- dlply(m, ~primerid, fit.primerid, .drop=.drop, .inform=.inform, ...)
+
+    tests <- laply(test.models, function(x){
+      x$test[2,-1,]
+    }, .inform=.inform)
+
+    if(keep.zlm){
+      models <-  llply(test.models, '[[', 'model', .inform=.inform)
+      return(list(tests=tests, models=models))
+    }
 
     return(tests)
 }

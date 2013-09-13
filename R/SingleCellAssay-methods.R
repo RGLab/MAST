@@ -130,6 +130,7 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
 
 ## might have bad complexity, but could construct one at time, then glue cheaply
 ## Not too bad except for deduplication.. will use data.table
+##' @import data.table
 fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   if(!inherits(df,"data.frame")){
     stop("Argument `dataframe` should be a data.frame.")
@@ -173,8 +174,9 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   if(length(duped.primers)>0){
     warning("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
     dt<-data.table(df)
-    dt[,primer.orig:=primerid,]
-    dt[,primerid:=make.unique(.SD$primer.orig),wellKey]
+    #dt$primer.orig <- dt$primerid
+    dt[,primerid.orig:=primerid]
+    dt[,primerid:=make.unique(.SD$primerid.orig),by='wellKey']
     df<-as.data.frame(dt)
 #    df <- ddply(df,'wellKey',mkunique,G='primerid')
 #    df[,'primerid.orig'] <- df[,'primerid']
@@ -348,17 +350,22 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 .scaSubset <- function(x, i, j, ..., drop=FALSE){
   if(missing(i)){
-	i<-1:nrow(x)
+    i<-1:nrow(x)
   }
+  if(any(is.na(i))) stop("NAs not permitted in 'i' index")
+  if(is.factor(i)) stop("Factors not permitted in 'i' index")
+  
   if(inherits(i,"character")){
     wk<-getwellKey(x)
-    if(length(setdiff(i, wk))>0){
-      stop('wellKeys \n', paste(setdiff(i, wk), sep=','), '\n not found!')
-    }
+    if(length(setdiff(i, wk))>0) stop('wellKeys \n', paste(setdiff(i, wk), sep=','), '\n not found!')
     i <- match(i, wk)
-    }
+  }
+  
   if(!missing(j)){
+    if(any(is.na(j))) stop("NAs not permitted in 'j' index")
+    if(is.factor(j)) stop("Factors not permitted in 'j' index")
     pk<-fData(x)$primerid
+    
     if(inherits(j,"character")){
       J <- match(j, pk)
       if(!(all(j%in%pk))){
@@ -366,10 +373,12 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
       }
       j<-J
     }
-      newfdf <- featureData(x)[j,]
+    newfdf <- featureData(x)[j,] 
   }else {                               #j missing
     j <- TRUE
   }
+
+  
   newcdf <- cellData(x)[i,]
   if(!exists("newfdf")){
     newfdf<-x@featureData
@@ -454,11 +463,15 @@ setMethod('split', signature(x='SingleCellAssay'),
   new('SCASet', set=out)
 })
 
-.SingleCellAssayCombine <- function(scalist){
-  names(scalist)[1:2] <- c('x', 'y')
-  do.call(combine, scalist)
-}
-
+setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
+    
+    skeleton <- x[[1]]
+    if(length(x) == 1) return(skeleton)
+    for(i in seq(from=2, to=length(x))){
+        skeleton <- combine(skeleton, x[[i]])
+    }
+    return(skeleton)
+})
 
 ## FIXME: gdata (not sure why it's imported) shadows the generic definition
 ##'Combine two SingleCellAssay or derived classes
