@@ -329,8 +329,10 @@ setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 ##' }
 setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
 
+
 ##' @rdname cData-methods
 ##' @aliases cData,SingleCellAssay-method
+##' @name cData
 ##' @section Methods:
 ##' \describe{
 ##' \item{\code{sc = "SingleCellAssay"}}{}
