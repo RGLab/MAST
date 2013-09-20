@@ -18,5 +18,9 @@
 \section{Methods}{
   \describe{ \item{\code{sc = "SingleCellAssay"}}{} }
 }
+
+\section{Methods}{
+  \describe{ \item{\code{sc = "SingleCellAssay"}}{} }
+}
 \keyword{accessor}
 

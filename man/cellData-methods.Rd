@@ -1,5 +1,6 @@
 \docType{methods}
 \name{cellData}
+\alias{cData<-}
 \alias{cellData}
 \alias{cellData,SingleCellAssay-method}
 \title{cData}

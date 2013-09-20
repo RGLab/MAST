@@ -33,7 +33,7 @@ if(require('lme4')){
   m <- melt(fd)
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
-      lrout2 <- zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, lm.fun=glmer)
+      lrout2 <- suppressWarnings(zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, lm.fun=glmer))
 test_that('zlm can run lmer', {
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
@@ -54,14 +54,14 @@ test_that('test.zlm works', {
 
 test_that("test.zlm handles 0-DoF cases gracefully", {
     out <- zlm(y~x1 + x2, dat[1:3,])
-    test.zlm(out, 'x1', type='LRT')
+    suppressWarnings(test.zlm(out, 'x1', type='LRT'))
 })
 
   fd@keep.names <- FALSE
   fd2 <- fd[, 1:20]
 
 test_that('zlm.SingleCellAssay works', {
-  zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE)
+  zz <- suppressWarnings(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE))
   expect_that(zz, is_a('array'))
   expect_equal(dim(zz)[1], 20)
 })
@@ -70,14 +70,14 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   ee <- exprs(fd2)
   ee[,1] <- rnorm(nrow(fd))+20
   exprs(fd2) <- ee
-  zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE)
+  zz <- suppressWarnings(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE))
   expect_that(zz, is_a('array'))
   expect_equal(dim(zz)[1], 20)
 
   w.resp <- which(cData(fd2)$Population=='VbetaResponsive')
   ee[,1][w.resp] <- rbinom(length(w.resp), 1, .1)
   exprs(fd2) <- ee
-  zz <- zlm.SingleCellAssay(value ~ Population, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE, keep.zlm=TRUE)
+  zz <- suppressWarnings(zlm.SingleCellAssay(value ~ Population, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE, keep.zlm=TRUE))
   expect_that(zz$tests, is_a('array'))
   expect_equal(dim(zz$tests)[1], 20)  
 })

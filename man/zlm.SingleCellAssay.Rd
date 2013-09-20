@@ -5,7 +5,7 @@
   zlm.SingleCellAssay(formula, sca, lm.fun = glm,
     hypothesis.matrix, type = "Wald", hypo.fun = NULL,
     keep.zlm = FALSE, .parallel = FALSE, .drop = TRUE,
-    .inform = FALSE, ...)
+    .inform = FALSE, silent = TRUE, ...)
 }
 \arguments{
   \item{formula}{a formula with the measurement variable on
@@ -19,6 +19,8 @@
   \item{hypothesis.matrix}{names of coefficients to test in
   lht form}
 
+  \item{type}{}
+
   \item{hypo.fun}{a function taking a model as input and
   returning output suitable for hypothesis.matrix}
 
@@ -26,6 +28,13 @@
 
   \item{.parallel}{run fits using parallel processing.
   must have doParallel}
+
+  \item{.drop}{see ldply}
+
+  \item{.inform}{see ldply}
+
+  \item{silent}{Silence common problems with fitting some
+  genes}
 
   \item{...}{passed to lm.fun}
 }
