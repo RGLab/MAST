@@ -6,9 +6,9 @@ Infrastructure and Tools for Single Cell Assay Analysis
 
 Installation Instructions
 ------------
-install.packages('devtools')
-library(devtools)
-install_github('SingleCellAssay', 'RGLab')
+     install.packages('devtools')
+     library(devtools)
+     install_github('SingleCellAssay', 'RGLab')
 
 
 New Features 
