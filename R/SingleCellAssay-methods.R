@@ -342,6 +342,13 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
   if (!is(value, "AnnotatedDataFrame")) {
     stop("'value' must be either a data.frame or an AnnotatedDataFrame")
   }
+  mandatory <- c('wellKey', names(sc@cmap)) #Must contain the expected fields for the class
+  missing <- setdiff(mandatory, varLabels(value)) 
+  if(length(missing)>0) stop('cellData is missing mandatory field ', paste(missing, collapse=','))
+  inputOrder <- match(getwellKey(sc), value$wellKey)
+  if(any(is.na(inputOrder))) stop('cellData is missing some wellkeys')
+  if(any(inputOrder != seq_along(value$wellKey))) warning("sorting cellData by wellKey")
+  value <- value[inputOrder,] #sort
   sc@cellData <- value
   return(sc)
 })

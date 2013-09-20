@@ -241,23 +241,6 @@ test_that('Copy works', {
  expect_false(any(exprs(scd) == -999))
 })
 
-# test_that("Can add mappings",{
-#   addMapping(sc, c("plate"="Chip.Number"))
-# })
-# 
-# test_that("Can rewrite mappings", {
-#   addMapping(sc, c("plate" = "Date.of.Sort"))
-# })
-
-
-## context('testing error handling')
-## badmap <- themap
-## badmap$idvars <- c(badmap$idvars, 'Assay.Name')
-## test_that('We throw an error when idvars is not disjoint from probeid',{
-##   expect_that(SingleCellAssay(dat_complete, mapping=badmap), throws_error())
-## })
-
-
 
 context('Combine works')
 doubleid <- data.frame(id1=1:3, id2=1:3, et=rep(3, 3), f1=rep('A', 3))
@@ -294,4 +277,22 @@ test_that('Can cast', {
 test_that('Can split FluidigmAssays', {
  splat.byfieldname <- split(fd, 'Subject.ID')
     expect_that(splat.byfieldname, is_a('SCASet'))
+})
+
+context('Test replace methods')
+
+
+test_that('Can replace cData', {
+    cDat <- cData(fd)
+    cDat$foo <- "bar"
+    cData(fd) <- cDat
+    expect_true('foo' %in% names(cData(fd)))
+
+    empty <- data.frame()
+    expect_error(cData(fd) <- empty, 'wellKey')
+
+    scramble <- cDat[sample(nrow(cDat)),]
+    expect_warning(cData(fd) <- scramble, 'sorting')
+
+    expect_error(cData(fd) <- scramble[-1:-10,], 'missing some wellkeys')
 })
