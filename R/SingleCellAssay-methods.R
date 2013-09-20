@@ -26,8 +26,6 @@ NULL
 ##' @keywords accessor
 setGeneric('getwellKey', function(sc) standardGeneric('getwellKey'))
 
-
-
 ##' Accessor for cellData \code{AnnotatedDataFrame}
 ##'
 ##' Returns the \code{cellData}.
@@ -41,6 +39,11 @@ setGeneric('getwellKey', function(sc) standardGeneric('getwellKey'))
 ##' @rdname cellData-methods
 ##' @keywords accessor
 setGeneric('cellData', function(sc) standardGeneric('cellData'))
+
+##' @export
+##' @docType methods
+##' @rdname cellData-methods
+setGeneric("cData<-", function(sc, value) standardGeneric("cData<-"))
 
 ##' Accessor for featureData \code{data.frame}
 ##'
@@ -325,6 +328,23 @@ setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 ##' \item{\code{sc = "SingleCellAssay"}}{}
 ##' }
 setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
+
+##' @rdname cData-methods
+##' @aliases cData,SingleCellAssay-method
+##' @section Methods:
+##' \describe{
+##' \item{\code{sc = "SingleCellAssay"}}{}
+##' }
+setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
+  if (is.data.frame(value)) {
+    value <- as(value, "AnnotatedDataFrame")
+  }
+  if (!is(value, "AnnotatedDataFrame")) {
+    stop("'value' must be either a data.frame or an AnnotatedDataFrame")
+  }
+  sc@cellData <- value
+  return(sc)
+})
 
 ##' @rdname cellData-methods
 ##' @aliases cellData,SingleCellAssay-method
