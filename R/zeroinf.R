@@ -26,7 +26,7 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   data[,'pos'] <-   model.response(init)>0
   cont <- try(lm.fun(formula, data, subset=pos, family='gaussian', ...), silent=silent)
   if(inherits(cont, 'try-error')){
-    warning('Some factors were not present among the positive part')
+    if(!silent) warning('Some factors were not present among the positive part')
     cont <- lm(0~0)
   }                                     
   
@@ -58,12 +58,14 @@ summary.zlm <- function(out){
 ##' This just internally calls lht from package car on the discrete and continuous models.
 ##' It tests the provided hypothesis.matrix using a Chi-Squared 
 ##' @param model output from zlm
-##' @param hypothesis.matrix argument passed to lht
+##' @param hypothesis.matrix argument passed to lht, or naming a variable to be dropped from the model
+##' @param type Test using Wald test or Likelihood Ratio test
+##' @param silent Silence common errors in testing
 ##' @return array containing the discrete, continuous and combined tests
 ##' @importFrom car linearHypothesis
 ##' @importFrom car lht
 ##' @export
-test.zlm <- function(model, hypothesis.matrix, type='Wald'){
+test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
     if(length(type)!= 1 || (type != 'Wald'&& type != 'LRT')) stop("'type' must equal 'Wald' or 'LRT'")
     if(type=='LRT'){
         if(length(hypothesis.matrix) != 1) stop("Currently only support testing single factors when 'type'='LRT' and length of 'hypothesis.matrix' > 1")
@@ -85,15 +87,15 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald'){
   if(type=='Wald'){
   tt <- try({
     cont <- lht(model$cont, hypothesis.matrix, test=chisq, singular.ok=TRUE)
-  }, TRUE)
+  }, silent=silent)
   disc <- lht(model$disc, hypothesis.matrix, test=chisq, singular.ok=TRUE)
 } else if(type=='LRT'){
     tt <- try({
-    stopifnot(summary(model$cont)$df.residual>0) #otherwise drop1 throws an obscure error
+    if(summary(model$cont)$df.residual==0) stop('No degrees of freedom left') #otherwise drop1 throws an obscure error
     cont <- rename(
         cbind(Res.df=NA, drop1(model$cont, hypothesis.matrix, test='LRT')[, names.drop1.cont]),
         rename.drop1.cont)
-})
+}, silent=silent)
         disc <- rename(
         cbind(Res.df=NA, drop1(model$disc, hypothesis.matrix, test='LRT')[, names.drop1.disc]),
         rename.drop1.disc)
@@ -134,9 +136,13 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald'){
 ##' @param sca SingleCellAssay object
 ##' @param lm.fun a function accepting lm-style arguments and a family argument
 ##' @param hypothesis.matrix names of coefficients to test in lht form
+##' @param type 
 ##' @param hypo.fun a function taking a model as input and returning output suitable for hypothesis.matrix
 ##' @param keep.zlm should the model objects be kept
 ##' @param .parallel run fits using parallel processing.  must have doParallel
+##' @param .drop see ldply
+##' @param .inform see ldply
+##' @param silent Silence common problems with fitting some genes
 ##' @param ... passed to lm.fun
 ##' @return either an array of tests (one per primer) or a list
 ##' @export
@@ -144,7 +150,7 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald'){
 ##' @importFrom plyr laply
 ##' @importFrom plyr llply
 ##' @importFrom plyr dlply
-zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, type='Wald', hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, .drop=TRUE, .inform=FALSE, ...){
+zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, type='Wald', hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, .drop=TRUE, .inform=FALSE, silent=TRUE, ...){
 
   
     m <- SingleCellAssay:::melt(sca)
@@ -152,11 +158,11 @@ zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, typ
     if(.drop) m <- droplevels(m)
 
     fit.primerid <- function(melted.gene, ...){
-            model <- zlm(formula, melted.gene, lm.fun, ...)
+            model <- zlm(formula, melted.gene, lm.fun, silent=silent, ...)
             if(!is.null(hypo.fun) && inherits(hypo.fun, 'function')){
               hypothesis.matrix <- hypo.fun(model)
             }
-            test <- test.zlm(model, hypothesis.matrix, type=type)
+            test <- test.zlm(model, hypothesis.matrix, type=type, silent=silent)
             list(model=model, test=test)
     }
     
