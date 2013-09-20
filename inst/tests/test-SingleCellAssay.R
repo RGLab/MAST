@@ -295,3 +295,11 @@ test_that('Can split FluidigmAssays', {
  splat.byfieldname <- split(fd, 'Subject.ID')
     expect_that(splat.byfieldname, is_a('SCASet'))
 })
+
+## cData replace method
+test_that("cData<- replacement method works", {
+  cDat <- cData(vbeta.fa)
+  cDat$foo <- "bar"
+  cData(vbeta.fa) <- cDat
+  expect_that( vbeta.fa@cellData, is_a("AnnotatedDataFrame") )
+})
