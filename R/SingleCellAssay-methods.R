@@ -165,15 +165,16 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   }
 
   wk <- do.call(paste, df[,idvars, drop=FALSE])
-  cellCounts <- table(wk)
   pid <- do.call(paste, df[,primerid, drop=FALSE])
-  primerCounts <- table(pid)
+  if(any(is.na(wk))) warning('Dropping NAs from wellKey')
+  if(any(is.na(pid))) warning('Dropping NAs from primerid')
+      
   df[,'wellKey'] <- wk
   df[,'primerid'] <- pid
-  incomplete <- !all(cellCounts == cellCounts[1])
-  dupPrimers <- table(df$wellKey, df$primerid, exclude=NULL) #cross tab of primerid x wellKey
+  dupPrimers <- table(df$wellKey, df$primerid) #cross tab of primerid x wellKey
   duped.primers <- apply(dupPrimers>1, 2, which)
   duped.primers <- duped.primers[sapply(duped.primers, length)>0]
+  incomplete <- any(dupPrimers==0)
   if(length(duped.primers)>0){
     warning("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
     dt<-data.table(df)
