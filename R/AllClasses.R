@@ -11,6 +11,9 @@ setClass('DataLayer', contains='array', representation=representation(layer='num
   length(dim(object@.Data))==3
   })
 
+## Holds output from thresholdNanoString debug=TRUE
+setClass('ThresholdedNanoString', representation=representation(melted='data.frame', nsa='NanoStringAssay', densities='list', means='matrix', props='matrix', startLayer='character'))
+
 setClass('Mapping', contains='list')
 setMethod('initialize', 'Mapping', function(.Object, keys=NULL, values=NULL, ...){
   .Object <- callNextMethod()
@@ -138,6 +141,10 @@ setClass("SingleCellAssay",contains="DataLayer",
 FluidigmMapNames <- c(Mandatory_Cellvars, 'ncells')
 
 setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping', keys=FluidigmMapNames)),validity=SingleCellAssayValidity)
+
+#Could write a constructor that takes a post-processing function...
+setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayValidity)
+
 
 ##'RNASeqAssay class. Doesn't require ncells
 ##'@exportClass RNASeqAssay
