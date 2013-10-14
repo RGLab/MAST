@@ -58,7 +58,7 @@ summary.zlm <- function(out){
 ##' This just internally calls lht from package car on the discrete and continuous models.
 ##' It tests the provided hypothesis.matrix using a Chi-Squared 
 ##' @param model output from zlm
-##' @param hypothesis.matrix argument passed to lht, or naming a variable to be dropped from the model
+##' @param hypothesis.matrix argument passed to lht, or string naming a single variable to be dropped from the model, or a formula that is a subset of 'model'
 ##' @param type Test using Wald test or Likelihood Ratio test
 ##' @param silent Silence common errors in testing
 ##' @return array containing the discrete, continuous and combined tests
@@ -68,7 +68,7 @@ summary.zlm <- function(out){
 test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
     if(length(type)!= 1 || (type != 'Wald'&& type != 'LRT')) stop("'type' must equal 'Wald' or 'LRT'")
     if(type=='LRT'){
-        if(length(hypothesis.matrix) != 1) stop("Currently only support testing single factors when 'type'='LRT' and length of 'hypothesis.matrix' > 1")
+        if(length(hypothesis.matrix) != 1 && !is.formula(hypothesis.matrix)) stop("Currently only support testing single factors when 'type'='LRT' and length of 'hypothesis.matrix' > 1")
         if(!inherits(model$disc, 'lm')) stop('Currently only support type=LRT with glm fits')
     }
     
