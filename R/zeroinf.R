@@ -11,6 +11,21 @@
 ##' @param ... passed to lm.fun
 ##' @return list of class 'zlm' with "disc"rete part and "cont"inuous part 
 ##' @export
+##' @examples
+##' data<- data.frame(x=rnorm(500), z=rbinom(500, 1, .3))
+##' logit.y <- with(data, x*2 + z*2); mu.y <- with(data, 10+10*x+10*z + rnorm(500))
+##' y <- (runif(500)<exp(logit.y)/(1+exp(logit.y)))*1
+##' y[y>0] <- mu.y[y>0]
+##' data$y <- y
+##' fit <- zlm(y ~ x+z, data)
+##' summary(fit$disc)
+##' summary(fit$cont)
+##'
+##' #Accepts arguments like drop1 and compares likelihood ratios
+##' test.zlm(fit, type='LRT', hypothesis.matrix='x')
+##' #Accepts arguments like car::linearHypothesisTest
+##' test.zlm(fit, type='Wald', hypothesis.matrix=c('x=2', 'z=2'))
+##' #Little evidence for diffence in discrete, big evidence in continuous
 ##' @importFrom stringr str_detect
 zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   #if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
@@ -64,6 +79,7 @@ summary.zlm <- function(out){
 ##' @return array containing the discrete, continuous and combined tests
 ##' @importFrom car linearHypothesis
 ##' @importFrom car lht
+##' @seealso zlm
 ##' @export
 test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
     if(length(type)!= 1 || (type != 'Wald'&& type != 'LRT')) stop("'type' must equal 'Wald' or 'LRT'")
@@ -150,6 +166,15 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
 ##' @importFrom plyr laply
 ##' @importFrom plyr llply
 ##' @importFrom plyr dlply
+##' @seealso zlm
+##' @seealso test.zlm
+##' @examples
+##' \dontrun{
+##' data(vbeta)
+##' vbeta <- computeEtFromCt(vbeta)
+##' vbeta.sc <- FluidigmAssay(vbeta, idvars='Sample.ID', primerid='Gene', measurement='Et', ncells='Number.of.Cells', cellvars='Stim.Condition')
+##' zlm.SingleCellAssay(Et ~ Stim.Condition, vbeta.sc, hypothesis.matrix='Stim.ConditionUnstim')
+##' }
 zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, type='Wald', hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, .drop=TRUE, .inform=FALSE, silent=TRUE, ...){
 
   

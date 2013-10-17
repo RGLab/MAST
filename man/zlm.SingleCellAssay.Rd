@@ -56,4 +56,17 @@
   T-statistics for each level of the factor (when the
   predictor is categorical).
 }
+\examples{
+\dontrun{
+data(vbeta)
+vbeta <- computeEtFromCt(vbeta)
+vbeta.sc <- FluidigmAssay(vbeta, idvars='Sample.ID', primerid='Gene', measurement='Et', ncells='Number.of.Cells', cellvars='Stim.Condition')
+zlm.SingleCellAssay(Et ~ Stim.Condition, vbeta.sc, hypothesis.matrix='Stim.ConditionUnstim')
+}
+}
+\seealso{
+  zlm
+
+  test.zlm
+}
 
