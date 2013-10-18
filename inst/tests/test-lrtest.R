@@ -17,4 +17,6 @@ fd.spl <- split(fd, 'Number.of.Cells')
 lrout <- lrt(fd.spl[[1]], 'Subject.ID', returnall=FALSE)
 lrout2 <- suppressWarnings(zlm.SingleCellAssay(et ~ Subject.ID, fd.spl[[1]], hypothesis.matrix='Subject.ID', type='LRT'))
 context('testing for equality between glm lrtest and two-sample')
+test_that('LRT and zlm are equivalent', {
 expect_equivalent(lrout$lrstat, lrout2[,2,3])
+})

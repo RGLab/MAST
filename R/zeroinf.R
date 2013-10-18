@@ -77,14 +77,14 @@ summary.zlm <- function(out){
 ##' @param type Test using Wald test or Likelihood Ratio test
 ##' @param silent Silence common errors in testing
 ##' @return array containing the discrete, continuous and combined tests
-##' @importFrom car linearHypothesis
-##' @importFrom car lht
+##' @importFrom car linearHypothesis lht matchCoef
 ##' @seealso zlm
 ##' @export
 test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
+    type <- match.arg(type, c('Wald', 'LRT'))
     if(length(type)!= 1 || (type != 'Wald'&& type != 'LRT')) stop("'type' must equal 'Wald' or 'LRT'")
     if(type=='LRT'){
-        if(length(hypothesis.matrix) != 1 && !is.formula(hypothesis.matrix)) stop("Currently only support testing single factors when 'type'='LRT' and length of 'hypothesis.matrix' > 1")
+        if(length(hypothesis.matrix) > 1 && !is.formula(hypothesis.matrix)) stop("Currently only support testing single factors when 'type'='LRT' and length of 'hypothesis.matrix' > 1")
         if(!inherits(model$disc, 'lm')) stop('Currently only support type=LRT with glm fits')
     }
     
@@ -142,17 +142,24 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
 
 ##' zero-inflated regression for SingleCellAssay 
 ##'
-##' Fits a hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
-##' Conducts likelihood ratio tests using hypothesis.matrix.
+##' For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
+##' Conducts tests using hypothesis.matrix.
 ##'
-##' A \code{list} of \code{data.frame}s, is returned, with one \code{data.frame} per tested predictor.
-##' Rows of each \code{data.frame} are genes, the columns give the value of the LR test and its P-value, and the sum of the T-statistics for each level of the factor (when the predictor is categorical).
+##' When keep.zlm is FALSE, a 3D array with first dimension being the genes,
+##' next dimension giving information about the test
+##' (the degrees of freedom, Chisq statistic, and P value), and final dimension
+##' being the value of these quantities on the
+##' discrete, continuous and hurdle (combined) levels.
+##'
+##' When keep.zlm is TRUE, a list of length two is returned.
+##' Component "tests" gives the above 3-D array.
+##' Component "models" is a list giving the model fit for each gene.
 ##' @title zlm.SingleCellAssay
 ##' @param formula a formula with the measurement variable on the LHS and predictors present in cData on the RHS
 ##' @param sca SingleCellAssay object
 ##' @param lm.fun a function accepting lm-style arguments and a family argument
-##' @param hypothesis.matrix names of coefficients to test in lht form
-##' @param type 
+##' @param hypothesis.matrix names of coefficients to test in lht form if type='Wald', otherwise a character vector if type ='LRT'.
+##' @param type type of test to run, one of 'Wald' or 'LRT'
 ##' @param hypo.fun a function taking a model as input and returning output suitable for hypothesis.matrix
 ##' @param keep.zlm should the model objects be kept
 ##' @param .parallel run fits using parallel processing.  must have doParallel
@@ -173,7 +180,14 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
 ##' data(vbeta)
 ##' vbeta <- computeEtFromCt(vbeta)
 ##' vbeta.sc <- FluidigmAssay(vbeta, idvars='Sample.ID', primerid='Gene', measurement='Et', ncells='Number.of.Cells', cellvars='Stim.Condition')
-##' zlm.SingleCellAssay(Et ~ Stim.Condition, vbeta.sc, hypothesis.matrix='Stim.ConditionUnstim')
+##' testsByGene <- zlm.SingleCellAssay(Et ~ Stim.Condition, vbeta.sc, hypothesis.matrix='Stim.ConditionUnstim')
+##' # genes X metric X test type
+##' dimnames(testsByGene)
+##'
+##' modelsAndTestsByGene <- zlm.SingleCellAssay(Et ~ Stim.Condition, vbeta.sc, hypothesis.matrix='Stim.ConditionUnstim', keep.zlm=TRUE)
+##' names(modelsAndTestsByGene$models)
+##' summary(modelsAndTestsByGene$models[['IL13']]$disc)
+##' summary(modelsAndTestsByGene$models[['IL13']]$cont)
 ##' }
 zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, type='Wald', hypo.fun=NULL, keep.zlm=FALSE, .parallel=FALSE, .drop=TRUE, .inform=FALSE, silent=TRUE, ...){
 
@@ -182,23 +196,24 @@ zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, typ
 
     if(.drop) m <- droplevels(m)
 
-    fit.primerid <- function(melted.gene, ...){
-            model <- zlm(formula, melted.gene, lm.fun, silent=silent, ...)
+    models <- dlply(m, ~primerid, function(set){
+        zlm(formula, set, lm.fun, silent, ...)
+        }, .drop=.drop, .inform=.inform, .parallel=.parallel)
+
+    fit.primerid <- function(model){
             if(!is.null(hypo.fun) && inherits(hypo.fun, 'function')){
               hypothesis.matrix <- hypo.fun(model)
             }
-            test <- test.zlm(model, hypothesis.matrix, type=type, silent=silent)
-            list(model=model, test=test)
+            test.zlm(model, hypothesis.matrix, type=type, silent=silent)
     }
     
-    test.models <- dlply(m, ~primerid, fit.primerid, .drop=.drop, .inform=.inform, ...)
+    test.models <- llply(models, fit.primerid, .inform=.inform)
 
     tests <- laply(test.models, function(x){
-      x$test[2,-1,]
+      x[2,-1,]
     }, .inform=.inform)
 
     if(keep.zlm){
-      models <-  llply(test.models, '[[', 'model', .inform=.inform)
       return(list(tests=tests, models=models))
     }
 
