@@ -22,11 +22,9 @@ Imports:
     latticeExtra,
     plyr,
     stringr,
-    foreach,
     abind,
     car
 Depends:
-    data.table,
     foreach
 Suggests:
     parallel,

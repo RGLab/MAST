@@ -1,5 +1,7 @@
+\docType{methods}
 \name{threshold}
 \alias{threshold}
+\alias{thresholdNanoString,NanoStringAssay-method}
 \title{Estimate thresholds for positive expression}
 \arguments{
   \item{nsa}{NanostringAssay object}

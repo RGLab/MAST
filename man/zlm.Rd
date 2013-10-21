@@ -1,0 +1,52 @@
+\name{zlm}
+\alias{zlm}
+\title{Run a zero-inflated regression}
+\usage{
+  zlm(formula, data, lm.fun = glm, silent = TRUE, subset,
+    ...)
+}
+\arguments{
+  \item{formula}{model formula}
+
+  \item{data}{a data.frame, list or environment in which
+  formula is evaluated}
+
+  \item{lm.fun}{a function that takes a formula and data
+  the arguments family='binomial' and family='gaussian',
+  eg, \code{glm} or \code{glmer}.}
+
+  \item{silent}{if TRUE suppress common errors from fitting
+  continuous part}
+
+  \item{subset}{ignored}
+
+  \item{...}{passed to lm.fun}
+}
+\value{
+  list of class 'zlm' with "disc"rete part and "cont"inuous
+  part
+}
+\description{
+  Fits a hurdle model on zero-inflated continuous data in
+  which the zero process is modeled as a logistic
+  regression and (conditional on the the response being
+  >0), the continuous process is Gaussian, ie, a linear
+  regression.
+}
+\examples{
+data<- data.frame(x=rnorm(500), z=rbinom(500, 1, .3))
+logit.y <- with(data, x*2 + z*2); mu.y <- with(data, 10+10*x+10*z + rnorm(500))
+y <- (runif(500)<exp(logit.y)/(1+exp(logit.y)))*1
+y[y>0] <- mu.y[y>0]
+data$y <- y
+fit <- zlm(y ~ x+z, data)
+summary(fit$disc)
+summary(fit$cont)
+
+#Compares likelihood ratios, currently only can drop an entire term
+test.zlm(fit, type='LRT', hypothesis.matrix='x')
+#Accepts arguments like car::linearHypothesisTest
+test.zlm(fit, type='Wald', hypothesis.matrix=c('x=2', 'z=2'))
+#Little evidence for diffence in discrete, big evidence in continuous
+}
+
