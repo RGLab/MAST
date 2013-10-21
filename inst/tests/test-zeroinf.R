@@ -54,7 +54,8 @@ test_that('test.zlm works', {
 
 test_that("test.zlm handles 0-DoF cases gracefully", {
     out <- zlm(y~x1 + x2, dat[1:3,])
-    suppressWarnings(test.zlm(out, 'x1', type='LRT'))
+    var <- car::matchCoefs(out$disc, 'x1')
+    suppressWarnings(test.zlm(out, var, type='LRT'))
 })
 
   fd@keep.names <- FALSE
@@ -66,11 +67,23 @@ test_that('zlm.SingleCellAssay works', {
   expect_equal(dim(zz)[1], 20)
 })
 
+test_that('Guessing coefficients in zlm.SingleCellAssay works', {
+    implicitCoefs <- zlm.SingleCellAssay(value ~ Subject.ID+Stim.Condition, fd2, hypo.terms=c('Subject.ID', 'Stim.Condition'), .drop=TRUE)
+    explicitCoefs <- zlm.SingleCellAssay(value ~ Subject.ID+Stim.Condition, fd2, hypo.contrasts=c('Subject.IDSub02', 'Stim.ConditionUnstim'), .drop=TRUE, keep.zlm=TRUE)
+    expect_equal(implicitCoefs, explicitCoefs$tests)
+
+    ## TODO
+    ## lrt <- zlm.SingleCellAssay(value ~ Subject.ID+Stim.Condition, fd2, hypothesis.matrix=c('Subject.ID', 'Stim.Condition'), type='LRT', .drop=TRUE, keep.zlm=TRUE)
+    ## lrt1.d <- drop1(lrt$models[[1]]$disc, ~Subject.ID + Stim.Condition, test='Chisq')
+    ## expect_equal(lrt$tests[1,'Chisq', 'disc'], lrt1.d[3, 'LRT'])
+    
+})
+
 test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   ee <- exprs(fd2)
   ee[,1] <- rnorm(nrow(fd))+20
   exprs(fd2) <- ee
-  zz <- suppressWarnings(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE))
+  zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis.matrix='PopulationVbetaResponsive', .drop=TRUE)
   expect_that(zz, is_a('array'))
   expect_equal(dim(zz)[1], 20)
 
