@@ -172,7 +172,7 @@ guessContrast <- function(hypo.terms, model){
             hm <- paste(hypo.terms, collapse='|')
             hypo.terms <- matchCoefs(model$disc, hm)
             message(paste("Testing coefficients" , paste(hypo.terms, collapse=', ')))
-    if(any(str_detect(hypo.terms, '[+-=]'))) warning("'+', '-' or '=' found in variable names, contrasts may not work as intended")
+    if(any(str_detect(hypo.terms, '[+=-]'))) warning("'+', '-' or '=' found in variable names, contrasts may not work as intended")
     hypo.terms
 }
 
@@ -263,7 +263,7 @@ zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hyp
 
     geneTests <- dlply(m, 'primerid', fit.primerid, .parallel=.parallel, .drop=.drop, .inform=.inform)
     tests <- laply(geneTests, function(x) x$test)
-    if(keep.zlm=='true') return(list(models=llply(geneTests, function(x) x$models), tests=tests))
+    if(keep.zlm=='true') return(list(models=llply(geneTests, function(x) x$model), tests=tests))
     if(keep.zlm=='coefficients') return(list(coefs=llply(geneTests, function(x) x$coef), tests=tests))
     return(tests)
 }
