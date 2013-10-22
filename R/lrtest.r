@@ -57,47 +57,34 @@ logProd <- function(prod, logand){
 ##' @exportMethod LRT
 ##' @docType methods
 ##' @aliases LRT
-##' @aliases LRT,SingleCellAssay,character,character,character-method
-##' @aliases LRT,SingleCellAssay,character,character,missing-method
-##' @aliases LRT,SingleCellAssay,character,character,NULL-method
+##' @aliases LRT,SingleCellAssay,character-method
 ##' @rdname LRT-methods
-setGeneric("LRT",function(sca,comparison,referent,groups=NULL,...){
-  standardGeneric("LRT")
-})
+setGeneric("LRT",function(sca,comparison,...) standardGeneric("LRT"))
 
 
 ##' @rdname LRT-methods
-##' @aliases LRT,SingleCellAssay,character,character,character-method
+##' @aliases LRT,SingleCellAssay,character-method
 ##' @usage \code{LRT(sca,comparison,referent,groups)}
 ##' @param sca A \code{SingleCellAssay} class object
 ##' @param comparison A \code{character} specifying the factor for comparison
 ##' @param referent A \code{character} specifying the reference level of \code{comparison}.
 ##' @param groups A optional \code{character} specifying a variable on which to stratify the test.  For each level of \code{groups}, there will be a separate likelihood ratio test.
-##' @param returnall A \code{logical} specifying if additional columns should be returned with information about the different componnetns of the test.
+##' @param returnall A \code{logical} specifying if additional columns should be returned with information about the different components of the test.
 ##' @docType methods
-setMethod("LRT",signature=c("SingleCellAssay","character","character","character"),function(sca,comparison,referent,groups=NULL,returnall=FALSE){
+setMethod("LRT",signature=c("SingleCellAssay","character"),function(sca,comparison,referent=NULL,groups=NULL,returnall=FALSE){
   if(missing(groups))
     groups<-NULL
+  if(missing(referent))
+      referent <- NULL
   lrt(sca,comparison,referent,groups=groups,returnall=returnall)
 })
-setMethod("LRT",signature=c("SingleCellAssay","character","character","missing"),function(sca,comparison,referent,groups=NULL,returnall=FALSE){
-  if(missing(groups))
-    groups<-NULL
-  lrt(sca,comparison,referent,groups=groups,returnall=returnall)
-})
-setMethod("LRT",signature=c("SingleCellAssay","character","character","NULL"),function(sca,comparison,referent,groups=NULL,returnall=FALSE){
-  if(missing(groups))
-    groups<-NULL
-  lrt(sca,comparison,referent,groups=groups,returnall=returnall)
-})
-
 
 lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
   if (missing(comparison) || !checkGroups(sca, comparison))
     stop("'comparison' missing or incorrect")
   ## what happens if comparision has length >1?
-
   sca@keep.names <- FALSE
+
   if(!is.null(groups)){
     checkGroups(sca, groups)
     ## we should check what happens if comparison has a different number of levels
@@ -116,8 +103,8 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
   measure <- 'value' #getMapping(sca@mapping,"measurement")[[1]]
 
   phenocol <- melt(sca)[[comparison]]
-  if(is.factor(phenocol) && is.null(referent)){
-   pheno.order <- phenocol
+  if(is.null(referent)){
+   pheno.order <- factor(phenocol)
 } else{
   pheno.order <- factor(phenocol)
   pheno.order <- relevel(pheno.order, ref=referent)

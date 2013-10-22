@@ -1,9 +1,7 @@
 \docType{methods}
 \name{LRT}
 \alias{LRT}
-\alias{LRT,SingleCellAssay,character,character,NULL-method}
-\alias{LRT,SingleCellAssay,character,character,character-method}
-\alias{LRT,SingleCellAssay,character,character,missing-method}
+\alias{LRT,SingleCellAssay,character-method}
 \title{Likelihood Ratio Tests for SingleCellAssays}
 \arguments{
   \item{sca}{A \code{SingleCellAssay} class object}
@@ -21,7 +19,7 @@
 
   \item{returnall}{A \code{logical} specifying if
   additional columns should be returned with information
-  about the different componnetns of the test.}
+  about the different components of the test.}
 }
 \description{
   Tests for a change in ET binomial proportion or mean of
