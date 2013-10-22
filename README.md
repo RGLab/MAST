@@ -9,6 +9,7 @@ Installation Instructions
      install.packages('devtools')
      library(devtools)
      install_github('SingleCellAssay', 'RGLab')
+     vignette('SingleCellAssay-intro')
 
 
 New Features 
