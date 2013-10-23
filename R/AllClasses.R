@@ -139,6 +139,14 @@ FluidigmMapNames <- c(Mandatory_Cellvars, 'ncells')
 
 setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping', keys=FluidigmMapNames)),validity=SingleCellAssayValidity)
 
+#Could write a constructor that takes a post-processing function...
+setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayValidity)
+
+## Holds output from thresholdNanoString debug=TRUE
+setClass('ThresholdedNanoString', representation=representation(melted='data.frame', nsa='NanoStringAssay', densities='list', means='matrix', props='matrix', startLayer='character'))
+
+
+
 ##'RNASeqAssay class. Doesn't require ncells
 ##'@exportClass RNASeqAssay
 setClass('RNASeqAssay',contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping',keys=Mandatory_Cellvars)),validity=SingleCellAssayValidity)

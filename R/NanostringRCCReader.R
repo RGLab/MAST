@@ -69,9 +69,6 @@ mergeWithKeyFile<-function(rcc,file){
 }
  
 
-#Could write a constructor that takes a post-processing function...
-setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayValidity)
-
 setMethod('initialize', signature='NanoStringAssay', function(.Object, ...){
   .Object <- callNextMethod()
   if(max(exprs(.Object))>100) warning('log Counts > 100 found; are you sure the data was log2 + 1 transformed?')

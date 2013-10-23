@@ -80,6 +80,30 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   m <- cbind(m, ps=p.signal, clusterID=as.factor(ifelse(is.na(lab), 3, lab)))
   layer(nsa) <- 'et'
   exprs(nsa) <- ifelse(m$clusterID==1, m[,startLayer], 0) #fix rounding
-  if(debug) return(list(m=m, nsa=nsa, densities=densities, means=means, props=props))
+  if(debug) return(new('ThresholdedNanoString', melted=m, nsa=nsa, densities=densities, means=means, props=props, startLayer=startLayer))
   else return(nsa)
 })
+
+setMethod("show","ThresholdedNanoString",function(object){
+  cat(class(object), ' of ', nrow(object@nsa), ' rows and ', ncol(object@nsa), ' columns')
+  invisible(NULL)
+})
+
+
+##' Plot NanoString log Counts vs cluster ID
+##'
+##' Histogram of log Counts by primerid, colored by cluster
+##' @param thresholdedNanoString output from thresholdNanoString, debug=TRUE
+##' @param primerids character vector of primerids to plot
+##' @return ggplot object
+plot.threshold <- function(thresholdedNanoString, primerids){
+    if(!inherits(thresholdedNanoString, 'ThresholdedNanoString')) stop('thresholdedNanoString must inherit from class ThresholdedNanoString')
+    sub <- subset(thresholdedNanoString@melted, primerid %in% primerids)
+    measure <-  thresholdedNanoString@startLayer                        #
+sub <- ddply(sub, .(primerid), function(x){
+    x$den.est <- thresholdedNanoString@densities[[x$primerid[1]]](x[, measure])
+    x
+})
+p <- ggplot(sub, aes_string(x=measure, fill='clusterID')) + geom_histogram(aes(y=..density..)) + facet_wrap(~primerid) + geom_line(aes_string(x=measure, y='den.est'))+ylim(0, 1)
+    p
+}

@@ -199,16 +199,24 @@ concordPlot <- function(concord0, concord1){
 
 ###TODO: remove multiple cells,
 ###make this S3 generic so we don't clobber filter in R
-##' Function that filters a single cell assay
+##' Filter a SingleCellAssay
 ##'
-##' The function filters wells that don't pass filtering criteria described in filt_control. filt_control is a list with named elements nOutliers (minimum nmber of outlier cells for a cell to be filtered. sigmaContinuous (the z-score outlier threshold for the continuous part of the signal), and sigmaProportion (the z-score outlier threshold for the discrete part of the signal).
-##' @title Filter a SingleCellAssay or Fluidigm Assay
+##' Remove, or flag wells that are outliers in discrete or continuous space.
+##'
+##' The function filters wells that don't pass filtering criteria described in filt_control.
+##' filt_control is a list with named elements \code{nOutliers}
+##' (minimum nmber of outlier cells for a cell to be filtered [default = 2]
+##' \code{sigmaContinuous} (the z-score outlier threshold for the continuous part of the signal) [default = 7]
+##' and \code{sigmaProportion} (the z-score outlier threshold for the discrete part of the signal) [default = 7].
+##'
+##' If \code{groups} is provided, the filtering is calculated within each level of the group, then combined again as output.
 ##' @param sc The \code{SingleCellAssay} object
-##' @param groups The \code{character} naming the grouping variable (optional)
+##' @param groups An optional \code{character} naming the grouping variable
 ##' @param filt_control The \code{list} with configuration parameters for the filter.
-##' @param apply_filter \code{logical} should the filter be applied?
+##' @param apply_filter \code{logical} should the filter be applied, or should a matrix of booleans giving if a well would be subject to a filtering criteria be returned?
 ##' @return A filtered result
 ##' @author Andrew McDavid
+##' @seealso burdenOfFiltering
 ##' @export filter
 filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   default_filt <- list(filter=T, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL, K=1.48)

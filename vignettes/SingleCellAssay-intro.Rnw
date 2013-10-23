@@ -30,77 +30,16 @@ markers, etc) per \emph{well} (cell, etc) in a flexible manner.
 Assays are assumed to be  mostly \emph{complete} in the sense that most \emph{wells}
 contain measurements for all features.
 
-\section{Implementation Details}
-Here we provide some background on the implementation of the package. 
-
-There are several fundamental new object types provided by the package.
-The \texttt{SCA} is a virtual class that is inherited by
-\texttt{SingleCellAssay} and \texttt{FluidigmAssay}. 
-The latter also inherits
-from \texttt{SingleCellAssay}. 
-New types of single cell assays can be incorportated by extending
-\texttt{SingleCellAssay} or \texttt{SCA}, as appropriate (depending on the
-structure of the data). 
-
-The correspondence between data files and the internal representation in the
-package for \texttt{features}, \texttt{cells} or \texttt{wells},
-and \texttt{phenotypic data} is provided by the \texttt{Mapping} class which
-simply provides a mapping of internal keys (i.e. \texttt{primerid, idvars,
-  featurevars, cellvars, phenovars} ) and values (one or more column names in
-the assay data files).
-These key--value maps allow the constructors to correctly map feature--level,
-cell--level, and sample--level information to each measured cell. 
-The
-
-The \texttt{Mapping} class makes this very flexible and amenable to many non--standard
-tabular data representations, and indepdendent of whatever names a user may
-have given different variables in the data set. 
-
-Some mappings are required to construct a valid \texttt{SingleCellAssay} or
-\texttt{FluidigmAssay} object.
-The required mappings and default maps are present for each single--cell assay
-class in the package (i.e. \texttt{SingleCellAssay:::FluidigmMap,
-  SingleCellAssay:::FluidigmMapNames, SingleCellAssay:::SingleCellAssayMap},
-  and \\\texttt{SingleCellAssay:::SingleCellAssayMapNames}). 
-
-Sets of single cell assays are stored in the \texttt{SCASet} class. A
-constructor for SCASet is provided to construct an SCASet directly from a data
-frame. 
-Alternatively, a SingleCellAssay or derived class can be \texttt{split}
-on an arbitray variable 
-to produce an SCASet.
-
-\subsection{Extending SingleCellAssay Classes}
-Any extension of the package to new types of single--cell assays should implement a new \texttt{class} for the
-assay, provide a \texttt{constructor} with the same name as the class, and
-provide a set of default required \texttt{map names} and an empty
-\texttt{Mapping}, which would then be filled in by the constructor. 
-
-The function \texttt{SingleCellAssayValidity} function can be used as a validity
-checking method for classes inheriting from \texttt{SingleCellAssay}.
-It will check that the required map names are provided, and that their values
-are present in the data. 
-
-On construction of a \texttt{SingleCellAssay} object, the package tests for
-completeness, and will fill in the missing data (with NA) if it is not, so
-assays with lots of missing data can make reading marginally slower. 
-
 \subsection{Internals}
-Internally (within a \texttt{SingleCellAssay}, we store everything as a
-\texttt{data.frame} with names of special columns kept in the
-\texttt{@mapping} slot that contains a \texttt{Mapping} object.  
-The data is stored in long-melted format, in feature-major order, so while not
-especially fast or space-efficient, it is rather intended to be very flexible.
-
-Each well, feature \future{, and unit (phenotype)} has various measured covariates.
-These are kept in \texttt{AnnotatedDataframes} in slots in the object, which are generated from the base \texttt{data.frame}, if provided.
-\future{If not provided, then they can be added after object creation.}
+A \texttt{SingleCellAssay} object can be manipulated as a matrix, with rows giving wells and columns giving features.
 
 \subsection{Statistical Testing}
 Apart from reading and storing single--cell assay data, the package also
 provides functionality for significance testing of differential expression
 using a combined binomial and normal--theory likelihood ratio test, as well as
-filtering of individual outlier wells. These methods are described in the paper.
+filtering of individual outlier wells. These methods are described our papers. 
+% Add citations
+
 
 \section{Examples}
 
@@ -121,10 +60,11 @@ For example, the following data set was provided in as a comma-separated value f
 It has the cycle threshold ($\ct$) recorded. 
 Non-detected genes are recorded as NAs.
 For the Fluidigm/qPCR single cell expression functions to work as expected, we
-must use the \emph{expression threshold}, defined as $E_t = c_{\mbox{max}} - \ct$, which is proportional to the log-expression.
+must use the \emph{expression threshold}, defined as $et = c_{\mbox{max}} - \ct$, which is proportional to the log-expression.
 
 Below, we load the package and the data, then compute the expression threshold from the $\ct$, and construct a \texttt{FluidigmAssay}.
-<<long-example,warning=FALSE>>=
+<<long-example,warning=FALSE, echo=-1>>=
+suppressPackageStartupMessages(library(Biobase))
 library(SingleCellAssay)
 require(plyr)
 data(vbeta)
@@ -166,23 +106,23 @@ ensure consistency when splitting and merging \sca objects.
   functionality is forthcoming but doesn't limit what can be done with the
   package at this stage}.
 
-\section{Subsetting, splitting, combining}
+\subsection{Subsetting, splitting, combining}
 It's possible to subset \sca objects by wells and features.
-Double square brackets (``[['') and \texttt{subset} will subset by wells on
+Square brackets (``['') will index on
 the first index and by features on the second index. 
-Both integer and boolean indices may be used, as well as character vectors
+Integer and boolean and indices may be used, as well as character vectors
 naming the cellKey or the feature (via the primerid).
+There is also a \texttt{subset} method, which will evaluate its argument in the frame of the \texttt{cData}, hence will subset by wells.
 <<subsets,warning=FALSE>>=
-sub1 <- vbeta.fa[[1:10]]
+sub1 <- vbeta.fa[1:10,]
 show(sub1)
 sub2 <- subset(vbeta.fa, Well=='A01')
 show(sub2)
-sub3 <- vbeta.fa[[1:10,6:10]]
+sub3 <- vbeta.fa[1:10,6:10]
 show(sub3)
 cellData(sub3)
 featureData(sub3)
 @
-
 The cellData and featureData \texttt{AnnotatedDataFrames} are subset
 accordingly as well.
 
@@ -196,26 +136,112 @@ show(sp1)
 @
 The splitting variable can either be a character vector naming column(s) of the \sca, or may be a \texttt{factor} or \texttt{list} of \texttt{factor}s.
 
-It's possible to combine \sca objects with the \texttt{combine} method.
-
-<<combine,warning=FALSE>>=
+It's possible to combine \sca objects or an \texttt{SCASet} with the \texttt{combine} method.
+<<combine,warning=FALSE, echo=-1>>=
 unloadNamespace("gplots")
 combine(x=sp1[[1]],y=sp1[[2]])
+combine(sp1)
 @ 
 
-\future{Combining the contents of an SCASet would also be usefult}
-
-\subsection{Filtering and Significance Testing}
+\subsection{Filtering}
 We can filter and perform some significance tests on the \sca.
 We may want to filter any wells with at least two outlier cells where the discrete and continuous parts of the signal are at least 9 standard deviations from the mean. This is a very conservative filtering criteria. We'll group the filtering by the number of cells.
 
-
 We'll split the assay by the number of cells and look at the concordance plot after filtering. 
-<<splitbyncells,warning=FALSE>>=
+<<splitbyncells,warning=FALSE, fig.height=4, fig.width=4>>=
 vbeta.split<-split(vbeta.fa,"Number.of.Cells")
 #see default parameters for plotSCAConcordance
 plotSCAConcordance(vbeta.split[[1]],vbeta.split[[2]],filterCriteria=list(nOutlier = 1, sigmaContinuous = 9,sigmaProportion = 9))
 @
 
+The filtering function has several other options, including whether the filter shuld be applied (thus returning a new SingleCellAssay object) or returned as a matrix of boolean values.
+
+<<otherFiltering, warning=FALSE>>=
+vbeta.fa
+## Split by 'ncells', apply to each component, then recombine
+vbeta.filtered <- filter(vbeta.fa, groups='ncells')
+## Returned as boolean matrix
+was.filtered <- filter(vbeta.fa, apply_filter=FALSE)
+## Wells filtered for being discrete outliers
+head(subset(was.filtered, pctout))
+@
+
+There's also some functionality for visualizing the filtering.
+
+<<burdenOfFiltering, warning=FALSE, fig.width=4, fig.height=4>>=
+burdenOfFiltering(vbeta.fa, 'ncells', byGroup=TRUE)
+@
+
+\subsection{Significance testing under the Hurdle model}
+There are two frameworks available in the package.  The first framework \texttt{zlm} offers a full linear model to allow arbitrary comparisons and adjustment for covariates. The second framework \texttt{LRT} can be considered essentially performing t-tests (respecting the discrete/continuous nature of the data) between pairs of groups.  \texttt{LRT} is subsumed by the first framework, but might be simpler for some users, so has been kept in the package.
+
+We'll describe \texttt{zlm}.  Models are specified in terms of the variable used as the measure and covariates present in the \texttt{cellData} using symbolic notation, just as the \texttt{lm} function in R.
+<<zlmArgs>>=
+vbeta.1 <- subset(vbeta.fa, ncells==1)
+## Consider the first 20 genes
+vbeta.1 <- vbeta.1[,1:20] 
+layername(vbeta.1)
+head(cData(vbeta.1))
+@
+Now, for each gene, we can regress on \texttt{Et} the factors \texttt{Population} and \texttt{Subject.ID}.
+
+In each gene, we'll test if the factor \texttt{Population} explains a significant amount of the variation by fitting models with and without \texttt{Population} as an explanatory factor.  An array of genes, metrics and test types is returned.
+We'll plot the -log10 P values by gene and test type.
+<<zlmExample, warning=FALSE, message=FALSE, fig.width=4, fig.height=6>>=
+library(ggplot2)
+library(reshape)
+zlm.output <- zlm.SingleCellAssay(Et ~ Stim.Condition + Subject.ID, vbeta.1, hypo.terms='Stim.Condition', type='LRT')
+dimnames(zlm.output)
+pvalue <- ggplot(melt(zlm.output[,'Pr(>Chisq)',]), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
+print(pvalue)
+@
+
+In fact, the \text{zlm} framework is quite general, and allows any modeling function that accepts \text{glm}-like arguments to be used, including mixed models such as those available in \texttt{lme4}.
+
+<<lmerExample, warning=FALSE, message=FALSE>>=
+library(lme4)
+lmer.output <- zlm.SingleCellAssay(Et ~ Stim.Condition +(1|Subject.ID), vbeta.1, lm.fun=glmer,hypo.terms='Stim.Condition', type='Wald')
+@
+ 
+It is possible to save the model fits so that coefficients can be examined.  See \texttt{?zlm.SingleCellAssay}.
+
+\subsection{Two-sample Likelihood Ratio Test}
+Another way to test for differential expression is available through the \texttt{LRT} function, which is analogous to two-sample T tests.
+<<LRTexample, echo=-1>>=
+library(car)
+two.sample <- LRT(vbeta.1, 'Population', referent='CD154+VbetaResponsive')
+car::some(two.sample)
+@
+Here we compare each population (\Sexpr{unique(cData(vbeta.1)$Pop)[-1]}) to \Sexpr{unique(cData(vbeta.1)$Pop)[1]}.  
+The \texttt{Population} column shows which population is being compared, while \texttt{test.type} is \texttt{comb} for the combined normal theory/binomial test.  Column \texttt{primerid} gives the gene being tested, \texttt{direction} shows if the comparison group mean is greater (1) or less (-1) than the referent group, and \texttt{lrtstat} and \texttt{p.value} give the test statistic and $\chi^2$ p-value (two degrees of freedom).
+
+Other options are whether additional information about the tests are returned (\texttt{returnall=TRUE}) and if the testing should be stratified by a character vector naming columns in \texttt{cData} containing grouping variables (\texttt{groups}).
+
+
+
+\section{Implementation Details}
+Here we provide some background on the implementation of the package. 
+
+There are several fundamental new object types provided by the package.
+\texttt{DataLayer} is the base class, which is provides an array-like object to store tabular data that might have multiple derived representations.
+A \texttt{SingleCellAssay} object contains a \texttt{DataLayer}, plus cell and feature data.
+New types of single cell assays can be incorportated by extending
+\texttt{SingleCellAssay}.
+
+Different derived classes of \sca require different fields to be present in the \texttt{cellData} and \texttt{featureData}
+These requirements are set for each class by the slots \texttt{cmap} and \texttt{fmap}, giving required columns in cell and feature data, respectively.
+
+We have found it useful to enforce naming conventions to reduce confusion when combining data across projects, so the constructor will rename the fields the user provides to match the values specifed in \texttt{cmap} and \texttt{fmap}.
+
+Sets of single cell assays are stored in the \texttt{SCASet} class. A
+constructor for SCASet is provided to construct an SCASet directly from a data
+frame. 
+Alternatively, a SingleCellAssay or derived class can be \texttt{split}
+on an arbitray variable 
+to produce an SCASet.
+
+On construction of a \texttt{SingleCellAssay} object, the package tests for
+completeness, and will fill in the missing data (with NA) if it is not, so
+assays with lots of missing data can make reading marginally slower. 
 
 \end{document}

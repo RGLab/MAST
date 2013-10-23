@@ -91,13 +91,13 @@ test_that("Completes incomplete data", {
 
   incomplete <- rbind(melt(fd[1:20,1:20]),
                       melt(fd[21:50, 11:30])) #equally sized primerid blocks
-  
-  expect_message(fd.incomplete <- FluidigmAssay(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid, keep.names=TRUE), 'incomplete')
+  fd.incomplete <- FluidigmAssay(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid, keep.names=TRUE)
+  expect_message(FluidigmAssay(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid, keep.names=TRUE), 'incomplete')
   expect_equal(nrow(fd.incomplete), 50)
   expect_equal(ncol(fd.incomplete), 30)
   expect_true(any(is.na(exprs(fd.incomplete))))
-  expect_equal(exprs(fd.incomplete[21:50, 11:30])==exprs(fd[21:50, 11:30]))
-  expect_equal(exprs(fd.incomplete[1:20, 1:20])==exprs(fd[1:20, 1:20])  
+  expect_equal(exprs(fd.incomplete[21:50, 11:30]),exprs(fd[21:50, 11:30]))
+  expect_equal(exprs(fd.incomplete[1:20, 1:20]),exprs(fd[1:20, 1:20]))
 })
 
 ## No more mapping, hurray!

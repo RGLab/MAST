@@ -1,6 +1,6 @@
 \name{filter}
 \alias{filter}
-\title{Filter a SingleCellAssay or Fluidigm Assay}
+\title{Filter a SingleCellAssay}
 \usage{
   filter(sc, groups = NULL, filt_control = NULL,
     apply_filter = TRUE)
@@ -8,31 +8,41 @@
 \arguments{
   \item{sc}{The \code{SingleCellAssay} object}
 
-  \item{groups}{The \code{character} naming the grouping
-  variable (optional)}
+  \item{groups}{An optional \code{character} naming the
+  grouping variable}
 
   \item{filt_control}{The \code{list} with configuration
   parameters for the filter.}
 
   \item{apply_filter}{\code{logical} should the filter be
-  applied?}
+  applied, or should a matrix of booleans giving if a well
+  would be subject to a filtering criteria be returned?}
 }
 \value{
   A filtered result
 }
 \description{
-  Function that filters a single cell assay
+  Remove, or flag wells that are outliers in discrete or
+  continuous space.
 }
 \details{
   The function filters wells that don't pass filtering
   criteria described in filt_control. filt_control is a
-  list with named elements nOutliers (minimum nmber of
-  outlier cells for a cell to be filtered. sigmaContinuous
-  (the z-score outlier threshold for the continuous part of
-  the signal), and sigmaProportion (the z-score outlier
-  threshold for the discrete part of the signal).
+  list with named elements \code{nOutliers} (minimum nmber
+  of outlier cells for a cell to be filtered [default = 2]
+  \code{sigmaContinuous} (the z-score outlier threshold for
+  the continuous part of the signal) [default = 7] and
+  \code{sigmaProportion} (the z-score outlier threshold for
+  the discrete part of the signal) [default = 7].
+
+  If \code{groups} is provided, the filtering is calculated
+  within each level of the group, then combined again as
+  output.
 }
 \author{
   Andrew McDavid
+}
+\seealso{
+  burdenOfFiltering
 }
 

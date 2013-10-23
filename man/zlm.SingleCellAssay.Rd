@@ -3,9 +3,9 @@
 \title{zlm.SingleCellAssay}
 \usage{
   zlm.SingleCellAssay(formula, sca, lm.fun = glm,
-    hypothesis.matrix, type = "Wald", hypo.fun = NULL,
-    keep.zlm = FALSE, .parallel = FALSE, .drop = TRUE,
-    .inform = FALSE, silent = TRUE, ...)
+    hypothesis.matrix, hypo.terms, hypo.contrasts,
+    type = "Wald", keep.zlm = FALSE, .parallel = FALSE,
+    .drop = TRUE, .inform = FALSE, silent = TRUE, ...)
 }
 \arguments{
   \item{formula}{a formula with the measurement variable on
@@ -16,15 +16,17 @@
   \item{lm.fun}{a function accepting lm-style arguments and
   a family argument}
 
-  \item{hypothesis.matrix}{names of coefficients to test in
-  lht form}
+  \item{hypothesis.matrix}{Deprecated}
 
-  \item{type}{}
+  \item{hypo.terms}{character vector giving terms to drop
+  from model}
 
-  \item{hypo.fun}{a function taking a model as input and
-  returning output suitable for hypothesis.matrix}
+  \item{hypo.contrasts}{specific contrasts to test in form
+  expected by lht}
 
-  \item{keep.zlm}{should the model objects be kept}
+  \item{type}{type of test to run, one of 'Wald' or 'LRT'}
+
+  \item{keep.zlm}{should the model objects be kept?}
 
   \item{.parallel}{run fits using parallel processing.
   must have doParallel}
@@ -45,15 +47,39 @@
   zero-inflated regression for SingleCellAssay
 }
 \details{
-  Fits a hurdle model in \code{formula} (linear for et>0),
-  logistic for et==0 vs et>0. Conducts likelihood ratio
-  tests using hypothesis.matrix.
+  For each gene in sca, fits the hurdle model in
+  \code{formula} (linear for et>0), logistic for et==0 vs
+  et>0. Conducts tests using hypothesis.matrix.
 
-  A \code{list} of \code{data.frame}s, is returned, with
-  one \code{data.frame} per tested predictor. Rows of each
-  \code{data.frame} are genes, the columns give the value
-  of the LR test and its P-value, and the sum of the
-  T-statistics for each level of the factor (when the
-  predictor is categorical).
+  When keep.zlm is FALSE, a 3D array with first dimension
+  being the genes, next dimension giving information about
+  the test (the degrees of freedom, Chisq statistic, and P
+  value), and final dimension being the value of these
+  quantities on the discrete, continuous and hurdle
+  (combined) levels.
+
+  When keep.zlm is TRUE, a list of length two is returned.
+  Component "tests" gives the above 3-D array. Component
+  "models" is a list giving the model fit for each gene.
+}
+\examples{
+\dontrun{
+data(vbeta)
+vbeta <- computeEtFromCt(vbeta)
+vbeta.sc <- FluidigmAssay(vbeta, idvars='Sample.ID', primerid='Gene', measurement='Et', ncells='Number.of.Cells', cellvars='Stim.Condition')
+testsByGene <- zlm.SingleCellAssay(Et ~ Stim.Condition, vbeta.sc, hypothesis.matrix='Stim.ConditionUnstim')
+# genes X metric X test type
+dimnames(testsByGene)
+
+modelsAndTestsByGene <- zlm.SingleCellAssay(Et ~ Stim.Condition, vbeta.sc, hypothesis.matrix='Stim.ConditionUnstim', keep.zlm=TRUE)
+names(modelsAndTestsByGene$models)
+summary(modelsAndTestsByGene$models[['IL13']]$disc)
+summary(modelsAndTestsByGene$models[['IL13']]$cont)
+}
+}
+\seealso{
+  zlm
+
+  test.zlm
 }
 

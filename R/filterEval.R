@@ -256,6 +256,7 @@ filtDiffs <- function(mysc, groups, filt_control=NULL){
 #'@param groups the groups by which to filter
 #'@param byGroup logical indicating whether to filter by group
 #'@param filt_control a list of control parameters.
+#'@importFrom lattice barchart
 #'@export
 burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
   checkGroups(sc, groups)
