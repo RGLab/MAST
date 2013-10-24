@@ -80,8 +80,8 @@ test_that("Cellkey unique identifies a cell", {
 context('test construction helper funcs')
 test_that("uniqueModNA doesn't include NA", {
   naframe <- data.frame(var=rep(c(1, 2), each=2), na=c(NA, -9, NA, -9))
-  expect_equal(nrow(uniqueModNA(naframe, exclude='var')), 2)
-  expect_equal(nrow(as.data.frame(uniqueModNA(naframe[,-2, drop=FALSE], exclude='var'))), 2)
+  expect_equal(nrow(SingleCellAssay:::uniqueModNA(naframe, exclude='var')), 2)
+  expect_equal(nrow(as.data.frame(SingleCellAssay:::uniqueModNA(naframe[,-2, drop=FALSE], exclude='var'))), 2)
 })
 
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
@@ -161,7 +161,7 @@ test_that("loading Matrix package doesn't clobber generic table", {
   sub2 <- sc[boolind]
   expect_that(sub, is_a("SingleCellAssay"))
   expect_equal(sub, sub2)
-  detach('package:Matrix')
+  try(detach('package:Matrix')) #don't want this to fail causing tests to fail since new lme4 deps on Matrix
 })
 
 test_that('can subset by character', {
@@ -173,7 +173,7 @@ test_that('can subset by character', {
 })
 
 test_that('Subsetting preserves cell and featuredata',{
-  sub <- sc[[boolind]]
+  sub <- scd[[boolind]]
   expect_that(sub, is_a("SingleCellAssay"))
   expect_that(getwellKey(sub), equals(getwellKey(scd)[boolind]))
   expect_equal(featureData(sub), featureData(scd))

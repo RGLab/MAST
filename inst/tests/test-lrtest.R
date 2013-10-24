@@ -14,7 +14,7 @@ SingleCellAssay:::lrtest(w.x, w.y, x, y)
 
 source('common-fixtures.R')
 fd.spl <- split(fd, 'Number.of.Cells')
-lrout <- lrt(fd.spl[[1]], 'Subject.ID', returnall=FALSE)
+lrout <- SingleCellAssay:::lrt(fd.spl[[1]], 'Subject.ID', returnall=FALSE)
 lrout2 <- suppressMessages(suppressWarnings(zlm.SingleCellAssay(et ~ Subject.ID, fd.spl[[1]], hypothesis.matrix='Subject.ID', type='LRT')))
 context('testing for equality between glm lrtest and two-sample')
 test_that('LRT and zlm are equivalent', {
