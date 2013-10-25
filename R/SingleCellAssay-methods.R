@@ -161,7 +161,8 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
       }
     rn <- nm
     names(rn) <- as.character(bothMap[[nm]])
-    if(keep.names){ df[,rn,with=FALSE] <- df[,names(rn),with=FALSE]}
+    if(keep.names){ df[,rn:=df[,names(rn),with=FALSE]
+                       ,with=FALSE] }   #that's naaaasty
     else{ setnames(df, rn)}
   }
 
