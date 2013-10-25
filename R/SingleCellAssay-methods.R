@@ -123,8 +123,8 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
   if( !all(cvars.in)) stop(cellvars[!cvars.in][1], ' not found')
   if( !all(fvars.in)) stop(featurevars[!fvars.in][1], ' not found')
   
-  nuniquef<-nrow(uniqueModNA(dataframe[,featurevars,with=FALSE], 'primerid'))
-  nuniquec<-nrow(uniqueModNA(dataframe[,cellvars,with=FALSE], 'wellKey'))  
+  nuniquef<-nrow(uniqueModNA(dataframe[,featurevars, drop=FALSE], 'primerid'))
+  nuniquec<-nrow(uniqueModNA(dataframe[,cellvars, drop=FALSE], 'wellKey'))  
   if(nuniquef != nc)
     stop("'featurevars' must be keyed by 'primerid'")
   if(nuniquec != nr)
@@ -135,25 +135,24 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
 ## Not too bad except for deduplication.. will use data.table
 ##' @import data.table
 fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
-  cn_df<-colnames(df)
   if(!inherits(df,"data.frame")){
     stop("Argument `dataframe` should be a data.frame.")
   }
-  if(!all(idvars %in% cn_df)){
+  if(!all(idvars %in% colnames(df))){
     stop("Invalid idvars column name. Not in data.frame")
   }
-  if(!all(primerid %in% cn_df)){
+  if(!all(primerid%in%colnames(df))){
     stop("Invalid primerid column name. Not in data.frame")
   }
-  if(!all(measurement %in% cn_df)){
+  if(!all(measurement%in%colnames(df))){
     stop("Invalid measurement column name. Not in data.frame")
   }
   ## FIXME: should check if cmap and fmap are in df and throw intelligible error
 
   bothMap <- c(cmap, fmap)
   for(nm in names(bothMap)){
-    if(nm %in% cn_df && bothMap[[nm]] != nm){
-      setnames(df,cn_df,make.unique(c(nm, colnames(df)))[-1])
+    if(nm %in% colnames(df) && bothMap[[nm]] != nm){
+      names(df) <- make.unique(c(nm, colnames(df)))[-1]
     warning("renaming column ", nm)
     }
       if(!all(bothMap[[nm]] %in% names(df))){
@@ -161,29 +160,28 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
       }
     rn <- nm
     names(rn) <- as.character(bothMap[[nm]])
-    if(keep.names){ df[,rn:=df[,names(rn),with=FALSE]
-                       ,with=FALSE] }   #that's naaaasty
-    else{ setnames(df, rn)}
+    if(keep.names){ df[,rn] <- df[,names(rn)]}
+    else{ df <- rename(df, rn)}
   }
 
-  wk <- do.call(paste, df[,idvars,with=FALSE])
-  pid <- do.call(paste, df[,primerid, with=FALSE])
+  wk <- do.call(paste, df[,idvars, drop=FALSE])
+  pid <- do.call(paste, df[,primerid, drop=FALSE])
   if(any(is.na(wk))) warning('Dropping NAs from wellKey')
   if(any(is.na(pid))) warning('Dropping NAs from primerid')
       
-  #df[,'wellKey'] <- wk
-  df[,wellKey:=wk]
-  #df[,'primerid'] <- pid
-  df[,primerid:=pid]
+  df[,'wellKey'] <- wk
+  df[,'primerid'] <- pid
   dupPrimers <- table(df$wellKey, df$primerid) #cross tab of primerid x wellKey
   duped.primers <- apply(dupPrimers>1, 2, which)
   duped.primers <- duped.primers[sapply(duped.primers, length)>0]
   incomplete <- any(dupPrimers==0)
   if(length(duped.primers)>0){
     warning("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
+    dt<-data.table(df)
     #dt$primer.orig <- dt$primerid
-    df[,primerid.orig:=primerid]
-    df[,primerid:=make.unique(.SD$primerid.orig),by='wellKey']
+    dt[,primerid.orig:=primerid]
+    dt[,primerid:=make.unique(.SD$primerid.orig),by='wellKey']
+    df<-as.data.frame(dt)
 #    df <- ddply(df,'wellKey',mkunique,G='primerid')
 #    df[,'primerid.orig'] <- df[,'primerid']
 #    df[,'primerid'] <- df[,'primerid.unk']
@@ -193,17 +191,12 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   
   if(incomplete){
     message("dataframe appears incomplete, attempting to complete it with NAs")
-    df[,unique(primerid)]
-    skeleton <- data.table((expand.grid(unique(df[,primerid]), unique(df[, wellKey]),stringsAsFactors=FALSE)))
-    setnames(skeleton,c("primerid","wellKey"))
-    setkey(skeleton,primerid,wellKey);
-    setkey(df,primerid,wellKey);
-    df<-df[skeleton]
+    skeleton <- expand.grid.df(unique(df[,"primerid", drop=FALSE]), unique(df[, "wellKey", drop=FALSE]))
+    df <- merge(skeleton, df, all.x=TRUE, by=c('primerid', 'wellKey'))
   }
 
-  #ord <- do.call(order, df[, c("primerid", "wellKey")])
-  #df <- df[ord,]
-  setkey(df,primerid,wellKey)
+  ord <- do.call(order, df[, c("primerid", "wellKey")])
+  df <- df[ord,]
   list(df=df, rn=unique(df$wellKey), cn=unique(df$primerid), fmap=fmap, cmap=cmap)
 }
 
@@ -224,9 +217,6 @@ setMethod('initialize', 'SingleCellAssay',
               }
               if(nrow(.Object) > 0 || ncol(.Object)>0) warning('slots will be overwritten when dataframe is provided')
               ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
-              if(!inherits(dataframe,"data.table")){
-                dataframe<-data.table(dataframe)
-              }
               fixed <- fixdf(dataframe, idvars, primerid, measurement, .Object@cmap, .Object@fmap, .Object@keep.names)
               .Object@fmap <- fixed$fmap        #needed if we deduplicated primerid
               .Object@cmap <- fixed$cmap
@@ -242,12 +232,12 @@ setMethod('initialize', 'SingleCellAssay',
               }
               check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
               cell.adf  <- new("AnnotatedDataFrame")
-              pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars,with=FALSE], 'wellKey') #automatically sorted by idvars
+              pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars, drop=FALSE], 'wellKey') #automatically sorted by idvars
               sampleNames(cell.adf) <- unique(fixed$df$wellKey)
               ##pheno.adf <- new('AnnotatedDataFrame')
               ##need a phenokey into the melted data frame for this to make sense
               f.adf <- new('AnnotatedDataFrame')
-              pData(f.adf) <- uniqueModNA(fixed$df[,featurevars, with=FALSE], 'primerid')
+              pData(f.adf) <- uniqueModNA(fixed$df[,featurevars, drop=FALSE], 'primerid')
               sampleNames(f.adf) <- unique(fixed$df$primerid)
 
               ## currently take care of this in fixdf
@@ -287,12 +277,9 @@ uniqueModNA <- function(df, exclude){
   if(ncol(df)>1){
   w.include <- setdiff(w.include, exclude)
 }
-  #u <- unique(df)
-  #anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
-  #u[!anyNa,,drop=FALSE]
-  setkeyv(df,colnames(df)) #indexing the data frame
-  u<-unique(df)
-  u<-u[,.SD[!is.na(get(w.include)),]] #either we spend time above or here..
+  u <- unique(df)
+  anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+  u[!anyNa,,drop=FALSE]
 }
 
 #setGeneric("melt",function(data,...){

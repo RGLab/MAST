@@ -4,18 +4,13 @@ w.x <- rep(1, n)
 w.y <- rep(1, n)
 x <- rnorm(n, 10)
 y <- rnorm(n, 8)
-test_that('Can run lrtest on non-singular data',{
-expect_is(SingleCellAssay:::lrtest(w.x, w.y, x, y), 'matrix')
-})
+SingleCellAssay:::lrtest(w.x, w.y, x, y)
 
 w.x <- rep(1, n)
 w.y <- rep(0, n)
 x <- rnorm(n, 10)
 y <- integer(0)
-
-test_that('Can run lrtest on singular data',{
-expect_is(SingleCellAssay:::lrtest(w.x, w.y, x, y), 'matrix')
-})
+SingleCellAssay:::lrtest(w.x, w.y, x, y)
 
 source('common-fixtures.R')
 fd.spl <- split(fd, 'Number.of.Cells')
