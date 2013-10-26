@@ -37,8 +37,8 @@ if(require('lme4')){
 test_that('zlm can run lmer', {
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
-      expect_is(lrout2$cont, 'lmerMod')
-    expect_is(lrout2$disc, 'glmerMod')
+      expect_is(lrout2$cont, c('mer','lmerMod','glmerMod'))
+    expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
     }
 

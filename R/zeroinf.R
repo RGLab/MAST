@@ -131,7 +131,11 @@ test.lrt <- function(model, drop.terms, part){
 }
 
 test.wald <- function(model, hypothesis.matrix, part){
-      mer.variant <- any('chisq' %in% eval(formals(getS3method('linearHypothesis', class(model)))$test)) #don't ask
+    cls<-class(model)
+    if(any(cls%in%c("glmerMod","lmerMod")))
+      cls<-"mer"
+    
+      mer.variant <- any('chisq' %in% (eval(formals(getS3method('linearHypothesis', cls))$test))) #don't ask
     ## Get names to agree from output of all the different variants
   chisq <- 'Chisq'
   pchisq <- 'Pr(>Chisq)'
