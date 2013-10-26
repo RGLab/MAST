@@ -39,7 +39,17 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   init <- tryCatch(model.frame(sanitize.formula, data, na.action=na.fail), error=function(e) if(str_detect(as.character(e), 'missing')) stop('NAs in response or predictors not allowed; please remove before fitting') else stop(e) )
   
   data[,'pos'] <-   model.response(init)>0
-  cont <- try(lm.fun(formula, data, subset=pos, family='gaussian', ...), silent=silent)
+
+  ## new glmer doesn't like being called with a function alias
+  useGlmer <-  exists('glmer') && identical(lm.fun, glmer)
+  
+  cont <- try({
+      if(useGlmer){
+      glmer(formula, data=data, subset=pos, family='gaussian', ...)
+      } else{
+      lm.fun(formula, data, subset=pos, family='gaussian', ...)
+      }
+  }, silent=silent)
   if(inherits(cont, 'try-error')){
     if(!silent) warning('Some factors were not present among the positive part')
     cont <- lm(0~0)
@@ -51,7 +61,11 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   lhs <- 'pos'
   rhs <- formula.split[2]
   disc.formula <- paste(lhs, '~', rhs)
-  disc <- lm.fun(disc.formula, data, family='binomial', ...)
+  if(useGlmer){
+      disc <- glmer(disc.formula, data, family='binomial', ...)
+      } else{
+          disc <- lm.fun(disc.formula, data, family='binomial', ...)
+      }
   
   out <- list(cont=cont, disc=disc)
   class(out) <- 'zlm'
@@ -68,7 +82,12 @@ summary.zlm <- function(out){
 pretest.lrt <- function(model, hypothesis.matrix){
     Terms <- labels(terms(model))
     whichTerm <- attr(model.matrix(model), 'assign')
-    names(whichTerm) <- names(coef(model))
+    if(inherits(model, 'glmerMod')){
+        coefFun <- fixef
+    }else{
+        coefFun <- coef
+    }
+    names(whichTerm) <- names(coefFun(model))
     ## terms that were tested
     testTerm <- whichTerm[hypothesis.matrix]
     ## How many of each that were fit were tested?
@@ -79,22 +98,34 @@ pretest.lrt <- function(model, hypothesis.matrix){
 
 test.lrt <- function(model, drop.terms, part){
     if(!is.formula(drop.terms) || length(labels(terms(drop.terms)))  > 1) stop("Currently only support testing single factors when 'type'='LRT'")
-    if(!inherits(model, 'lm')) stop('Currently only support type=LRT with glm fits')
-    if(part=='cont' && summary(model)$df.residual==0) stop('No degrees of freedom left') #otherwise drop1 throws an obscure error
+    newlme4 <- inherits(model, 'glmerMod') | inherits(model, 'lmerMod')
+    ## No longer true with lme4 > 1.0
+    if(!(inherits(model, 'lm') || newlme4)) stop('Currently only support type=LRT with glm fits') 
+    if(part=='cont' && inherits(model, 'lm') && summary(model)$df.residual==0) stop('No degrees of freedom left') #otherwise drop1 throws an obscure error
 
 
-    names.drop1.cont <- c('Df', 'scaled dev.', 'Pr(>Chi)')
-    names.drop1.disc <- c('Df', 'LRT', 'Pr(>Chi)')
+    
+    if(newlme4){
+        names.drop1.disc <- c('Df', 'LRT', 'Pr(Chi)')
+        rename.drop1.disc <- c('LRT'='Chisq', 'Pr(Chi)'='Pr(>Chisq)')
+        names.drop1.cont <- c('Df', 'LRT', 'Pr(>Chi)')
+    rename.drop1.cont <- c('LRT'='Chisq', 'Pr(>Chi)'='Pr(>Chisq)')
+
+    } else{
+        names.drop1.disc <- c('Df', 'LRT', 'Pr(>Chi)')
+        rename.drop1.disc <- c('LRT'='Chisq', 'Pr(>Chi)'='Pr(>Chisq)')
+          names.drop1.cont <- c('Df', 'scaled dev.', 'Pr(>Chi)')
     rename.drop1.cont <- c('scaled dev.'='Chisq', 'Pr(>Chi)'='Pr(>Chisq)')
-    rename.drop1.disc <- c('LRT'='Chisq', 'Pr(>Chi)'='Pr(>Chisq)')
+
+    }
 
     if(part=='cont'){
         return(rename(
-            cbind(Res.df=NA, drop1(model, drop.terms, test='LRT')[, names.drop1.cont]),
+            cbind(Res.df=NA, drop1(model, drop.terms, test='Chisq')[, names.drop1.cont]),
             rename.drop1.cont))
     } else{
         return(rename(
-            cbind(Res.df=NA, drop1(model, drop.terms, test='LRT')[, names.drop1.disc]),
+            cbind(Res.df=NA, drop1(model, drop.terms, test='Chisq')[, names.drop1.disc]),
             rename.drop1.disc))
     }
 }

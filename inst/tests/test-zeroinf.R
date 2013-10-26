@@ -37,8 +37,8 @@ if(require('lme4')){
 test_that('zlm can run lmer', {
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
-      expect_is(lrout2$cont, 'mer')
-    expect_is(lrout2$disc, 'mer')
+      expect_is(lrout2$cont, 'lmerMod')
+    expect_is(lrout2$disc, 'glmerMod')
 })
     }
 
@@ -47,7 +47,10 @@ test_that('test.zlm works', {
     test.zlm(out, car::matchCoefs(out$disc, 'x1'))
 
     if(require('lme4')){
-      test.zlm(lrout2, car::matchCoefs(lrout2$disc, 'Population'))
+        library(stringr)
+        popCoef <- str_extract(names(fixef(lrout2$disc)), 'Population.+')
+        popCoef <- popCoef[!is.na(popCoef)]
+      test.zlm(lrout2, popCoef, type='LRT')
     }
     
 })
