@@ -30,7 +30,7 @@ Suggests:
     parallel,
     flowClust(>= 2.99),
     knitr,
-    lme4(>= 1.04)
+    lme4(>= 1.0)
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0

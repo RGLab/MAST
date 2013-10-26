@@ -45,7 +45,7 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   
   cont <- try({
       if(useGlmer){
-      glmer(formula, data=data, subset=pos, family='gaussian', ...)
+      lmer(formula, data=data, subset=pos, ...)
       } else{
       lm.fun(formula, data, subset=pos, family='gaussian', ...)
       }
@@ -54,7 +54,8 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
     if(!silent) warning('Some factors were not present among the positive part')
     cont <- lm(0~0)
   }                                     
-  
+
+  converged <- TRUE
   formula.split <- strsplit(deparse(formula), '~')[[1]]
   lhs <- formula.split[1]
   if(str_detect(lhs, '[()]')) stop("Left hand side of formula must be unadorned variable name from 'data'")
@@ -62,17 +63,24 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   rhs <- formula.split[2]
   disc.formula <- paste(lhs, '~', rhs)
   if(useGlmer){
-      disc <- glmer(disc.formula, data, family='binomial', ...)
+      disc <- try({
+       glmer(disc.formula, data, family='binomial', ...)
+  }, silent=silent)
       } else{
           disc <- lm.fun(disc.formula, data, family='binomial', ...)
       }
+  if(inherits(disc, 'try-error')){
+      disc <- lm(0~0)
+      converged <- FALSE
+  }
   
-  out <- list(cont=cont, disc=disc)
+  
+  out <- list(cont=cont, disc=disc, converged=converged)
   class(out) <- 'zlm'
   out
 }
 
-is.empty.fit <- function(fit) return(length(coef(fit))==0 || summary(fit)$df.residual==0)
+is.empty.fit <- function(fit) return(length(coef(fit))==0 || (inherits(fit, 'lm') && summary(fit)$df.residual==0))
 
 summary.zlm <- function(out){
   summary(out$cont)
@@ -288,7 +296,14 @@ zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hyp
         model <- zlm(formula, set, lm.fun, silent, ...)
 
         if(hypo.contrasts.missing) hypo.contrasts <- guessContrast(hypo.terms, model)
+        if(model$converged){
         test <- test.zlm(model, hypo.contrasts, type=type, silent=silent)[2,-1,]
+    } else{
+        ## hack, but this will be a pain to do correctly
+        test <- rep(NA, 9)
+        dim(test) <- c(3, 3)
+        dimnames(test) <- list(metric=c('Df', 'Chisq', 'Pr(>Chisq)'), test.type=c('disc', 'cont', 'hurdle'))
+    }
         switch(keep.zlm,
                true=list(model=model, test=test),
                false=list(test=test),              #todo: write coefs function

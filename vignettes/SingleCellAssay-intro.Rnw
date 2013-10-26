@@ -200,7 +200,7 @@ In fact, the \text{zlm} framework is quite general, and allows any modeling func
 
 <<lmerExample, warning=FALSE, message=FALSE>>=
 library(lme4)
-lmer.output <- zlm.SingleCellAssay(Et ~ Stim.Condition +(1|Subject.ID), vbeta.1, lm.fun=glmer,hypo.terms='Stim.Condition', type='Wald')
+lmer.output <- zlm.SingleCellAssay(Et ~ Stim.Condition +(1|Subject.ID), vbeta.1, lm.fun=glmer,hypo.terms='Stim.Condition', type='LRT')
 @
  
 It is possible to save the model fits so that coefficients can be examined.  See \texttt{?zlm.SingleCellAssay}.
