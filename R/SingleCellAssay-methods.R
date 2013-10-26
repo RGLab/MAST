@@ -281,6 +281,18 @@ sort.SingleCellAssay <- function(x, decreasing=FALSE, ...){
 
 setMethod('sort', signature=c(x='SingleCellAssay'), sort.SingleCellAssay)
 
+uniqueModNA.old <- function(df, exclude){
+  #browser()
+  df <- as.data.frame(df)
+  w.include <- names(df)
+  if(ncol(df)>1){
+  w.include <- setdiff(w.include, exclude)
+}
+  u <- unique(df)
+  anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+  u[!anyNa,,drop=FALSE]
+}
+
 uniqueModNA <- function(df, exclude){
   #browser()
   df<-data.table(df)
@@ -300,7 +312,6 @@ uniqueModNA <- function(df, exclude){
 #standardGeneric("melt")
 #  UseMethod(generic="melt",data)
 #  },useAsDefault=reshape::melt)
-
 ##' Evaluate an expression (returning a \code{logical} vector in the context of
 ##' \code{x}
 ##'

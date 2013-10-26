@@ -120,7 +120,7 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
     m <- melt(scL[[i]])
     tmp <- cast(m, firstForm, fun.aggregate=fun.natural, value=getMapping(scL[[i]],"value")[[1]])
     ##exponential average per gene, scaled by number of cells
-    if(class(m['ncells']) == 'factor'){
+    if(class(m[['ncells']]) == 'factor'){
       warning("ncells is a factor rather than numeric.\n I'll continue, but this may cause problems down the line")
     }
     tmp["(all)"] <- tmp["(all)"]/as.numeric(as.character(tmp[["ncells"]]))

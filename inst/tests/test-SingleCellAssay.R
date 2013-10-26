@@ -61,7 +61,15 @@ test_that('keep field names',{
   expect_true(all(c(primerid, measurement, ncells, geneid) %in% names(m)))
 })
 
-
+test_that('Cell data and feature data are correctly assigned on construction', {
+    vb.manip <- within(vbeta, {
+        et[Stim.Condition=='Stim(SEB)'] <- 2000
+        et[Stim.Condition!='Stim(SEB)' & Gene=='TGFB1'] <- 0
+    })
+    vb.manip <- vb.manip[sample(nrow(vb.manip)),]
+    fd.manip <- FluidigmAssay(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+    expect_true(all(exprs(subset(fd.manip, Stim.Condition=='Stim(SEB)'))==2000))    
+})
 
 sc <- fd
 test_that("Can load complete data", {
@@ -78,10 +86,16 @@ test_that("Cellkey unique identifies a cell", {
 
 
 context('test construction helper funcs')
+  naframe <- data.frame(var=rep(c(1, 2), each=3), na=c(NA, -9, NA, -9, NA, -9))
 test_that("uniqueModNA doesn't include NA", {
-  naframe <- data.frame(var=rep(c(1, 2), each=2), na=c(NA, -9, NA, -9))
   expect_equal(nrow(SingleCellAssay:::uniqueModNA(naframe, exclude='var')), 2)
   expect_equal(nrow(as.data.frame(SingleCellAssay:::uniqueModNA(naframe[,-2, drop=FALSE], exclude='var'))), 2)
+})
+
+test_that('uniqueModNA works on multiple columns', {
+    ## Now should return every row, since every row is unique
+    naframe$extra <- 1:nrow(naframe)
+    expect_equal(unique(naframe), SingleCellAssay:::uniqueModNA(naframe, exclude='var'))
 })
 
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)

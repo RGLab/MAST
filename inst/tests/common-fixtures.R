@@ -6,10 +6,10 @@ library(reshape)
 geneid="Gene"
 primerid='Gene'
 measurement='et'
-idvars=c('Subject.ID', 'Chip.Number', 'Stim.Condition', 'Population', 'Well')
+idvars=c('Subject.ID', 'Chip.Number', 'Well')
 ncells <- 'Number.of.Cells'
 phenovars=NULL
-cellvars='Experiment.Number'
+cellvars=c('Experiment.Number', 'Population')
 featurevars=NULL
 
 ##Tests depending on vbeta
