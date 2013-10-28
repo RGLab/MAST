@@ -86,15 +86,18 @@ test_that("Cellkey unique identifies a cell", {
 
 
 context('test construction helper funcs')
-  naframe <- data.frame(var=rep(c(1, 2), each=3), na=c(NA, -9, NA, -9, NA, -9))
+library(data.table)
+  naframe <- data.table(var=rep(c(1, 2), each=3), na=c(NA, -9, NA, -9, NA, -9))
 test_that("uniqueModNA doesn't include NA", {
+    setkeyv(naframe, colnames(naframe))
   expect_equal(nrow(SingleCellAssay:::uniqueModNA(naframe, exclude='var')), 2)
-  expect_equal(nrow(as.data.frame(SingleCellAssay:::uniqueModNA(naframe[,-2, drop=FALSE], exclude='var'))), 2)
+  expect_equal(nrow(SingleCellAssay:::uniqueModNA(naframe[,-2, with=FALSE], exclude='var')), 2)
 })
 
 test_that('uniqueModNA works on multiple columns', {
     ## Now should return every row, since every row is unique
     naframe$extra <- 1:nrow(naframe)
+    setkeyv(naframe, colnames(naframe))
     expect_equal(unique(naframe), SingleCellAssay:::uniqueModNA(naframe, exclude='var'))
 })
 

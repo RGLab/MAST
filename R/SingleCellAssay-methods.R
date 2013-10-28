@@ -162,8 +162,9 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
       }
     rn <- nm
     names(rn) <- as.character(bothMap[[nm]])
-    if(keep.names){ df[,eval(rn):=get(names(rn))]}
-    else{ setnames(df, names(rn),nm)}
+    if(keep.names){
+        df[,eval(rn):=get(names(rn))]
+    } else{ setnames(df, names(rn),nm)}
   }
 
   wk <- do.call(paste, df[,idvars,with=FALSE])
@@ -203,7 +204,9 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
 
   #ord <- do.call(order, df[, c("primerid", "wellKey")])
   #df <- df[ord,]
-  setkey(df,primerid,wellKey)
+  keynames <- c('primerid', 'wellKey')
+  keynames <- union(keynames, colnames(df))
+  setkeyv(df,keynames)
   list(df=(df), rn=unique(df$wellKey), cn=unique(df$primerid), fmap=fmap, cmap=cmap)
 }
 
@@ -223,14 +226,20 @@ setMethod('initialize', 'SingleCellAssay',
                 stop("Must supply all of 'idvars', 'primerid' and 'measurement' if 'dataframe' is passed")
               }
               if(nrow(.Object) > 0 || ncol(.Object)>0) warning('slots will be overwritten when dataframe is provided')
+              
               ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
               if(!inherits(dataframe,"data.table")){
                 dataframe<-data.table(dataframe)
+              } else{
+                  ## worry about things being passed by reference
+                  #dataframe <- data.table::copy(dataframe)
               }
-              fixed <- fixdf((dataframe), idvars, primerid, measurement, .Object@cmap, .Object@fmap, .Object@keep.names)
+              setkeyv(dataframe, colnames(dataframe))
+              
+              fixed <- fixdf(dataframe, idvars, primerid, measurement, .Object@cmap, .Object@fmap, .Object@keep.names)
               .Object@fmap <- fixed$fmap        #needed if we deduplicated primerid
               .Object@cmap <- fixed$cmap
-              dl <- array(fixed$df[,get(measurement)],
+              dl <- array(as.matrix(fixed$df[,measurement, with=FALSE]),
                           dim=c(length(fixed$rn), length(fixed$cn), length(measurement)),
                           dimnames=list(wellKey=fixed$rn, primerid=fixed$cn, layer=measurement))
               .Object@.Data <- dl
@@ -242,7 +251,8 @@ setMethod('initialize', 'SingleCellAssay',
               }
               check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
               cell.adf  <- new("AnnotatedDataFrame")
-              pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars,with=FALSE], 'wellKey') #automatically sorted by idvars
+              ## fixed$df should be keyed by cellvars, primerid, ...
+              pData(cell.adf)<-uniqueModNA(fixed$df[,cellvars,with=FALSE], 'wellKey') 
               sampleNames(cell.adf) <- unique(fixed$df$wellKey)
               ##pheno.adf <- new('AnnotatedDataFrame')
               ##need a phenokey into the melted data frame for this to make sense
@@ -289,13 +299,16 @@ uniqueModNA.old <- function(df, exclude){
   w.include <- setdiff(w.include, exclude)
 }
   u <- unique(df)
-  anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
-  u[!anyNa,,drop=FALSE]
+  allNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+  u[!allNa,,drop=FALSE]
 }
 
+## Get unique rows in data.frame, not counting NAs as distinct for
+## columns named in exclude
+## Precondition: keyed data.table
 uniqueModNA <- function(df, exclude){
-  #browser()
-  df<-data.table(df)
+  if(!inherits(df, 'data.table') || ! all(key(df) %in% colnames(df)))
+      stop('df must be data.table fully keyed by its columns')
   w.include <- names(df)
   if(ncol(df)>1){
   w.include <- setdiff(w.include, exclude)
@@ -303,9 +316,9 @@ uniqueModNA <- function(df, exclude){
   #u <- unique(df)
   #anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
   #u[!anyNa,,drop=FALSE]
-  setkeyv(df,colnames(df)) #indexing the data frame
   u<-unique(df)
-  u<-u[,.SD[!is.na(get(w.include)),]] #either we spend time above or here..
+  allNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+  u<-u[!allNa,] #either we spend time above or here..
 }
 
 #setGeneric("melt",function(data,...){
