@@ -1,3 +1,9 @@
+Note
+======
+Single Cell Assay is not working with lmer 1.0
+You can download an older version [here](http://cran.r-project.org/src/contrib/Archive/lme4/lme4_0.999999-2.tar.gz)
+while we work on a fix.
+
 SingleCellAssay
 ===============
 
