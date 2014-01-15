@@ -39,13 +39,14 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   init <- tryCatch(model.frame(sanitize.formula, data, na.action=na.fail), error=function(e) if(str_detect(as.character(e), 'missing')) stop('NAs in response or predictors not allowed; please remove before fitting') else stop(e) )
   
   data[,'pos'] <-   model.response(init)>0
+  dp <- data[data$pos,]
 
   ## new glmer doesn't like being called with a function alias
   useGlmer <-  exists('glmer') && identical(lm.fun, glmer)
   
   cont <- try({
       if(useGlmer){
-      lmer(formula, data=data, subset=pos, ...)
+      lmer(formula, dp, ...)
       } else{
       lm.fun(formula, data, subset=pos, family='gaussian', ...)
       }
@@ -87,14 +88,19 @@ summary.zlm <- function(out){
   summary(out$disc)
 }
 
+## Because lmer reports the posterior mode estimates for each 
+coefFun <- function(model){
+    if(inherits(model, 'glmerMod')){
+        return(fixef(model))
+    }else{
+        return(coef(model))
+    }
+    
+}
+
 pretest.lrt <- function(model, hypothesis.matrix){
     Terms <- labels(terms(model))
     whichTerm <- attr(model.matrix(model), 'assign')
-    if(inherits(model, 'glmerMod')){
-        coefFun <- fixef
-    }else{
-        coefFun <- coef
-    }
     names(whichTerm) <- names(coefFun(model))
     ## terms that were tested
     testTerm <- whichTerm[hypothesis.matrix]
@@ -104,7 +110,7 @@ pretest.lrt <- function(model, hypothesis.matrix){
      drop.terms <- as.formula(paste('~', paste(Terms[unique(testTerm)], collapse='+')))
 }
 
-test.lrt <- function(model, drop.terms, part){
+test.lrt <- function(model, drop.terms, part, ...){
     if(!is.formula(drop.terms) || length(labels(terms(drop.terms)))  > 1) stop("Currently only support testing single factors when 'type'='LRT'")
     newlme4 <- inherits(model, 'glmerMod') | inherits(model, 'lmerMod')
     ## No longer true with lme4 > 1.0
@@ -129,11 +135,11 @@ test.lrt <- function(model, drop.terms, part){
 
     if(part=='cont'){
         return(rename(
-            cbind(Res.df=NA, drop1(model, drop.terms, test='Chisq')[, names.drop1.cont]),
+            cbind(Res.df=NA, drop1(model, drop.terms, test='Chisq', ...)[, names.drop1.cont]),
             rename.drop1.cont))
     } else{
         return(rename(
-            cbind(Res.df=NA, drop1(model, drop.terms, test='Chisq')[, names.drop1.disc]),
+            cbind(Res.df=NA, drop1(model, drop.terms, test='Chisq', ...)[, names.drop1.disc]),
             rename.drop1.disc))
     }
 }
@@ -174,7 +180,7 @@ test.wald <- function(model, hypothesis.matrix, part){
 ##' @importFrom car linearHypothesis lht matchCoefs
 ##' @seealso zlm
 ##' @export
-test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
+test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE, ...){
     type <- match.arg(type, c('Wald', 'LRT'))
     if(length(type)!= 1 || (type != 'Wald'&& type != 'LRT')) stop("'type' must equal 'Wald' or 'LRT'")
     
@@ -186,9 +192,9 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
 } else if(type=='LRT'){
     drop.terms <- pretest.lrt(model$disc, hypothesis.matrix)
     tt <- try({
-    cont <- test.lrt(model$cont, drop.terms, part='cont')
+    cont <- test.lrt(model$cont, drop.terms, part='cont', ...)
 }, silent=silent)
-    disc <- test.lrt(model$disc, drop.terms, part='disc')
+    disc <- test.lrt(model$disc, drop.terms, part='disc', ...)
     } else{
  stop('ruhroh')
 }
@@ -210,13 +216,21 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE){
   res
 }
 
-##try to guess form of LHT
+##' try to guess form of LHT
+##'
+##' @param hypo.terms 
+##' @param model 
+##' @return character vector of terms to test
+##' @importFrom stringr fixed
 guessContrast <- function(hypo.terms, model){
-            hm <- paste(hypo.terms, collapse='|')
-            hypo.terms <- matchCoefs(model$disc, hm)
+    stopifnot(is.character(hypo.terms))
+    coef.names <- names(coefFun(model$disc))
+            detected <- laply(hypo.terms, function(term) str_detect(coef.names, fixed(term)), .drop=FALSE)
+    anyDetected <- apply(detected, 2, any)
             message(paste("Testing coefficients" , paste(hypo.terms, collapse=', ')))
     if(any(str_detect(hypo.terms, '[+=-]'))) warning("'+', '-' or '=' found in variable names, contrasts may not work as intended")
-    hypo.terms
+    if(all(!anyDetected)) stop(sprintf("terms %s did not match any coefficients in %s", paste(hypo.terms, collapse=' ,'), paste(coef.names, collapse=' ,')))
+    coef.names[anyDetected]
 }
 
 ##' zero-inflated regression for SingleCellAssay 
@@ -292,12 +306,12 @@ zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hyp
 
     
     
-    fit.primerid <- function(set){
+    fit.primerid <- function(set, ...){
         model <- zlm(formula, set, lm.fun, silent, ...)
 
         if(hypo.contrasts.missing) hypo.contrasts <- guessContrast(hypo.terms, model)
         if(model$converged){
-        test <- test.zlm(model, hypo.contrasts, type=type, silent=silent)[2,-1,]
+        test <- test.zlm(model, hypo.contrasts, type=type, silent=silent, ...)[2,-1,]
     } else{
         ## hack, but this will be a pain to do correctly
         test <- rep(NA, 9)
@@ -311,7 +325,7 @@ zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hyp
                )
     }
 
-    geneTests <- dlply(m, 'primerid', fit.primerid, .parallel=.parallel, .drop=.drop, .inform=.inform)
+    geneTests <- dlply(m, 'primerid', fit.primerid, .parallel=.parallel, .drop=.drop, .inform=.inform, ...)
     tests <- laply(geneTests, function(x) x$test)
     if(keep.zlm=='true') return(list(models=llply(geneTests, function(x) x$model), tests=tests))
     if(keep.zlm=='coefficients') return(list(coefs=llply(geneTests, function(x) x$coef), tests=tests))
