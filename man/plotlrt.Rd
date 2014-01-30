@@ -2,8 +2,7 @@
 \alias{plotlrt}
 \title{Plot a likelihood ratio test object}
 \usage{
-  plotlrt(lr, adjust = "fdr", thres = 0.1, trunc = 1e-06,
-    groups = NULL)
+plotlrt(lr, adjust = "fdr", thres = 0.1, trunc = 1e-06, groups = NULL)
 }
 \arguments{
   \item{lr}{output from lrtest, with returnall=FALSE}
@@ -22,18 +21,18 @@
   Plots done separately for each group.}
 }
 \value{
-  Constructs a dotplot
+Constructs a dotplot
 }
 \description{
-  Constructs a forest-like plot of signed log10 p-values,
-  possibly adjusted for multiple comparisons \code{adjust}
-  can be one of "holm", "hochberg", "hommel", "bonferroni",
-  "BH", "BY", "fdr", "none".
+Constructs a forest-like plot of signed log10 p-values,
+possibly adjusted for multiple comparisons \code{adjust}
+can be one of "holm", "hochberg", "hommel", "bonferroni",
+"BH", "BY", "fdr", "none".
 }
 \author{
-  andrew
+andrew
 }
 \seealso{
-  \code{\link{p.adjust}}, \code{\link{lrtest}}
+\code{\link{p.adjust}}, \code{\link{lrtest}}
 }
 

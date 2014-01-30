@@ -2,9 +2,8 @@
 \alias{SCASet}
 \title{SCASet constructor}
 \usage{
-  SCASet(dataframe, splitby, idvars = NULL,
-    primerid = NULL, measurement = NULL,
-    contentClass = "SingleCellAssay", ...)
+SCASet(dataframe, splitby, idvars = NULL, primerid = NULL,
+  measurement = NULL, contentClass = "SingleCellAssay", ...)
 }
 \arguments{
   \item{dataframe}{flat data.frame ala SingleCellAssay}
@@ -31,27 +30,26 @@
   dynamically called constructor.}
 }
 \value{
-  SCASet
+SCASet
 }
 \description{
-  Constructs a SCASet
+Constructs a SCASet
 }
 \details{
-  An SCASet is a list of SingleCellAssays or objects
-  inheriting from SingleCellAssay. The type of constructor
-  called is determined by the value of contentClass, which
-  should be the class of the SCA inheriting object
-  contained in this SCASet. Both the class and the
-  constructor should exist and have the same name. The code
-  dynamically looks to see if the a function with the same
-  name exists, and ASSUMES it is the constructor for the
-  class. ##' ##' TODO SCASet constructor should perhaps
-  take a SingleCellAssay class or FluidigmClass rather than
-  a dataframe. Then we can learn the class type for
-  construction.
+An SCASet is a list of SingleCellAssays or objects
+inheriting from SingleCellAssay. The type of constructor
+called is determined by the value of contentClass, which
+should be the class of the SCA inheriting object contained
+in this SCASet. Both the class and the constructor should
+exist and have the same name. The code dynamically looks to
+see if the a function with the same name exists, and
+ASSUMES it is the constructor for the class. ##' ##' TODO
+SCASet constructor should perhaps take a SingleCellAssay
+class or FluidigmClass rather than a dataframe. Then we can
+learn the class type for construction.
 }
 \note{
-  The dynamic lookup of the constructor could be made more
-  robust.
+The dynamic lookup of the constructor could be made more
+robust.
 }
 

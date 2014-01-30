@@ -2,8 +2,7 @@
 \alias{zlm}
 \title{Run a zero-inflated regression}
 \usage{
-  zlm(formula, data, lm.fun = glm, silent = TRUE, subset,
-    ...)
+zlm(formula, data, lm.fun = glm, silent = TRUE, subset, ...)
 }
 \arguments{
   \item{formula}{model formula}
@@ -23,15 +22,14 @@
   \item{...}{passed to lm.fun}
 }
 \value{
-  list of class 'zlm' with "disc"rete part and "cont"inuous
-  part
+list of class 'zlm' with "disc"rete part and "cont"inuous
+part
 }
 \description{
-  Fits a hurdle model on zero-inflated continuous data in
-  which the zero process is modeled as a logistic
-  regression and (conditional on the the response being
-  >0), the continuous process is Gaussian, ie, a linear
-  regression.
+Fits a hurdle model on zero-inflated continuous data in
+which the zero process is modeled as a logistic regression
+and (conditional on the the response being >0), the
+continuous process is Gaussian, ie, a linear regression.
 }
 \examples{
 data<- data.frame(x=rnorm(500), z=rbinom(500, 1, .3))
@@ -47,6 +45,6 @@ summary(fit$cont)
 test.zlm(fit, type='LRT', hypothesis.matrix='x')
 #Accepts arguments like car::linearHypothesisTest
 test.zlm(fit, type='Wald', hypothesis.matrix=c('x=2', 'z=2'))
-#Little evidence for diffence in discrete, big evidence in continuous
+#Little evidence for difference in discrete, big evidence in continuous
 }
 

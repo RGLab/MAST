@@ -2,9 +2,8 @@
 \alias{plotSCAConcordance}
 \title{Concordance plots of filtered single vs n-cell assays}
 \usage{
-  plotSCAConcordance(SCellAssay, NCellAssay,
-    filterCriteria = list(nOutlier = 2, sigmaContinuous = 9, sigmaProportion = 9),
-    groups = NULL)
+plotSCAConcordance(SCellAssay, NCellAssay, filterCriteria = list(nOutlier = 2,
+  sigmaContinuous = 9, sigmaProportion = 9), groups = NULL)
 }
 \arguments{
   \item{SCellAssay}{is a SingleCellAssay for the 1-cell per
@@ -20,7 +19,7 @@
   within which to perform filtering. NULL by default.}
 }
 \description{
-  This will generate the types of plots shown in the
-  bioinformatics manuscript
+This will generate the types of plots shown in the
+bioinformatics manuscript
 }
 

@@ -1,0 +1,19 @@
+\name{layername<-}
+\alias{layername<-}
+\alias{layername<-,DataLayer,character-method}
+\title{Set name of active layer}
+\usage{
+layername(x) <- value
+}
+\arguments{
+  \item{x}{DataLayer}
+
+  \item{value}{character}
+}
+\value{
+DataLayer
+}
+\description{
+Set name of active layer
+}
+

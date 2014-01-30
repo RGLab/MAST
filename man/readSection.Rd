@@ -2,7 +2,7 @@
 \alias{.readSection}
 \title{Read a section of a Nanostring RCC file}
 \usage{
-  .readSection(x, file, type, recast = TRUE, ...)
+.readSection(x, file, type, recast = TRUE, ...)
 }
 \arguments{
   \item{x}{character vector of lines from RCC file,
@@ -17,9 +17,9 @@
   \item{...}{argument spassed to read.csv}
 }
 \value{
-  data.frame of section
+data.frame of section
 }
 \description{
-  The section is surrounded by <type> </type>
+The section is surrounded by <type> </type>
 }
 

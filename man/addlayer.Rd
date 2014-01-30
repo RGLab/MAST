@@ -1,0 +1,20 @@
+\name{addlayer}
+\alias{addlayer}
+\alias{addlayer,DataLayer,character-method}
+\title{Add Another Layer}
+\usage{
+addlayer(x, name)
+}
+\arguments{
+  \item{x}{DataLayer}
+
+  \item{name}{character}
+}
+\value{
+DataLayer with appended layer
+}
+\description{
+Another layer, initialized with NA will be appended to the
+DataLayer Layer will be named \code{name}
+}
+

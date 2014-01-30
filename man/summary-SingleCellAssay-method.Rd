@@ -1,0 +1,23 @@
+\docType{methods}
+\name{summary,SingleCellAssay-method}
+\alias{summary,SingleCellAssay-method}
+\title{Summarize expression parameters}
+\usage{
+\S4method{summary}{SingleCellAssay}(object, groups)
+}
+\arguments{
+  \item{fd}{object inheriting from SingleCellAssay}
+
+  \item{groups}{character vector of grouping variables}
+
+  \item{object}{an object for which a summary is desired.}
+}
+\value{
+list of mu, pi and num.
+}
+\description{
+The mean of positive cells, mu, proportion of gene
+expression pi, and number of expressing cells per
+\code{groups} per gene is returned as a list
+}
+

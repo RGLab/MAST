@@ -2,10 +2,9 @@
 \alias{zlm.SingleCellAssay}
 \title{zlm.SingleCellAssay}
 \usage{
-  zlm.SingleCellAssay(formula, sca, lm.fun = glm,
-    hypothesis.matrix, hypo.terms, hypo.contrasts,
-    type = "Wald", keep.zlm = FALSE, .parallel = FALSE,
-    .drop = TRUE, .inform = FALSE, silent = TRUE, ...)
+zlm.SingleCellAssay(formula, sca, lm.fun = glm, hypothesis.matrix, hypo.terms,
+  hypo.contrasts, type = "Wald", keep.zlm = FALSE, .parallel = FALSE,
+  .drop = TRUE, .inform = FALSE, silent = TRUE, ...)
 }
 \arguments{
   \item{formula}{a formula with the measurement variable on
@@ -41,26 +40,26 @@
   \item{...}{passed to lm.fun}
 }
 \value{
-  either an array of tests (one per primer) or a list
+either an array of tests (one per primer) or a list
 }
 \description{
-  zero-inflated regression for SingleCellAssay
+zero-inflated regression for SingleCellAssay
 }
 \details{
-  For each gene in sca, fits the hurdle model in
-  \code{formula} (linear for et>0), logistic for et==0 vs
-  et>0. Conducts tests using hypothesis.matrix.
+For each gene in sca, fits the hurdle model in
+\code{formula} (linear for et>0), logistic for et==0 vs
+et>0. Conducts tests using hypothesis.matrix.
 
-  When keep.zlm is FALSE, a 3D array with first dimension
-  being the genes, next dimension giving information about
-  the test (the degrees of freedom, Chisq statistic, and P
-  value), and final dimension being the value of these
-  quantities on the discrete, continuous and hurdle
-  (combined) levels.
+When keep.zlm is FALSE, a 3D array with first dimension
+being the genes, next dimension giving information about
+the test (the degrees of freedom, Chisq statistic, and P
+value), and final dimension being the value of these
+quantities on the discrete, continuous and hurdle
+(combined) levels.
 
-  When keep.zlm is TRUE, a list of length two is returned.
-  Component "tests" gives the above 3-D array. Component
-  "models" is a list giving the model fit for each gene.
+When keep.zlm is TRUE, a list of length two is returned.
+Component "tests" gives the above 3-D array. Component
+"models" is a list giving the model fit for each gene.
 }
 \examples{
 \dontrun{
@@ -78,8 +77,8 @@ summary(modelsAndTestsByGene$models[['IL13']]$cont)
 }
 }
 \seealso{
-  zlm
+zlm
 
-  test.zlm
+test.zlm
 }
 

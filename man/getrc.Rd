@@ -2,19 +2,19 @@
 \alias{getrc}
 \title{getrc}
 \usage{
-  getrc(concord)
+getrc(concord)
 }
 \arguments{
   \item{concord}{data.frame returned by getConcordance}
 }
 \value{
-  numeric
+numeric
 }
 \description{
-  Concordance correlation coefficient lin 1989
+Concordance correlation coefficient lin 1989
 }
 \details{
-  Return's Lin's intraclass correlation coefficient for
-  concordance
+Return's Lin's intraclass correlation coefficient for
+concordance
 }
 

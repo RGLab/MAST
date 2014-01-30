@@ -2,9 +2,8 @@
 \alias{getConcordance}
 \title{getConcordance}
 \usage{
-  getConcordance(singleCellRef, singleCellcomp,
-    groups = NULL, fun.natural = expavg,
-    fun.cycle = logmean)
+getConcordance(singleCellRef, singleCellcomp, groups = NULL,
+  fun.natural = expavg, fun.cycle = logmean)
 }
 \arguments{
   \item{singleCellRef}{"reference" SingleCellAssay}
@@ -20,21 +19,21 @@
   \item{fun.cycle}{inverse function of fun.natural}
 }
 \value{
-  concordance between two assays
+concordance between two assays
 }
 \description{
-  Get the concordance between two
+Get the concordance between two
 }
 \details{
-  Return the concordance between two assays (i.e. single
-  cell and hundred cell) The "average" of
-  \code{singleCellRef} (after adjusting for the number of
-  cells) and \code{singleCellComp} are taken per gene, per
-  \code{groups}. A \code{data.frame} with one row per
-  gene-\code{groups} is returned with some additional
-  columns.
+Return the concordance between two assays (i.e. single cell
+and hundred cell) The "average" of \code{singleCellRef}
+(after adjusting for the number of cells) and
+\code{singleCellComp} are taken per gene, per
+\code{groups}. A \code{data.frame} with one row per
+gene-\code{groups} is returned with some additional
+columns.
 }
 \author{
-  Andrew McDavid
+Andrew McDavid
 }
 

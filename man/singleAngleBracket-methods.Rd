@@ -1,24 +1,33 @@
 \docType{methods}
-\name{[}
-\alias{[}
-\alias{[,SCASet,ANY-method}
+\name{Subset.SCASet}
+\alias{Subset.SCASet}
+\alias{[,SCASet,ANY,ANY-method}
 \title{Subset an SCASet to a smaller SCASet}
+\usage{
+\S4method{[}{SCASet}(x, i, j, ...drop = FALSE)
+}
 \arguments{
   \item{x}{\code{SCASet} to be subscripted}
 
   \item{i}{index}
+
+  \item{j}{ignored}
+
+  \item{...}{ignored}
+
+  \item{drop}{ignored}
 }
 \value{
-  An \code{SCASet}
+An \code{SCASet}
 }
 \description{
-  Subset an SCASet to a smaller SCASet
+Subset an SCASet to a smaller SCASet
 }
 \details{
-  \code{signature(x="SCASet",i="ANY")}: \code{x[i]}, where
-  \code{i} is the vector of integers or characters matching
-  sampleNames. Returns an SCASet of \code{length(i)} of
-  elements at positions in \code{i}.
+\code{signature(x="SCASet",i="ANY")}: \code{x[i]}, where
+\code{i} is the vector of integers or characters matching
+sampleNames. Returns an SCASet of \code{length(i)} of
+elements at positions in \code{i}.
 }
 \keyword{transform}
 

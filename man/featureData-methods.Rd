@@ -3,14 +3,17 @@
 \alias{featureData}
 \alias{featureData,SingleCellAssay-method}
 \title{Accessor for featureData \code{AnnotatedDataFrame}}
+\usage{
+\S4method{featureData}{SingleCellAssay}(object)
+}
 \arguments{
   \item{object}{An object with \code{featureData}}
 }
 \value{
-  \code{AnnotatedDataFrame}
+\code{AnnotatedDataFrame}
 }
 \description{
-  Returns the \code{featureData}.
+Returns the \code{featureData}.
 }
 \keyword{accessor}
 

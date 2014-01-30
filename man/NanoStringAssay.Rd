@@ -2,10 +2,9 @@
 \alias{NanoStringAssay}
 \title{NanoString Assay Constructor}
 \usage{
-  NanoStringAssay(rccfiles = NULL, keyfile = NULL, idvars,
-    primerid, measurement = "Count", ncells = NULL,
-    id = NULL, cellvars = NULL, featurevars = NULL,
-    phenovars = NULL, post.process.function = NULL, ...)
+NanoStringAssay(rccfiles = NULL, keyfile = NULL, idvars, primerid,
+  measurement = "Count", ncells = NULL, id = NULL, cellvars = NULL,
+  featurevars = NULL, phenovars = NULL, post.process.function = NULL, ...)
 }
 \arguments{
   \item{rccfiles}{A list of rcc files with full paths}
@@ -38,18 +37,18 @@
   \code{SingleCellAssay} constructor}
 }
 \value{
-  A NanoStringAssay object
+A NanoStringAssay object
 }
 \description{
-  Constructor for a NanoStringAssay
+Constructor for a NanoStringAssay
 }
 \details{
-  Constructs a NanoStringAssay object. Differs little from
-  the FluidigmAssay constructor. Accepts a function for
-  post-processing. mapping argument has been removed as
-  well for simplicity.
+Constructs a NanoStringAssay object. Differs little from
+the FluidigmAssay constructor. Accepts a function for
+post-processing. mapping argument has been removed as well
+for simplicity.
 }
 \author{
-  Andrew McDavid and Greg Finak
+Andrew McDavid and Greg Finak
 }
 

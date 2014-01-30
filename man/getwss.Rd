@@ -2,7 +2,7 @@
 \alias{getwss}
 \title{getwss}
 \usage{
-  getwss(concord, nexp)
+getwss(concord, nexp)
 }
 \arguments{
   \item{concord}{output from \code{getConcordance}}
@@ -11,9 +11,9 @@
   \code{concord}}
 }
 \value{
-  weighted sum of squares
+weighted sum of squares
 }
 \description{
-  getwss
+getwss
 }
 

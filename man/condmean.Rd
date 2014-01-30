@@ -2,15 +2,15 @@
 \alias{condmean}
 \title{Report the mean et value for each gene}
 \usage{
-  condmean(sc)
+condmean(sc)
 }
 \arguments{
   \item{sc}{SingleCellAssay}
 }
 \value{
-  vector of means
+vector of means
 }
 \description{
-  NAs are always removed
+NAs are always removed
 }
 

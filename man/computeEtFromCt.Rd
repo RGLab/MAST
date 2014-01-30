@@ -2,7 +2,7 @@
 \alias{computeEtFromCt}
 \title{computeEtFromCt}
 \usage{
-  computeEtFromCt(df, column = "Ct", Cmax = 40)
+computeEtFromCt(df, column = "Ct", Cmax = 40)
 }
 \arguments{
   \item{df}{a \code{data.frame}}
@@ -14,17 +14,17 @@
   default.}
 }
 \value{
-  A copy of \code{df} with the 'Et' column appended
+A copy of \code{df} with the 'Et' column appended
 }
 \description{
-  Compute the Et from the Ct
+Compute the Et from the Ct
 }
 \details{
-  Computes the Et value from the Ct value in an existing
-  data frame and returns a new data frame with the Et
-  column appended
+Computes the Et value from the Ct value in an existing data
+frame and returns a new data frame with the Et column
+appended
 }
 \author{
-  Greg Finak
+Greg Finak
 }
 

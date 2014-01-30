@@ -4,10 +4,9 @@
 \alias{SingleCellAssay-constructor}
 \title{SingleCellAssay: A constructor for an object of type SingleCellAssay.}
 \usage{
-  SingleCellAssay(dataframe = NULL, idvars = NULL,
-    primerid = NULL, measurement = NULL, geneid = NULL,
-    id = numeric(0), mapping = NULL, cellvars = NULL,
-    featurevars = NULL, phenovars = NULL, ...)
+SingleCellAssay(dataframe = NULL, idvars = NULL, primerid = NULL,
+  measurement = NULL, geneid = NULL, id = numeric(0), mapping = NULL,
+  cellvars = NULL, featurevars = NULL, phenovars = NULL, ...)
 }
 \arguments{
   \item{dataframe}{A 'flattened' data.table containing
@@ -46,20 +45,19 @@
   \item{...}{Additional keywords to be added to mapping}
 }
 \value{
-  SingleCellAssay object
+SingleCellAssay object
 }
 \description{
-  This is the constructor for the class. This class intends
-  to ease the analysis of single cell assays, in which
-  multiple, exchangible, cells from an experimental unit
-  (patient, or organism) are assayed along several (or
-  many) dimensions, such as genes. A few examples of this
-  might be Fluidigm gene expression chips, or single cell
-  sequencing experiments.  The chief functionality is to
-  make it easy to keep cellular-level metadata linked to
-  the measurements through \code{cellData} and
-  \code{phenoData}.  There are also subsetting and
-  splitting measures to coerce between a SingleCellAssay,
-  and a \link{SCASet}.
+This is the constructor for the class. This class intends
+to ease the analysis of single cell assays, in which
+multiple, exchangible, cells from an experimental unit
+(patient, or organism) are assayed along several (or many)
+dimensions, such as genes. A few examples of this might be
+Fluidigm gene expression chips, or single cell sequencing
+experiments.  The chief functionality is to make it easy to
+keep cellular-level metadata linked to the measurements
+through \code{cellData} and \code{phenoData}.  There are
+also subsetting and splitting measures to coerce between a
+SingleCellAssay, and a \link{SCASet}.
 }
 

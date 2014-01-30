@@ -2,18 +2,18 @@
 \alias{getss}
 \title{getss}
 \usage{
-  getss(concord)
+getss(concord)
 }
 \arguments{
   \item{concord}{output from \code{getConcordance}}
 }
 \value{
-  sum of squares
+sum of squares
 }
 \description{
-  getss
+getss
 }
 \note{
-  Ditto.. compute on the natural scale
+Ditto.. compute on the natural scale
 }
 

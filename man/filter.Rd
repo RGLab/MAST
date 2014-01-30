@@ -2,8 +2,7 @@
 \alias{filter}
 \title{Filter a SingleCellAssay}
 \usage{
-  filter(sc, groups = NULL, filt_control = NULL,
-    apply_filter = TRUE)
+filter(sc, groups = NULL, filt_control = NULL, apply_filter = TRUE)
 }
 \arguments{
   \item{sc}{The \code{SingleCellAssay} object}
@@ -19,30 +18,39 @@
   would be subject to a filtering criteria be returned?}
 }
 \value{
-  A filtered result
+A filtered result
 }
 \description{
-  Remove, or flag wells that are outliers in discrete or
-  continuous space.
+Remove, or flag wells that are outliers in discrete or
+continuous space.
 }
 \details{
-  The function filters wells that don't pass filtering
-  criteria described in filt_control. filt_control is a
-  list with named elements \code{nOutliers} (minimum nmber
-  of outlier cells for a cell to be filtered [default = 2]
-  \code{sigmaContinuous} (the z-score outlier threshold for
-  the continuous part of the signal) [default = 7] and
-  \code{sigmaProportion} (the z-score outlier threshold for
-  the discrete part of the signal) [default = 7].
+The function filters wells that don't pass filtering
+criteria described in filt_control. filt_control is a list
+with named elements \code{nOutliers} (minimum nmber of
+outlier cells for a cell to be filtered [default = 2]
+\code{sigmaContinuous} (the z-score outlier threshold for
+the continuous part of the signal) [default = 7] and
+\code{sigmaProportion} (the z-score outlier threshold for
+the discrete part of the signal) [default = 7].
 
-  If \code{groups} is provided, the filtering is calculated
-  within each level of the group, then combined again as
-  output.
+If \code{groups} is provided, the filtering is calculated
+within each level of the group, then combined again as
+output.
+}
+\examples{
+data(vbetaFA)
+## Split by 'ncells', apply to each component, then recombine
+vbeta.filtered <- filter(vbetaFA, groups='ncells')
+## Returned as boolean matrix
+was.filtered <- filter(vbetaFA, apply_filter=FALSE)
+## Wells filtered for being discrete outliers
+head(subset(was.filtered, pctout))
 }
 \author{
-  Andrew McDavid
+Andrew McDavid
 }
 \seealso{
-  burdenOfFiltering
+burdenOfFiltering
 }
 

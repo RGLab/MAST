@@ -3,17 +3,20 @@
 \alias{fData}
 \alias{fData,SingleCellAssay-method}
 \title{fData}
+\usage{
+\S4method{fData}{SingleCellAssay}(object)
+}
 \arguments{
   \item{object}{An object with \code{featureData}}
 }
 \value{
-  \code{data.frame}
+\code{data.frame}
 }
 \description{
-  Accessor for featureData \code{data.frame}
+Accessor for featureData \code{data.frame}
 }
 \details{
-  Returns the \code{featureData} \code{data.frame}.
+Returns the \code{featureData} \code{data.frame}.
 }
 \keyword{accessor}
 

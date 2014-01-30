@@ -2,7 +2,7 @@
 \alias{mergeWithKeyFile}
 \title{Merge NanoString lanes with a key file}
 \usage{
-  mergeWithKeyFile(rcc, file)
+mergeWithKeyFile(rcc, file)
 }
 \arguments{
   \item{rcc}{is a list returned from readNanoStringLanes}
@@ -10,9 +10,9 @@
   \item{file}{is a character vector name of the key file}
 }
 \value{
-  mapped rcc list
+mapped rcc list
 }
 \description{
-  Reads in a key file and maps to nanostring lanes
+Reads in a key file and maps to nanostring lanes
 }
 

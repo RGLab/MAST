@@ -2,8 +2,7 @@
 \alias{test.zlm}
 \title{Likelihood ratio test for hurdle model}
 \usage{
-  test.zlm(model, hypothesis.matrix, type = "Wald",
-    silent = TRUE)
+test.zlm(model, hypothesis.matrix, type = "Wald", silent = TRUE, ...)
 }
 \arguments{
   \item{model}{output from zlm}
@@ -18,18 +17,18 @@
   \item{silent}{Silence common errors in testing}
 }
 \value{
-  array containing the discrete, continuous and combined
-  tests
+array containing the discrete, continuous and combined
+tests
 }
 \description{
-  Do LR test separately on continuous and discrete portions
-  Combine for testing hypothesis.matrix
+Do LR test separately on continuous and discrete portions
+Combine for testing hypothesis.matrix
 }
 \details{
-  It tests the provided hypothesis.matrix using a
-  Chi-Squared Wald or LRT test
+It tests the provided hypothesis.matrix using a Chi-Squared
+Wald or LRT test
 }
 \seealso{
-  zlm
+zlm
 }
 

@@ -2,8 +2,7 @@
 \alias{burdenOfFiltering}
 \title{Burden of filtering}
 \usage{
-  burdenOfFiltering(sc, groups, byGroup = FALSE,
-    filt_control = NULL)
+burdenOfFiltering(sc, groups, byGroup = FALSE, filt_control = NULL)
 }
 \arguments{
   \item{sc}{SingleCellAssay or derived class}
@@ -16,7 +15,7 @@
   \item{filt_control}{a list of control parameters.}
 }
 \description{
-  what proportions of wells are filtered due to different
-  criteria
+what proportions of wells are filtered due to different
+criteria
 }
 

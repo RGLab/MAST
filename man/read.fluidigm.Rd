@@ -2,14 +2,12 @@
 \alias{read.fluidigm}
 \title{read.fluidigm}
 \usage{
-  read.fluidigm(files = NULL, metadata = NULL,
-    header.size = 2, skip = 8, cycle.threshold = 40,
-    metadataColClasses = NULL, meta.key = NULL,
-    idvars = NULL, splitby = NULL,
-    unique.well.id = "Chamber.ID", raw = TRUE,
-    assay = NULL, geneid = "Assay.Name", sample = NULL,
-    well = "Well", measurement = "X40.Ct",
-    measurement.processed = "Ct", ncells = "SampleRConc")
+read.fluidigm(files = NULL, metadata = NULL, header.size = 2, skip = 8,
+  cycle.threshold = 40, metadataColClasses = NULL, meta.key = NULL,
+  idvars = NULL, splitby = NULL, unique.well.id = "Chamber.ID",
+  raw = TRUE, assay = NULL, geneid = "Assay.Name", sample = NULL,
+  well = "Well", measurement = "X40.Ct", measurement.processed = "Ct",
+  ncells = "SampleRConc")
 }
 \arguments{
   \item{files}{A \code{character} vector of files to read.}
@@ -77,17 +75,17 @@
   well.}
 }
 \value{
-  \code{SCASet} holding the data.
+\code{SCASet} holding the data.
 }
 \description{
-  Reads a fluidigm raw data file (or set of files)
+Reads a fluidigm raw data file (or set of files)
 }
 \details{
-  This function reads a raw Fluidigm data file or set of
-  files and constructs a SingleCellAssay (or FluigidmAssay)
-  object.
+This function reads a raw Fluidigm data file or set of
+files and constructs a SingleCellAssay (or FluigidmAssay)
+object.
 }
 \author{
-  Greg Finak
+Greg Finak
 }
 

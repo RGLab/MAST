@@ -3,6 +3,12 @@
 \alias{LRT}
 \alias{LRT,SingleCellAssay,character-method}
 \title{Likelihood Ratio Tests for SingleCellAssays}
+\usage{
+LRT(sca, comparison, ...)
+
+\S4method{LRT}{SingleCellAssay,character}(sca, comparison, referent = NULL,
+  groups = NULL, returnall = FALSE)
+}
 \arguments{
   \item{sca}{A \code{SingleCellAssay} class object}
 
@@ -22,12 +28,12 @@
   about the different components of the test.}
 }
 \description{
-  Tests for a change in ET binomial proportion or mean of
-  positive ET Likelihood Ratio Test for SingleCellAssay
-  objects
+Tests for a change in ET binomial proportion or mean of
+positive ET Likelihood Ratio Test for SingleCellAssay
+objects
 }
 \details{
-  Combined Likelihood ratio test (binomial and normal) for
-  SingleCellAssay and derived objects
+Combined Likelihood ratio test (binomial and normal) for
+SingleCellAssay and derived objects
 }
 

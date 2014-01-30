@@ -3,6 +3,12 @@
 \alias{threshold}
 \alias{thresholdNanoString,NanoStringAssay-method}
 \title{Estimate thresholds for positive expression}
+\usage{
+\S4method{thresholdNanoString}{NanoStringAssay}(nsa, include.primers,
+  exclude.primers, posteriorprob, clip = c("left", "right", "NA"),
+  debug = FALSE, location.strength = 1, pseudo.counts = 5,
+  hard.threshold = 3, startLayer = "lCount")
+}
 \arguments{
   \item{nsa}{NanostringAssay object}
 
@@ -28,15 +34,15 @@
   cluster"}
 }
 \value{
-  modified nsa or list with elements nsa and debugging info
-  regarding the clustering
+modified nsa or list with elements nsa and debugging info
+regarding the clustering
 }
 \description{
-  Estimates per-gene x unit thresholds for positive
-  expression and truncates values below this threshold
-  Uncertain values (in terms of posterior probability of
-  membership) can be set to NA or rounded left or right
-  Thresholds are estimated using a Gaussian mixture model
-  with prior supplied by population estimates.
+Estimates per-gene x unit thresholds for positive
+expression and truncates values below this threshold
+Uncertain values (in terms of posterior probability of
+membership) can be set to NA or rounded left or right
+Thresholds are estimated using a Gaussian mixture model
+with prior supplied by population estimates.
 }
 

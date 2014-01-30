@@ -1,0 +1,27 @@
+\docType{methods}
+\name{[[,DataLayer-method}
+\alias{[[,DataLayer,ANY-method}
+\alias{[[,DataLayer-method}
+\title{Extract from a DataLayer}
+\usage{
+\S4method{[[}{DataLayer}(x, i, j, ..., drop = FALSE)
+}
+\arguments{
+  \item{x}{DataLayer}
+
+  \item{i}{integer index(s)}
+
+  \item{j}{integer index(s)}
+
+  \item{...}{ignored}
+
+  \item{drop}{ignored}
+}
+\value{
+\code{matrix}
+}
+\description{
+Returns the matrix representation (of the current layer) of
+the \code{DataLayer}
+}
+

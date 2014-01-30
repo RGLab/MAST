@@ -2,10 +2,9 @@
 \alias{FluidigmAssay}
 \title{Fluidigm Assay Constructor}
 \usage{
-  FluidigmAssay(dataframe = NULL, idvars, primerid,
-    measurement, ncells, geneid = NULL, id = numeric(0),
-    cellvars = NULL, featurevars = NULL, phenovars = NULL,
-    ...)
+FluidigmAssay(dataframe = NULL, idvars, primerid, measurement, ncells,
+  geneid = NULL, id = numeric(0), cellvars = NULL, featurevars = NULL,
+  phenovars = NULL, ...)
 }
 \arguments{
   \item{dataframe}{A data.table containing the raw data}
@@ -34,18 +33,25 @@
   \code{SingleCellAssay} constructor}
 }
 \value{
-  A FluidigmAssay object
+A FluidigmAssay object
 }
 \description{
-  Constructor for a FluidigmAssay
+Constructor for a FluidigmAssay
 }
 \details{
-  Constructs a FluidigmAssay object. Differs little from
-  the SingleCellAssay constructor. Only the \code{ncells}
-  parameter is additionally required. Mapping argument has
-  been removed for simplicity.
+Constructs a FluidigmAssay object. Differs little from the
+SingleCellAssay constructor. Only the \code{ncells}
+parameter is additionally required. Mapping argument has
+been removed for simplicity.
+}
+\examples{
+data(vbeta)
+colnames(vbeta)
+vbeta <- computeEtFromCt(vbeta)
+vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='Et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+show(vbeta.fa)
 }
 \author{
-  Andrew McDavid and Greg Finak
+Andrew McDavid and Greg Finak
 }
 
