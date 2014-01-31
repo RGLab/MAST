@@ -217,6 +217,14 @@ concordPlot <- function(concord0, concord1){
 ##' @return A filtered result
 ##' @author Andrew McDavid
 ##' @seealso burdenOfFiltering
+##' @examples
+##' data(vbetaFA)
+##' ## Split by 'ncells', apply to each component, then recombine
+##' vbeta.filtered <- filter(vbetaFA, groups='ncells')
+##' ## Returned as boolean matrix
+##' was.filtered <- filter(vbetaFA, apply_filter=FALSE)
+##' ## Wells filtered for being discrete outliers
+##' head(subset(was.filtered, pctout))
 ##' @export filter
 filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   default_filt <- list(filter=T, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL, K=1.48)

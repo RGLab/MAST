@@ -25,14 +25,14 @@
 ##' test.zlm(fit, type='LRT', hypothesis.matrix='x')
 ##' #Accepts arguments like car::linearHypothesisTest
 ##' test.zlm(fit, type='Wald', hypothesis.matrix=c('x=2', 'z=2'))
-##' #Little evidence for diffence in discrete, big evidence in continuous
+##' #Little evidence for difference in discrete, big evidence in continuous
 ##' @importFrom stringr str_detect
 zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   #if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
   if(!missing(subset)) warning('subset ignored')
   if(!inherits(formula, 'formula')) stop("'formula' must be class 'formula'")
 
-  ## lm initially just to get pull response vector
+  ## lm initially just to get response vector
   ## Turn glmer grouping "|" into "+" to get correct model frame
   sanitize.formula <- as.formula(gsub('[|]', '+', deparse(formula)))
   ## Throw error on NA, because otherwise the next line will fail mysteriously

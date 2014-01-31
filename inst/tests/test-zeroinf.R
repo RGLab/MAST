@@ -50,7 +50,8 @@ test_that('test.zlm works', {
         library(stringr)
         popCoef <- str_extract(names(fixef(lrout2$disc)), 'Population.+')
         popCoef <- popCoef[!is.na(popCoef)]
-      test.zlm(lrout2, popCoef, type='LRT')
+        atest <- test.zlm(lrout2, popCoef, type='Wald')
+        expect_true(atest[2,'Chisq','cont']>0)
     }
     
 })

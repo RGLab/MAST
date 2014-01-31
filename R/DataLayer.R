@@ -1,33 +1,82 @@
-#'@exportMethod conform
+##' Do two objects conform in dimension and type?
+##'
+##' Returns false if:
+##' other does not inherit from Matrix
+##' Otherwise returns a bitmask, which is the sum of:
+##' 1: objects have same number of rows
+##' 2: objects have same number of columns
+##' 4: objects have same number of layers
+##' @param dl DataLayer
+##' @param other Another object
+##' @return bitmask containing number of dimensions that agree
+##' @author andrew
+##'  @export conform
 setGeneric('conform', function(dl, other) standardGeneric('conform'))
 
-#'@exportMethod nlayer
+
+##' How many layers does a DataLayer have?
+##'
+##' @param x DataLayer
+##' @return numeric, number of layers
+##' @export nlayer
 setGeneric('nlayer', function(x) standardGeneric('nlayer'))
 
-#'@exportMethod layer
+
+##' Which layer is active?
+##'
+##' @param x DataLayer
+##' @return numeric, active layer
+##' @export
+##' @aliases layer,DataLayer-method
 setGeneric('layer', function(x) standardGeneric('layer'))
 
-#'@exportMethod 'layer<-'
+##' Set active layer
+##'
+##' @param x DataLayer
+##' @param value identifier of layer
+##' @return DataLayer with new active layer
+##' @export
+##' @aliases layer<-,DataLayer,numeric-method
+##' @aliases layer<-,DataLayer,character-method
 setGeneric('layer<-', function(x, value) standardGeneric('layer<-'))
 
-#'@exportMethod addlayer
+
+##' Add Another Layer
+##'
+##' Another layer, initialized with NA will be appended to the DataLayer
+##' Layer will be named \code{name}
+##' @param x DataLayer
+##' @param name character
+##' @return DataLayer with appended layer
+##' @export
+##' @aliases addlayer,DataLayer,character-method
 setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
 
 #setGeneric('dellayer', function(x, i) standardGeneric('dellayer'))
 
-#'@exportMethod layername
+
+##' Get name of active layer
+##'
+##' @param x DataLayer 
+##' @return character
+##' @export
+##' @aliases layername,DataLayer-method
 setGeneric('layername', function(x) standardGeneric('layername'))
 
-#'@exportMethod 'layername<-'
+##' Set name of active layer
+##'
+##' @param x DataLayer
+##' @param value character
+##' @return DataLayer
+##' @export
+##' @aliases layername<-,DataLayer,character-method
 setGeneric('layername<-', function(x, value) standardGeneric('layername<-'))
-
 
 setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, name){
   newLayer <- array(NA, dim=c(nrow(x), ncol(x), 1), dimnames=c(dimnames(x)[-3], name))
   x@.Data <- abind(x@.Data, newLayer)
   x
 })
-
 
 setMethod('layername', signature(x='DataLayer'), function(x){
   if(length(dimnames(x)[[3]])>0) return(dimnames(x)[[3]][layer(x)])
@@ -78,7 +127,6 @@ setMethod('initialize', 'DataLayer',
 ##' @exportMethod "exprs<-"
 ##' @docType methods
 ##' @aliases exprs<-,DataLayer,ANY-method
-
 setReplaceMethod('exprs', c('DataLayer', 'ANY'),
                  function(object, value){
                    #if(!conform(object, value)) stop('Replacement must be same dimension as target')
@@ -88,20 +136,6 @@ setReplaceMethod('exprs', c('DataLayer', 'ANY'),
                  })
 
 
-##' Do two objects conform in dimension and type?
-##'
-##' Returns false if:
-##' other does not inherit from Matrix
-##' Otherwise returns a bitmask, which is the sum of:
-##' 1: objects have same number of rows
-##' 2: objects have same number of columns
-##' 4: objects have same number of layers (when compareLayers is TRUE)
-##' @title conform
-##' @param dl DataLayer
-##' @param other Another object
-##' @param compareLayers Should the number of layers be tested?
-##' @return bitmask containing number of dimensions that agree
-##' @author andrew
 setMethod('conform', c('DataLayer', 'ANY'),
           function(dl, other){
             if(!(inherits(other, 'matrix') || inherits(other, 'array'))) return(FALSE)
@@ -121,12 +155,22 @@ setMethod('nrow', 'DataLayer',
             nrow(x@.Data[,,x@layer,drop=FALSE])
           })
 
-
 setMethod('nlayer', 'DataLayer',
           function(x){
             dim(x@.Data)[3]
           })
 
+##' Subset a DataLayer
+##'
+##' Returns a subsetted DataLayer
+##' @param x DataLayer
+##' @param i boolean or integer index
+##' @param j boolean or integer index
+##' @param ... providing an extra index is an error
+##' @param drop ignored
+##' @return DataLayer
+##' @export
+##' @aliases [,DataLayer-method
 setMethod('[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
   if(!missing(i) && is.matrix(i)) stop('Only rectangular selections permitted')
  out <- .subsetHelper(x, i, j, ..., drop=drop)
@@ -141,13 +185,18 @@ setMethod('[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
 }
 
 
-##' @name [[
-##' @title subset methods
-##' @details Returns the matrix representation (of the current layer) of the \code{DataLayer}
+##' Extract from a DataLayer
+##'
+##' Returns the matrix representation (of the current layer) of the \code{DataLayer}
 ##' @return \code{matrix}
-##' @rdname doubleBracketMethods
-##' @exportMethod '[['
+##' @export
 ##' @aliases [[,DataLayer,ANY-method
+##' @aliases [[,DataLayer-method
+##' @param x DataLayer
+##' @param i integer index(s)
+##' @param j integer index(s)
+##' @param ... ignored
+##' @param drop ignored
 setMethod('[[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
     if(!missing(i) && is.matrix(i) && ncol(i)==2){                        #matrix indexing
     ## i <- cbind(i[rep(1:nrow(i), times=nlayer(x)),], #make nlayer copies of i, appending 1...nlayer onto it
@@ -164,6 +213,17 @@ setMethod('[[', 'DataLayer', function(x, i, j, ..., drop=FALSE){
 
 
 
+##' Replace a section of a DataLayer
+##'
+##' @return DataLayer
+##' @export
+##' @aliases [[<-,DataLayer,ANY-method
+##' @aliases [[<-,DataLayer-method
+##' @param x DataLayer
+##' @param i integer index(s)
+##' @param j integer index(s)
+##' @param value a numeric to replace the selected indices
+##' @param ... ignored
 setMethod('[[<-', 'DataLayer', function(x, i, j, ..., value){
    vargs <- list(...)
   if(length(vargs)>0 || (!missing(i) && is.matrix(i) && ncol(i)>2)) stop('incorrect number of dimensions')
@@ -185,7 +245,6 @@ setMethod('[[<-', 'DataLayer', function(x, i, j, ..., value){
 ##' @exportMethod show
 ##' @aliases show,DataLayer-method
 ##' @rdname show-methods
-##'
 setMethod("show","DataLayer",function(object){
   cat(class(object), ' on layer ', layername(object), '\n', nlayer(object), " Layers; ", nrow(object), " wells; ", ncol(object), " features\n")
   invisible(NULL)
@@ -199,6 +258,7 @@ setMethod('get', c('DataLayer', 'ANY'), function(x, pos){
 setMethod('layer', c('DataLayer'), function(x){
   x@layer
 })
+
 
 setReplaceMethod('layer', c('DataLayer', 'numeric'), function(x, value){
   if(round(value)!=value) stop('Index must be integer')

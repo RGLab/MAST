@@ -24,47 +24,50 @@ setMethod("lapply",c("SCASet"),function(X,FUN,...){
 
 ##' Index into an SCASet object
 ##'
-##' Return a \code{SingleCellAssay} at index/indices i
+##' Return a \code{SingleCellAssay} at index i
 ##' @export
 ##' @docType methods
-##' @name [[
+##' @name Extract.SCASet
 ##' @param x object to be subscripted
 ##' @param i index
+##' @param j Ignored
 ##' @param ... Ignored
 ##' @return subscripted SingleCellAssay or derived class
 ##' @details \code{signature(x="SCASet", i="ANY")}: \code{x[[i]]}, where \code{i} is length-1 integer or character matching sampleNames.  Returns the SingleCellAssay at position or with sampleName \code{i}.
 ##' @rdname doubleAngleBracket-methods
 ##' @aliases [[,SCASet,ANY-method
+##' @aliases [[,SCASet-method
 ##' @keywords transform
 ##' @export
-try({
-setMethod("[[",signature("SCASet","ANY"),function(x,i,...){
+setMethod("[[",signature("SCASet","ANY"),function(x,i,j,...){
   if(length(i)!=1)
     stop("subscript out of bounds (index must have length 1)")
   sca<-x@set[[if(is.numeric(i))
               sampleNames(x)[[i]]
   else i]]
   return(sca)
-})})
+})
 
 ##' Subset an SCASet to a smaller SCASet
 ##' @export
-##' @name [
+##' @name Subset.SCASet
 ##' @docType methods
-##' @aliases [,SCASet,ANY-method
+##' @aliases [,SCASet,ANY,ANY-method
+##' @aliases [,SCASet-method
 ##' @keywords transform
 ##' @rdname singleAngleBracket-methods
 ##' @param x \code{SCASet} to be subscripted
 ##' @param i index
+##' @param j ignored
+##' @param ... ignored
+##' @param drop ignored
 ##' @return An \code{SCASet}
 ##' @details \code{signature(x="SCASet",i="ANY")}: \code{x[i]}, where \code{i} is the vector of integers or characters matching sampleNames. Returns an SCASet of \code{length(i)} of elements at positions in \code{i}.
-try({
-  setMethod("[",signature("SCASet","ANY"),function(x,i,...drop=FALSE){
+setMethod("[",signature("SCASet","ANY"),function(x,i,j,...drop=FALSE){
     ret<-x
     ret@set <- x@set[if(is.numeric(i))
-                       sampleNames(x)[i]] 
+                     sampleNames(x)[i]] 
     return(ret)
-  })
 })
 
 ##'get the sample names in an SCASet

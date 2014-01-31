@@ -1,6 +1,7 @@
 ##' @import Biobase
 ##' @import BiocGenerics
 ##' @importFrom plyr rbind.fill
+##' @import methods
 
 NULL
 
@@ -34,9 +35,18 @@ setMethod('show', 'Mapping', function(object){
 ##' @docType data
 ##' @name vbeta
 ##' @rdname vbeta-dataset
-##' @format a data frame with 11 columns
+##' @format a data frame with 11 columns.
+##' Column \code{Ct} contains the cycle threshold, with NA denoting that the threshold was never crossed.  So it is inversely proportional to the log2 mRNA, and should be negated (and NAs set to zero) if it is used as a expression measurement for a \code{FluidigmAssay}.
 NULL
 
+
+##' Vbeta Data Set, FluidigmAssay
+##' @docType data
+##' @name vbetaFA
+##' @rdname vbetaFA-dataset
+##' @format a \code{FluidigmAssay} of the vbeta data set.
+##' @seealso \code{\link{vbeta}}, \code{\link{FluidigmAssay}}
+NULL
 
 Mandatory_Featurevars <- NULL#c('primerid')
 Mandatory_Cellvars <- NULL#c('wellKey')
@@ -215,6 +225,12 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
+##' @examples
+##' data(vbeta)
+##' colnames(vbeta)
+##' vbeta <- computeEtFromCt(vbeta)
+##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='Et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+##' show(vbeta.fa)
 ##' @export
 FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, geneid=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
   cmap <- new('Mapping', .Data=list('ncells'=ncells))

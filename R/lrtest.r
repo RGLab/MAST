@@ -64,7 +64,6 @@ setGeneric("LRT",function(sca,comparison,...) standardGeneric("LRT"))
 
 ##' @rdname LRT-methods
 ##' @aliases LRT,SingleCellAssay,character-method
-##' @usage \code{LRT(sca,comparison,referent,groups)}
 ##' @param sca A \code{SingleCellAssay} class object
 ##' @param comparison A \code{character} specifying the factor for comparison
 ##' @param referent A \code{character} specifying the reference level of \code{comparison}.

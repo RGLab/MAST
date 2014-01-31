@@ -9,7 +9,7 @@ measurement='et'
 idvars=c('Subject.ID', 'Chip.Number', 'Well')
 ncells <- 'Number.of.Cells'
 phenovars=NULL
-cellvars=c('Experiment.Number', 'Population')
+cellvars=c('Experiment.Number', 'Population', 'Stim.Condition')
 featurevars=NULL
 
 ##Tests depending on vbeta
@@ -20,7 +20,7 @@ test_that("vbeta can be loaded",{
 
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
 
-fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid)
+fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement,cellvars=cellvars,  ncells=ncells, geneid=geneid)
 test_that('could create FluidigmAssay', {
   expect_that(fd, is_a('SingleCellAssay'))
     expect_that(fd, is_a('FluidigmAssay'))
