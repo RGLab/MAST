@@ -149,11 +149,11 @@ setMethod('ncol', 'DataLayer',
             ncol(x@.Data[,,x@layer,drop=FALSE])
           })
 
-setMethod('nrow', 'DataLayer',
+try({setMethod('nrow', 'DataLayer',
           function(x){
             #if(length(x)==0) return(0)
             nrow(x@.Data[,,x@layer,drop=FALSE])
-          })
+          })})                          #for some reason this errors out
 
 setMethod('nlayer', 'DataLayer',
           function(x){
@@ -274,17 +274,7 @@ setReplaceMethod('layer', c('DataLayer', 'character'), function(x, value){
 })
 
 
-##'Combine two SingleCellAssay or derived classes
-##'
-##' Combines two Single Cell-like objects provided they have the same number of Features and Layers.
-##' The union of columns from featureData will be taken
-##' The union (padded if necessary with NA) will be taken from cellData.
-##' @importMethodsFrom BiocGenerics combine
-##' @importFrom abind abind
-##' @exportMethod combine
-##' @aliases combine,SingleCellAssay,SingleCellAssay-method
-##' @docType methods
-##' @rdname combine-methods
+
 setMethod('combine', signature(x='DataLayer', y='DataLayer'), function(x, y, ...) {
    if(!conform(x, y)>=6){
      stop('Objects must have same number of features and layers; x has dim ', paste(dim(x), ' '), '; y has dim ', paste(dim(y),' '))

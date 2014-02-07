@@ -31,7 +31,6 @@ setGeneric('getwellKey', function(sc) standardGeneric('getwellKey'))
 setGeneric('cellData', function(sc) standardGeneric('cellData'))
 
 ##' @export
-##' @docType methods
 setGeneric("cData<-", function(sc, value) standardGeneric("cData<-"))
 
 ##' Accessor for featureData \code{data.frame}
@@ -348,22 +347,22 @@ setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 
 
 
-##' @rdname cData-methods
+##' Get cellData data.frame
+##'
+##' @param sc SingleCellAssay
+##' @return data.frame
 ##' @aliases cData,SingleCellAssay-method
-##' @section Methods:
-##' \describe{
-##' \item{\code{sc = "SingleCellAssay"}}{}
-##' }
+##' @export
 setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
 
 
-##' @rdname cData-methods
-##' @aliases cData,SingleCellAssay-method
+##' Replace cData
+##'
+##' @param sc SingleCellAssay
+##' @param value AnnotatedDataFrame or data.frame
+##' @aliases cData<-,SingleCellAssay-method
+##' @export
 ##' @name cData
-##' @section Methods:
-##' \describe{
-##' \item{\code{sc = "SingleCellAssay"}}{}
-##' }
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
   if (is.data.frame(value)) {
     value <- as(value, "AnnotatedDataFrame")
@@ -452,7 +451,7 @@ setMethod('[[', signature(x="SingleCellAssay"), .scaSubset)
 ##' Subset a SingleCellAssay
 ##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[i]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique.
 ##'
-##' @notes
+##' @note
 ##' x[[i,j]] functions similarly, but this behavior may change in future releases.
 ##' @param x SingleCellAssay
 ##' @param i logical, integer or character (naming wellKeys)
@@ -462,14 +461,22 @@ setMethod('[[', signature(x="SingleCellAssay"), .scaSubset)
 ##' @return SingleCellAssay, suitably subsetted
 ##' @aliases [,SingleCellAssay,ANY-method
 ##' @aliases [,SingleCellAssay-method
-##' @aliases [,DataLayer,ANY-method
+##' @aliases [[,SingleCellAssay-method
 ##' @export
 setMethod("[", signature(x="SingleCellAssay"), .scaSubset)
   
 
-##' @rdname subset-methods
+
+##' Subset a SingleCellAssay by data in cellData
+##'
+##' @param x SingleCellAssay
+##' @param thesubset expression, which when evaluated in cellData environment which returns a logical
 ##' @aliases subset,SingleCellAssay-method
-##' @details \code{signature(x='SingleCellAssay', thesubset='ANY')}: Return a new SingleCellAssay consisting of cells in which thesubset is TRUE
+##' @export
+##' @examples
+##' data(vbetaFA)
+##' subset(vbetaFA, ncells==1)
+#\code{signature(x='SingleCellAssay', thesubset='ANY')}: Return a new SingleCellAssay consisting of cells in which thesubset is TRUE
 setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
   e <- substitute(thesubset)
   asBool <- try(eval(e, cData(x), parent.frame(n=2)), silent=TRUE)
@@ -492,12 +499,14 @@ setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
 ##' @param x SingleCellAssay
 ##' @param f length-1 character or factor of length nrow(x)
 ##' @return SCASet
-##' @docType methods
-##' @rdname split-methods
 ##' @aliases split,SingleCellAssay,ANY-method
 ##' @aliases split,DataLayer,ANY-method
-##' @name split
-##' @exportMethod split
+##' @examples
+##' data(vbetaFA)
+##' split(vbetaFA, 'ncells')
+##' fa <- as.factor(cData(vbetaFA)$ncells)
+##' split(vbetaFA, fa)
+##' @export
 setMethod('split', signature(x='SingleCellAssay'), 
           function(x, f, drop=FALSE, ...){
   ## Split a SingleCellAssay by criteria
@@ -524,6 +533,13 @@ setMethod('split', signature(x='SingleCellAssay'),
   new('SCASet', set=out)
 })
 
+##'Combines a SCASet into a unified SingleCellAssay
+##'
+##' No error checking is currently done to insure that objects in the SCASet conform with each other,
+##' so mysterious errors may result if they do not.
+##' @importMethodsFrom BiocGenerics combine
+##' @export
+##' @aliases combine,SCASet,missing-method
 setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
     
     skeleton <- x[[1]]
@@ -534,16 +550,19 @@ setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
     return(skeleton)
 })
 
-## FIXME: gdata (not sure why it's imported) shadows the generic definition
 ##'Combine two SingleCellAssay or derived classes
 ##'
-##' combines two single cell assays provided they share a common mapping
-##' TODO combining based on a common mapping may be too restrictive. This may change depending on needs.
+##' Combines two Single Cell-like objects provided they have the same number of Features and Layers.
+##' The union of columns from featureData will be taken
+##' The union (padded if necessary with NA) will be taken from cellData.
 ##' @importMethodsFrom BiocGenerics combine
-##' @exportMethod combine
+##' @importFrom abind abind
+##' @export
+##' @aliases combine,DataLayer,Datalayer-method
+##' @note
+##' We might also wish to combine features along each cell/row but a use case for this
+##' hasn't arrived yet.
 ##' @aliases combine,SingleCellAssay,SingleCellAssay-method
-##' @docType methods
-##' @rdname combine-methods
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
   proto <- callNextMethod()
   cellData <- combine(cellData(x), cellData(y))
@@ -558,8 +577,7 @@ setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), functi
   proto
 })
 
-
-##' @export
+## obsolete
 getMapping <- function(x, map){
   return(list(map))
 }
@@ -580,6 +598,21 @@ callNextMethod()
 cat(' id: ', object@id, '\n')
 })
 
+##' Combine a SingleCellAssay and a vector, data.frame or AnnotatedDataFrame
+##'
+##' When \code{x} is a SingleCellAssay and \code{y} is a  vector, data.frame or AnnotatedDataFrame,
+##' an attempt is made bind it to the columns of the cellData or featureData.
+##' The behavior depends on the number of rows/length of \code{y}.
+##'If \code{nrow(y) == nrow(x)}, then the cellData is used.
+##' If \code{nrow(y) == ncol(x)}, then the cellData is used.
+##' It is an error if neither mathces.
+##' @param x SingleCellAssay
+##' @param y vector, data.frame or AnnotatedDataFrame
+##' @param ... ignored
+##' @aliases combine,SingleCellAssay,ANY-method
+##' @aliases combine,SingleCellAssay,data.frame-method
+##' @aliases combine,SingleCellAssay,AnnotatedDataFrame-method
+##' @return SingleCellAssay
 setMethod('combine', signature=c(x='SingleCellAssay', y='ANY'), function(x, y, ...){
   adf <- new('AnnotatedDataFrame')
   df <- data.frame(y)

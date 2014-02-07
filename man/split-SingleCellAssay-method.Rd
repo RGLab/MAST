@@ -1,7 +1,7 @@
 \docType{methods}
-\name{split}
-\alias{split}
+\name{split,SingleCellAssay-method}
 \alias{split,SingleCellAssay,ANY-method}
+\alias{split,SingleCellAssay-method}
 \title{Split into SCASet}
 \usage{
 \S4method{split}{SingleCellAssay}(x, f, drop = FALSE, ...)
@@ -25,5 +25,11 @@ SCASet
 Splits a \code{SingleCellAssay} into a \code{SCASet} by a
 factor (or something coercible into a factor) or a
 character giving a column of the melted SingleCellAssay
+}
+\examples{
+data(vbetaFA)
+split(vbetaFA, 'ncells')
+fa <- as.factor(cData(vbetaFA)$ncells)
+split(vbetaFA, fa)
 }
 

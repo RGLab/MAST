@@ -1,13 +1,15 @@
-
-##'@exportMethod thresholdNanoString
+##' Estimate thresholds for positive expression
+##'
+##' @param nsa NanostringAssay object
+##' @return modified nsa
 setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
+
 
 ##' Estimate thresholds for positive expression
 ##'
 ##' Estimates per-gene x unit thresholds for positive expression and truncates values below this threshold
 ##' Uncertain values (in terms of posterior probability of membership) can be set to NA or rounded left or right
 ##' Thresholds are estimated using a Gaussian mixture model with prior supplied by population estimates.
-##' @name threshold
 ##' @param nsa NanostringAssay object
 ##' @param include.primers primeris to use for population estimates.  If missing, then all primers are used.
 ##' @param exclude.primers primers to exclude from population estimates
@@ -17,10 +19,10 @@ setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdN
 ##' @param location.strength scaling of prior on location
 ##' @param pseudo.counts total strength of prior vs data
 ##' @param hard.threshold location estimates less than this value will be treated as belonging to the "noise cluster"
-##' @docType methods
-##' @rdname thresholdNanoString-methods
+##' @param startLayer which layer should be used to threshold.  Default 'lCount'.
 ##' @aliases thresholdNanoString,NanoStringAssay-method
-##' @return modified nsa or list with elements nsa and debugging info regarding the clustering
+##' @return object of class \code{ThresholdedNanoString} if \code{debug=TRUE}, otherwise returns \code{nsa} with the thresholded expression in layer \code{et}
+##' @seealso ThresholdedNanoString-class
 setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE, location.strength=1, pseudo.counts=5, hard.threshold=3, startLayer='lCount'){
   layer(nsa) <- startLayer
   if(!('et' %in% dimnames(nsa)[[3]])) nsa <- addlayer(nsa, 'et')

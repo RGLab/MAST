@@ -1,0 +1,18 @@
+\docType{methods}
+\name{lapply,SCASet-method}
+\alias{lapply,SCASet-method}
+\title{Apply a function to each member of a SCASet}
+\usage{
+\S4method{lapply}{SCASet}(X, FUN, ...)
+}
+\arguments{
+  \item{X}{SCASet}
+
+  \item{FUN}{a function}
+
+  \item{...}{passed to FUN}
+}
+\description{
+Apply a function to each member of a SCASet
+}
+

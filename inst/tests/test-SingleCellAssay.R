@@ -272,7 +272,7 @@ test_that('Copy works', {
 
 context('Combine works')
 doubleid <- data.frame(id1=1:3, id2=1:3, et=rep(3, 3), f1=rep('A', 3))
-smallsc <- SingleCellAssay(doubleid, idvars='id1', geneid='f1', primerid='f1', measurement='et', id='1')
+smallsc <- SingleCellAssay(doubleid, idvars='id1', primerid='f1', measurement='et', id='1')
 
 test_that('combine works', {
 spl <- split(smallsc, 'id1')

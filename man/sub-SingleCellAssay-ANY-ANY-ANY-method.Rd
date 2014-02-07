@@ -1,10 +1,10 @@
 \docType{methods}
-\name{[,SingleCellAssay-method}
+\name{[,SingleCellAssay,ANY,ANY,ANY-method}
+\alias{[,SingleCellAssay,ANY,ANY,ANY-method}
 \alias{[,SingleCellAssay,ANY-method}
-\alias{[,SingleCellAssay-method}
 \title{Subset a SingleCellAssay}
 \usage{
-\S4method{[}{SingleCellAssay}(x, i, j, ..., drop = FALSE)
+\S4method{[}{SingleCellAssay,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
 }
 \arguments{
   \item{x}{SingleCellAssay}

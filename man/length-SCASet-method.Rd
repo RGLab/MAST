@@ -1,0 +1,17 @@
+\docType{methods}
+\name{length,SCASet-method}
+\alias{length,SCASet-method}
+\title{Get the length of an SCASet}
+\usage{
+\S4method{length}{SCASet}(x)
+}
+\arguments{
+  \item{x}{SCASet}
+}
+\value{
+numeric
+}
+\description{
+Get the length of an SCASet
+}
+

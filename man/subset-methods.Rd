@@ -1,13 +1,10 @@
 \docType{methods}
 \name{subset}
 \alias{subset}
-\alias{subset,SingleCellAssay-method}
 \title{Evaluate an expression (returning a \code{logical} vector in the context of
 \code{x}}
 \usage{
 subset(x, ...)
-
-\S4method{subset}{SingleCellAssay}(x, thesubset, ...)
 }
 \arguments{
   \item{x}{A matrix or \code{data.frame} typically}
@@ -15,9 +12,6 @@ subset(x, ...)
   \item{thesubset}{An expression, which evaluated in either
   the current environment, or the parent, yields a logical
   vector}
-
-  \item{...}{further arguments to be passed to or from
-  other methods.}
 }
 \value{
 The same class as \code{x} typically, with entries in which
@@ -25,11 +19,6 @@ thesubset was \code{TRUE}
 }
 \description{
 Really just syntactic sugar.
-}
-\details{
-\code{signature(x='SingleCellAssay', thesubset='ANY')}:
-Return a new SingleCellAssay consisting of cells in which
-thesubset is TRUE
 }
 \keyword{transformation}
 

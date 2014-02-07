@@ -1,0 +1,21 @@
+\docType{methods}
+\name{combine,SCASet,missing-method}
+\alias{combine,SCASet,missing-method}
+\title{Combines a SCASet into a unified SingleCellAssay}
+\usage{
+\S4method{combine}{SCASet,missing}(x, y, ...)
+}
+\arguments{
+  \item{x}{One of the values.}
+
+  \item{y}{A second value.}
+
+  \item{...}{Any other objects of the same class as
+  \code{x} and \code{y}.}
+}
+\description{
+No error checking is currently done to insure that objects
+in the SCASet conform with each other, so mysterious errors
+may result if they do not.
+}
+

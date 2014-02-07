@@ -7,13 +7,14 @@ setAs('list', 'SCASet', function(from){
     new('SCASet', set=from)
 })
 
+##' Apply a function to each member of a SCASet
+##'
+##' @param X SCASet
+##' @param FUN a function
+##' @param ... passed to FUN
 ##' @importMethodsFrom BiocGenerics lapply
 ##' @export lapply
-##' @rdname lapply-methods
-##' @docType methods
 ##' @aliases lapply,SCASet-method
-##' @title lapply
-##' @name lapply
 setMethod("lapply",c("SCASet"),function(X,FUN,...){
   FUN<-match.fun(FUN)
   X<-as(X,"list")
@@ -26,19 +27,15 @@ setMethod("lapply",c("SCASet"),function(X,FUN,...){
 ##'
 ##' Return a \code{SingleCellAssay} at index i
 ##' @export
-##' @docType methods
-##' @name Extract.SCASet
 ##' @param x object to be subscripted
 ##' @param i index
 ##' @param j Ignored
 ##' @param ... Ignored
 ##' @return subscripted SingleCellAssay or derived class
-##' @details \code{signature(x="SCASet", i="ANY")}: \code{x[[i]]}, where \code{i} is length-1 integer or character matching sampleNames.  Returns the SingleCellAssay at position or with sampleName \code{i}.
-##' @rdname doubleAngleBracket-methods
 ##' @aliases [[,SCASet,ANY-method
 ##' @aliases [[,SCASet-method
-##' @keywords transform
 ##' @export
+# @details \code{signature(x="SCASet", i="ANY")}: \code{x[[i]]}, where \code{i} is length-1 integer or character matching sampleNames.  Returns the SingleCellAssay at position or with sampleName \code{i}.
 setMethod("[[",signature("SCASet","ANY"),function(x,i,j,...){
   if(length(i)!=1)
     stop("subscript out of bounds (index must have length 1)")
@@ -50,12 +47,8 @@ setMethod("[[",signature("SCASet","ANY"),function(x,i,j,...){
 
 ##' Subset an SCASet to a smaller SCASet
 ##' @export
-##' @name Subset.SCASet
-##' @docType methods
 ##' @aliases [,SCASet,ANY,ANY-method
 ##' @aliases [,SCASet-method
-##' @keywords transform
-##' @rdname singleAngleBracket-methods
 ##' @param x \code{SCASet} to be subscripted
 ##' @param i index
 ##' @param j ignored
@@ -71,12 +64,8 @@ setMethod("[",signature("SCASet","ANY"),function(x,i,j,...drop=FALSE){
 })
 
 ##'get the sample names in an SCASet
-##' @name sampleNames
 ##' @export
-##' @aliases sampleNames
 ##' @aliases sampleNames,SCASet-method
-##' @docType methods
-##' @keywords transform
 ##' @param object The \code{SCASet} object
 ##' @importMethodsFrom Biobase sampleNames
 ##' @importMethodsFrom Biobase "sampleNames<-"
@@ -85,9 +74,7 @@ setMethod("sampleNames","SCASet",function(object){
   unlist(lapply(object@set,function(x)x@id),use.names=FALSE)
 })
 
-
-##' @rdname show-methods
-##' @exportMethod show
+##' @rdname SCASet-class
 ##' @aliases show,SCASet-method
 setMethod("show","SCASet",function(object){
   cat("SCASet of size ",length(object@set),"\n")
@@ -96,11 +83,10 @@ setMethod("show","SCASet",function(object){
 })
 
 ##' Get the length of an SCASet
+##'
+##' @param x SCASet
+##' @return numeric
 ##' @aliases length,SCASet-method
-##' @exportMethod length
-##' @rdname length-methods
-##' @name length
-##' @title length of an SCASet
-try({setMethod('length', 'SCASet', function(x){
+setMethod('length', 'SCASet', function(x){
   length(x@set)
-})}, silent=TRUE)
+})

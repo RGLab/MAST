@@ -1,7 +1,7 @@
 \docType{methods}
-\name{Subset.SCASet}
-\alias{Subset.SCASet}
+\name{[,SCASet-method}
 \alias{[,SCASet,ANY,ANY-method}
+\alias{[,SCASet-method}
 \title{Subset an SCASet to a smaller SCASet}
 \usage{
 \S4method{[}{SCASet}(x, i, j, ...drop = FALSE)
@@ -29,5 +29,4 @@ Subset an SCASet to a smaller SCASet
 sampleNames. Returns an SCASet of \code{length(i)} of
 elements at positions in \code{i}.
 }
-\keyword{transform}
 

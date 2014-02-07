@@ -1,48 +1,50 @@
 \name{FluidigmAssay}
 \alias{FluidigmAssay}
-\title{Fluidigm Assay Constructor}
+\title{Constructor for a FluidigmAssay}
 \usage{
 FluidigmAssay(dataframe = NULL, idvars, primerid, measurement, ncells,
   geneid = NULL, id = numeric(0), cellvars = NULL, featurevars = NULL,
   phenovars = NULL, ...)
 }
 \arguments{
-  \item{dataframe}{A data.table containing the raw data}
-
-  \item{idvars}{See \code{\link{SingleCellAssay}}}
-
-  \item{primerid}{See \code{\link{SingleCellAssay}}}
-
-  \item{measurement}{See \code{\link{SingleCellAssay}}}
-
   \item{ncells}{A \code{character} specifying the column
   which gives the number of cells per well}
 
-  \item{geneid}{See \code{\link{SingleCellAssay}}}
+  \item{dataframe}{A 'flattened' \code{data.frame} or
+  \code{data.table} containing columns giving cell and
+  feature identifiers and a measurement column}
 
-  \item{id}{An identifier for the resulting object. Should
-  be a meaningful name.}
+  \item{idvars}{character vector naming columns that
+  uniquely identify a cell}
 
-  \item{cellvars}{See \code{\link{SingleCellAssay}}}
+  \item{primerid}{character vector of length 1 that names
+  the column that identifies what feature (i.e. gene) was
+  measured}
 
-  \item{featurevars}{See \code{\link{SingleCellAssay}}}
+  \item{measurement}{character vector of length 1 that
+  names the column containing the measurement}
 
-  \item{phenovars}{See \code{\link{SingleCellAssay}}}
+  \item{id}{An identifier (eg, experiment name) for the
+  resulting object}
 
-  \item{...}{Additional parameters passed to
-  \code{SingleCellAssay} constructor}
+  \item{cellvars}{Character vector naming columns
+  containing additional cellular metadata}
+
+  \item{featurevars}{Character vector naming columns
+  containing additional feature metadata}
+
+  \item{phenovars}{Character vector naming columns
+  containing additional phenotype metadata}
+
+  \item{...}{additional arguments are ignored}
 }
 \value{
 A FluidigmAssay object
 }
 \description{
-Constructor for a FluidigmAssay
-}
-\details{
 Constructs a FluidigmAssay object. Differs little from the
 SingleCellAssay constructor. Only the \code{ncells}
-parameter is additionally required. Mapping argument has
-been removed for simplicity.
+parameter is additionally required.
 }
 \examples{
 data(vbeta)
@@ -50,6 +52,12 @@ colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
 vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='Et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
 show(vbeta.fa)
+nrow(vbeta.fa)
+ncol(vbeta.fa)
+head(fData(vbeta.fa)$primerid)
+table(cData(vbeta.fa)$Subject.ID)
+vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
+show(vbeta.sub)
 }
 \author{
 Andrew McDavid and Greg Finak

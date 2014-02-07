@@ -1,6 +1,5 @@
 \docType{methods}
-\name{threshold}
-\alias{threshold}
+\name{thresholdNanoString,NanoStringAssay-method}
 \alias{thresholdNanoString,NanoStringAssay-method}
 \title{Estimate thresholds for positive expression}
 \usage{
@@ -32,10 +31,14 @@
   \item{hard.threshold}{location estimates less than this
   value will be treated as belonging to the "noise
   cluster"}
+
+  \item{startLayer}{which layer should be used to
+  threshold.  Default 'lCount'.}
 }
 \value{
-modified nsa or list with elements nsa and debugging info
-regarding the clustering
+object of class \code{ThresholdedNanoString} if
+\code{debug=TRUE}, otherwise returns \code{nsa} with the
+thresholded expression in layer \code{et}
 }
 \description{
 Estimates per-gene x unit thresholds for positive
@@ -44,5 +47,8 @@ Uncertain values (in terms of posterior probability of
 membership) can be set to NA or rounded left or right
 Thresholds are estimated using a Gaussian mixture model
 with prior supplied by population estimates.
+}
+\seealso{
+ThresholdedNanoString-class
 }
 

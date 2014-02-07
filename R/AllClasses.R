@@ -123,6 +123,7 @@ SingleCellAssayValidity <- function(object){
 ##' @aliases SingleCellAssay-class
 ##' @aliases FluidigmAssay-class
 ##' @aliases NanoStringAssay-class
+##' @aliases show,SingleCellAssay-method
 ##' @rdname SingleCellAssay-class
 ##' @seealso \code{\link{SingleCellAssay}}, \code{\link{NanoStringAssay}}, \code{\link{FluidigmAssay}}, \code{\link{DataLayer}}
 setClass("SingleCellAssay",contains="DataLayer",
@@ -152,7 +153,21 @@ setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(cmap=n
 #Could write a constructor that takes a post-processing function...
 setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayValidity)
 
-## Holds output from thresholdNanoString debug=TRUE
+
+##'Holds output and diagnostics from thresholdNanoString
+##'Not intended to be called by the user.
+##' 
+##' @section Slots:
+##' \describe{
+##' \item{melted}{A \code{data.frame} containing a melted version of \code{nsa}, plus the columns 'ps', giving the probability that a measurement belongs to the signal cluster, 'clusterID' the inferred cluster}
+##' \item{nsa}{The thresholded \code{NanoStringAssay} with the thresholded expression in layer \code{et}}
+##' \item{densities}{A \code{list} of length \code{ncol(nsa)} of marginal (mixture model) densities of each gene.}
+##' \item{means}{A \code{matrix} dimension \code{ncol(nsa)} \eqn{\times} 2 given the posterior mean of each cluster.}
+##' \item{props}{A \code{matrix} dimension \code{ncol(nsa)} \eqn{\times} 2 given the posterior probability of each cluster.}
+##' \item{startLayer}{A \code{character} giving the initial layer that was used to generate the thresholding}
+##' }
+##' @seealso thresholdNanoString
+##' @docType class
 setClass('ThresholdedNanoString', representation=representation(melted='data.frame', nsa='NanoStringAssay', densities='list', means='matrix', props='matrix', startLayer='character'))
 
 
@@ -185,44 +200,34 @@ setClass("SCASet",
 
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
 ##'
-##' This is the constructor for the class. This class intends to ease the analysis of single cell assays, in which multiple, exchangible, cells from an experimental unit (patient, or organism) are assayed along several (or many) dimensions, such as genes. A few examples of this might be Fluidigm gene expression chips, or single cell sequencing experiments.  The chief functionality is to make it easy to keep cellular-level metadata linked to the measurements through \code{cellData} and \code{phenoData}.  There are also subsetting and splitting measures to coerce between a SingleCellAssay, and a \link{SCASet}.
-##' @param dataframe A 'flattened' data.table containing columns giving cell and feature identifiers and  a measurement column
+##' This is the constructor for the class. This class intends to ease the analysis of single cell assays, in which multiple, exchangeable, cells from an experimental unit (patient, or organism) are assayed along several (or many) dimensions, such as genes. A few examples of this might be Fluidigm gene expression chips, or single cell sequencing experiments.  The chief functionality is to make it easy to keep cellular-level metadata linked to the measurements through \code{cellData} and \code{phenoData}.  There are also subsetting and splitting measures to coerce between a SingleCellAssay, and a \link{SCASet}.
+##' @param dataframe A 'flattened' \code{data.frame} or \code{data.table} containing columns giving cell and feature identifiers and  a measurement column
 ##' @param idvars character vector naming columns that uniquely identify a cell
 ##' @param primerid character vector of length 1 that names the column that identifies what feature (i.e. gene) was measured
 ##' @param measurement character vector of length 1 that names the column containing the measurement 
-##' @param geneid character vector of length 1 that names a 'gene' column.  This could be placed into ...?
-##' @param id optional numeric (not sure what this is supposed to do)
-##' @param mapping named list.  Names are identifiers used by find special columns in the dataframe.  This shouldn't be modified directly by the user
+##' @param id An identifier (eg, experiment name) for the resulting object
 ##' @param cellvars Character vector naming columns containing additional cellular metadata
 ##' @param featurevars Character vector naming columns containing additional feature metadata
 ##' @param phenovars Character vector naming columns containing additional phenotype metadata
-##' @param ... Additional keywords to be added to mapping
+##' @param ... additional arguments are ignored
 ##' @export SingleCellAssay
 ##' @aliases SingleCellAssay
-##' @name SingleCellAssay-constructor
-##' @rdname SingleCellAssay-constructor
+##' @name SingleCellAssay
+##' @seealso \code{\link{FluidigmAssay}}
 ##' @docType methods
+##' @examples
+##' ## See FluidigmAssay for examples
+##' \dontrun{example(FluidigmAssay)}
 ##' @return SingleCellAssay object
-SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,geneid=NULL,id=numeric(0), mapping=NULL, cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  new('SingleCellAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=c(geneid, featurevars), phenovars=phenovars)
+SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+  new('SingleCellAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars)
 }
 
 ##' Constructor for a FluidigmAssay
 ##'
 ##' Constructs a FluidigmAssay object. Differs little from the SingleCellAssay constructor. Only the \code{ncells} parameter is additionally required.
-##' Mapping argument has been removed for simplicity.
-##' @title Fluidigm Assay Constructor
-##' @param dataframe A data.table containing the raw data
-##' @param idvars See \code{\link{SingleCellAssay}}
-##' @param primerid See \code{\link{SingleCellAssay}}
-##' @param measurement See \code{\link{SingleCellAssay}}
+##' @inheritParams SingleCellAssay
 ##' @param ncells A \code{character} specifying the column which gives the number of cells per well
-##' @param geneid See \code{\link{SingleCellAssay}}
-##' @param id An identifier for the resulting object. Should be a meaningful name.
-##' @param cellvars See \code{\link{SingleCellAssay}}
-##' @param featurevars See \code{\link{SingleCellAssay}}
-##' @param phenovars See \code{\link{SingleCellAssay}}
-##' @param ... Additional parameters passed to \code{SingleCellAssay} constructor
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
 ##' @examples
@@ -231,10 +236,16 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' vbeta <- computeEtFromCt(vbeta)
 ##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='Et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
 ##' show(vbeta.fa)
+##' nrow(vbeta.fa)
+##' ncol(vbeta.fa)
+##' head(fData(vbeta.fa)$primerid)
+##' table(cData(vbeta.fa)$Subject.ID)
+##' vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
+##' show(vbeta.sub)
 ##' @export
 FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, geneid=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
   cmap <- new('Mapping', .Data=list('ncells'=ncells))
-    new('FluidigmAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=c(geneid, featurevars), phenovars=phenovars, cmap=cmap)
+    new('FluidigmAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars, cmap=cmap)
 }
 
 ##' Constructs a SCASet
