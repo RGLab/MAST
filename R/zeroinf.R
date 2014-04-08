@@ -100,6 +100,10 @@ coefFun <- function(model){
     
 }
 
+
+
+
+
 pretest.lrt <- function(model, hypothesis.matrix){
     Terms <- labels(terms(model))
     whichTerm <- attr(model.matrix(model), 'assign')

@@ -1,5 +1,5 @@
 %\VignetteIndexEntry{SingleCellAssay-intro}
-%\VignetteEngine{knitr}
+%\VignetteEngine{knitr::knitr}
 \documentclass{article}
 \usepackage{url, graphicx}
 \usepackage{color}
