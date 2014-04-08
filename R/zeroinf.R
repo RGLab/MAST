@@ -68,7 +68,9 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
        glmer(disc.formula, data, family='binomial', ...)
   }, silent=silent)
       } else{
-          disc <- lm.fun(disc.formula, data, family='binomial', ...)
+          disc <- try({
+              lm.fun(disc.formula, data, family='binomial', ...)
+  }, silent=silent)
       }
   if(inherits(disc, 'try-error')){
       disc <- lm(0~0)
