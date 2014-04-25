@@ -115,7 +115,11 @@ setMethod("exprs",signature(object="DataLayer"),function(object){
 setMethod('initialize', 'DataLayer',
           function(.Object, ...){
             ## message('init DataLayer') #DEBUG
+              ## This is (was?) necessary initialize since we inherit from 'array'
+              ## But is rather mysterious, nonetheless.
             .Object <- getMethod('initialize', 'ANY')(.Object, ...)
+            dn <- dimnames(.Object@.Data)
+            dimnames(.Object@.Data) <-if(is.null(dn)) list(wells=NULL, features=NULL, layers=NULL) else dn            
             .Object
           })
 

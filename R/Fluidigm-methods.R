@@ -237,7 +237,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   if (!is.null(groups)) {
     checkGroups(sc, groups)
       scL <- split(sc, groups)
-      lapp <- lapply(scL, filter, groups=NULL, filt_control, apply_filter)
+      lapp <- lapply(scL, filter, groups=NULL, filt_control=filt_control, apply_filter=apply_filter)
       ## Do various things with lapp:
       if(apply_filter && filt_control$filter){
         ## list of SingleCellAssays

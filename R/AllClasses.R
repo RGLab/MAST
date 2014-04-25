@@ -5,8 +5,46 @@
 
 NULL
 
-#setOldClass("ncdf")
 
+##' DataLayer class
+##' 
+##' DataLayer is a 3-D array, wrapped to make it look like a matrix.
+##' It is used to hold matrix-like expression data, for which we might want to keep several representations (transformations) around.
+##' The number of matrix "layers" is given by the trailing dimension.
+##' Dimensions 1 and 2 correspond to the "rows" and "columns" of the matrix.
+##' The layer that is active can be set, and additional layers created (concatenated).
+##' }
+##' \section{Slots}{
+##' DataLayer extends array, and has the following additional slots
+##' \describe{
+##'   \item{.Data}{the underlying array}
+##'   \item{valid}{a \code{logical} that may optionally indicate the freshness of derived layers (if the underlying data changes).  Not currently used.}
+##'   \item{layer}{which 'slice' of the array is being used}
+##' }}
+##' \section{Methods}{
+##' \describe{
+##' \item{addlayer}{Concatentate another slice onto the object}
+##' \item{layername}{Return the name of the current slice}
+##' \item{layer}{Return the active layer}
+##' \item{layer<-}{Set the active layer}
+##' \item{exprs}{Return the matrix representation of the active layer}
+##' \item{exprs<-}{Replace the matrix on the current layer.}
+##' }
+##' @examples
+##' ar <- array(1:10, dim=c(2, 5, 1))
+##' dl <- new('DataLayer', .Data=ar)
+##' nrow(dl) #2
+##' ncol(dl) #5
+##' layer(dl)
+##' dl <- addlayer(dl, 'negative')
+##' ex <- exprs(dl)
+##' layer(dl) <- 'negative' #or could use 2
+##' exprs(dl)<- -ex
+##' exprs(dl)
+##' @name DataLayer-class
+##' @docType class 
+##' @aliases DataLayer
+##' @seealso \code{\link{SingleCellAssay}}, \code{\link{SingleCellAssay-class}}
 setClass('DataLayer', contains='array', representation=representation(layer='numeric', valid='logical'), prototype=prototype(array(NA, dim=c(0, 0, 1)), layer=1L, valid=TRUE), validity=function(object){
   #cat('DL dim ', dim(object@.Data), '\n')
   length(dim(object@.Data))==3

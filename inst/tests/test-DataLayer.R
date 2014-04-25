@@ -36,19 +36,19 @@ test_that('doubleton dl works', {
 
 context('subset and replace')
 test_that('subset works', {
-  expect_equal(dl[[,1]], mat[,1,drop=FALSE])
-  expect_equal(dl[[1,]], mat[1,,drop=FALSE])
+  expect_equal(dl[[,1]], mat[,1,drop=FALSE], check.names=FALSE)
+  expect_equal(dl[[1,]], mat[1,,drop=FALSE], check.names=FALSE)
   matidx <- cbind(c(1, 1, 2), 1:3)
   expect_equal(dl[[matidx]], mat[matidx])
   mat[matidx] <- -999
   dl[[matidx]] <- -999
-  expect_equal(exprs(dl), mat)
+  expect_equal(exprs(dl), mat, check.attributes=FALSE)
 })
 
 test_that('[ subscripting works', {
   expect_is(dl[1,], 'DataLayer')
   expect_is(dl[,2:3], 'DataLayer')
-  expect_equal(exprs(dl[1,]), dl[[1,,drop=FALSE]])
+  expect_equal(exprs(dl[1,]), dl[[1,,drop=FALSE]], check.attributes=FALSE)
 })
 
  spl <- split(dl, 1:2)

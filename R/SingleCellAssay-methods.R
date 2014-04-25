@@ -204,7 +204,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
 ## unnamed arguments get passed along to callNextMethod
 ## which eventually just sets the slots
 setMethod('initialize', 'SingleCellAssay',
-          function(.Object, dataframe, idvars, primerid, measurement, cellvars=NULL, featurevars=NULL, phenovars=NULL, sort=TRUE, ...){
+          function(.Object, dataframe, idvars, primerid, measurement, exprsMatrix, cellvars=NULL, featurevars=NULL, phenovars=NULL, sort=TRUE, ...){
             ##message(class(.Object), ' calling SingleCellAssay Initialize')  #DEBUG
             .Object <- callNextMethod()
             if(sort) .Object <- sort(.Object)
@@ -639,3 +639,23 @@ setMethod('combine', signature=c(x='SingleCellAssay', y='AnnotatedDataFrame'), f
   slot(x, along) <- newdata
   x
 })
+
+setAs('ExpressionSet', 'SingleCellAssay', function(from){
+    ## just a transposed version
+    ex <- t(exprs(from))
+    dn <- dimnames(ex)
+    names(dn) <- c('wellKey', 'primerid')
+    dim(ex) <- c(dim(ex), 1)
+    pd <- phenoData(from)
+    pData(pd)[,'wellKey'] <- sampleNames(pd)
+    fd <- featureData(from)
+    fd$primerid <- sampleNames(fd)
+    dimnames(ex) <- c(dn, layer='ExpressionSet')
+    DL <- new('DataLayer', .Data=ex)
+    new('SingleCellAssay', .Data=DL, featureData=fd, cellData=pd, sort=FALSE)
+})
+
+## setAs('SingleCellAssay', 'data.table', function(from){
+## dt <- data.table(as.vector(exprs(from)))
+
+## })
