@@ -26,7 +26,7 @@ setGeneric('nlayer', function(x) standardGeneric('nlayer'))
 ##'
 ##' @param x DataLayer
 ##' @return numeric, active layer
-##' @export
+##' @export layer
 ##' @aliases layer,DataLayer-method
 setGeneric('layer', function(x) standardGeneric('layer'))
 
@@ -35,7 +35,7 @@ setGeneric('layer', function(x) standardGeneric('layer'))
 ##' @param x DataLayer
 ##' @param value identifier of layer
 ##' @return DataLayer with new active layer
-##' @export
+##' @export layer<-
 ##' @aliases layer<-,DataLayer,numeric-method
 ##' @aliases layer<-,DataLayer,character-method
 setGeneric('layer<-', function(x, value) standardGeneric('layer<-'))
@@ -48,7 +48,7 @@ setGeneric('layer<-', function(x, value) standardGeneric('layer<-'))
 ##' @param x DataLayer
 ##' @param name character
 ##' @return DataLayer with appended layer
-##' @export
+##' @export addlayer
 ##' @aliases addlayer,DataLayer,character-method
 setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
 
@@ -59,7 +59,7 @@ setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
 ##'
 ##' @param x DataLayer 
 ##' @return character
-##' @export
+##' @export layername
 ##' @aliases layername,DataLayer-method
 setGeneric('layername', function(x) standardGeneric('layername'))
 
@@ -72,6 +72,7 @@ setGeneric('layername', function(x) standardGeneric('layername'))
 ##' @aliases layername<-,DataLayer,character-method
 setGeneric('layername<-', function(x, value) standardGeneric('layername<-'))
 
+##' @export
 setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, name){
   newLayer <- array(NA, dim=c(nrow(x), ncol(x), 1), dimnames=c(dimnames(x)[-3], name))
   x@.Data <- abind(x@.Data, newLayer)
@@ -90,7 +91,6 @@ setReplaceMethod('layername', signature(x='DataLayer', 'character'), function(x,
   x
 })
 
-
 ##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
 ##'
 ##' Return or set a matrix of the measurement: cells by primerids
@@ -101,7 +101,6 @@ setReplaceMethod('layername', signature(x='DataLayer', 'character'), function(x,
 ##' @docType methods
 ##' @rdname exprs-methods
 ##' @aliases exprs,DataLayer-method
-##' @importMethodsFrom Biobase exprs
 ##' @return a \code{matrix} of measurement values with wells on the rows and features on the columns of the default layer
 ##' @export
 setMethod("exprs",signature(object="DataLayer"),function(object){
@@ -124,9 +123,7 @@ setMethod('initialize', 'DataLayer',
             .Object
           })
 
-##' @importMethodsFrom Biobase "pData<-"
-##' @importMethodsFrom Biobase pData
-##' @importMethodsFrom Biobase "exprs<-"
+##' @import Biobase
 ##' @rdname exprs-methods
 ##' @name exprs
 ##' @exportMethod "exprs<-"
@@ -160,6 +157,7 @@ try({setMethod('nrow', 'DataLayer',
             nrow(x@.Data[,,x@layer,drop=FALSE])
           })})                          #for some reason this errors out
 
+##' @export
 setMethod('nlayer', 'DataLayer',
           function(x){
             dim(x@.Data)[3]
@@ -264,7 +262,7 @@ setMethod('layer', c('DataLayer'), function(x){
   x@layer
 })
 
-
+##' @export
 setReplaceMethod('layer', c('DataLayer', 'numeric'), function(x, value){
   if(round(value)!=value) stop('Index must be integer')
   if(value < 1 || value > nlayer(x)) stop('Index out of range')
@@ -279,7 +277,7 @@ setReplaceMethod('layer', c('DataLayer', 'character'), function(x, value){
 })
 
 
-
+##' @export
 setMethod('combine', signature(x='DataLayer', y='DataLayer'), function(x, y, ...) {
    if(!conform(x, y)>=6){
      stop('Objects must have same number of features and layers; x has dim ', paste(dim(x), ' '), '; y has dim ', paste(dim(y),' '))
