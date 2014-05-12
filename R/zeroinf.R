@@ -303,7 +303,7 @@ zlm.SingleCellAssay <- function(formula, sca, lm.fun=glm, hypothesis.matrix, hyp
         }
    }
 
-    if(!inherits(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
+    if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
     
     m <- SingleCellAssay:::melt(sca)
     if(.drop) m <- droplevels(m)
