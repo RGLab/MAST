@@ -43,7 +43,7 @@ if(!missing(groups) && !is.null(groups)){
 ##' @return vector of proportions
 ##' @export
 freq <- function(sc, na.rm=TRUE){
- stopifnot(inherits(sc, 'SingleCellAssay'))
+ stopifnot(is(sc, 'SingleCellAssay'))
  apply(exprs(sc)>0, 2, mean, na.rm=na.rm)
 }
 
@@ -54,7 +54,7 @@ freq <- function(sc, na.rm=TRUE){
 ##' @return vector of means
 ##' @export
 condmean <- function(sc){
-stopifnot(inherits(sc, 'SingleCellAssay'))
+stopifnot(is(sc, 'SingleCellAssay'))
 exprsNA <- exprs(sc)
 exprsNA[exprsNA==0] <- NA
 apply(exprsNA, 2, mean, na.rm=TRUE)
@@ -67,7 +67,7 @@ apply(exprsNA, 2, mean, na.rm=TRUE)
 ##' @return vector of standard deviations
 ##' @export
 condSd <- function(sc){
-stopifnot(inherits(sc, 'SingleCellAssay'))
+stopifnot(is(sc, 'SingleCellAssay'))
 exprsNA <- exprs(sc)
 exprsNA[exprsNA==0] <- NA
 sqrt(apply(exprsNA, 2, var, na.rm=TRUE))
@@ -80,7 +80,7 @@ sqrt(apply(exprsNA, 2, var, na.rm=TRUE))
 ##' @return \code{numeric} vector
 ##' @export
 numexp <- function(sc){
-stopifnot(inherits(sc, 'SingleCellAssay'))
+stopifnot(is(sc, 'SingleCellAssay'))
 apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 }
 
@@ -104,7 +104,7 @@ apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 ##' @importFrom reshape melt.data.frame
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
-  if(!(inherits(singleCellRef, 'FluidigmAssay') && inherits(singleCellcomp, 'FluidigmAssay'))){
+  if(!(is(singleCellRef, 'FluidigmAssay') && is(singleCellcomp, 'FluidigmAssay'))){
     stop("singleCellRef and singleCellComp should be SingleCellAssay objects")
   }
   scL <- list(singleCellRef, singleCellcomp)
@@ -319,7 +319,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 ##' @return Matrix with point estimates of frequency and standard deviation of estimate
 ##' @author andrew
 freqFromPools <- function(fd){
-  stopifnot(inherits(fd, 'FluidigmAssay'))
+  stopifnot(is(fd, 'FluidigmAssay'))
 ncellID <- 'ncells'
 geneID <- 'primerid'
 genes <- fData(fd)[,geneID]
