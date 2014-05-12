@@ -324,3 +324,15 @@ test_that('Can replace cData', {
 
     expect_error(cData(fd) <- scramble[-1:-10,], 'missing some wellkeys')
 })
+
+context('Testing data.table method')
+
+test_that('Can cast to data.table', {
+    dt <- as(fd, 'data.table')
+    expect_is(dt, 'data.table')
+    fd@keep.names <- FALSE
+    M <- melt(fd)
+    df <- as.data.frame(dt)
+    M <- M[, names(df)]
+    expect_equivalent(dt, M)
+})
