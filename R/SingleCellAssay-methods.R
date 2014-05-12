@@ -380,6 +380,7 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
 })
 
 
+##' @export
 setMethod('cellData', 'SingleCellAssay', function(sc) sc@cellData)
 
 
@@ -662,7 +663,7 @@ setAs('SingleCellAssay', 'data.table', function(from){
     ex <- data.table(wellKey=getwellKey(from), exprs(from))
     fd <- setkey(data.table(fData(from)), primerid)
     cd <- setkey(data.table(cData(from)), wellKey)
-    M <- melt.data.table(ex, 'wellKey')[,primerid:=variable]
+    M <- melt.data.table(ex, 'wellKey')[,primerid:=variable][,variable:=NULL]
     setkey(M, primerid, wellKey)
     merge(merge(M, cd), fd, by='primerid')
 })

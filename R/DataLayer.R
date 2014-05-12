@@ -78,12 +78,13 @@ setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, na
   x
 })
 
+##' @export
 setMethod('layername', signature(x='DataLayer'), function(x){
   if(length(dimnames(x)[[3]])>0) return(dimnames(x)[[3]][layer(x)])
   return(NULL)
 })
 
-
+##' @export
 setReplaceMethod('layername', signature(x='DataLayer', 'character'), function(x, value){
   dimnames(x)[[3]][layer(x)] <- value
   x
