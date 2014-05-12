@@ -380,13 +380,13 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
 })
 
 
-##' @export
+##' @export cellData
 setMethod('cellData', 'SingleCellAssay', function(sc) sc@cellData)
 
 
 ##' @rdname fData-methods
 ##' @aliases fData,SingleCellAssay-method
-##' @exportMethod fData
+##' @export fData
 setMethod('fData', 'SingleCellAssay', function(object) pData(object@featureData))
 
 ##' @rdname featureData-methods
