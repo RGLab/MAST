@@ -125,7 +125,7 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
 fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   df<-data.table(df)
   cn_df<-colnames(df)
-  if(!inherits(df,"data.frame")){
+  if(!is(df,"data.frame")){
     stop("Argument `dataframe` should be a data.frame.")
   }
   if(!all(idvars %in% cn_df)){
@@ -216,7 +216,7 @@ setMethod('initialize', 'SingleCellAssay',
               if(nrow(.Object) > 0 || ncol(.Object)>0) warning('slots will be overwritten when dataframe is provided')
               
               ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
-              if(!inherits(dataframe,"data.table")){
+              if(!is(dataframe,"data.table")){
                 dataframe<-data.table(dataframe)
               } else{
                   ## worry about things being passed by reference
@@ -295,7 +295,7 @@ uniqueModNA.old <- function(df, exclude){
 ## columns named in exclude
 ## Precondition: keyed data.table
 uniqueModNA <- function(df, exclude){
-  if(!inherits(df, 'data.table') || ! all(key(df) %in% colnames(df)))
+  if(!is(df, 'data.table') || ! all(key(df) %in% colnames(df)))
       stop('df must be data.table fully keyed by its columns')
   w.include <- names(df)
   if(ncol(df)>1){
@@ -408,7 +408,7 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
   if(any(is.na(i))) stop("NAs not permitted in 'i' index")
   if(is.factor(i)) stop("Factors not permitted in 'i' index")
   
-  if(inherits(i,"character")){
+  if(is(i,"character")){
     wk<-getwellKey(x)
     if(length(setdiff(i, wk))>0) stop('wellKeys \n', paste(setdiff(i, wk), sep=','), '\n not found!')
     i <- match(i, wk)
@@ -419,7 +419,7 @@ setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
     if(is.factor(j)) stop("Factors not permitted in 'j' index")
     pk<-fData(x)$primerid
     
-    if(inherits(j,"character")){
+    if(is(j,"character")){
       J <- match(j, pk)
       if(!(all(j%in%pk))){
         stop("feature names \n",paste(j[!j%in%as.matrix(pk)],collapse=" "), "\n not found!");
@@ -480,7 +480,7 @@ setMethod("[", signature(x="SingleCellAssay"), .scaSubset)
 setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
   e <- substitute(thesubset)
   asBool <- try(eval(e, cData(x), parent.frame(n=2)), silent=TRUE)
-  if(inherits(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
+  if(is(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
   #this is a special case of "subset", not of the "[[" method, so..
   if(length(asBool)==1){
     if(asBool==TRUE){
@@ -511,13 +511,13 @@ setMethod('split', signature(x='SingleCellAssay'),
           function(x, f, drop=FALSE, ...){
   ## Split a SingleCellAssay by criteria
   ###f must be a character naming a cData variable
-  if(inherits(f, 'character')){
+  if(is(f, 'character')){
     if(length(f) != nrow(x)){
       f <- lapply(cData(x)[,f, drop=FALSE], as.factor)
     } else{
       f <- list(as.factor(f))
     }
-  } else if(inherits(f, 'factor')){
+  } else if(is(f, 'factor')){
     f <- list(f)
   }
      all.factor <- all(sapply(f, is.factor))

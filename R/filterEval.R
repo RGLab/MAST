@@ -281,7 +281,7 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
 #'@importFrom ggplot2 ggplot geom_point theme_bw scale_x_continuous scale_y_continuous aes geom_segment 
 #'@export
 plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlier = 2, sigmaContinuous = 9,sigmaProportion = 9), groups=NULL){
-  if(!(inherits(SCellAssay,"SingleCellAssay")&inherits(NCellAssay,"SingleCellAssay"))){
+  if(!(is(SCellAssay,"SingleCellAssay")&is(NCellAssay,"SingleCellAssay"))){
     stop("SCellAssay and NCellAssay must inherit from SingleCellAssay");
   }
   filtered.sc<-filter(SCellAssay,filt_control=filterCriteria,groups=groups)

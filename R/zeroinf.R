@@ -30,7 +30,7 @@
 zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   #if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
   if(!missing(subset)) warning('subset ignored')
-  if(!inherits(formula, 'formula')) stop("'formula' must be class 'formula'")
+  if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
 
   ## lm initially just to get response vector
   ## Turn glmer grouping "|" into "+" to get correct model frame
@@ -51,7 +51,7 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
       lm.fun(formula, data, subset=pos, family='gaussian', ...)
       }
   }, silent=silent)
-  if(inherits(cont, 'try-error')){
+  if(is(cont, 'try-error')){
     if(!silent) warning('Some factors were not present among the positive part')
     cont <- lm(0~0)
   }                                     
@@ -72,7 +72,7 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
               lm.fun(disc.formula, data, family='binomial', ...)
   }, silent=silent)
       }
-  if(inherits(disc, 'try-error')){
+  if(is(disc, 'try-error')){
       disc <- lm(0~0)
       converged <- FALSE
   }
@@ -83,7 +83,7 @@ zlm <- function(formula, data,lm.fun=glm,silent=TRUE, subset, ...){
   out
 }
 
-is.empty.fit <- function(fit) return(length(coef(fit))==0 || (inherits(fit, 'lm') && summary(fit)$df.residual==0))
+is.empty.fit <- function(fit) return(length(coef(fit))==0 || (is(fit, 'lm') && summary(fit)$df.residual==0))
 
 summary.zlm <- function(out){
   summary(out$cont)
@@ -92,7 +92,7 @@ summary.zlm <- function(out){
 
 ## Because lmer reports the posterior mode estimates for each 
 coefFun <- function(model){
-    if(inherits(model, 'glmerMod')){
+    if(is(model, 'glmerMod')){
         return(fixef(model))
     }else{
         return(coef(model))
@@ -114,10 +114,10 @@ pretest.lrt <- function(model, hypothesis.matrix){
 
 test.lrt <- function(model, drop.terms, part, ...){
     if(!is.formula(drop.terms) || length(labels(terms(drop.terms)))  > 1) stop("Currently only support testing single factors when 'type'='LRT'")
-    newlme4 <- inherits(model, 'glmerMod') | inherits(model, 'lmerMod')
+    newlme4 <- is(model, 'glmerMod') | is(model, 'lmerMod')
     ## No longer true with lme4 > 1.0
-    if(!(inherits(model, 'lm') || newlme4)) stop('Currently only support type=LRT with glm fits') 
-    if(part=='cont' && inherits(model, 'lm') && summary(model)$df.residual==0) stop('No degrees of freedom left') #otherwise drop1 throws an obscure error
+    if(!(is(model, 'lm') || newlme4)) stop('Currently only support type=LRT with glm fits') 
+    if(part=='cont' && is(model, 'lm') && summary(model)$df.residual==0) stop('No degrees of freedom left') #otherwise drop1 throws an obscure error
 
 
     
@@ -201,7 +201,7 @@ test.zlm <- function(model, hypothesis.matrix, type='Wald', silent=TRUE, ...){
  stop('ruhroh')
 }
     
-  if(inherits(tt, 'try-error') || !all(dim(cont) == dim(disc))){
+  if(is(tt, 'try-error') || !all(dim(cont) == dim(disc))){
     cont <- rep(0, length(as.matrix(disc)))
     dim(cont) <- dim(disc)
     dimnames(cont) <- dimnames(disc)

@@ -142,9 +142,9 @@ setReplaceMethod('exprs', c('DataLayer', 'ANY'),
 
 setMethod('conform', c('DataLayer', 'ANY'),
           function(dl, other){
-            if(!(inherits(other, 'matrix') || inherits(other, 'array'))) return(FALSE)
+            if(!(is(other, 'matrix') || is(other, 'array'))) return(FALSE)
             (nrow(dl) == nrow(other))*1 + (ncol(dl) == ncol(other))*2 +
-              ifelse(inherits(other, 'DataLayer'),(nlayer(dl)==nlayer(other))*4, 0)
+              ifelse(is(other, 'DataLayer'),(nlayer(dl)==nlayer(other))*4, 0)
           })
 
 setMethod('ncol', 'DataLayer',

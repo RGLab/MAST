@@ -289,10 +289,6 @@ test_that('combine throws error for non-conforming',{
 })
 
 
-
-
-
-
 context('Testing FluidigmAssay')
 fd <- as(scd, 'FluidigmAssay')
 back <- as(fd, 'SingleCellAssay')
