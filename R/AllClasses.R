@@ -317,7 +317,7 @@ SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,co
   for(i in seq_along(set)){
     ##construct a call using contentClass
     F <- try(getFunction(contentClass),silent=TRUE)
-    if(inherits(F,"try-error"))
+    if(is(F,"try-error"))
       message("Can't construct a class of type ",contentClass[[1]],". Constructor of this name doesn't exist")
       cl<-as.call(list(as.name(contentClass[[1]]),dataframe=spl[[i]],idvars=idvars,primerid=primerid,id=names(spl)[[i]], measurement=measurement,...))
     set[[i]]<-eval(cl)

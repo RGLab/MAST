@@ -2,7 +2,7 @@ setAs("SCASet","list",function(from)from@set)
 
 setAs('list', 'SCASet', function(from){
     for(it in from){
-        if(!inherits(it, 'SingleCellAssay')) stop("All members of 'x' must inherit from 'SingleCellAssay'")
+        if(!is(it, 'SingleCellAssay')) stop("All members of 'x' must inherit from 'SingleCellAssay'")
     }
     new('SCASet', set=from)
 })

@@ -102,7 +102,7 @@ setMethod("show","ThresholdedNanoString",function(object){
 ##' @param primerids character vector of primerids to plot
 ##' @return ggplot object
 plot.threshold <- function(thresholdedNanoString, primerids){
-    if(!inherits(thresholdedNanoString, 'ThresholdedNanoString')) stop('thresholdedNanoString must inherit from class ThresholdedNanoString')
+    if(!is(thresholdedNanoString, 'ThresholdedNanoString')) stop('thresholdedNanoString must inherit from class ThresholdedNanoString')
     sub <- subset(thresholdedNanoString@melted, primerid %in% primerids)
     measure <-  thresholdedNanoString@startLayer                        #
 sub <- ddply(sub, 'primerid', function(x){
