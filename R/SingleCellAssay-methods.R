@@ -96,8 +96,6 @@ melt.SingleCellAssay<-function(data,...){
 }
 
 
-
-
 mkunique<-function(x,G){
     cbind(x,primerid.unk=make.unique(as.character(get(G,x))))
      }
@@ -382,12 +380,13 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
 })
 
 
+##' @export cellData
 setMethod('cellData', 'SingleCellAssay', function(sc) sc@cellData)
 
 
 ##' @rdname fData-methods
 ##' @aliases fData,SingleCellAssay-method
-##' @exportMethod fData
+##' @export fData
 setMethod('fData', 'SingleCellAssay', function(object) pData(object@featureData))
 
 ##' @rdname featureData-methods
@@ -655,7 +654,16 @@ setAs('ExpressionSet', 'SingleCellAssay', function(from){
     new('SingleCellAssay', .Data=DL, featureData=fd, cellData=pd, sort=FALSE)
 })
 
-## setAs('SingleCellAssay', 'data.table', function(from){
-## dt <- data.table(as.vector(exprs(from)))
+melt.data.table <- function(dt, id.var){
+    ## Well...that's unfortunate
+    dt[, list(variable = names(.SD), value = unlist(.SD, use.names = FALSE)), keyby =eval(bquote(.(id.var)))]
+}
 
-## })
+setAs('SingleCellAssay', 'data.table', function(from){
+    ex <- data.table(wellKey=getwellKey(from), exprs(from))
+    fd <- setkey(data.table(fData(from)), primerid)
+    cd <- setkey(data.table(cData(from)), wellKey)
+    M <- melt.data.table(ex, 'wellKey')[,primerid:=variable][,variable:=NULL]
+    setkey(M, primerid, wellKey)
+    merge(merge(M, cd), fd, by='primerid')
+})

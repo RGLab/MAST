@@ -2,6 +2,7 @@
 ##'
 ##' @param nsa NanostringAssay object
 ##' @return modified nsa
+##' @export
 setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
 
 
@@ -23,7 +24,9 @@ setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdN
 ##' @aliases thresholdNanoString,NanoStringAssay-method
 ##' @return object of class \code{ThresholdedNanoString} if \code{debug=TRUE}, otherwise returns \code{nsa} with the thresholded expression in layer \code{et}
 ##' @seealso ThresholdedNanoString-class
+##' @export
 setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, include.primers, exclude.primers, posteriorprob, clip=c('left', 'right', 'NA'), debug=FALSE, location.strength=1, pseudo.counts=5, hard.threshold=3, startLayer='lCount'){
+    nsa@keep.names <- TRUE
   layer(nsa) <- startLayer
   if(!('et' %in% dimnames(nsa)[[3]])) nsa <- addlayer(nsa, 'et')
   
@@ -102,7 +105,7 @@ plot.threshold <- function(thresholdedNanoString, primerids){
     if(!is(thresholdedNanoString, 'ThresholdedNanoString')) stop('thresholdedNanoString must inherit from class ThresholdedNanoString')
     sub <- subset(thresholdedNanoString@melted, primerid %in% primerids)
     measure <-  thresholdedNanoString@startLayer                        #
-sub <- ddply(sub, .(primerid), function(x){
+sub <- ddply(sub, 'primerid', function(x){
     x$den.est <- thresholdedNanoString@densities[[x$primerid[1]]](x[, measure])
     x
 })
