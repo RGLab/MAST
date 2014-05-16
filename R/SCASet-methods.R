@@ -34,7 +34,7 @@ setMethod("lapply",c("SCASet"),function(X,FUN,...){
 ##' @return subscripted SingleCellAssay or derived class
 ##' @aliases [[,SCASet,ANY-method
 ##' @aliases [[,SCASet-method
-##' @export
+##' @exportMethod [[
 # @details \code{signature(x="SCASet", i="ANY")}: \code{x[[i]]}, where \code{i} is length-1 integer or character matching sampleNames.  Returns the SingleCellAssay at position or with sampleName \code{i}.
 setMethod("[[",signature("SCASet","ANY"),function(x,i,j,...){
   if(length(i)!=1)

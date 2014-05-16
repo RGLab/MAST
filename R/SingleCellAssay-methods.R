@@ -78,7 +78,7 @@ NULL
 ##' @aliases melt
 ##' @keywords transformation
 ##' @importFrom reshape melt
-##' @S3method melt SingleCellAssay
+##' @export
 ## melt.SingleCellAssay<-function(data,...){
 ##   m <- melt.data.frame(cbind(cData(data), exprs(data)), id.vars=names(cData(data)), variable_name='primerid')
 ##   m <- merge(m, fData(data), by='primerid')
@@ -461,7 +461,7 @@ setMethod('[[', signature(x="SingleCellAssay"), .scaSubset)
 ##' @aliases [,SingleCellAssay,ANY-method
 ##' @aliases [,SingleCellAssay-method
 ##' @aliases [[,SingleCellAssay-method
-##' @export
+##' @exportMethod [
 setMethod("[", signature(x="SingleCellAssay"), .scaSubset)
   
 
