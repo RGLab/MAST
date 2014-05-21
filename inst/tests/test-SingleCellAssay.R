@@ -43,7 +43,7 @@ test_that("Can create empty instance with pre-existing wellKey",{
 ## })
 
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
-fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid, keep.names=TRUE)
+fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid, keep.names=TRUE, sort=TRUE)
 test_that('could create FluidigmAssay', {
   expect_that(fd, is_a('SingleCellAssay'))
     expect_that(fd, is_a('FluidigmAssay'))
@@ -290,12 +290,12 @@ test_that('combine throws error for non-conforming',{
 
 
 context('Testing FluidigmAssay')
-fd <- as(scd, 'FluidigmAssay')
-back <- as(fd, 'SingleCellAssay')
 test_that('Can cast', {
-  expect_is(fd, "FluidigmAssay")
-  expect_is(back, 'SingleCellAssay')
-  expect_equivalent(back, scd)
+    fd <- as(scd, 'FluidigmAssay')
+    back <- as(fd, 'SingleCellAssay')
+    expect_is(fd, "FluidigmAssay")
+    expect_is(back, 'SingleCellAssay')
+    expect_equivalent(back, scd)
 })
 
 test_that('Can split FluidigmAssays', {
@@ -319,4 +319,19 @@ test_that('Can replace cData', {
     expect_warning(cData(fd) <- scramble, 'sorting')
 
     expect_error(cData(fd) <- scramble[-1:-10,], 'missing some wellkeys')
+})
+
+context('Testing data.table method')
+
+test_that('Can cast to data.table', {
+    fd@keep.names <- FALSE
+    dt <- as(fd, 'data.table')
+    expect_is(dt, 'data.table')
+    M <- melt(fd)
+    df <- as.data.frame(dt)
+    M <- M[, match(names(df), names(M))]
+    expect_equivalent(df, M)
+
+#sad <- M[order(M$primerid, M$wellKey),]   
+    #expect_true(all.equal(df, M, check.attributes=FALSE))
 })
