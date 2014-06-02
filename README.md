@@ -11,6 +11,8 @@ Installation Instructions
      install_github('SingleCellAssay', 'RGLab')
      vignette('SingleCellAssay-intro')
 
+**Needs roxygen2 4.0.0.99** or higher (available on github) if the documentation is regenerated--otherwise the NAMESPACE file will not be correct.
+
 
 New Features 
 ------------

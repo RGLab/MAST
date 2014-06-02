@@ -157,7 +157,7 @@ try({setMethod('nrow', 'DataLayer',
             nrow(x@.Data[,,x@layer,drop=FALSE])
           })})                          #for some reason this errors out
 
-##' @export
+##' @export nlayer
 setMethod('nlayer', 'DataLayer',
           function(x){
             dim(x@.Data)[3]
