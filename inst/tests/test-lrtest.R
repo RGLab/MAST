@@ -12,11 +12,10 @@ x <- rnorm(n, 10)
 y <- integer(0)
 SingleCellAssay:::lrtest(w.x, w.y, x, y)
 
-source('common-fixtures.R')
 fd.spl <- split(fd, 'Number.of.Cells')
-lrout <- lrt(fd.spl[[1]], 'Subject.ID', returnall=FALSE)
-lrout2 <- suppressMessages(suppressWarnings(zlm.SingleCellAssay(et ~ Subject.ID, fd.spl[[1]], hypo.terms='Subject.ID', type='LRT')))
 context('testing for equality between glm lrtest and two-sample')
 test_that('LRT and zlm are equivalent', {
+    lrout <- lrt(fd.spl[[1]], 'Subject.ID', returnall=FALSE)
+    lrout2 <- suppressMessages(suppressWarnings(zlm.SingleCellAssay(et ~ Subject.ID, fd.spl[[1]], hypothesis='Subject.ID', type='LRT')))
 expect_equivalent(lrout$lrstat, lrout2[,2,3])
 })

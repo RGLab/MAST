@@ -4,16 +4,14 @@ setMethod('update', signature=c(object='GLMlike'), function(object, formula., ..
     object
 })
 
-setMethod('vcovD', signature=c(object='GLMlike'), function(object){
-    CP <- crossprod(object@modelMatrix, diag(object@fitD$weights) %*% object@modelMatrix)
-    solve(CP)
+setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
+    stopifnot(which %in% c('C', 'D'))
+    if(which=='C') stats:::summary.glm(object@fitC)$cov.scaled else stats:::summary.glm(object@fitD)$cov.scaled
 })
 
-setMethod('vcovC', signature=c(object='GLMlike'), function(object){
-    s2 <- sum(object@fitC$residuals^2)/object@fitC$df.residual
-    mm <- object@modelMatrix[object@response>0,]
-    solve(crossprod(mm)) * s2
-})
+## setMethod('vcovC', signature=c(object='GLMlike'), function(object){
+##     stats:::summary.glm(object@fitC)$cov.scaled
+## })
 
 setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, ...){
     prefit <- .fit(object)
@@ -25,20 +23,16 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     object
 })
 
-setMethod('initialize', 'GLMlike', function(.Object, design, formula, ...){
+setMethod('initialize', 'GLMlike', function(.Object, ...){
     .Object <- callNextMethod()
-    if(!missing(formula)){
-        .Object@modelMatrix <- model.matrix(formula, design)
-        .Object@formula <- formula
-    }
-    .Object@design <- design
+    .Object@modelMatrix <- model.matrix(.Object@formula, .Object@design)
     .Object
 })
 
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
-    -.5* sum(ifelse(object@fitted, c(object@fitC$deviance, object@fitD$deviance), c(0,0)))
+    setNames(-.5*(ifelse(object@fitted, c(object@fitD$deviance, object@fitC$deviance), c(0,0))), c('C', 'D'))
 })
 
 setMethod('dof', signature=c(object='GLMlike'), function(object){
-    sum(object@fitted)*ncol(object@design)
+    c(C=length(coef(object, 'C', singular=FALSE)), D=length(coef(object, 'D', singular=FALSE)))
 })

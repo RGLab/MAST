@@ -17,28 +17,32 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
 })
 
 
-setMethod('vcovD', signature=c(object='LMERlike'), function(object){
-    vcov(object@fitD)
+setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
+    stopifnot(which %in% c('C', 'D'))
+    if(which=='C') vcov(object@fitC) else vcov(object@fitD)
 })
 
-setMethod('vcovC', signature=c(object='LMERlike'), function(object){
-    vcov(object@fitC)
-})
+## setMethod('vcovC', signature=c(object='LMERlike'), function(object){
+##     vcov(object@fitC)
+## })
 
-setMethod('coefC', signature=c(object='LMERlike'), function(object){
-    fixef(object@fitC)
-})
+## setMethod('coefC', signature=c(object='LMERlike'), function(object){
+##     fixef(object@fitC)
+## })
 
 
-setMethod('coefD', signature=c(object='LMERlike'), function(object){
-    fixef(object@fitD)
+setMethod('coef', signature=c(object='LMERlike'), function(object, which, singular=TRUE, ...){
+    stopifnot(which %in% c('C', 'D'))
+    co <- if(which=='C') fixef(object@fitC) else fixef(object@fitD)
+    if(!singular) co <- co[!is.na(co)]
+    co
 })
 
 setMethod('logLik', signature=c(object='LMERlike'), function(object){
-    sum(ifelse(object@fitted, c(logLik(object@fitC), logLik(object@fitD)), c(0,0)))
+    setNames(ifelse(object@fitted, c(logLik(object@fitC), logLik(object@fitD)), c(0,0)), c('C', 'D'))
 })
 
 setMethod('dof', signature=c(object='LMERlike'), function(object){
-    sum(ifelse(object@fitted, c(attr(logLik(object@fitC), 'df'), attr(logLik(object@fitD), 'df')), c(0,0)))
+    setNames(ifelse(object@fitted, c(attr(logLik(object@fitC), 'df'), attr(logLik(object@fitD), 'df')), c(0,0)), c('C', 'D'))
 
 })

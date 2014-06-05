@@ -3,18 +3,15 @@
 \alias{zlm.SingleCellAssay}
 \title{zlm.SingleCellAssay}
 \usage{
-zlm.SingleCellAssay(formula, sca, lm.fun = glm, hypothesis.matrix, hypo.terms,
-  hypo.contrasts, type = "Wald", keep.zlm = FALSE, .parallel = FALSE,
-  .drop = TRUE, .inform = FALSE, silent = TRUE, ...)
+zlm.SingleCellAssay(formula, sca, method = "glm", hypothesis, type = "Wald",
+  keep.zlm = "false", .parallel = FALSE, silent = TRUE, ...)
 }
 \arguments{
 \item{formula}{a formula with the measurement variable on the LHS and predictors present in cData on the RHS}
 
 \item{sca}{SingleCellAssay object}
 
-\item{lm.fun}{a function accepting lm-style arguments and a family argument}
-
-\item{hypothesis.matrix}{Deprecated}
+\item{method}{character vector, either 'glm' or 'glmer'}
 
 \item{hypo.terms}{character vector giving terms to drop from model}
 
@@ -26,13 +23,9 @@ zlm.SingleCellAssay(formula, sca, lm.fun = glm, hypothesis.matrix, hypo.terms,
 
 \item{.parallel}{run fits using parallel processing.  must have doParallel}
 
-\item{.drop}{see ldply}
-
-\item{.inform}{see ldply}
-
 \item{silent}{Silence common problems with fitting some genes}
 
-\item{...}{passed to lm.fun}
+\item{...}{passed to glm/glmer}
 }
 \value{
 either an array of tests (one per primer) or a list
@@ -56,10 +49,8 @@ Component "models" is a list giving the model fit for each gene.
 }
 \examples{
 \dontrun{
-data(vbeta)
-vbeta <- computeEtFromCt(vbeta)
-vbeta.sc <- FluidigmAssay(vbeta, idvars='Sample.ID', primerid='Gene', measurement='Et', ncells='Number.of.Cells', cellvars='Stim.Condition')
-testsByGene <- zlm.SingleCellAssay(Et ~ Stim.Condition, vbeta.sc, hypothesis.matrix='Stim.ConditionUnstim')
+data(vbetaFA)
+testsByGene <- zlm.SingleCellAssay(Et ~ Stim.Condition, vbetaFA, hypothesis.matrix='Stim.ConditionUnstim')
 # genes X metric X test type
 dimnames(testsByGene)
 
@@ -68,10 +59,5 @@ names(modelsAndTestsByGene$models)
 summary(modelsAndTestsByGene$models[['IL13']]$disc)
 summary(modelsAndTestsByGene$models[['IL13']]$cont)
 }
-}
-\seealso{
-zlm
-
-test.zlm
 }
 
