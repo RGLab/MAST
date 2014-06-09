@@ -1,18 +1,25 @@
-setMethod('fit', signature=c(object='LMERlike', response='missing'), function(object, response, ...){
+setMethod('fit', signature=c(object='LMERlike', response='missing'), function(object, response, silent=TRUE, ...){
     ## Assume design exists:
     ## Call lmFit with response and object
     prefit <- .fit(object)
-    if(!prefit) return(object)
+    if(!prefit){
+        if(!silent) warning('No positive observations')
+        return(object)
+    }
+
 
     formC <- update.formula(object@formula, .response ~ .)
     formD <- update.formula(object@formula, .response>0 ~ .)
     dat <- cbind(.response=object@response, object@design)
-    object@fitC <- lmer(formC, data=dat, ...)
+    fitArgsC <- object@fitArgsC
+    fitArgsD <- object@fitArgsD
+    object@fitC <- do.call(lmer, c(list(formula=formC, data=dat, REML=FALSE), fitArgsC))
     if(!all(pos)){
-        object@fitD <- glmer(formD, data=dat, family=binomial(), ...)
+        object@fitD <- do.call(glmer, c(list(formula=formD, data=dat, family=binomial()), fitArgsD))
         object@fitted['D'] <- length(object@fitD@optinfo$conv$lme)==0
     } 
     object@fitted['C'] <- length(object@fitC@optinfo$conv$lme)==0
+    if(!silent & !all(object@fitted)) warning('At least one component failed to converge')
     object
 })
 

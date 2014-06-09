@@ -10,7 +10,7 @@ setGeneric('vcov', function(object) standardGeneric('vcov'))
 setGeneric('dof', function(object) standardGeneric('dof'))
 
 ## Classes
-setClass('LMlike', slots=c(design='data.frame', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula'),     prototype=list(fitted =c(C=FALSE, D=FALSE)), validity=function(object){
+setClass('LMlike', slots=c(design='data.frame', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list'),     prototype=list(fitted =c(C=FALSE, D=FALSE)), validity=function(object){
     stopifnot( all(c("C", "D") %in% names(object@fitted)))
     if(length(object@response)>0 && any(is.na(object@response))) stop('NAs not permitted in response')
 })
@@ -50,10 +50,12 @@ setMethod('show',  signature=c(object='LMlike'), function(object){
 }
 
 
-setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, ...){
+setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, fitArgsC=list(), fitArgsD=list(), ...){
     object@response <- response
+    object@fitArgsC <- fitArgsC
+    object@fitArgsD <- fitArgsD
     validObject(object)
-    fit(object, ...)
+    fit(object, silent=silent, ...)
 })
 
 setMethod('coef', signature=c(object='LMlike'), function(object, which, singular=TRUE, ...){
@@ -66,10 +68,10 @@ setMethod('coef', signature=c(object='LMlike'), function(object, which, singular
 
 
 setMethod('summary', signature=c(object='LMlike'), function(object){
-    print('Discrete\n============')
-    print(coefD(object))
-    print('Continuous\n============')
-    print(coefC(object))
+    print('===========Discrete============')
+    print(coef(object, 'D'))
+    print('==========Continuous===========')
+    print(coef(object, 'C'))
 })
 
 setMethod('update', signature=c(object='LMlike'), function(object, formula., ...){
@@ -121,7 +123,8 @@ setMethod('lrTest', signature=c(object='LMlike', drop.terms='character'), functi
     U <- update(object, F)
     fitnew <- fit(U)
     l1 <- logLik(fitnew)
-    dl <- -2*(l1-l0)
-    df <- dof(object) - dof(fitnew)
+    bothfitted <- object@fitted & fitnew@fitted
+    dl <- ifelse(bothfitted, -2*(l1-l0), c(0, 0))
+    df <- ifelse(bothfitted, dof(object) - dof(fitnew), c(0, 0))
     makeChiSqTable(dl, df, drop.terms)
 })

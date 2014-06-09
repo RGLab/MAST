@@ -1,6 +1,6 @@
 setMethod('update', signature=c(object='GLMlike'), function(object, formula., ...){
     object <- callNextMethod(object, formula., ...)
-    object@modelMatrix <- model.matrix(object@formula, object@design)
+    object@modelMatrix <- model.matrix(object@formula, object@design, ...)
     object
 })
 
@@ -13,13 +13,19 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
 ##     stats:::summary.glm(object@fitC)$cov.scaled
 ## })
 
-setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, ...){
+setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
-    if(!prefit) return(object)
-    
-    object@fitC <- glm.fit(object@modelMatrix[pos,], object@response[pos])
-    object@fitD <- glm.fit(object@modelMatrix, pos*1, family=binomial())
+    if(!prefit){
+        if(!silent) warning('No positive observations')
+        return(object)
+    }
+
+    fitArgsC <- object@fitArgsC
+    fitArgsD <- object@fitArgsD
+    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,], y=object@response[pos]), fitArgsC))
+    object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
     object@fitted <- c(C=object@fitC$converged, D=object@fitD$converged)
+    if(!silent & !all(object@fitted)) warning('At least one component failed to converge')
     object
 })
 
