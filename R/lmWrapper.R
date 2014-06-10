@@ -36,13 +36,15 @@ setGeneric('lrTest', function(object, drop.terms) standardGeneric('lrTest'))
 
 ##' Run a Wald test
 ##'
-##' Run a Wald test
+##' Run a Wald tests on discrete and continuous components
 ##' @param object LMlike or subclass
 ##' @param hypothesis.matrix argument suitable to be passed to car::lht
 ##' @return array giving test statistics
 ##' @export
 ##' @seealso fit
 ##' @seealso lrTest
+##' @seealso lht
+##' @importFrom car linearHypothesis.default
 setGeneric('waldTest', function(object, hypothesis.matrix) standardGeneric('waldTest'))
 ## setGeneric('vcovC', function(object) standardGeneric('vcovC'))
 ## setGeneric('vcovD', function(object) standardGeneric('vcovD'))
@@ -173,15 +175,6 @@ makeChiSqTable <- function(lambda, df, test){
 }
 
 
-##' Wald test for hurdle regression
-##'
-##' .. content for \details{} ..
-##' @param object class \code{GLMlike}
-##' @param hypothesis.matrix character vector or matrix following car::linearHypothesis
-##' @seealso linearHypothesis
-##' @return matrix with columns
-##' @importFrom car linearHypothesis.default
-##' @importFrom plyr laply
 setMethod('waldTest', signature=c(object='LMlike', hypothesis.matrix='ANY'), function(object, hypothesis.matrix){
     if(object@fitted['C']){
             C <- car::linearHypothesis.default(object@fitC, hypothesis.matrix=hypothesis.matrix, test='Chisq', vcov.=vcov(object, which='C'), coef.=coef(object, which='C', singular=FALSE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]

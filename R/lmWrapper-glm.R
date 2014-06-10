@@ -26,7 +26,7 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     fitArgsD <- object@fitArgsD
     object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,], y=object@response[pos]), fitArgsC))
     object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
-    object@fitted <- c(C=object@fitC$converged, D=object@fitD$converged)
+    object@fitted <- c(C=object@fitC$converged & object@fitC$df.residual>0, D=object@fitD$converged & object@fitD$df.residual>0)
     if(!silent & !all(object@fitted)) warning('At least one component failed to converge')
     object
 })

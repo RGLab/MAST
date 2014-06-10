@@ -11,6 +11,7 @@
 ##' @return bitmask containing number of dimensions that agree
 ##' @author andrew
 ##'  @export conform
+##' @include AllClasses.R
 setGeneric('conform', function(dl, other) standardGeneric('conform'))
 
 

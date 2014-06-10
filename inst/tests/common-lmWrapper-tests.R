@@ -65,6 +65,23 @@ test_that('log likelihood is invariant to scaling', {
 
 })
 
+test_that('Can handle no residual DOF', {
+    resp <- obj@response
+    resp <- rep(0, length(resp))
+    d <- obj@design
+    resp[which(d$Stim.Condition=='Unstim')[1]] <- rnorm(1)+10
+    resp[which(d$Stim.Condition!='Unstim')[1]] <- rnorm(1)+20
+   tt <- try({
+    obj2 <- fit(obj, resp)              #throwing an error here is also acceptable
+    lrt <- lrTest(obj2, 'Stim.Condition')
+})
+    if(!is(tt, 'try-error')){
+        expect_false(obj2@fitted['C'])
+        expect_equal(lrt['cont', 'lambda'], 0)
+    }
+    
+})
+
 test_that('Can get variance/cov', {
     expect_equivalent(vcov(obj, 'C'), vcov(objC))
     expect_equivalent(vcov(obj, 'D'), vcov(objD))
