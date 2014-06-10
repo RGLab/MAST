@@ -10,7 +10,7 @@ zlm(formula, data, method = "glm", silent = TRUE, ...)
 
 \item{data}{a data.frame, list or environment in which formula is evaluated}
 
-\item{method}{one of 'glm' or 'lmer'.  See SingleCellAssay:::methodDict for other possibilities.}
+\item{method}{one of 'glm' or 'glmer'.  See SingleCellAssay:::methodDict for other possibilities.}
 
 \item{silent}{if TRUE suppress common errors from fitting continuous part}
 

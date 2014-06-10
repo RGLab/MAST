@@ -1,3 +1,5 @@
+##' @include lmWrapper.R
+##' @include AllClasses.R
 setMethod('fit', signature=c(object='LMERlike', response='missing'), function(object, response, silent=TRUE, ...){
     ## Assume design exists:
     ## Call lmFit with response and object

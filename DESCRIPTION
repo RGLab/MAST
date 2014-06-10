@@ -31,3 +31,21 @@ Suggests:
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0
+Collate:
+    'AllClasses.R'
+    'DataLayer.R'
+    'Fluidigm-methods.R'
+    'MultidimensionalScaling.R'
+    'Nanostring-methods.R'
+    'NanostringRCCReader.R'
+    'Readers.R'
+    'SCASet-methods.R'
+    'SingleCellAssay-methods.R'
+    'filterEval.R'
+    'helper-methods.R'
+    'lmWrapper.R'
+    'lmWrapper-glm.R'
+    'lmWrapper-glmer.R'
+    'lrtest.r'
+    'piest.R'
+    'zeroinf.R'
