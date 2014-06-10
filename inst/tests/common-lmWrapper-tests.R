@@ -51,6 +51,25 @@ test_that('log likelihood is increasing in model complexity', {
     expect_true(all(l0<=l1))
 })
 
+test_that('log likelihood agrees with individual model objects',{
+    expect_equivalent(as.numeric((logLik(objC))), logLik(obj)['C'])
+    expect_equivalent(as.numeric(logLik(objD)), logLik(obj)['D'])
+
+})
+
+test_that('log likelihood is invariant to scaling', {
+    l1 <- logLik(obj)
+    fit(obj, response=obj@response*10)
+    l2 <- logLik(obj)
+    expect_equal(l1, l2)
+
+})
+
+test_that('Can get variance/cov', {
+    expect_equivalent(vcov(obj, 'C'), vcov(objC))
+    expect_equivalent(vcov(obj, 'D'), vcov(objD))
+})
+
 
 
 context('Post hoc testing')
@@ -65,6 +84,13 @@ test_that('LRT For Glm', {
  expect_equal(btest['cont','df'],1)
  
 })
+
+## test_that('LRT agree with manual', {
+##     d <- anova(objD, test='Chisq')[2,'Deviance']
+##     cont <- anova(objC, test='Chisq')[2,'Deviance']
+##     lrt <- lrTest(obj, 'Stim.Condition')
+##     expect_equivalent(lrt['hurdle', 'lambda'], sum(ifelse(lrt[1:2, 'df']>0,c(cont,d),c(0,0))))
+## })
 
 test_that('Wald For Glm', {
  atest <- waldTest(obj, 'Stim.ConditionUnstim')

@@ -21,8 +21,8 @@ test_that('zlm throws error on NA', {
 
 test_that('zlm can run linear regression', {
   out <- zlm(y ~ x1 + x2, dat)
-  expect_equal(coef(disc), coef(out$disc))
-  expect_equal(coef(cont), coef(out$cont))
+  expect_equivalent(coef(disc), coef(out$disc))
+  expect_equivalent(coef(cont), coef(out$cont))
 })
 
 test_that('zlm accepts expressions in formulae', {

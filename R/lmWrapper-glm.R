@@ -38,7 +38,9 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 })
 
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
-    setNames(-.5*(ifelse(object@fitted, c(object@fitD$deviance, object@fitC$deviance), c(0,0))), c('C', 'D'))
+
+    setNames(ifelse(object@fitted, dof(object) - c(object@fitC$aic/2-1,    #AIC is has extra DOF penalty for gaussian??  See getS3method('logLik', 'glm')
+                                                object@fitD$aic/2), c(0,0)), c('C', 'D'))
 })
 
 setMethod('dof', signature=c(object='GLMlike'), function(object){

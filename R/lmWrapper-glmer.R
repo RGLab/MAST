@@ -15,7 +15,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
     dat <- cbind(.response=object@response, object@design)
     fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
-    object@fitC <- do.call(lmer, c(list(formula=formC, data=dat, REML=FALSE), fitArgsC))
+    object@fitC <- do.call(lmer, c(list(formula=formC, data=dat[pos,], REML=FALSE), fitArgsC))
     if(!all(pos)){
         object@fitD <- do.call(glmer, c(list(formula=formD, data=dat, family=binomial()), fitArgsD))
         object@fitted['D'] <- length(object@fitD@optinfo$conv$lme)==0
