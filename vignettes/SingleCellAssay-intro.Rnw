@@ -192,18 +192,17 @@ We'll plot the -log10 P values by gene and test type.
 <<zlmExample, warning=FALSE, message=FALSE, fig.width=4, fig.height=6>>=
 library(ggplot2)
 library(reshape)
-zlm.output <- zlm.SingleCellAssay(Et ~ Stim.Condition + Subject.ID, vbeta.1, hypo.terms='Stim.Condition', type='LRT')
+zlm.output <- zlm.SingleCellAssay(~ Stim.Condition + Subject.ID, vbeta.1, hypothesis='Stim.Condition', type='LRT')
 dimnames(zlm.output)
-pvalue <- ggplot(melt(zlm.output[,'Pr(>Chisq)',]), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
+pvalue <- ggplot(melt(zlm.output[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
 print(pvalue)
 @
 
 %% In fact, the \text{zlm} framework is quite general, and allows any modeling function that accepts \text{glm}-like arguments to be used, including mixed models such as those available in \texttt{lme4}.
 
-<<lmerExample, warning=FALSE, message=FALSE, eval=FALSE, echo=FALSE>>=
-#lmer is broken at the moment
+<<lmerExample, warning=FALSE, message=FALSE>>=
 library(lme4)
-lmer.output <- zlm.SingleCellAssay(Et ~ Stim.Condition +(1|Subject.ID), vbeta.1, lm.fun=glmer,hypo.terms='Stim.Condition', type='LRT')
+lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer',hypothesis='Stim.Condition', type='LRT')
 @
  
 It is possible to save the model fits so that coefficients can be examined.  See \texttt{?zlm.SingleCellAssay}.
@@ -215,7 +214,7 @@ library(car)
 two.sample <- LRT(vbeta.1, 'Population', referent='CD154+VbetaResponsive')
 car::some(two.sample)
 @
-Here we compare each population (\Sexpr{unique(cData(vbeta.1)$Pop)[-1]}) to \Sexpr{unique(cData(vbeta.1)$Pop)[1]}.  
+Here we compare each population (\Sexpr{unique(cData(vbeta.1)$Population)[-1]}) to \Sexpr{unique(cData(vbeta.1)$Population)[1]}.  
 The \texttt{Population} column shows which population is being compared, while \texttt{test.type} is \texttt{comb} for the combined normal theory/binomial test.  Column \texttt{primerid} gives the gene being tested, \texttt{direction} shows if the comparison group mean is greater (1) or less (-1) than the referent group, and \texttt{lrtstat} and \texttt{p.value} give the test statistic and $\chi^2$ p-value (two degrees of freedom).
 
 Other options are whether additional information about the tests are returned (\texttt{returnall=TRUE}) and if the testing should be stratified by a character vector naming columns in \texttt{cData} containing grouping variables (\texttt{groups}).
