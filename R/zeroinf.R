@@ -115,6 +115,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     ltests <- setNames(vector(mode='list', length=nhypo), names(hypothesis))
     for(h in seq_len(nhypo)){
         ltests[[h]] <- array(0, dim=c(ng, nrow(testNames), ncol(testNames)), dimnames=list(primerid=genes, test.type=row.names(testNames), metric=colnames(testNames)))
+        ltests[[h]][,,'Pr(>Chisq)'] <- 1
 }
     ## Todo: coefs, vcov, etc
     ## coef <- 
