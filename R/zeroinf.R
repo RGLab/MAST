@@ -106,7 +106,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     
     genes <- colnames(exprs(sca))
     ng <- length(genes)
-    upperQgene <- which(rank(freq(sca))==floor(.75*ng))
+    upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
     obj <- fit(obj, exprs(sca)[,upperQgene], silent=silent, ...)
 
     testNames <- makeChiSqTable(c(0, 0), c(1, 1), '')
@@ -120,13 +120,13 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     ## Todo: coefs, vcov, etc
     ## coef <- 
     for(i in seq_len(ng)){
-        tt <- try({
+        outerCatch <- try({
             obj <- fit(obj, response=exprs(sca)[,i], silent=silent, ...)
             for(h in seq_len(nhypo)){
-                ltests[[h]][i,,] <- test(obj, hypothesis[[h]])
+                 try({ltests[[h]][i,,] <- test(obj, hypothesis[[h]])}, silent=silent)
             }  
         }, silent=silent)
-        if(is(tt, 'try-error')){
+        if(is(outerCatch, 'try-error')){
             message('!', appendLF=FALSE)
             next
         }
