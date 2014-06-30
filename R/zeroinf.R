@@ -1,4 +1,4 @@
-methodDict <- c('glm'='GLMlike', 'glmer'='LMERlike', 'lmer'='LMERlike')
+methodDict <- c('glm'='GLMlike', 'glmer'='LMERlike', 'lmer'='LMERlike', 'bayesglm'='BayesGLMlike')
 
 ##' Convenience function for running a zero-inflated regression
 ##'
@@ -88,7 +88,7 @@ summary.zlm <- function(out){
 ##' dimnames(twoTests[[1]])
 ##' }
 zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wald', keep.zlm='false', .parallel=FALSE, silent=TRUE, ...){
-    method <- match.arg(method, c('glm', 'glmer'))
+    method <- match.arg(method, names(methodDict))
     type <- match.arg(type, c('LRT', 'Wald'))
     test <- if(type=='LRT') lrTest else waldTest
     

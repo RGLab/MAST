@@ -1,4 +1,5 @@
-##' @include lmWrapper.R
+##' @include LmWrapper.R
+##' @include lmWrapper-glm.R
 ##' @include AllClasses.R
 setMethod('update', signature=c(object='GLMlike'), function(object, formula., ...){
     object <- callNextMethod(object, formula., ...)

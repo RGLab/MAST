@@ -1,4 +1,4 @@
-##' @include lmWrapper.R
+##' @include LmWrapper.R
 ##' @include AllClasses.R
 setMethod('fit', signature=c(object='LMERlike', response='missing'), function(object, response, silent=TRUE, ...){
     ## Assume design exists:

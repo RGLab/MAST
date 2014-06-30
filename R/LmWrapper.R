@@ -103,6 +103,8 @@ setClass('GLMlike', contains='LMlike', slots=c(modelMatrix='matrix'), validity=f
     }},
     prototype=list(modelMatrix=matrix(nrow=0, ncol=0),  fitted =c(C=FALSE, D=FALSE))
 )
+
+setClass('BayesGLMlike', contains='GLMlike')
 setClass('LMERlike', contains='LMlike')
 
 ## Methods for LMlike
