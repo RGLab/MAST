@@ -22,7 +22,19 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
     object
 })
 
-## setMethod('vcov', signature=c(object='BayesGLMlike'), function(object, which, ...){
-##     stopifnot(which %in% c('C', 'D'))
-##     if(which=='C') vcov(object@fitC) else vcov(object@fitD)
-## })
+setMethod('logLik', signature=c(object='BayesGLMlike'), function(object){
+    L <- c(C=0, D=0)
+    if(object@fitted['C']){
+        s2 <- stats::summary.glm(object@fitC)$dispersion
+        dev <- object@fitC$deviance
+        N <- object@fitC$df.null
+        L['C'] <- -.5*N*log(s2) + -dev/(2*s2)
+    }
+
+    if(object@fitted['D']){
+         dev <- object@fitD$deviance
+         L['D'] <- -dev/2
+    }
+    return(L)
+})
+

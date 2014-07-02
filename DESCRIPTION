@@ -27,7 +27,8 @@ Suggests:
     knitr,
     testthat,
     lme4(>= 1.0),
-    roxygen2(> 4.0.0)
+    roxygen2(> 4.0.0),
+    arm
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0
