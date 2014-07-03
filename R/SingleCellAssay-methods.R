@@ -666,5 +666,6 @@ setAs('SingleCellAssay', 'data.table', function(from){
     M <- melt.data.table(ex, 'wellKey')[,primerid:=variable][,variable:=NULL]
     setkey(M, primerid, wellKey)
     M <- merge(merge(M, cd), fd, by='primerid')
+    stopifnot(nrow(M) == ncol(from)*nrow(from))
     M
 })
