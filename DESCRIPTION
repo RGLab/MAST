@@ -45,6 +45,7 @@ Collate:
     'SingleCellAssay-methods.R'
     'filterEval.R'
     'helper-methods.R'
+    'lmWrapper-ShrunkenGLMlike.R'
     'lmWrapper-bayesglm.R'
     'lmWrapper-glm.R'
     'lmWrapper-glmer.R'

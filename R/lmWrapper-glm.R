@@ -9,12 +9,20 @@ setMethod('update', signature=c(object='GLMlike'), function(object, formula., ..
 
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
-    if(which=='C') stats:::summary.glm(object@fitC)$cov.scaled else stats:::summary.glm(object@fitD)$cov.scaled
+    if(which=='C') stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled else stats:::summary.glm(object@fitD)$cov.scaled
 })
 
-## setMethod('vcovC', signature=c(object='GLMlike'), function(object){
-##     stats:::summary.glm(object@fitC)$cov.scaled
-## })
+.dispersion <- function(object){
+    if(object@fitted['C']){
+        object@fitC$dispersionMLE <- object@fitC$deviance/(object@fitC$df.null+1)
+        object@fitC$dispersion <- object@fitC$deviance/object@fitC$df.residual
+    } else{
+        object@fitC$dispersion <- NA
+    }
+
+    object
+}
+
 
 setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
@@ -28,7 +36,10 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,], y=object@response[pos]), fitArgsC))
     object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
     object@fitted <- c(C=object@fitC$converged & object@fitC$df.residual>0, D=object@fitD$converged & object@fitD$df.residual>0)
-    if(!silent & !all(object@fitted)) warning('At least one component failed to converge')
+
+    object <- .dispersion(object)
+    
+    if(!silent & !all(object@fitted)) warning('At least one component failed to converge')    
     object
 })
 
@@ -39,9 +50,19 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 })
 
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
+    L <- c(C=0, D=0)
+    if(object@fitted['C']){
+        s2 <- object@fitC$dispersionMLE
+        dev <- object@fitC$deviance
+        N <- (object@fitC$df.null+1)
+        L['C'] <- -.5*N*(log(s2*2*pi) +1)
+    }
 
-    setNames(ifelse(object@fitted, dof(object) - c(object@fitC$aic/2-1,    #AIC is has extra DOF penalty for gaussian??  See getS3method('logLik', 'glm')
-                                                object@fitD$aic/2), c(0,0)), c('C', 'D'))
+    if(object@fitted['D']){
+         dev <- object@fitD$deviance
+         L['D'] <- -dev/2
+    }
+    return(L)
 })
 
 setMethod('dof', signature=c(object='GLMlike'), function(object){

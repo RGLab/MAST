@@ -91,7 +91,7 @@ setGeneric('dof', function(object) standardGeneric('dof'))
 ##' @seealso logLik
 ##' @name LMlike-class
 ##' @docType class
-setClass('LMlike', slots=c(design='data.frame', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list'),     prototype=list(fitted =c(C=FALSE, D=FALSE)), validity=function(object){
+setClass('LMlike', slots=c(design='data.frame', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list'),     prototype=list(fitted =c(C=FALSE, D=FALSE), formula=formula(0~0)), validity=function(object){
     stopifnot( all(c("C", "D") %in% names(object@fitted)))
     if(length(object@response)>0 && any(is.na(object@response))) stop('NAs not permitted in response')
 })
@@ -101,11 +101,11 @@ setClass('GLMlike', contains='LMlike', slots=c(modelMatrix='matrix'), validity=f
         stopifnot(length(object@response)==nrow(object@design))
         #stopifnot(length(object@response)==nrow(object@modelMatrix))
     }},
-    prototype=list(modelMatrix=matrix(nrow=0, ncol=0),  fitted =c(C=FALSE, D=FALSE))
-)
+    prototype=list(modelMatrix=matrix(nrow=0, ncol=0)))
 
 setClass('BayesGLMlike', contains='GLMlike')
 setClass('LMERlike', contains='LMlike')
+setClass('ShrunkenGLMlike', contains='GLMlike', slots=c(priorVar='numeric', priorDOF='numeric'), prototype=list(priorVar=0, priorDOF=0))
 
 ## Methods for LMlike
 setMethod('show',  signature=c(object='LMlike'), function(object){

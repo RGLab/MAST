@@ -4,7 +4,8 @@
 \title{zero-inflated regression for SingleCellAssay}
 \usage{
 zlm.SingleCellAssay(formula, sca, method = "glm", hypothesis, type = "Wald",
-  keep.zlm = "false", .parallel = FALSE, silent = TRUE, ...)
+  keep.zlm = "false", .parallel = FALSE, silent = TRUE,
+  priorVarianceDOF = 0, ...)
 }
 \arguments{
 \item{formula}{a formula with the measurement variable on the LHS and predictors present in cData on the RHS}

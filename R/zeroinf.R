@@ -1,4 +1,4 @@
-methodDict <- c('glm'='GLMlike', 'glmer'='LMERlike', 'lmer'='LMERlike', 'bayesglm'='BayesGLMlike')
+methodDict <- c('glm'='GLMlike', 'glmer'='LMERlike', 'lmer'='LMERlike', 'bayesglm'='BayesGLMlike', 'shrunkglm'='ShrunkenGLMlike')
 
 ##' Convenience function for running a zero-inflated regression
 ##'
@@ -87,17 +87,30 @@ summary.zlm <- function(out){
 ##' length(twoTests)
 ##' dimnames(twoTests[[1]])
 ##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wald', keep.zlm='false', .parallel=FALSE, silent=TRUE, ...){
+zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wald', keep.zlm='false', .parallel=FALSE, silent=TRUE, priorVarianceDOF=0, ...){
     method <- match.arg(method, names(methodDict))
+    method <- methodDict[method]
     type <- match.arg(type, c('LRT', 'Wald'))
     test <- if(type=='LRT') lrTest else waldTest
-    
-    if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
+        if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
     if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
     fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
     if(nchar(fsplit[1,1])>0) message("Ignoring LHS of formula (", fsplit[1,1], ') and using exprs(sca)')
-    formula <- as.formula(paste0('~', fsplit[1,2]))
-    obj <- new(methodDict[method], design=cData(sca), formula=formula)
+    Formula <- as.formula(paste0('~', fsplit[1,2]))
+
+     ## Empirical bayes method
+    if(priorVarianceDOF > 0){
+        if(method != 'ShrunkenGLMlike') warning('Selecting method "ShrunkenGLMlike" since "priorVarianceDOF" is not zero.')
+        ee <- exprs(sca)
+        ee[ee==0] <- NA
+        ee <- scale(ee, scale=FALSE, center=TRUE)
+        ## Global variance
+        v <- var(as.vector(ee), na.rm=TRUE)
+        obj <- new('ShrunkenGLMlike', design=cData(sca), formula=Formula, priorVar=v, priorDOF=priorVarianceDOF)
+    } else{
+        obj <- new(method, design=cData(sca), formula=Formula)
+    }
+
 
     if(is.character(hypothesis)){
         hypothesis <- list(hypothesis)
@@ -117,6 +130,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
         ltests[[h]] <- array(0, dim=c(ng, nrow(testNames), ncol(testNames)), dimnames=list(primerid=genes, test.type=row.names(testNames), metric=colnames(testNames)))
         ltests[[h]][,,'Pr(>Chisq)'] <- 1
 }
+    
     ## Todo: coefs, vcov, etc
     ## coef <- 
     for(i in seq_len(ng)){
