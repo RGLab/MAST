@@ -260,33 +260,6 @@ uniqueModNA <- function(df, exclude){
 #standardGeneric("melt")
 #  UseMethod(generic="melt",data)
 #  },useAsDefault=reshape::melt)
-##' Evaluate an expression (returning a \code{logical} vector in the context of
-##' \code{x}
-##'
-##' Really just syntactic sugar.
-##'
-##' @param x A matrix or \code{data.frame} typically
-##' @param thesubset An expression, which evaluated in either the current
-##' environment, or the parent, yields a logical vector
-##'
-##' @return The same class as \code{x} typically, with entries in which thesubset was \code{TRUE}
-##' 
-##' @export
-##' @docType methods
-##' @rdname subset-methods
-##' @keywords transformation
-setGeneric('subset')
-
-
-##' Return a deep copy of an object
-##'
-##' Because SingleCellAssay keeps the datastore in an environment, it's not sufficient to create a new object to make a copy on an object
-##' @param sc object
-##' @return copy of sc
-##' @export
-##' @docType methods
-##' @rdname copy-methods
-setGeneric('copy', function(object) standardGeneric('copy'))
 
 
 
