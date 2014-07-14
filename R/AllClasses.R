@@ -4,7 +4,6 @@
 ##' @import methods
 NULL
 
-
 ##' DataLayer class
 ##' 
 ##' DataLayer is a 3-D array, wrapped to make it look like a matrix.
@@ -87,20 +86,6 @@ NULL
 
 Mandatory_Featurevars <- NULL#c('primerid')
 Mandatory_Cellvars <- NULL#c('wellKey')
-
-##' Accessor for cellData \code{data.frame}
-##'
-##' Returns the \code{cellData} \code{data.frame}.
-##' @title cData
-##' @param sc An object with \code{cellData}
-##' @return \code{data.frame}
-##'
-##' 
-##' @export
-##' @docType methods
-##' @rdname cData-methods
-##' @keywords accessor
-setGeneric('cData', function(sc) standardGeneric('cData'))
 
 
 
@@ -234,6 +219,50 @@ setClass("SCASet",
            }
            return(TRUE)
          })
+
+
+## Classes
+##' Linear Model-like Class
+##'
+##' Wrapper around modeling function to make them behave enough alike that Wald tests and Likelihood ratio are easy to do.
+##' To implement a new type of zero-inflated model, extend this class.
+##'
+##' @section Slots:
+##' \describe{
+##' \item{design}{a data.frame from which variables are taken for the right hand side of the regression}
+##' \item{fitC}{The continuous fit}
+##' \item{fitD}{The discrete fit}
+##' \item{response}{The left hand side of the regression}
+##' \item{fitted}{A \code{logical} with components "C" and "D", TRUE if the respective component has converge}
+##' \item{formula}{A \code{formula} for the regression}
+##' \item{fitArgsC}{}
+##' \item{fitArgsD}{Both \code{list}s giving arguments that will be passed to the fitter (such as convergence criteria or case weights)}
+##' }
+##' @seealso fit
+##' @seealso coef
+##' @seealso lrTest
+##' @seealso waldTest
+##' @seealso vcov
+##' @seealso dof
+##' @seealso logLik
+##' @name LMlike-class
+##' @docType class
+setClass('LMlike', slots=c(design='data.frame', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list'),     prototype=list(fitted =c(C=FALSE, D=FALSE), formula=formula(0~0)), validity=function(object){
+    stopifnot( all(c("C", "D") %in% names(object@fitted)))
+    if(length(object@response)>0 && any(is.na(object@response))) stop('NAs not permitted in response')
+})
+
+setClass('GLMlike', contains='LMlike', slots=c(modelMatrix='matrix'), validity=function(object){
+    if(length(object@response)>0){
+        stopifnot(length(object@response)==nrow(object@design))
+        #stopifnot(length(object@response)==nrow(object@modelMatrix))
+    }},
+    prototype=list(modelMatrix=matrix(nrow=0, ncol=0)))
+
+setClass('BayesGLMlike', contains='GLMlike')
+setClass('LMERlike', contains='LMlike')
+setClass('ShrunkenGLMlike', contains='GLMlike', slots=c(priorVar='numeric', priorDOF='numeric'), prototype=list(priorVar=0, priorDOF=0))
+
 
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
 ##'

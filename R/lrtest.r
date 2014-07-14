@@ -46,22 +46,6 @@ logProd <- function(prod, logand){
 }
 
 
-###Below is the correct way to document S4 generics and methods with roxygen2
-
-##' Likelihood Ratio Tests for SingleCellAssays
-##'
-##' Tests for a change in ET binomial proportion or mean of positive ET
-##' Likelihood Ratio Test for SingleCellAssay objects
-##'
-##' Combined Likelihood ratio test (binomial and normal) for SingleCellAssay and derived objects
-##' @exportMethod LRT
-##' @docType methods
-##' @aliases LRT
-##' @aliases LRT,SingleCellAssay,character-method
-##' @rdname LRT-methods
-setGeneric("LRT",function(sca,comparison,...) standardGeneric("LRT"))
-
-
 ##' @rdname LRT-methods
 ##' @aliases LRT,SingleCellAssay,character-method
 ##' @param sca A \code{SingleCellAssay} class object

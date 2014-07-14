@@ -1,7 +1,5 @@
-##' @include LmWrapper.R
 ##' @include AllClasses.R
-
-
+##' @include AllGenerics.R
 setMethod('initialize', 'ShrunkenGLMlike', function(.Object, ...){
     callNextMethod()
 })

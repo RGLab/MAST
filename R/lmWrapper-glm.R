@@ -1,6 +1,5 @@
-##' @include LmWrapper.R
-##' @include lmWrapper-glm.R
 ##' @include AllClasses.R
+##' @include AllGenerics.R
 setMethod('update', signature=c(object='GLMlike'), function(object, formula., ...){
     object <- callNextMethod(object, formula., ...)
     object@modelMatrix <- model.matrix(object@formula, object@design, ...)

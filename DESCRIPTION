@@ -34,6 +34,7 @@ Description: Core data structures and methods for handling single cell assay
 License: Artistic-2.0
 Collate:
     'AllClasses.R'
+    'AllGenerics.R'
     'DataLayer.R'
     'Fluidigm-methods.R'
     'LmWrapper.R'

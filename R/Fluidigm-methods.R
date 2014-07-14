@@ -1,7 +1,3 @@
-## ###===========Generics===============
-## setGeneric('filter')
-
-
 ##' Exponential average
 ##'
 ##' Puts log transformed values onto natural scale and takes mean of vector.

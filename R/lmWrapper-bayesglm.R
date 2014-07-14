@@ -1,5 +1,5 @@
-##' @include LmWrapper.R
 ##' @include AllClasses.R
+##' @include AllGenerics.R
 
 setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)

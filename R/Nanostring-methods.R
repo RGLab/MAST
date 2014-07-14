@@ -1,13 +1,5 @@
 ##' Estimate thresholds for positive expression
 ##'
-##' @param nsa NanostringAssay object
-##' @return modified nsa
-##' @export
-setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
-
-
-##' Estimate thresholds for positive expression
-##'
 ##' Estimates per-gene x unit thresholds for positive expression and truncates values below this threshold
 ##' Uncertain values (in terms of posterior probability of membership) can be set to NA or rounded left or right
 ##' Thresholds are estimated using a Gaussian mixture model with prior supplied by population estimates.
