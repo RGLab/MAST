@@ -40,6 +40,7 @@ Collate:
     'MultidimensionalScaling.R'
     'Nanostring-methods.R'
     'NanostringRCCReader.R'
+    'RNASeqAssay-methods.R'
     'Readers.R'
     'SCASet-methods.R'
     'SingleCellAssay-methods.R'
