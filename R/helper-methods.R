@@ -21,3 +21,14 @@ computeEtFromCt<-function(df,column='Ct',Cmax=40){
 todt<-function(v){
   as.call(c(list,sapply(v,as.name)))
 }
+
+reraise <- function(err, convertToWarning=FALSE, silent=FALSE){
+    if(silent) return(err)
+    if(convertToWarning){
+        warning(simpleWarning(message=err$message, call=err$call))
+    } else{
+        stop(simpleError(message=err$message, call=err$call))
+    }
+    return(err)
+}
+

@@ -85,3 +85,21 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
 })
 
 if(require('lme4')) detach('package:lme4')
+
+context('Empirical Bayes')
+if(require('numDeriv')){
+test_that('Gradients match analytic', {
+    set.seed(12345)
+    rNg <- 101:200
+    SSg <- rgamma(100, 3, 1)
+    fn <- getMarginalHyperLikelihood(rNg, SSg)
+    Grad <- getMarginalHyperLikelihood(rNg, SSg, deriv=TRUE)
+    pts <- as.matrix(expand.grid(a0=c(.05, 1, 10), b0=c(.05, 1, 10)))
+    for(i in nrow(pts))
+        expect_equivalent(grad(fn, pts[i,]), Grad(pts[i,]))
+})
+}
+
+test_that('Empirical Bayes converges to something reasonable', {
+
+})
