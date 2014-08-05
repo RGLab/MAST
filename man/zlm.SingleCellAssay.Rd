@@ -4,8 +4,9 @@
 \title{zero-inflated regression for SingleCellAssay}
 \usage{
 zlm.SingleCellAssay(formula, sca, method = "glm", hypothesis, type = "Wald",
-  keep.zlm = "false", .parallel = FALSE, silent = TRUE,
-  priorVarianceDOF = 0, ...)
+  onlyReturnCoefs = FALSE, keep.zlm = "false", .parallel = FALSE,
+  silent = TRUE, ebayes = FALSE, ebayesControl = NULL, force = FALSE,
+  ...)
 }
 \arguments{
 \item{formula}{a formula with the measurement variable on the LHS and predictors present in cData on the RHS}
@@ -20,7 +21,19 @@ zlm.SingleCellAssay(formula, sca, method = "glm", hypothesis, type = "Wald",
 
 \item{keep.zlm}{should the model objects be returned?  May be memory intensive.}
 
+\item{.parallel}{currently ignored}
+
 \item{silent}{Silence common problems with fitting some genes}
+
+\item{ebayes}{if TRUE, regularize variance using empirical bayes method}
+
+\item{ebayesControl}{list with parameters for empirical bayes procedure.  See details.}
+
+\item{...}{}
+
+\item{force}{Should we continue testing genes even after many errors have occurred?}
+
+\item{onlyReturnCoefs}{if TRUE, don't actually test, only return a gene giving example coefficients}
 
 \item{fitArgs}{list of arguments passed to glm/glmer}
 }
@@ -43,6 +56,14 @@ Component "tests" gives the above 3-D array.
 Component "models" is a list giving the model fit for each gene.
 
 When \code{hypothesis} is a list, then each test specified in the list will be run, and the returned object will also be a list of 3D arrays (or component "tests" will be a list if keep.zlm is TRUE).
+
+The empirical bayes regularization of the gene variance assumes that the precision (1/variance) is drawn from a
+gamma distribution with unknown parameters.
+These parameters are estimated by considering the distribution of sample variances over all genes.
+The procedure used for this is determined from
+\code{ebayesControl}, a named list with components 'method' (one of 'MOM' or 'MLE') and 'model' (one of 'H0' or 'H1')
+method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
+H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 }
 \examples{
 \dontrun{

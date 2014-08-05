@@ -79,6 +79,7 @@ solveMoM <- function(rNg, SSg){
     c(a0, b0)
 }
 
+##' @importFrom plyr aaply
 getSSg_rNg <- function(sca, mm){
     aaply(exprs(sca), 2, function(y){
             SSg <- NA
@@ -170,8 +171,9 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
 ##' gamma distribution with unknown parameters.
 ##' These parameters are estimated by considering the distribution of sample variances over all genes.
 ##' The procedure used for this is determined from
-##' \code{ebayesControl}, a named list with components 'method' (one of 'MOM' or 'MLE') and 'model' (currently only 'H0')
+##' \code{ebayesControl}, a named list with components 'method' (one of 'MOM' or 'MLE') and 'model' (one of 'H0' or 'H1')
 ##' method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
+##' H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 ##'
 ##' @param formula a formula with the measurement variable on the LHS and predictors present in cData on the RHS
 ##' @param sca SingleCellAssay object
