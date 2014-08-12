@@ -102,6 +102,8 @@ test_that('LRT For Glm', {
  
 })
 
+
+
 ## test_that('LRT agree with manual', {
 ##     d <- anova(objD, test='Chisq')[2,'Deviance']
 ##     cont <- anova(objC, test='Chisq')[2,'Deviance']
@@ -112,4 +114,10 @@ test_that('LRT For Glm', {
 test_that('Wald For Glm', {
  atest <- waldTest(obj, 'Stim.ConditionUnstim')
  expect_is(atest, 'matrix')
+})
+
+
+test_that('Residuals', {
+    expect_equivalent(residuals(obj, which='C', type='response'), residuals(objC, type='response'))
+    expect_equivalent(residuals(obj, which='D', type='deviance'), residuals(objD, type='deviance'))
 })

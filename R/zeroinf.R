@@ -1,5 +1,22 @@
 methodDict <- c('glm'='GLMlike', 'glmer'='LMERlike', 'lmer'='LMERlike', 'bayesglm'='BayesGLMlike', 'shrunkglm'='ShrunkenGLMlike')
 
+residualsHook <- function(fit){
+    residuals(fit, which='Marginal')
+}
+
+revealHook <- function(zlm){
+    return(attr(zlm, 'hookOut'))
+}
+
+##' @importFrom plyr laply
+collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
+    if(newLayerName %in% dimnames(sca)[[3]]) warning('Overwriting layer', newLayerName) else     sca <- addlayer(sca, newLayerName)
+    layer(sca) <- newLayerName
+    mat <- t(laply(revealHook(zlm), function(x) x))
+    exprs(sca) <- mat
+    sca
+}
+
 ##' Convenience function for running a zero-inflated regression
 ##'
 ##' Fits a hurdle model on zero-inflated continuous data in which the zero process
@@ -39,121 +56,12 @@ summary.zlm <- function(out){
   summary(out$cont)
   summary(out$disc)
 }
-
-
-## rNg: residual Ng: Ng -p, where p is the dimension of the model
-## SSg: residual sum of squares
-getMarginalHyperLikelihood <- function(rNg, SSg, deriv=FALSE){
-    if(!deriv){
-        fun <- function(theta){
-            stopifnot(names(theta)==c('a0', 'b0'))
-            a0 <- theta['a0']
-            b0 <- theta['b0']
-
-            Li <- -lbeta(rNg/2, a0)-rNg/2*log(b0)-log(1+SSg/(2*b0))*(rNg/2+a0)
-            return(sum(Li))
-        }
-    } else{
-        fun <- function(theta){
-            stopifnot(names(theta)==c('a0', 'b0'))
-            a0 <- theta['a0']
-            b0 <- theta['b0']
-            score_a0_i <- digamma(rNg/2+a0)-digamma(a0)-log(1+SSg/(2*b0))
-            score_b0_i <- (a0*SSg-rNg*b0)/(SSg*b0+2*b0^2)
-            return(c(a0=sum(score_a0_i), b0=sum(score_b0_i)))
-        }
-    }
-    fun
-}
-
-## probably need a global optimization routine--plus there are multiple roots potentially.
-## or just a good starting value
-solveMoM <- function(rNg, SSg){
-    rbar <- mean(SSg/rNg)
-    rbarbar <- mean(SSg^2/(rNg*(rNg+2)))
-    a0mom <- function(a0) (2*(a0-1)^2*rbar^2  -rbarbar^2*((a0-2)*(a0-4)))^2
-    
-    a0slv <- optimize(a0mom, c(0, 10))
-    a0 <- a0slv$minimum
-    b0 <- (a0-1)*rbar
-    c(a0, b0)
-}
-
-##' @importFrom plyr aaply
-getSSg_rNg <- function(sca, mm){
-    aaply(exprs(sca), 2, function(y){
-            SSg <- NA
-            rNg <- NA
-            try({
-                pos <- y>0
-                yp <- y[pos]
-                mp <- mm[pos,]
-                QR <- qr(mp)
-                resid <- qr.resid(QR, yp)
-                SSg <- crossprod(resid)
-                rNg <- length(yp)-QR$rank
-                   }, silent=TRUE)
-            return(c(SSg=SSg, rNg=rNg))
-        })
-}
-
-ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
-     ## Empirical bayes method
-    defaultCtl <- list(method='MLE', model='H0')
-    if (is.null(ebayesControl)){
-    ebayesControl <- list()
-  }
-    missingControl <- setdiff(names(ebayesControl), names(ebayesControl))
-    ebayesControl[missingControl] <- defaultCtl[missingControl]
-    method <- match.arg(ebayesControl[['method']], c('MOM', 'MLE'))
-    model <- match.arg(ebayesControl[['model']], c('H0', 'H1'))
-
-    ee <- exprs(sca)
-    ee[ee==0] <- NA
-    
-    if(model == 'H0'){
-        ee <- scale(ee, scale=FALSE, center=TRUE)
-        ## Global variance
-        rNg <- colSums(!is.na(ee), na.rm=TRUE)-1
-        SSg <- colSums(ee^2, na.rm=TRUE)
-        valid <- rNg>0 & rNg/SSg < truncate
-        rNg <- rNg[valid]
-        SSg <- SSg[valid]
-    } else if(model == 'H1'){
-        cat('Start:', date(), '\n')
-        mm <- model.matrix(Formula, cData(sca))
-
-        allfits <- getSSg_rNg(sca, mm)
-        valid <- apply(!is.na(allfits), 1, all) & allfits[, 'rNg']/allfits[, 'SSg']<truncate
-        valid[is.na(valid)] <- FALSE
-        SSg <- allfits[valid,'SSg']
-        rNg <- allfits[valid, 'rNg']
-        cat('End:', date(), '\n')
-    }
-
-    if(method == 'MLE'){
-        fn <- getMarginalHyperLikelihood(rNg, SSg, deriv=FALSE)
-        grad <- getMarginalHyperLikelihood(rNg, SSg, deriv=TRUE)
-        O <- optim(c(a0=1, b0=1), fn, gr=grad, method='L-BFGS', lower=.001, upper=Inf, control=list(fnscale=-1), hessian=TRUE)
-        if(O$convergence!=0) warning('Hyper parameter estimation might have failed', O$message)
-        #O <- optim(c(a0=1, b0=1), fn, method='L-BFGS', lower=.001, upper=Inf, control=list(fnscale=-1))
-        th <- O$par
-    } else if(method == 'MOM'){
-        th <- solveMoM(rNg, SSg)
-        O <- list(hessian=NA)
-    }
-
-    v <- max(th['b0']/th['a0'], 0)
-    df <- max(2*th['a0'], 0)
-    structure(c(v=v, df=df), hess=O$hessian)
-}
-
  
-
-##' zero-inflated regression for SingleCellAssay 
+##' Zero-inflated regression for SingleCellAssay 
 ##'
 ##' For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
 ##' Conducts tests specified in "hypothesis".
+##' After each gene, optionally run the function on the fit named by 'hook'
 ##'
 ##' When keep.zlm is FALSE, a 3D array with first dimension being the genes,
 ##' next dimension giving information about the test
@@ -180,17 +88,18 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
 ##' @param method character vector, either 'glm' or 'glmer'
 ##' @param hypothesis character vector or list of character vectors passed to \code{lrTest} or \code{waldTest}.  See details.
 ##' @param type type of test to run, one of 'Wald' or 'LRT'
+##' @param onlyReturnCoefs if TRUE, don't actually test, only return a gene giving example coefficients
 ##' @param keep.zlm should the model objects be returned?  May be memory intensive.
 ##' @param .parallel currently ignored
 ##' @param silent Silence common problems with fitting some genes
 ##' @param ebayes if TRUE, regularize variance using empirical bayes method
-##' @param ebayesControl list with parameters for empirical bayes procedure.  See details.
-##' @param ... 
+##' @param ebayesControl list with parameters for empirical bayes procedure.  See \link{ebayes}.
+##' @param hook a function called on the \code{fit} after each gene.
 ##' @param force Should we continue testing genes even after many errors have occurred?
-##' @param onlyReturnCoefs if TRUE, don't actually test, only return a gene giving example coefficients
-##' @param fitArgs list of arguments passed to glm/glmer
+##' @param ... arguments passed fit method.  For example, \code{fitArgsC} and \cpde{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
 ##' @return either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
 ##' @export
+##' @seealso ebayes, glmlike-class
 ##' @importFrom stringr str_split_fixed
 ##' @importFrom stringr fixed
 ##' @examples
@@ -211,7 +120,7 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
 ##' length(twoTests)
 ##' dimnames(twoTests[[1]])
 ##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wald', onlyReturnCoefs=FALSE, keep.zlm='false', .parallel=FALSE, silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, ...){
+zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wald', onlyReturnCoefs=FALSE, keep.zlm='false', .parallel=FALSE, silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, ...){
     method <- match.arg(method, names(methodDict))
     method <- methodDict[method]
     type <- match.arg(type, c('LRT', 'Wald'))
@@ -242,14 +151,15 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     obj <- fit(obj, exprs(sca)[,upperQgene], silent=silent, ...)
     
     if(onlyReturnCoefs){
-        print(summary(obj))
-        invisible(obj)
+        print(show(obj))
+        return(invisible(obj))
         }
 
     testNames <- makeChiSqTable(c(0, 0), c(1, 1), '')
     coefNames <- names(coef(obj, 'C'))
     vcovNames <- colnames(vcov(obj, 'C'))
     ltests <- setNames(vector(mode='list', length=nhypo), names(hypothesis))
+    hookOut <- if(!is.null(hook)) setNames(vector(mode='list', length=ng), genes) else NULL
     for(h in seq_len(nhypo)){
         ltests[[h]] <- array(0, dim=c(ng, nrow(testNames), ncol(testNames)), dimnames=list(primerid=genes, test.type=row.names(testNames), metric=colnames(testNames)))
         ltests[[h]][,,'Pr(>Chisq)'] <- 1
@@ -263,6 +173,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     for(i in seq_len(ng)){
         outerCatch <- try({
             obj <- fit(obj, response=exprs(sca)[,i], silent=silent, ...)
+            if(!is.null(hook)) hookOut[[i]] <- hook(obj)
             for(h in seq_len(nhypo)){
                  innerCatch <- try({ltests[[h]][i,,] <- test(obj, hypothesis[[h]])}, silent=silent)
             }  
@@ -281,6 +192,6 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     }
     message('\nDone!')
     if(length(ltests)==1) ltests <- ltests[[1]]
-    structure(ltests, obj=obj)
+    structure(ltests, obj=obj, hookOut=hookOut)
     
 }
