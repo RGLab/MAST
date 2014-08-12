@@ -58,7 +58,7 @@ setMethod('initialize', 'DataLayer',
 ##' @aliases exprs<-,DataLayer,ANY-method
 setReplaceMethod('exprs', c('DataLayer', 'ANY'),
                  function(object, value){
-                   #if(!conform(object, value)) stop('Replacement must be same dimension as target')
+                   if(!is.null(dim(value)) && !conform(object, value)) stop('Replacement must be same dimension as target')
                    object[[,]] <- value
                    object@valid <- FALSE
                    object
