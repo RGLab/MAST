@@ -93,3 +93,17 @@ setMethod('lrTest', signature=c(object='LMlike', drop.terms='character'), functi
     df <- ifelse(bothfitted, dof(object) - dof(fitnew), c(0, 0))
     makeChiSqTable(dl, df, drop.terms)
 })
+
+setMethod('residuals', signature=c(object='LMlike'), function(object, type='response', which, ...){
+    which <- match.arg(which, c('Discrete', 'Continuous', 'Marginal'))
+    RD <- residuals(object@fitD, type=type)
+    RC <- residuals(object@fitC, type=type)
+    if(which=='Discrete') return(RD)
+    if(which=='Continuous') return(RC)
+    if(which=='Marginal'){
+        if(type != 'response') warning("Marginal residuals probably don't make sense unless predicting on the response scale")
+        ## Zero inflated residuals
+        RC <- object@response - predict(object@fitC, newx=object@design)
+        return(RC*RD)
+    }
+})

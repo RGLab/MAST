@@ -22,6 +22,14 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     object
 }
 
+.residuals <- function(object){
+    if(object@fitted['D']){
+        object@fitD$residuals <- (object@response>0)*1 - object@fitD$fitted
+    } else{
+        object@fitD$residuals <- NA
+    }
+    object
+}
 
 setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
@@ -34,6 +42,8 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     fitArgsD <- object@fitArgsD
     object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,], y=object@response[pos]), fitArgsC))
     object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
+    ## needed so that residuals dispatches more correctly
+    class(object@fitD) <- c('glm', class(object@fitD))
     object@fitted <- c(C=object@fitC$converged & object@fitC$df.residual>0, D=object@fitD$converged & object@fitD$df.residual>0)
 
     object <- .dispersion(object)
@@ -66,4 +76,19 @@ setMethod('logLik', signature=c(object='GLMlike'), function(object){
 
 setMethod('dof', signature=c(object='GLMlike'), function(object){
     c(C=length(coef(object, 'C', singular=FALSE)), D=length(coef(object, 'D', singular=FALSE)))
+})
+
+setMethod('residuals', signature=c(object='GLMlike'), function(object, type='response', which, ...){
+    which <- match.arg(which, c('Discrete', 'Continuous', 'Marginal'))
+    if(which!='Marginal') return(callNextMethod(object=object, which=which, type=type))
+    if(which=='Marginal'){
+        if(type != 'response') warning("Marginal residuals probably don't make sense unless predicting on the response scale")
+        RD <- callNextMethod(object=object, which='Discrete', type=type)
+        ## May contain NAs for non-estimible coefficients, set to zero
+        coefC <- coef(object, which='C', singular=TRUE)
+        coefC[is.na(coefC)] <- 0
+        RC <- object@response - object@modelMatrix %*% coefC
+        browser(expr=any(is.na(RC*RD)))
+        return(RC*RD)
+    }
 })

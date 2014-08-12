@@ -103,3 +103,22 @@ test_that('Gradients match analytic', {
 test_that('Empirical Bayes converges to something reasonable', {
 
 })
+
+context('Test error handling')
+test_that('Give up after 5 errors', {
+     expect_error(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='foo', force=FALSE), 'problems')
+     expect_is(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='foo', force=TRUE), 'array')
+
+})
+
+context('Test hooks')
+test_that('Identity Hook', {
+     zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='Population:Stim.Condition', type='LRT', hook=function(x) x)
+     expect_is(revealHook(zz)[[1]], 'GLMlike')
+})
+
+test_that('Residuals Hook', {
+     zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='Population:Stim.Condition', type='LRT', hook=residualsHook)
+     fd3 <- collectResiduals(zz, fd2)
+     expect_is(fd3, 'SingleCellAssay')
+})
