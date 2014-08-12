@@ -45,6 +45,7 @@ Collate:
     'RNASeqAssay-methods.R'
     'Readers.R'
     'SCASet-methods.R'
+    'ShrunkGLMlike-helpers.R'
     'SingleCellAssay-methods.R'
     'filterEval.R'
     'helper-methods.R'
