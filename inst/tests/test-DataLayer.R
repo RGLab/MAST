@@ -45,6 +45,10 @@ test_that('subset works', {
   expect_equal(exprs(dl), mat, check.attributes=FALSE)
 })
 
+test_that('exprs replace throws error for non-conforming', {
+    expect_error(exprs(dl2) <- t(exprs(dl2)))
+})
+
 test_that('[ subscripting works', {
   expect_is(dl[1,], 'DataLayer')
   expect_is(dl[,2:3], 'DataLayer')
