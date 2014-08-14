@@ -22,7 +22,7 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     object
 }
 
-.residuals <- function(object){
+.residualsD <- function(object){
     if(object@fitted['D']){
         object@fitD$residuals <- (object@response>0)*1 - object@fitD$fitted
     } else{
@@ -58,6 +58,10 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
     .Object
 })
 
+setMethod('model.matrix', 'GLMlike', function(object){
+    object@modelMatrix
+})
+
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
     L <- c(C=0, D=0)
     if(object@fitted['C']){
@@ -80,15 +84,19 @@ setMethod('dof', signature=c(object='GLMlike'), function(object){
 
 setMethod('residuals', signature=c(object='GLMlike'), function(object, type='response', which, ...){
     which <- match.arg(which, c('Discrete', 'Continuous', 'Marginal'))
-    if(which!='Marginal') return(callNextMethod(object=object, which=which, type=type))
+    if(type != 'response') stop("Only type='response' residuals implemented for GLMlike")
+    PD <- object@fitD$fitted
+    RD <- object@fitD$residuals <- (object@response>0)*1 -PD
+    ## May contain NAs for non-estimible coefficients, set to zero
+    coefC <- coef(object, which='C', singular=TRUE)
+    coefC[is.na(coefC)] <- 0
+    PC <- object@modelMatrix %*% coefC
+    RC <- (object@response - PC)[object@response>0]
+    if(which=='Discrete') return(RD)
+    if(which=='Continuous') return(RC)
+
     if(which=='Marginal'){
-        if(type != 'response') warning("Marginal residuals probably don't make sense unless predicting on the response scale")
-        RD <- callNextMethod(object=object, which='Discrete', type=type)
-        ## May contain NAs for non-estimible coefficients, set to zero
-        coefC <- coef(object, which='C', singular=TRUE)
-        coefC[is.na(coefC)] <- 0
-        RC <- object@response - object@modelMatrix %*% coefC
-        browser(expr=any(is.na(RC*RD)))
-        return(RC*RD)
+        if(type != 'response') warning("Marginal residuals probably don't make sense unless predicting on the response scale")               
+        return(object@response-PC*PD)
     }
 })
