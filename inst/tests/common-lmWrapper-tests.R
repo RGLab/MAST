@@ -118,6 +118,6 @@ test_that('Wald For Glm', {
 
 
 test_that('Residuals', {
-    expect_equivalent(residuals(obj, which='C', type='response'), residuals(objC, type='response'))
-    expect_equivalent(residuals(obj, which='D', type='deviance'), residuals(objD, type='deviance'))
+    expect_equivalent(as.numeric(residuals(obj, which='C', type='response')), residuals(objC))
+    expect_equivalent(as.numeric(residuals(obj, which='D', type='response')), residuals(objD, type='response'))
 })
