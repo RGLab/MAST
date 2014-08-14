@@ -55,6 +55,14 @@ setMethod('update', signature=c(object='LMlike'), function(object, formula., ...
     object
 })
 
+setMethod('model.matrix', signature=c(object='LMlike'), function(object){
+    if(object@fitted['D']){
+        return(model.matrix(object@fitD))
+    } else{
+        return(NA)
+    }
+})
+
 
 makeChiSqTable <- function(lambda, df, test){
     stopifnot(all(names(lambda) == c('C', 'D')))
@@ -67,31 +75,57 @@ makeChiSqTable <- function(lambda, df, test){
     structure(tab, test=test)
 }
 
-
-setMethod('waldTest', signature=c(object='LMlike', hypothesis.matrix='ANY'), function(object, hypothesis.matrix){
+setMethod('waldTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
     if(object@fitted['C']){
-            C <- car::linearHypothesis.default(object@fitC, hypothesis.matrix=hypothesis.matrix, test='Chisq', vcov.=vcov(object, which='C'), coef.=coef(object, which='C', singular=FALSE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
+            C <- car::linearHypothesis.default(object@fitC, hypothesis.matrix=hypothesis, test='Chisq', vcov.=vcov(object, which='C'), coef.=coef(object, which='C', singular=FALSE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
     }else{
         C <- list(Chisq=0, Df=0)
     }
     if(object@fitted['D']){
-        D <- car::linearHypothesis.default(object@fitD, hypothesis.matrix=hypothesis.matrix, test='Chisq', vcov.=vcov(object, which='D'), coef.=coef(object, which='D', singular=FALSE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
+        D <- car::linearHypothesis.default(object@fitD, hypothesis.matrix=hypothesis, test='Chisq', vcov.=vcov(object, which='D'), coef.=coef(object, which='D', singular=FALSE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
     }else{
         D <- list(Chisq=0, Df=0)
     }
-    makeChiSqTable(c(C[['Chisq']], D[['Chisq']]), c(C[['Df']],D[['Df']]),hypothesis.matrix)
+    makeChiSqTable(c(C[['Chisq']], D[['Chisq']]), c(C[['Df']],D[['Df']]),hypothesis)
 })
 
-setMethod('lrTest', signature=c(object='LMlike', drop.terms='character'), function(object, drop.terms){
-    l0 <- logLik(object)
-    F <- update.formula(object@formula, formula(sprintf(' ~. - %s', drop.terms)))
-    U <- update(object, F)
-    fitnew <- fit(U)
-    l1 <- logLik(fitnew)
-    bothfitted <- object@fitted & fitnew@fitted
-    dl <- ifelse(bothfitted, -2*(l1-l0), c(0, 0))
-    df <- ifelse(bothfitted, dof(object) - dof(fitnew), c(0, 0))
+setMethod('waldTest', signature=c(object='LMlike', hypothesis='Hypothesis'), function(object, hypothesis){
+    if(object@fitted['C']){
+            C <- car::linearHypothesis.default(object@fitC, hypothesis.matrix=contrastMatrix(hypothesis, drop=TRUE), rhs=rhs(hypothesis, drop=TRUE), test='Chisq', vcov.=vcov(object, which='C'), coef.=coef(object, which='C', singular=TRUE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
+    }else{
+        C <- list(Chisq=0, Df=0)
+    }
+    if(object@fitted['D']){
+        D <- car::linearHypothesis.default(object@fitD, hypothesis.matrix=contrastMatrix(hypothesis, drop=TRUE), rhs=rhs(hypothesis, drop=TRUE), test='Chisq', vcov.=vcov(object, which='D'), coef.=coef(object, which='D', singular=TRUE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
+    }else{
+        D <- list(Chisq=0, Df=0)
+    }
+    makeChiSqTable(c(C[['Chisq']], D[['Chisq']]), c(C[['Df']],D[['Df']]),hypothesis)
+})
+
+## object1 full model (fitted)
+## object0 null model (possibly unfitted)
+## returns chisqtable
+.lrTest <- function(object1, object0){
+    l1 <- logLik(object1)
+    object0 <- fit(object0)
+    l0 <- logLik(object0)
+    bothfitted <- object1@fitted & object0@fitted
+    dl <- ifelse(bothfitted, -2*(l0-l1), c(0, 0))
+    df <- ifelse(bothfitted, dof(object1) - dof(object0), c(0, 0))
     makeChiSqTable(dl, df, drop.terms)
+
+}
+
+setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
+    F <- update.formula(object@formula, formula(sprintf(' ~. - %s', hypothesis)))
+    U <- update(object, F)
+    .lrTest(object, U)
+})
+
+setMethod('lrTest', signature=c(object='LMlike', hypothesis='TermHypothesis'), function(object, hypothesis){
+    term <- getTerms(hypothesis)
+    lrTest(object, term)
 })
 
 setMethod('residuals', signature=c(object='LMlike'), function(object, type='response', which, ...){

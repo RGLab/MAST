@@ -72,7 +72,7 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   ee <- exprs(fd2)
   ee[,1] <- rnorm(nrow(fd))+20
   exprs(fd2) <- ee
-  zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='PopulationVbetaResponsive', .drop=TRUE)
+  zz <- zlm.SingleCellAssay(~ Population*Stim.Condition, fd2, hypothesis='PopulationVbetaResponsive')
   expect_that(zz, is_a('array'))
   expect_equal(dim(zz)[1], 20)
 
@@ -104,10 +104,10 @@ test_that('Empirical Bayes converges to something reasonable', {
 
 })
 
+## might need be needed anymore
 context('Test error handling')
 test_that('Give up after 5 errors', {
      expect_error(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='foo', force=FALSE), 'problems')
-     expect_is(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='foo', force=TRUE), 'array')
 
 })
 
