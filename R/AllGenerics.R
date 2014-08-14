@@ -202,7 +202,7 @@ setGeneric('coef', function(object, ...) standardGeneric('coef'))
 ##' @export
 ##' @seealso fit
 ##' @seealso waldTest
-setGeneric('lrTest', function(object, drop.terms) standardGeneric('lrTest'))
+setGeneric('lrTest', function(object, hypothesis) standardGeneric('lrTest'))
 
 ##' Run a Wald test
 ##'
@@ -215,9 +215,7 @@ setGeneric('lrTest', function(object, drop.terms) standardGeneric('lrTest'))
 ##' @seealso lrTest
 ##' @seealso lht
 ##' @importFrom car linearHypothesis.default
-setGeneric('waldTest', function(object, hypothesis.matrix) standardGeneric('waldTest'))
-## setGeneric('vcovC', function(object) standardGeneric('vcovC'))
-## setGeneric('vcovD', function(object) standardGeneric('vcovD'))
+setGeneric('waldTest', function(object, hypothesis) standardGeneric('waldTest'))
 
 ##' Variance-covariance matrix for zero inflated
 ##'
@@ -234,6 +232,17 @@ setGeneric('vcov', function(object) standardGeneric('vcov'))
 ##' @return vector giving the model degrees of freedom for continuous and discrete
 ##' @export
 setGeneric('dof', function(object) standardGeneric('dof'))
+
+
+##' Degrees of freedom of Zero inflated model
+##'
+##' @param object LMlike or subclass
+##' @return model.matrix if present
+##' @export
+setGeneric('model.matrix', function(object) standardGeneric('model.matrix'))
+
+
+
 
 ###############################
 ## old style LRT
@@ -260,5 +269,3 @@ setGeneric("LRT",function(sca,comparison,...) standardGeneric("LRT"))
 ##' @return modified nsa
 ##' @export
 setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
-
-

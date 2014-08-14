@@ -3,7 +3,7 @@
 \alias{waldTest}
 \title{Run a Wald test}
 \usage{
-waldTest(object, hypothesis.matrix)
+waldTest(object, hypothesis)
 }
 \arguments{
 \item{object}{LMlike or subclass}

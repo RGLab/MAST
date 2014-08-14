@@ -1,4 +1,7 @@
-methodDict <- c('glm'='GLMlike', 'glmer'='LMERlike', 'lmer'='LMERlike', 'bayesglm'='BayesGLMlike', 'shrunkglm'='ShrunkenGLMlike')
+methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'shrunkglm'),
+                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'ShrunkenGLMlike'),
+                         lrtHypoType=c('SimpleHypothesis', 'TermHypothesis','TermHypothesis',  'SimpleHypothesis', 'SimpleHypothesis'))
+
 
 residualsHook <- function(fit){
     residuals(fit, which='Marginal')
@@ -47,7 +50,7 @@ zlm <- function(formula, data, method='glm',silent=TRUE, ...){
   ## lm initially just to get response vector
   ## Turn glmer grouping "|" into "+" to get correct model frame
   resp <- eval(formula[[2]], data)
-  obj <- new(methodDict[method], formula=formula, design=data, response=resp)
+  obj <- new(methodDict[keyword==method, lmMethod], formula=formula, design=data, response=resp)
   obj <- fit(obj)
   list(cont=obj@fitC, disc=obj@fitD)
 }
@@ -86,7 +89,7 @@ summary.zlm <- function(out){
 ##' @param formula a formula with the measurement variable on the LHS and predictors present in cData on the RHS
 ##' @param sca SingleCellAssay object
 ##' @param method character vector, either 'glm' or 'glmer'
-##' @param hypothesis character vector or list of character vectors passed to \code{lrTest} or \code{waldTest}.  See details.
+##' @param hypothesis character vector, list of character vectors passed to \code{lrTest} or \code{waldTest}.  See details.
 ##' @param type type of test to run, one of 'Wald' or 'LRT'
 ##' @param onlyReturnCoefs if TRUE, don't actually test, only return a gene giving example coefficients
 ##' @param keep.zlm should the model objects be returned?  May be memory intensive.
@@ -121,10 +124,21 @@ summary.zlm <- function(out){
 ##' dimnames(twoTests[[1]])
 ##' }
 zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wald', onlyReturnCoefs=FALSE, keep.zlm='false', .parallel=FALSE, silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, ...){
-    method <- match.arg(method, names(methodDict))
-    method <- methodDict[method]
+    method <- match.arg(method, methodDict[,keyword])
+    method <- methodDict[keyword==method,lmMethod]
     type <- match.arg(type, c('LRT', 'Wald'))
-    test <- if(type=='LRT') lrTest else waldTest
+
+    hypoGen <- NULL
+    if(!is(hypothesis, 'list')) hypothesis <- list(hypothesis)
+    if(is(hypothesis, 'hypothesisGenerator')){
+        hypoGen <- hypothesis
+    }
+    
+    if(type=='LRT'){
+        test <- lrTest        
+    }else{
+        test <- waldTest
+    }
         if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
     if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
     fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
@@ -140,9 +154,6 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
         obj <- new(method, design=cData(sca), formula=Formula)
     }
 
-    if(is.character(hypothesis)){
-        hypothesis <- list(hypothesis)
-    }
     nhypo <- length(hypothesis)
     
     genes <- colnames(exprs(sca))
@@ -155,6 +166,12 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
         return(invisible(obj))
         }
 
+       MM <- model.matrix(obj)
+    if(!is.null(hypoGen)) {
+        hypothesis <- hypoGen(colnames(MM), attr(MM, 'assign'))
+    }
+
+ 
     testNames <- makeChiSqTable(c(0, 0), c(1, 1), '')
     coefNames <- names(coef(obj, 'C'))
     vcovNames <- colnames(vcov(obj, 'C'))

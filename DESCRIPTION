@@ -38,6 +38,7 @@ Collate:
     'AllGenerics.R'
     'DataLayer.R'
     'Fluidigm-methods.R'
+    'Hypothesis.R'
     'LmWrapper.R'
     'MultidimensionalScaling.R'
     'Nanostring-methods.R'

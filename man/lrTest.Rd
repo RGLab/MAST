@@ -3,7 +3,7 @@
 \alias{lrTest}
 \title{Run a likelihood-ratio test}
 \usage{
-lrTest(object, drop.terms)
+lrTest(object, hypothesis)
 }
 \arguments{
 \item{object}{LMlike or subclass}
