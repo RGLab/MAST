@@ -137,7 +137,8 @@ setMethod('residuals', signature=c(object='LMlike'), function(object, type='resp
     if(which=='Marginal'){
         if(type != 'response') warning("Marginal residuals probably don't make sense unless predicting on the response scale")
         ## Zero inflated residuals
-        RC <- object@response - predict(object@fitC, newx=object@design)
-        return(RC*RD)
+        PC <-  predict(object@fitC, newx=object@design, type=type)
+        PD <- predict(object@fitD, newx=object@design, type=type)
+        return(object@response-PC*PD)
     }
 })
