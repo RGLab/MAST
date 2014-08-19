@@ -155,11 +155,14 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     }
 
     nhypo <- length(hypothesis)
+    ## avoiding repeated calls to the S4 object speeds calls on large sca
+    ## due to overzealous copying semantics on R's part
+    ee <- exprs(sca)
     
-    genes <- colnames(exprs(sca))
+    genes <- colnames(ee)
     ng <- length(genes)
     upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
-    obj <- fit(obj, exprs(sca)[,upperQgene], silent=silent, ...)
+    obj <- fit(obj, ee[,upperQgene], silent=silent, ...)
     
     if(onlyReturnCoefs){
         print(show(obj))
@@ -189,7 +192,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
  innerCatch <- ''
     for(i in seq_len(ng)){
         outerCatch <- try({
-            obj <- fit(obj, response=exprs(sca)[,i], silent=silent, ...)
+            obj <- fit(obj, response=ee[,i], silent=silent, ...)
             if(!is.null(hook)) hookOut[[i]] <- hook(obj)
             for(h in seq_len(nhypo)){
                  innerCatch <- try({ltests[[h]][i,,] <- test(obj, hypothesis[[h]])}, silent=silent)
