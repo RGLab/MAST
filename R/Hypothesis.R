@@ -1,4 +1,3 @@
-##' @importFrom car makeHypothesis
 setMethod('initialize', c(.Object='Hypothesis'), function(.Object, characterHypothesis, Terms, ...){
     .Object <- callNextMethod()
     #cat('Initialize', class(.Object), 'with .Data\n')
@@ -16,7 +15,6 @@ setMethod('initialize', c(.Object='Hypothesis'), function(.Object, characterHypo
 callName <- function(n=1){
     sc <- sys.calls()
     cl <- deparse(sc[[length(sc)-n]])
-    cl
     str_replace(cl, '\\(.*\\)', '')
 }
 
@@ -60,4 +58,95 @@ contrastMatrix <- function(hypo, drop=FALSE){
 rhs <- function(hypo, drop=FALSE){
     stopifnot(is(hypo, 'Hypothesis'))
     hypo[,ncol(hypo), drop=drop]
+}
+
+
+## Courtesy of car, John Fox <jfox at mcmaster.ca>
+## But not exported there
+makeHypothesis <- function (cnames, hypothesis, rhs = NULL) 
+{
+    parseTerms <- function(terms) {
+        component <- gsub("^[-\\ 0-9\\.]+", "", terms)
+        component <- gsub(" ", "", component, fixed = TRUE)
+        component
+    }
+    stripchars <- function(x) {
+        x <- gsub("\\n", " ", x)
+        x <- gsub("\\t", " ", x)
+        x <- gsub(" ", "", x, fixed = TRUE)
+        x <- gsub("*", "", x, fixed = TRUE)
+        x <- gsub("-", "+-", x, fixed = TRUE)
+        x <- strsplit(x, "+", fixed = TRUE)[[1]]
+        x <- x[x != ""]
+        x
+    }
+    char2num <- function(x) {
+        x[x == ""] <- "1"
+        x[x == "-"] <- "-1"
+        as.numeric(x)
+    }
+    constants <- function(x, y) {
+        with.coef <- unique(unlist(sapply(y, function(z) which(z == 
+            parseTerms(x)))))
+        if (length(with.coef) > 0) 
+            x <- x[-with.coef]
+        x <- if (is.null(x)) 
+            0
+        else sum(as.numeric(x))
+        if (any(is.na(x))) 
+            stop("The hypothesis \"", hypothesis, "\" is not well formed: contains bad coefficient/variable names.")
+        x
+    }
+    coefvector <- function(x, y) {
+        rv <- gsub(" ", "", x, fixed = TRUE) == parseTerms(y)
+        if (!any(rv)) 
+            return(0)
+        if (sum(rv) > 1) 
+            stop("The hypothesis \"", hypothesis, "\" is not well formed.")
+        rv <- sum(char2num(unlist(strsplit(y[rv], x, fixed = TRUE))))
+        if (is.na(rv)) 
+            stop("The hypothesis \"", hypothesis, "\" is not well formed: contains non-numeric coefficients.")
+        rv
+    }
+    if (!is.null(rhs)) 
+        rhs <- rep(rhs, length.out = length(hypothesis))
+    if (length(hypothesis) > 1) 
+        return(rbind(Recall(cnames, hypothesis[1], rhs[1]), Recall(cnames, 
+            hypothesis[-1], rhs[-1])))
+    cnames_symb <- sapply(c("@", "#", "~"), function(x) length(grep(x, 
+        cnames)) < 1)
+    if (any(cnames_symb)) {
+        cnames_symb <- head(c("@", "#", "~")[cnames_symb], 1)
+        cnames_symb <- paste(cnames_symb, seq_along(cnames), 
+            cnames_symb, sep = "")
+        hypothesis_symb <- hypothesis
+        for (i in order(nchar(cnames), decreasing = TRUE)) hypothesis_symb <- gsub(cnames[i], 
+            cnames_symb[i], hypothesis_symb, fixed = TRUE)
+    }
+    else {
+        stop("The hypothesis \"", hypothesis, "\" is not well formed: contains non-standard coefficient names.")
+    }
+    lhs <- strsplit(hypothesis_symb, "=", fixed = TRUE)[[1]]
+    if (is.null(rhs)) {
+        if (length(lhs) < 2) 
+            rhs <- "0"
+        else if (length(lhs) == 2) {
+            rhs <- lhs[2]
+            lhs <- lhs[1]
+        }
+        else stop("The hypothesis \"", hypothesis, "\" is not well formed: contains more than one = sign.")
+    }
+    else {
+        if (length(lhs) < 2) 
+            as.character(rhs)
+        else stop("The hypothesis \"", hypothesis, "\" is not well formed: contains a = sign although rhs was specified.")
+    }
+    lhs <- stripchars(lhs)
+    rhs <- stripchars(rhs)
+    rval <- sapply(cnames_symb, coefvector, y = lhs) - sapply(cnames_symb, 
+        coefvector, y = rhs)
+    rval <- c(rval, constants(rhs, cnames_symb) - constants(lhs, 
+        cnames_symb))
+    names(rval) <- c(cnames, "*rhs*")
+    rval
 }
