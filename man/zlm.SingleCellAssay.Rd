@@ -15,7 +15,7 @@ zlm.SingleCellAssay(formula, sca, method = "glm", hypothesis, type = "Wald",
 
 \item{method}{character vector, either 'glm' or 'glmer'}
 
-\item{hypothesis}{character vector or list of character vectors passed to \code{lrTest} or \code{waldTest}.  See details.}
+\item{hypothesis}{character vector, list of character vectors passed to \code{lrTest} or \code{waldTest}.  See details.}
 
 \item{type}{type of test to run, one of 'Wald' or 'LRT'}
 

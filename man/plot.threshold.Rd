@@ -3,7 +3,7 @@
 \alias{plot.threshold}
 \title{Plot NanoString log Counts vs cluster ID}
 \usage{
-\method{plot}{threshold}(thresholdedNanoString, primerids)
+plot.threshold(thresholdedNanoString, primerids)
 }
 \arguments{
 \item{thresholdedNanoString}{output from thresholdNanoString, debug=TRUE}
