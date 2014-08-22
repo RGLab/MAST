@@ -251,7 +251,8 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   }
 
   exprs <- exprs(sc)
-  filtered <- do.call(SingleCellAssay:::.internalfilter, c(list(exprs), filt_control))
+  internalfilter<-get(".internalfilter",environment(SingleCellAssay))
+  filtered <- do.call(internalfilter, c(list(exprs), filt_control))
   if(apply_filter && filt_control$filter){
     anyfilter <- apply(filtered, 1, any)
     scout <- sc[[!anyfilter]]

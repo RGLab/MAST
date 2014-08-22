@@ -148,7 +148,6 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
 ##'
 ##' Constructs a forest-like plot of signed log10 p-values, possibly adjusted for multiple comparisons
 ##' \code{adjust} can be one of  "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none".
-##' @seealso \code{\link{p.adjust}}, \code{\link{lrtest}}
 ##' @param lr output from lrtest, with returnall=FALSE
 ##' @param adjust \code{character}, passed along to \code{p.adjust}, see below
 ##' @param thres \code{numeric} genes with adjusted pvalues above this value are not depicted

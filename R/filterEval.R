@@ -278,7 +278,7 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
 #'@param NCellAssay is a SingleCellAssay for the n-cell per well assay
 #'@param filterCriteria is a list of filtering criteria to apply to the SCellAssay and NCellAssay
 #'@param groups is a character vector naming the group within which to perform filtering. NULL by default.
-#'@importFrom ggplot2 ggplot geom_point theme_bw scale_x_continuous scale_y_continuous aes geom_segment 
+#'@importFrom ggplot2 ggplot geom_point theme_bw scale_x_continuous scale_y_continuous aes geom_segment aes_string facet_wrap geom_line ylim
 #'@export
 plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlier = 2, sigmaContinuous = 9,sigmaProportion = 9), groups=NULL){
   if(!(is(SCellAssay,"SingleCellAssay")&is(NCellAssay,"SingleCellAssay"))){
@@ -292,11 +292,11 @@ plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlie
   toplot<-data.frame(toplot,filter=c(rep("filtered",nrow(concord.filtered)),rep("unfiltered",nrow(concord.unfiltered))))
   
   g<-ggplot(toplot)+
-    geom_point(data=subset(toplot,filter=="filtered"),aes(x=et.ref,y=et.comp),alpha=0.75)+
+    geom_point(data=subset(toplot,filter=="filtered"),aes_string(x="et.ref",y="et.comp"),alpha=0.75)+
     theme_bw()+scale_x_continuous("Reference Assay")+scale_y_continuous("Comparison Assay")
  
   seg<-cast(melt(toplot,measure=c("et.ref","et.comp"),id=c("primerid","filter")),primerid~filter+variable)
-  g<-g+geom_segment(data=seg,aes(x=unfiltered_et.ref,xend=filtered_et.ref,y=unfiltered_et.comp,yend=filtered_et.comp),alpha=0.5,lwd=0.5)
+  g<-g+geom_segment(data=seg,aes_string(x="unfiltered_et.ref",xend="filtered_et.ref",y="unfiltered_et.comp",yend="filtered_et.comp"),alpha=0.5,lwd=0.5)
   
   wss.filt<-getwss(concord.filtered,concord.filtered$nexp.ref)
   wss.unfilt<-getwss(concord.unfiltered,concord.unfiltered$nexp.ref)
