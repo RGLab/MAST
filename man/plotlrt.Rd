@@ -26,7 +26,4 @@ Constructs a forest-like plot of signed log10 p-values, possibly adjusted for mu
 \author{
 andrew
 }
-\seealso{
-\code{\link{p.adjust}}, \code{\link{lrtest}}
-}
 
