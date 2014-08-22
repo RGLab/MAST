@@ -281,6 +281,7 @@ setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
 ##' @param sc SingleCellAssay
 ##' @param value AnnotatedDataFrame or data.frame
 ##' @aliases cData<-,SingleCellAssay-method
+##' @rdname cData-SingleCellAssay-method
 ##' @export
 ##' @name cData
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {

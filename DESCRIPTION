@@ -56,4 +56,5 @@ Collate:
     'lmWrapper-glmer.R'
     'lrtest.r'
     'piest.R'
+    'thresholdSCRNA.R'
     'zeroinf.R'
