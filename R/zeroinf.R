@@ -60,6 +60,24 @@ summary.zlm <- function(out){
   summary(out$cont)
   summary(out$disc)
 }
+
+## Only to be called within zlm.SingleCellAssay
+.updateSummaries <- function(i, obj, summaries){
+    this.summary <- summarize(obj)
+    okC <- !is.na(this.summary$coefC)
+    okD <- !is.na(this.summary$coefD)
+    summaries[['coefC']][i,] <- this.summary$coefC
+    summaries[['vcovC']][i,okC,okC] <- this.summary$vcovC
+    summaries[['df.residC']][i] <- this.summary$df.residC
+    summaries[['df.nullC']][i] <- this.summary$df.nullC
+    summaries[['devianceC']][i] <- this.summary$devianceC
+    summaries[['dispersionMLEC']][i] <- this.summary$dispersionMLEC
+    summaries[['coefD']][i,] <- this.summary$coefD
+    summaries[['vcovD']][i,okD,okD] <- this.summary$vcovD
+    summaries[['df.residD']][i] <- this.summary$df.residD
+    summaries[['df.nullD']][i] <- this.summary$df.nullD
+    summaries[['devianceD']][i] <- this.summary$devianceD
+}
  
 ##' Zero-inflated regression for SingleCellAssay 
 ##'
@@ -194,13 +212,15 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
 }
 
     ## Main loop.
-    ## Todo: coefs, vcov, etc
     ## error counter--stop if exceeds 5 in a row
-     nerror <- 0
- innerCatch <- ''
+    nerror <- 0
+    innerCatch <- ''
+    ## coefs, vcov, etc
+    summaries <- initSummaries(genes, coefNames)
     for(i in seq_len(ng)){
         outerCatch <- try({
             obj <- fit(obj, response=ee[,i], silent=silent, ...)
+            .updateSummaries(i, obj, summaries)
             if(!is.null(hook)) hookOut[[i]] <- hook(obj)
             for(h in seq_len(nhypo)){
                  innerCatch <- try({ltests[[h]][i,,] <- test(obj, hypothesis[[h]])}, silent=silent)
@@ -220,6 +240,15 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     }
     message('\nDone!')
     if(length(ltests)==1) ltests <- ltests[[1]]
-    structure(ltests, obj=obj, hookOut=hookOut)
-    
+
+    ## add rest of slots, plus class name
+    summaries[['modelMatrix']] <- MM
+    summaries[['sca']] <- sca
+    summaries[['priorVar']] <- obj@priorVar
+    summaries[['priorDOF']] <- obj@priorDOF
+    summaries[['Class']] <- 'ZlmFit'
+    ## everything we need to call new
+    zfit <- do.call(new, as.list(summaries))
+    ## tests, summarized objects, example fit, hooks
+    structure(ltests, ZlmFit=zfit, obj=obj, hookOut=hookOut)
 }

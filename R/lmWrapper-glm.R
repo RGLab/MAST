@@ -102,3 +102,7 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
         return(object@response-PC*PD)
     }
 })
+
+setMethod('summarize', signature=c(object='LMlike'), function(object, ...){
+    list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'), devianceC=logLik(object)['C'], df.nullC=object@fitC$df.null, df.residC=object@fitC$df.residual, dispersionMLEC=object@fitC$dispersionMLE, coefD=coef(object, which='D'), vcovD=vcov(object, 'D'), devianceD=logLik(object)['D'], df.nullD=object@fitD$df.null, df.residD=object@fitD$df.residual)
+})

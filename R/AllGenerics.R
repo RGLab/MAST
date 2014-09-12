@@ -249,6 +249,16 @@ setGeneric('model.matrix', function(object) standardGeneric('model.matrix'))
 setGeneric('model.matrix<-', function(object, value) standardGeneric('model.matrix<-'))
 
 
+##' Return programmatically useful summary of a fit
+##'
+##' @param object LMlike or subclass
+##' @return list of parameters characterizing fit
+##' @export
+setGeneric('summarize', function(object, ...) standardGeneric('summarize'))
+
+
+
+
 ###############################
 ## old style LRT
 ###############################

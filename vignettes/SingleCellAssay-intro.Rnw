@@ -200,7 +200,7 @@ print(pvalue)
 
 %% In fact, the \text{zlm} framework is quite general, and allows any modeling function that accepts \text{glm}-like arguments to be used, including mixed models such as those available in \texttt{lme4}.
 
-<<lmerExample, warning=FALSE, message=FALSE>>=
+<<lmerExample, warning=FALSE, message=FALSE, eval=FALSE>>=
 library(lme4)
 lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer',hypothesis='Stim.Condition', type='LRT')
 @

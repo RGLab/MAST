@@ -263,8 +263,12 @@ setClass('GLMlike', contains='LMlike')
 setClass('BayesGLMlike', contains='GLMlike')
 setClass('LMERlike', contains='LMlike')
 
+
+## Ways to specify hypothesis
 setClass('Hypothesis', contains='character', slots=list(transformed='matrix'))
 setClass('CoefficientHypothesis', contains='character', slots=list(transformed='character'))
+
+setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', modelMatrix='matrix', sca='SingleCellAssay', devianceC='numeric', devianceD='numeric', df.nullC='numeric', df.nullD='numeric', df.residC='numeric', df.residD='numeric', dispersionMLEC='numeric', priorDOF='numeric', priorVar='numeric'))
 
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
 ##'

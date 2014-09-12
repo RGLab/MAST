@@ -49,6 +49,7 @@ Collate:
     'SCASet-methods.R'
     'ShrunkGLMlike-helpers.R'
     'SingleCellAssay-methods.R'
+    'ZlmFit.R'
     'filterEval.R'
     'helper-methods.R'
     'lmWrapper-bayesglm.R'
