@@ -248,53 +248,23 @@ setClass("SCASet",
 ##' @seealso logLik
 ##' @name LMlike-class
 ##' @docType class
-setClass('LMlike', slots=c(design='data.frame', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list'),     prototype=list(fitted =c(C=FALSE, D=FALSE), formula=formula(0~0)), validity=function(object){
-    stopifnot( all(c("C", "D") %in% names(object@fitted)))
-    if(length(object@response)>0 && any(is.na(object@response))) stop('NAs not permitted in response')
-})
+setClass('LMlike',
+         slots=c(design='data.frame', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric'),
+         prototype=list(fitted =c(C=FALSE, D=FALSE), formula=formula(0~0),modelMatrix=matrix(nrow=0, ncol=0), priorVar=0, priorDOF=0), validity=function(object){
+             stopifnot( all(c("C", "D") %in% names(object@fitted)))
+             if(length(object@response)>0){
+                 if(any(is.na(object@response))) stop('NAs not permitted in response')
+                 if(length(object@response)!=nrow(object@design)) stop('Response length differs from design length')
+                 ##if(nrow(object@design) != nrow(object@modelMatrix)) stop('Design length differs from model.matrix length')
+             }
+         })
 
-setClass('GLMlike', contains='LMlike', slots=c(modelMatrix='matrix'), validity=function(object){
-    if(length(object@response)>0){
-        stopifnot(length(object@response)==nrow(object@design))
-        #stopifnot(length(object@response)==nrow(object@modelMatrix))
-    }},
-    prototype=list(modelMatrix=matrix(nrow=0, ncol=0)))
-
+setClass('GLMlike', contains='LMlike')
 setClass('BayesGLMlike', contains='GLMlike')
 setClass('LMERlike', contains='LMlike')
-setClass('ShrunkenGLMlike', contains='GLMlike', slots=c(priorVar='numeric', priorDOF='numeric'), prototype=list(priorVar=0, priorDOF=0))
 
-## Base class--uses syntax from car
-setClass('Hypothesis', contains='matrix', slots=c('Assign'='numeric'), prototype=prototype(matrix(nrow=0, ncol=1, dimnames=list(NULL, '*rhs*'))))
-## A hypothesis for which RHS coefficients must appear singly or jointly compared to zero
-setClass('SimpleHypothesis', contains='Hypothesis', validity=function(object){
-    ## cat('Validity', class(object), 'with .Data\n')
-    ## str(object@.Data)
-    if(ncol(object)==1) return(TRUE)
-    cm <- contrastMatrix(object)
-    if(!all(cm==1 | cm ==0) || any(rhs(object)!=0)) return('Terms must be individually or jointly compared to zero')
-    else return(TRUE)
-})
-
-## A simple hypothesis in which an entire term (levels of a factor) is compared to zero.
-setClass('TermHypothesis', contains='SimpleHypothesis', validity=function(object){
-    ## cat('Validity', class(object), 'with .Data\n')
-    ## str(object@.Data)
-    if(ncol(object)==1) return(TRUE)
-    cm <- contrastMatrix(object)
-    zeroed <- apply(cm==1, 2, any)
-    assignLevels <- table(object@Assign)
-    nz  <- tapply(zeroed, object@Assign, sum)
-    labels <- colnames(cm)
-    bad <- nz >0 & nz != assignLevels
-    if(any(bad)){
-        return(paste0('Must test all levels of a factor jointly.  Only testing ',  labels[zeroed], '.'))
-    } else{
-        return(TRUE)
-    }
-})
-
-
+setClass('Hypothesis', contains='character', slots=list(transformed='matrix'))
+setClass('CoefficientHypothesis', contains='character', slots=list(transformed='character'))
 
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
 ##'

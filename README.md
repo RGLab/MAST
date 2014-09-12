@@ -13,7 +13,6 @@ Installation Instructions
 
 **Needs roxygen2 4.0.0.99** or higher (available on github) if the documentation is regenerated--otherwise the NAMESPACE file will not be correct.
 
-
 New Features in version .85
 ------------
 - The interface to zlm.SingleCellAssay has changed somewhat, and is not completely backwards compatible
