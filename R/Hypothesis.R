@@ -14,10 +14,10 @@ callName <- function(n=1){
 ##' @return a Hypothesis with a "transformed" component
 ##' @export Hypothesis
 ##' @export CoefficientHypothesis
-##' @aliases CoefficientHypothesis
+##' @aliases Hypothesis CoefficientHypothesis
 ##' @seealso zlm.SingleCellAssay waldTest lrTest linearHypothesis
 ##  Eliminate boilerplate by dynamically inferring what our callname was 
-CoefficientHypothesis <-Hypothesis <- function(hypothesis){
+Hypothesis <- CoefficientHypothesis <- function(hypothesis){
     whoami <- callName()
     new(whoami, .Data=hypothesis)
 }
