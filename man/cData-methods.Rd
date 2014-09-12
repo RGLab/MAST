@@ -13,7 +13,10 @@ cData(sc)
 \code{data.frame}
 }
 \description{
-cData
+Accessor for cellData \code{data.frame}
+}
+\details{
+Returns the \code{cellData} \code{data.frame}.
 }
 \keyword{accessor}
 

@@ -50,18 +50,24 @@ setMethod('summary', signature=c(object='LMlike'), function(object){
 
 setMethod('update', signature=c(object='LMlike'), function(object, formula., ...){
     object@formula <- update.formula(object@formula, formula.)
+    object@modelMatrix <- model.matrix(object@formula, object@design, ...)
     object@fitC <- object@fitD <- numeric(0)
     object@fitted <- c(C=FALSE, D=FALSE)
     object
 })
 
 setMethod('model.matrix', signature=c(object='LMlike'), function(object){
-    if(object@fitted['D']){
-        return(model.matrix(object@fitD))
-    } else{
-        return(NA)
-    }
+    object@modelMatrix
 })
+
+setReplaceMethod('model.matrix', signature=c(object='LMlike'), function(object, value){
+    object@modelMatrix <- value
+    validObject(object)
+    object
+})
+
+
+
 
 
 makeChiSqTable <- function(lambda, df, test){
@@ -89,19 +95,6 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='character'), func
     makeChiSqTable(c(C[['Chisq']], D[['Chisq']]), c(C[['Df']],D[['Df']]),hypothesis)
 })
 
-setMethod('waldTest', signature=c(object='LMlike', hypothesis='Hypothesis'), function(object, hypothesis){
-    if(object@fitted['C']){
-            C <- car::linearHypothesis.default(object@fitC, hypothesis.matrix=contrastMatrix(hypothesis, drop=TRUE), rhs=rhs(hypothesis, drop=TRUE), test='Chisq', vcov.=vcov(object, which='C'), coef.=coef(object, which='C', singular=TRUE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
-    }else{
-        C <- list(Chisq=0, Df=0)
-    }
-    if(object@fitted['D']){
-        D <- car::linearHypothesis.default(object@fitD, hypothesis.matrix=contrastMatrix(hypothesis, drop=TRUE), rhs=rhs(hypothesis, drop=TRUE), test='Chisq', vcov.=vcov(object, which='D'), coef.=coef(object, which='D', singular=TRUE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
-    }else{
-        D <- list(Chisq=0, Df=0)
-    }
-    makeChiSqTable(c(C[['Chisq']], D[['Chisq']]), c(C[['Df']],D[['Df']]),hypothesis)
-})
 
 ## object1 full model (fitted)
 ## object0 null model (possibly unfitted)
@@ -114,7 +107,6 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='Hypothesis'), fun
     dl <- ifelse(bothfitted, -2*(l0-l1), c(0, 0))
     df <- ifelse(bothfitted, dof(object1) - dof(object0), c(0, 0))
     makeChiSqTable(dl, df, drop.terms)
-
 }
 
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
@@ -123,9 +115,58 @@ setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), functi
     .lrTest(object, U)
 })
 
-setMethod('lrTest', signature=c(object='LMlike', hypothesis='TermHypothesis'), function(object, hypothesis){
-    term <- getTerms(hypothesis)
-    lrTest(object, term)
+setMethod('lrTest', signature=c(object='LMlike', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
+    object1 <- object
+    mm <- object0@modelMatrix
+    object0@modelMatrix <- mm[,setdiff(names(mm), hypothesis), drop=FALSE]
+
+    ## Don't attempt to test any component with a missing coefficient
+    missingCoefC <- setdiff(hypothesis, coef(object1, which='C', singular=FALSE))
+    missingCoefD <- setdiff(hypothesis, coef(object1, which='D', singular=FALSE))
+    if(length(missingCoefC)>0){
+        warning('Not testing continuous.', paste(missingCoefC, ','), 'was missing')
+        object1@fitted['C'] <- FALSE
+}
+        if(length(missingCoefD)>0){
+        warning('Not testing discrete.', paste(missingCoefD, ','), 'was missing')
+        object1@fitted['D'] <- FALSE
+}
+    .lrTest(object1, object0)
+})
+
+
+setMethod('lrTest', signature=c(object='LMlike', hypothesis='Hypothesis'), function(object, hypothesis){
+    ## ## from glmLRT in edgeR
+    contrast <- as.matrix(hypothesis@transformed)
+    qrc <- qr(contrast)
+    ncontrasts <- qrc$rank
+    if(ncontrasts==0) stop("contrasts are all zero")
+    coef <- 1:ncontrasts
+    if(ncontrasts < ncol(contrast)) contrast <- contrast[,qrc$pivot[coef]]
+    if(ncontrasts>1) {
+        coef.name <- paste("LR test of",ncontrasts,"contrasts")
+    } else {
+        contrast <- drop(contrast)
+        i <- contrast!=0
+        coef.name <- paste(paste(contrast[i],coef.names[i],sep="*"),collapse=" ")
+    }
+
+    ## rotate design and drop columns
+    Dvec <- rep.int(1,nlibs)
+    Dvec[coef] <- diag(qrc$qr)[coef]
+    ## what is Dvec??
+    Q <- qr.Q(qrc,complete=TRUE,Dvec=Dvec)
+    design <- model.matrix(object)
+    design <- design %*% Q
+    design0 <- design[,-coef,drop=FALSE]
+    model.matrix(object) <- design
+    coefname <- colnames(design[,-coef,drop=FALSE])
+
+    ## Ok, so we rotated the design--now to see if we can estimate all of the columns that we need...
+    object <- fit(object)
+    ## now we have a CoefficientHypothesis defined in the rotated space
+    hypothesis <- new('CoefficientHypothesis', .Data=coefname, transformed=coefname)
+    lrTest(object,hypothesis)
 })
 
 setMethod('residuals', signature=c(object='LMlike'), function(object, type='response', which, ...){

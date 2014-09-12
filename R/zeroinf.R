@@ -1,6 +1,7 @@
-methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'shrunkglm'),
-                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'ShrunkenGLMlike'),
-                         lrtHypoType=c('SimpleHypothesis', 'TermHypothesis','TermHypothesis',  'SimpleHypothesis', 'SimpleHypothesis'))
+methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm'),
+                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike'),
+                         lrtHypoType=c('SimpleHypothesis', 'TermHypothesis','TermHypothesis',  'SimpleHypothesis'),
+                         implementsEbayes=c(TRUE, TRUE, FALSE, TRUE))
 
 
 residualsHook <- function(fit){
@@ -124,16 +125,11 @@ summary.zlm <- function(out){
 ##' dimnames(twoTests[[1]])
 ##' }
 zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wald', onlyReturnCoefs=FALSE, keep.zlm='false', .parallel=FALSE, silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, ...){
+    ## Which class are we using for the fits...look it up by keyword
     method <- match.arg(method, methodDict[,keyword])
     method <- methodDict[keyword==method,lmMethod]
     type <- match.arg(type, c('LRT', 'Wald'))
-
-    hypoGen <- NULL
-    if(!is(hypothesis, 'list')) hypothesis <- list(hypothesis)
-    if(is(hypothesis, 'hypothesisGenerator')){
-        hypoGen <- hypothesis
-    }
-    
+    ## What sort of test will we be doing?
     if(type=='LRT'){
         test <- lrTest        
     }else{
@@ -145,39 +141,51 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     if(nchar(fsplit[1,1])>0) message("Ignoring LHS of formula (", fsplit[1,1], ') and using exprs(sca)')
     Formula <- as.formula(paste0('~', fsplit[1,2]))
 
+    ## Empirical bayes method
+    priorVar <- 1
+    priorDOF <- 0
     if(ebayes){
-        ## Empirical bayes method
-        if(method != 'ShrunkenGLMlike') warning('Selecting method "ShrunkenGLMlike" since ebayes=TRUE.')
+        if(!methodDict[method,'implementsEbayes']) stop('Method', method, ' does not implement empirical bayes variance shrinkage.')
         ebparm <- ebayes(sca, ebayesControl, Formula)
-        obj <- new('ShrunkenGLMlike', design=cData(sca), formula=Formula, priorVar=ebparm['v'], priorDOF=ebparm['df'])
-    } else{
-        obj <- new(method, design=cData(sca), formula=Formula)
+        priorVar <- ebparm['v']
+        priorDOF <- ebparm['df']
     }
+    ## initial value of priorVar, priorDOF default to no shrinkage
+    obj <- new(method, design=cData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF)
+    
 
+    ## always set hypothesis to be enclosed in a list
+    if(!inherits(hypothesis, 'list'))
+        hypothesis <- list(hypothesis)
     nhypo <- length(hypothesis)
     ## avoiding repeated calls to the S4 object speeds calls on large sca
     ## due to overzealous copying semantics on R's part
-    ee <- exprs(sca)
-    
+    ee <- exprs(sca)    
     genes <- colnames(ee)
     ng <- length(genes)
+    ## in hopes of finding a typical gene to get coefficients
     upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
     obj <- fit(obj, ee[,upperQgene], silent=silent, ...)
-    
     if(onlyReturnCoefs){
         print(show(obj))
         return(invisible(obj))
         }
 
-       MM <- model.matrix(obj)
-    if(!is.null(hypoGen)) {
-        hypothesis <- hypoGen(colnames(MM), attr(MM, 'assign'))
+    ## gets hypothesis in suitable form for testing by now comparing it to the model names
+    ## this will throw an error if there are some columns misnamed
+    MM <- model.matrix(obj)
+    if(listType(hypothesis) %in% c('CoefficientHypothesis','Hypothesis')){
+        hypothesis <- lapply(hypothesis, generateHypothesis, terms=colnames(MM))
+    } else if(listType(hypothesis) != 'character'){
+        stop("hypothesis must be 'character', 'CoefficientHypothesis' or 'Hypothesis'.")
     }
 
- 
+    ## if(qr(MM)$rank<ncol(MM)) warning('Rank deficient design may make some methods unhappy')
+
+    ## initialize junk
     testNames <- makeChiSqTable(c(0, 0), c(1, 1), '')
-    coefNames <- names(coef(obj, 'C'))
-    vcovNames <- colnames(vcov(obj, 'C'))
+    vcovNames <- coefNames <- colnames(MM)
+
     ltests <- setNames(vector(mode='list', length=nhypo), names(hypothesis))
     hookOut <- if(!is.null(hook)) setNames(vector(mode='list', length=ng), genes) else NULL
     for(h in seq_len(nhypo)){
@@ -185,7 +193,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
         ltests[[h]][,,'Pr(>Chisq)'] <- 1
 }
 
-    ## Main loop.  Not a very R-like expression, but prevents allocating a huge amount of memory in case we have many genes.
+    ## Main loop.
     ## Todo: coefs, vcov, etc
     ## error counter--stop if exceeds 5 in a row
      nerror <- 0

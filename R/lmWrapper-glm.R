@@ -1,22 +1,26 @@
 ##' @include AllClasses.R
 ##' @include AllGenerics.R
-setMethod('update', signature=c(object='GLMlike'), function(object, formula., ...){
-    object <- callNextMethod(object, formula., ...)
-    object@modelMatrix <- model.matrix(object@formula, object@design, ...)
-    object
-})
 
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     if(which=='C') stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled else stats:::summary.glm(object@fitD)$cov.scaled
 })
 
+## dispersion calculations for glm-like fitters
 .dispersion <- function(object){
+    object@fitC$dispersionMLE <- object@fitC$dispersion <- NA
     if(object@fitted['C']){
-        object@fitC$dispersionMLE <- object@fitC$deviance/(object@fitC$df.null+1)
-        object@fitC$dispersion <- object@fitC$deviance/object@fitC$df.residual
-    } else{
-        object@fitC$dispersion <- NA
+        df.total <- object@fitC$df.null+1
+        df.residual <- object@fitC$df.residual
+        ## Save unshrunken
+        dMLEns <- object@fitC$deviance/df.total
+        dns <- object@fitC$deviance/df.residual
+        object@fitC$dispersionMLENoShrink <- dMLEns
+        object@fitC$dispersionNoShrink <- dns
+
+        ## Now shrink default component
+        object@fitC$dispersionMLE <- (dMLEns*df.total + object@priorVar*object@priorDOF)/(df.total+object@priorDOF)
+        object@fitC$dispersion <- (dns*df.residual+object@priorVar*object@priorDOF)/(df.residual+object@priorDOF)   
     }
 
     object
@@ -31,6 +35,7 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     object
 }
 
+## Performance enhancement: consider adding a 'which' argument, because for LRT with contrasts, we need to refit only the continuous in principal
 setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){
@@ -45,7 +50,7 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
     object@fitted <- c(C=object@fitC$converged & object@fitC$df.residual>0, D=object@fitD$converged & object@fitD$df.residual>0)
-
+    ## update dispersion, possibly shrinking by prior
     object <- .dispersion(object)
     
     if(!silent & !all(object@fitted)) warning('At least one component failed to converge')    
@@ -58,9 +63,6 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
     .Object
 })
 
-setMethod('model.matrix', 'GLMlike', function(object){
-    object@modelMatrix
-})
 
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
     L <- c(C=0, D=0)

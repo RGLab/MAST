@@ -233,14 +233,20 @@ setGeneric('vcov', function(object) standardGeneric('vcov'))
 setGeneric('dof', function(object) standardGeneric('dof'))
 
 
-##' Degrees of freedom of Zero inflated model
+##' Model matrix accessor
 ##'
 ##' @param object LMlike or subclass
 ##' @return model.matrix if present
 ##' @export
 setGeneric('model.matrix', function(object) standardGeneric('model.matrix'))
 
-
+##' Replace model matrix
+##'
+##' @param object LMlike or subclass
+##' @param value matrix
+##' @return modify object
+##' @export
+setGeneric('model.matrix<-', function(object, value) standardGeneric('model.matrix<-'))
 
 
 ###############################

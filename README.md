@@ -13,10 +13,13 @@ Installation Instructions
 
 **Needs roxygen2 4.0.0.99** or higher (available on github) if the documentation is regenerated--otherwise the NAMESPACE file will not be correct.
 
+Changes
+------------
+New interface for zlm.SingleCellAssay to specify hypothesis.  See ?Hypothesis
+
 
 New Features 
 ------------
-- Hurdle Model implemented in zlm.SingleCellAssay
-- Thresholding support for NanoString in thresholdNanoString
+- Support tests of arbitrary contrasts using LRT/zlm.SingleCellAssay
 
 ![doi/10.5281/zendoo.9810](http://zenodo.org/badge/doi/10.5281/zenodo.9810.png)
