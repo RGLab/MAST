@@ -100,7 +100,7 @@ summary.zlm <- function(out){
 ##' @param ebayesControl list with parameters for empirical bayes procedure.  See \link{ebayes}.
 ##' @param hook a function called on the \code{fit} after each gene.
 ##' @param force Should we continue testing genes even after many errors have occurred?
-##' @param ... arguments passed fit method.  For example, \code{fitArgsC} and \cpde{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
+##' @param ... arguments passed fit method.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
 ##' @return either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
 ##' @export
 ##' @seealso ebayes, glmlike-class

@@ -35,7 +35,7 @@ zlm.SingleCellAssay(formula, sca, method = "glm", hypothesis, type = "Wald",
 
 \item{force}{Should we continue testing genes even after many errors have occurred?}
 
-\item{...}{arguments passed fit method.  For example, \code{fitArgsC} and \cpde{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.}
+\item{...}{arguments passed fit method.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.}
 }
 \value{
 either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
