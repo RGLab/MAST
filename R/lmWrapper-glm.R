@@ -57,13 +57,6 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     object
 })
 
-setMethod('initialize', 'GLMlike', function(.Object, ...){
-    .Object <- callNextMethod()
-    .Object@modelMatrix <- model.matrix(.Object@formula, .Object@design)
-    .Object
-})
-
-
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
     L <- c(C=0, D=0)
     if(object@fitted['C']){

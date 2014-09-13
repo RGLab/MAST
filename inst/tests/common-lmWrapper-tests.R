@@ -88,13 +88,13 @@ test_that('Can get variance/cov', {
 })
 
 
+obj2 <- fit(suppressWarnings(update(obj, ~ .+Stim.Condition*Population)))
 
 context('Post hoc testing')
 test_that('LRT For Glm', {
  atest <- lrTest(obj, 'Stim.Condition')
  expect_is(atest, 'matrix')
 
- obj2 <- fit(update(obj, ~ .+Stim.Condition*Population))
  btest <- lrTest(obj2, 'Stim.Condition')
  expect_true(all(btest[,'df']==0))
  btest <- lrTest(obj2, 'Stim.Condition:Population')
@@ -102,12 +102,33 @@ test_that('LRT For Glm', {
  
 })
 
+    atest <- lrTest(obj, 'Stim.Condition')
+context('LRT Contrasts')
+test_that('Contrast Hypothesis Work', {
+    coefh <- generateHypothesis(Hypothesis('Stim.ConditionUnstim'), names(coef(obj, 'D')))
+    btest <- lrTest(obj, coefh)
+    expect_equivalent(atest,btest)
+    coefh <- suppressWarnings(generateHypothesis(Hypothesis('`Stim.ConditionUnstim:PopulationVbetaResponsive`'), names(coef(obj2, 'D'))))
+    btest <- lrTest(obj2, coefh)
+    ctest <- lrTest(obj2, 'Stim.Condition:Population')
+    expect_equivalent(btest,ctest)
+    
+    coefh <- suppressWarnings(generateHypothesis(Hypothesis(c('`Stim.ConditionUnstim:PopulationVbetaResponsive`-`(Intercept)`', 'PopulationVbetaResponsive')), names(coef(obj2, 'D'))))                          
+    dtest <- lrTest(obj2, coefh)
+    expect_is(dtest, 'matrix')
+    expect_equivalent(dtest[1:2, 'df'], c(2,2))
+})
 
-
+## library(car)
 ## test_that('LRT agree with manual', {
-##     d <- anova(objD, test='Chisq')[2,'Deviance']
-##     cont <- anova(objC, test='Chisq')[2,'Deviance']
+##     d <- Anova(objD, test='LR')[1,'LR Chisq']
+##     cont <- car:::Anova.glm(objC, test='LR', error.estimate='deviance')[1,'LR Chisq']
+##     d0 <- objC$null.deviance
+##     d1 <- objC$deviance
+##     s0 <- sqrt(d0/objC$df.null)
+##     s1 <- sqrt(d1/objC$df.resid)
 ##     lrt <- lrTest(obj, 'Stim.Condition')
+##     ## for some reason we're off by ~1% here...
 ##     expect_equivalent(lrt['hurdle', 'lambda'], sum(ifelse(lrt[1:2, 'df']>0,c(cont,d),c(0,0))))
 ## })
 
