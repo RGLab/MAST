@@ -36,9 +36,9 @@ if(require('lme4')){
   m <- melt(fd2)
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
-      lrout2 <- suppressWarnings(zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, method='lmer'))
   
 test_that('zlm can run lmer', {
+    lrout2 <- suppressWarnings(zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, method='lmer'))
       expect_is(lrout2$cont, c('mer','lmerMod','glmerMod'))
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
@@ -104,7 +104,7 @@ test_that('Empirical Bayes converges to something reasonable', {
 
 })
 
-## might need be needed anymore
+## might not need be needed anymore
 context('Test error handling')
 test_that('Give up after 5 errors', {
      expect_error(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='foo', force=FALSE), 'problems')
