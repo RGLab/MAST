@@ -10,7 +10,7 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
 
      fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
-    object@fitC <- do.call(bayesglm.fit, c(list(x=object@modelMatrix[pos,], y=object@response[pos]), fitArgsC))
+    object@fitC <- do.call(bayesglm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos]), fitArgsC))
     object@fitD <- do.call(bayesglm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
 
     ## bayesglm doesn't correctly set the residual DOF
