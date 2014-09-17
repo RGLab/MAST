@@ -63,10 +63,11 @@ For the Fluidigm/qPCR single cell expression functions to work as expected, we
 must use the \emph{expression threshold}, defined as $et = c_{\mbox{max}} - \ct$, which is proportional to the log-expression.
 
 Below, we load the package and the data, then compute the expression threshold from the $\ct$, and construct a \texttt{FluidigmAssay}.
-<<long-example,warning=FALSE, echo=-c(1,2,3)>>=
+<<long-example,warning=FALSE, echo=-c(1,2,3, 4)>>=
 suppressPackageStartupMessages(library(Biobase))
 library(knitr)
 opts_chunk$set(error=FALSE)
+#load_all('..')
 library(SingleCellAssay)
 require(plyr)
 data(vbeta)
@@ -192,7 +193,7 @@ We'll plot the -log10 P values by gene and test type.
 <<zlmExample, warning=FALSE, message=FALSE, fig.width=4, fig.height=6>>=
 library(ggplot2)
 library(reshape)
-zlm.output <- zlm.SingleCellAssay(~ Stim.Condition + Subject.ID, vbeta.1, hypothesis='Stim.Condition', type='LRT')
+zlm.output <- zlm.SingleCellAssay(~ Stim.Condition + Subject.ID, vbeta.1, hypothesis='Stim.Condition', type='LRT', silent=TRUE)
 dimnames(zlm.output)
 pvalue <- ggplot(melt(zlm.output[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
 print(pvalue)
@@ -200,9 +201,9 @@ print(pvalue)
 
 %% In fact, the \text{zlm} framework is quite general, and allows any modeling function that accepts \text{glm}-like arguments to be used, including mixed models such as those available in \texttt{lme4}.
 
-<<lmerExample, warning=FALSE, message=FALSE, eval=FALSE>>=
+<<lmerExample, warning=FALSE, message=FALSE>>=
 library(lme4)
-lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer',hypothesis='Stim.Condition', type='LRT')
+lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer',hypothesis='Stim.Condition', type='LRT', silent=TRUE)
 @
  
 It is possible to save the model fits so that coefficients can be examined.  See \texttt{?zlm.SingleCellAssay}.

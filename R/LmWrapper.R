@@ -23,19 +23,12 @@ setMethod('show',  signature=c(object='LMlike'), function(object){
     return(any(positive))
 }
 
-
 setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, fitArgsC=list(), fitArgsD=list(), ...){
     object@response <- response
     object@fitArgsC <- fitArgsC
     object@fitArgsD <- fitArgsD
     validObject(object)
     fit(object, silent=silent, ...)
-})
-
-setMethod('initialize', 'LMlike', function(.Object, ...){
-    .Object <- callNextMethod()
-    model.matrix(.Object) <- model.matrix(.Object@formula, .Object@design)
-    .Object
 })
 
 
@@ -149,16 +142,14 @@ setMethod('lrTest', signature=c(object='LMlike', hypothesis='Hypothesis'), funct
     ## what is Dvec??
     Q <- qr.Q(qrc,complete=TRUE,Dvec=Dvec)
     design <- design %*% Q
+    ## Ok, so we rotated the design, and now the coefficients are arbitrary
+    ## But might be needed for some subclasses (eg glmer)
+    colnames(design) <- paste('X', seq_len(ncol(design)), sep='')
     design0 <- design[,-testIdx,drop=FALSE]
-    model.matrix(object) <- design
-    coefname <- colnames(design[,-testIdx,drop=FALSE])
-
-    ## Ok, so we rotated the design--now to see if we can estimate all of the columns that we need...
-    object <- fit(object)
     object0 <- object
     model.matrix(object0) <- design0
 
-    ## Don't attempt to test any component with a missing coefficient
+    ## If we couldn't estimate a coefficient named in a contrast previously, we won't try to test it (since deleting a column from the design may not actually change the fit)
     missingCoefC <- names(which(is.na(coef(object, which='C', singular=TRUE))[testIdx]))
     missingCoefD <- names(which(is.na(coef(object, which='D', singular=TRUE))[testIdx]))
 

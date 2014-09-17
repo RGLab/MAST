@@ -17,4 +17,15 @@ test_that('Design is invariant to updates', {
         expect_true(length(setdiff(colnames(obj2@modelMatrix), colnames(obj@modelMatrix)))==1)
 })
 
-
+test_that('Ebayes shrinkage corner cases', {
+    ## zero DOF
+    obj@priorDOF <- 0
+    obj <- fit(obj)
+    expect_equal(obj@fitC$dispersion, summary(objC)$dispersion)
+    ## Complete shrinkage
+    obj@priorDOF <- 1e8
+    obj@priorVar <- 999
+    obj <- fit(obj)
+    expect_equal(obj@fitC$dispersion, 999, tol=1e-5)
+    expect_equal(obj@fitC$dispersionNoShrink, summary(objC)$dispersion)
+})

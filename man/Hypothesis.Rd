@@ -13,7 +13,7 @@ a Hypothesis
 }
 \description{
 A \code{Hypothesis} can be any (set) linear combination of coefficients, (jointly) compared to zero.  Specify it as a character vector that can be parsed to yield the desired equalities ala \code{makeContrasts}.
-Note that non-syntactic names are allowed, but you'll need to escape them with backticks "`".  In this contrast, your contrast needs to be parseable by R as an expression representing the comparison you desire.
+Note that non-syntactic names are allowed, but you'll need to escape them with backticks "`".  In this case, your contrast needs to be parseable by R as an expression representing the comparison you desire.
 }
 \seealso{
 zlm.SingleCellAssay waldTest lrTest makeContrasts

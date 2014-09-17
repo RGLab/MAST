@@ -1,6 +1,13 @@
 ##' @include AllClasses.R
 ##' @include AllGenerics.R
 
+setMethod('initialize', 'GLMlike', function(.Object, ...){
+    .Object <- callNextMethod()
+    model.matrix(.Object) <- model.matrix(.Object@formula, .Object@design)
+    .Object
+})
+
+
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     if(which=='C') stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled else stats:::summary.glm(object@fitD)$cov.scaled
@@ -96,6 +103,9 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
     }
 })
 
-setMethod('summarize', signature=c(object='LMlike'), function(object, ...){
-    list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'), devianceC=logLik(object)['C'], df.nullC=object@fitC$df.null, df.residC=object@fitC$df.residual, dispersionMLEC=object@fitC$dispersionMLE, coefD=coef(object, which='D'), vcovD=vcov(object, 'D'), devianceD=logLik(object)['D'], df.nullD=object@fitD$df.null, df.residD=object@fitD$df.residual)
-})
+
+
+setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
+     list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'),
+          devianceC=object@fitC$deviance, df.nullC=object@fitC$df.null, df.residC=object@fitC$df.residual, dispersionMLEC=object@fitC$dispersionMLE, coefD=coef(object, which='D'), vcovD=vcov(object, 'D'), devianceD=object@fitD$deviance, df.nullD=object@fitD$df.null, df.residD=object@fitD$df.residual)
+  })

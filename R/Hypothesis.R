@@ -9,7 +9,7 @@ callName <- function(n=1){
 ##' Describe a linear model hypothesis to be tested
 ##'
 ##' A \code{Hypothesis} can be any (set) linear combination of coefficients, (jointly) compared to zero.  Specify it as a character vector that can be parsed to yield the desired equalities ala \code{makeContrasts}.
-##' Note that non-syntactic names are allowed, but you'll need to escape them with backticks "`".  In this contrast, your contrast needs to be parseable by R as an expression representing the comparison you desire.
+##' Note that non-syntactic names are allowed, but you'll need to escape them with backticks "`".  In this case, your contrast needs to be parseable by R as an expression representing the comparison you desire.
 ##' @param hypothesis a character vector specifying a hypothesis, following makeContrasts, or a character vector naming coefficients to be dropped.
 ##' @return a Hypothesis
 ##' @export
@@ -50,18 +50,31 @@ listType <- function(alist){
     types[1]
 }
 
+##' @importFrom stringr str_replace_all str_c
+## escape symbols with backticks
+escapeSymbols <- function(text, warn=TRUE){
+    hasBT <- str_detect(text, fixed('`'))
+    if(any(hasBT)){
+        if(warn) warning("Some symbols already contain backticks ('`').  Deleting backticks and hoping for the best.")
+        text <- str_replace_all(text, fixed('`'), '')
+    }
+    hasSymbols <- str_detect(text, '[():+*/]|-')
+    text[hasSymbols] <- str_c('`', text[hasSymbols], '`')
+    text
+
+}
 
 ## Adapted from limma, but allowing for non-syntactic names
 ##' @importFrom stringr str_detect
-makeContrasts2 <- function (contrasts = NULL, levels) 
+makeContrasts2 <- function (contrasts = NULL, levels, warn=TRUE) 
 {
     if (is.factor(levels)) 
         levels <- levels(levels)
     if (!is.character(levels)) 
         levels <- colnames(levels)
-    symbols <- str_detect(contrasts, '[():+*/]|-')
-    if (any(symbols)) 
-        warning("Some contrasts contain symbols.  Be careful to escape these names with backticks ('`')")
+    symbols <- str_detect(levels, '[():+*/]|-')
+    if (any(symbols) && warn) 
+        warning("Some levels contain symbols.  Be careful to escape these names with backticks ('`') when specifying contrasts.")
     n <- length(levels)
     if (n < 1) 
         stop("No levels to construct contrasts from")

@@ -15,7 +15,7 @@ test_that('Handle 0% expression', {
 })
 
 test_that('Handle Singular Designs', {
-    obj2 <- update(obj, ~ . + Stim.Condition*Population)
+    expect_warning(obj2 <- update(obj, ~ . + Stim.Condition*Population), 'estimible')
     obj2 <- fit(obj2)
     expect_false(any(is.na(vcov(obj2, 'C'))))
     expect_false(any(is.na(vcov(obj2, 'D'))))
@@ -83,12 +83,12 @@ test_that('Can handle no residual DOF', {
 })
 
 test_that('Can get variance/cov', {
-    expect_equivalent(vcov(obj, 'C'), vcov(objC))
-    expect_equivalent(vcov(obj, 'D'), vcov(objD))
+    expect_equivalent(vcov(obj, 'C'), as.matrix(vcov(objC)))
+    expect_equivalent(vcov(obj, 'D'), as.matrix(vcov(objD)))
 })
 
 
-obj2 <- fit(suppressWarnings(update(obj, ~ .+Stim.Condition*Population)))
+suppressWarnings(obj2 <- fit(update(obj, ~ .+Stim.Condition*Population)))
 
 context('Post hoc testing')
 test_that('LRT For Glm', {
@@ -108,12 +108,12 @@ test_that('Contrast Hypothesis Work', {
     coefh <- generateHypothesis(Hypothesis('Stim.ConditionUnstim'), names(coef(obj, 'D')))
     btest <- lrTest(obj, coefh)
     expect_equivalent(atest,btest)
-    coefh <- suppressWarnings(generateHypothesis(Hypothesis('`Stim.ConditionUnstim:PopulationVbetaResponsive`'), names(coef(obj2, 'D'))))
+    expect_warning(coefh <- generateHypothesis(Hypothesis('`Stim.ConditionUnstim:PopulationVbetaResponsive`'), names(coef(obj2, 'D'))), 'backticks')
     btest <- lrTest(obj2, coefh)
     ctest <- lrTest(obj2, 'Stim.Condition:Population')
     expect_equivalent(btest,ctest)
     
-    coefh <- suppressWarnings(generateHypothesis(Hypothesis(c('`Stim.ConditionUnstim:PopulationVbetaResponsive`-`(Intercept)`', 'PopulationVbetaResponsive')), names(coef(obj2, 'D'))))                          
+    suppressWarnings(coefh <- generateHypothesis(Hypothesis(c('`Stim.ConditionUnstim:PopulationVbetaResponsive`-`(Intercept)`', 'PopulationVbetaResponsive')), names(coef(obj2, 'D'))))                          
     dtest <- lrTest(obj2, coefh)
     expect_is(dtest, 'matrix')
     expect_equivalent(dtest[1:2, 'df'], c(2,2))
