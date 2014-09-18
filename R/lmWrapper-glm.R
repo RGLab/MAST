@@ -42,7 +42,6 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     object
 }
 
-## Performance enhancement: consider adding a 'which' argument, because for LRT with contrasts, we need to refit only the continuous in principal
 setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){
@@ -57,6 +56,8 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
     object@fitted <- c(C=object@fitC$converged & object@fitC$df.residual>0, D=object@fitD$converged & object@fitD$df.residual>0)
+    ## cheap additional test for convergence
+    ## object@fitted['D'] <- object@fitted['D'] & (object@fitD$null.deviance >= object@fitD$deviance)
     ## update dispersion, possibly shrinking by prior
     object <- .dispersion(object)
     

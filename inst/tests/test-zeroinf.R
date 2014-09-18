@@ -36,7 +36,6 @@ if(require('lme4')){
   m <- melt(fd2)
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
-  
 test_that('zlm can run lmer', {
     lrout2 <- suppressWarnings(zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, method='lmer'))
       expect_is(lrout2$cont, c('mer','lmerMod','glmerMod'))
@@ -79,7 +78,7 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   w.resp <- which(cData(fd2)$Population=='VbetaResponsive')
   ee[,1][w.resp] <- rbinom(length(w.resp), 1, .1)
   exprs(fd2) <- ee
-  zz <- suppressWarnings(zlm.SingleCellAssay(value ~ Population, fd2, hypothesis='PopulationVbetaResponsive'))
+  zz <- suppressWarnings(zlm.SingleCellAssay( ~ Population, fd2, hypothesis='PopulationVbetaResponsive'))
   expect_that(zz, is_a('array'))
   expect_equal(dim(zz)[1], 20)  
 })
@@ -100,11 +99,10 @@ test_that('Gradients match analytic', {
 })
 }
 
-test_that('Empirical Bayes converges to something reasonable', {
-
+test_that('Empirical Bayes works', {
+     zz <- zlm.SingleCellAssay( ~ Population, fd2, hypothesis='PopulationVbetaResponsive', ebayes=TRUE)
 })
 
-## might not need be needed anymore
 context('Test error handling')
 test_that('Give up after 5 errors', {
      expect_error(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='foo', force=FALSE), 'problems')
@@ -122,3 +120,18 @@ test_that('Residuals Hook', {
      fd3 <- collectResiduals(zz, fd2)
      expect_is(fd3, 'SingleCellAssay')
 })
+
+if(require('arm')){
+context('zlm and bayesglm')
+test_that('Can fit using bayesglm', {
+    zz <- zlm.SingleCellAssay(~Population, fd2, hypothesis='Population', ebayes=FALSE, method='bayesglm', type='LRT', silent=FALSE)
+    expect_is(zz, 'array')
+})
+
+test_that('Can do ebayes shrinkage using bayesglm', {
+    zz <- zlm.SingleCellAssay(~Population, fd2, hypothesis='Population', ebayes=TRUE, method='bayesglm', type='LRT', silent=FALSE)
+    expect_is(zz, 'array')
+})
+
+detach('package:arm')
+}
