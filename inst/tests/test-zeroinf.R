@@ -123,14 +123,16 @@ test_that('Residuals Hook', {
 
 if(require('arm')){
 context('zlm and bayesglm')
+zz <- zlm.SingleCellAssay(~Population, fd2, hypothesis='Population', ebayes=FALSE, method='bayesglm', type='LRT', silent=FALSE)
 test_that('Can fit using bayesglm', {
-    zz <- zlm.SingleCellAssay(~Population, fd2, hypothesis='Population', ebayes=FALSE, method='bayesglm', type='LRT', silent=FALSE)
     expect_is(zz, 'array')
 })
 
 test_that('Can do ebayes shrinkage using bayesglm', {
-    zz <- zlm.SingleCellAssay(~Population, fd2, hypothesis='Population', ebayes=TRUE, method='bayesglm', type='LRT', silent=FALSE)
-    expect_is(zz, 'array')
+    zzshrink <- zlm.SingleCellAssay(~Population, fd2, hypothesis='Population', ebayes=TRUE, method='bayesglm', type='LRT', silent=FALSE)
+    expect_equal(zz[,,'df'], zzshrink[,,'df'])
+    expect_equal(zz[,'disc',], zzshrink[,'disc',])
+    expect_true(all(zz[,'cont','lambda']>0))
 })
 
 detach('package:arm')
