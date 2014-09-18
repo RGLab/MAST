@@ -45,7 +45,8 @@ test_that('zlm can run lmer', {
  
 
 test_that('zlm.SingleCellAssay works', {
-  zz <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, hypothesis='PopulationVbetaResponsive'))
+    browser()
+  zz <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
   expect_that(zz, is_a('array'))
   expect_equal(dim(zz)[1], 20)
 

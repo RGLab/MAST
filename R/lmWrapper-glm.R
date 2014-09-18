@@ -107,6 +107,15 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
 
 
 setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
-     list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'),
-          devianceC=object@fitC$deviance, df.nullC=object@fitC$df.null, df.residC=object@fitC$df.residual, dispersionMLEC=object@fitC$dispersionMLE, coefD=coef(object, which='D'), vcovD=vcov(object, 'D'), devianceD=object@fitD$deviance, df.nullD=object@fitD$df.null, df.residD=object@fitD$df.residual)
+    coefC <- coef(object, which='C')
+    coefD <- coef(object, which='D')
+    okC <- !is.na(coefC)
+    okD <- !is.na(coefD)
+    ## make sure covariance matrices are constant size
+    vcD <- vcC <- matrix(NA, nrow=length(okC), ncol=length(okC), dimnames=list(names(okC), names(okC)))
+    vcC[okC,okC] <- vcov(object, 'C')
+    vcD[okD, okD] <- vcov(object, 'D')
+
+     list(coefC=coefC, vcovC=vcC,
+          devianceC=object@fitC$deviance, df.nullC=object@fitC$df.null, df.residC=object@fitC$df.residual, dispersionMLEC=object@fitC$dispersionMLE, coefD=coefD, vcovD=vcD, devianceD=object@fitD$deviance, df.nullD=object@fitD$df.null, df.residD=object@fitD$df.residual)
   })

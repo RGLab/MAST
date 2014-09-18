@@ -20,6 +20,11 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
     sca
 }
 
+## for each column in exprMat, fit obj and return an environment containing the init summaries
+## exprMat should have column names containing the names of the genes
+## hook is an (optional) function called on each fitted object
+                      
+
 ##' Convenience function for running a zero-inflated regression
 ##'
 ##' Fits a hurdle model on zero-inflated continuous data in which the zero process
@@ -61,24 +66,6 @@ zlm <- function(formula, data, method='glm',silent=TRUE, ...){
 summary.zlm <- function(out){
   summary(out$cont)
   summary(out$disc)
-}
-
-## Only to be called within zlm.SingleCellAssay
-.updateSummaries <- function(i, obj, summaries){
-    this.summary <- summarize(obj)
-    okC <- !is.na(this.summary$coefC)
-    okD <- !is.na(this.summary$coefD)
-    summaries[['coefC']][i,] <- this.summary$coefC
-    summaries[['vcovC']][i,okC,okC] <- this.summary$vcovC
-    summaries[['df.residC']][i] <- this.summary$df.residC
-    summaries[['df.nullC']][i] <- this.summary$df.nullC
-    summaries[['devianceC']][i] <- this.summary$devianceC
-    summaries[['dispersionMLEC']][i] <- this.summary$dispersionMLEC
-    summaries[['coefD']][i,] <- this.summary$coefD
-    summaries[['vcovD']][i,okD,okD] <- this.summary$vcovD
-    summaries[['df.residD']][i] <- this.summary$df.residD
-    summaries[['df.nullD']][i] <- this.summary$df.nullD
-    summaries[['devianceD']][i] <- this.summary$devianceD
 }
  
 ##' Zero-inflated regression for SingleCellAssay 
@@ -144,18 +131,12 @@ summary.zlm <- function(out){
 ##' length(twoTests)
 ##' dimnames(twoTests[[1]])
 ##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wald', onlyReturnCoefs=FALSE, keep.zlm='false', .parallel=FALSE, silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, ...){
+zlm.SingleCellAssay <- function(formula, sca, method='glm', .parallel=TRUE, silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, ...){
     ## Which class are we using for the fits...look it up by keyword
     method <- match.arg(method, methodDict[,keyword])
     method <- methodDict[keyword==method,lmMethod]
-    type <- match.arg(type, c('LRT', 'Wald'))
-    ## What sort of test will we be doing?
-    if(type=='LRT'){
-        test <- lrTest        
-    }else{
-        test <- waldTest
-    }
-        if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
+    
+    if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
     if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
     fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
     if(nchar(fsplit[1,1])>0) message("Ignoring LHS of formula (", fsplit[1,1], ') and using exprs(sca)')
@@ -174,75 +155,75 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     ## initial value of priorVar, priorDOF default to no shrinkage
     obj <- new(method, design=cData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
     
-
-    ## always set hypothesis to be enclosed in a list
-    if(!inherits(hypothesis, 'list'))
-        hypothesis <- list(hypothesis)
-    nhypo <- length(hypothesis)
     ## avoiding repeated calls to the S4 object speeds calls on large sca
     ## due to overzealous copying semantics on R's part
     ee <- exprs(sca)    
     genes <- colnames(ee)
     ng <- length(genes)
-    ## in hopes of finding a typical gene to get coefficients
-    upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
-    obj <- fit(obj, ee[,upperQgene], silent=silent)
-    if(onlyReturnCoefs){
-        print(show(obj))
-        return(invisible(obj))
-        }
-
-    ## gets hypothesis in suitable form for testing by now comparing it to the model names
-    ## this will throw an error if there are some columns misnamed
     MM <- model.matrix(obj)
-    if(listType(hypothesis) %in% c('CoefficientHypothesis','Hypothesis')){
-        hypothesis <- lapply(hypothesis, generateHypothesis, terms=colnames(MM))
-    } else if(listType(hypothesis) != 'character'){
-        stop("hypothesis must be 'character', 'CoefficientHypothesis' or 'Hypothesis'.")
-    }
+    coefNames <- colnames(MM)
+    ## split into a largish number of pieces (greater than # cores for a typical machine)
+    ## But not so large as to spend a bunch of time initializing/deinitializing
+    MAX_PIECES <- 24
+    pieces <- rep(1:MAX_PIECES, length.out=ng)
+    listEE <- tapply(1:ncol(ee), pieces, function(j) ee[,j,drop=FALSE])
+    ## ## in hopes of finding a typical gene to get coefficients
+    ## upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
+    ## obj <- fit(obj, ee[,upperQgene], silent=silent)
+    ## if(onlyReturnCoefs){
+    ##     print(show(obj))
+    ##     return(invisible(obj))
+    ##     }
 
-    ## if(qr(MM)$rank<ncol(MM)) warning('Rank deficient design may make some methods unhappy')
+    ## called internally to do fitting, but want to get local variables in scope of function
+    .fitGeneSet <- function(obj, exprMat, hook){
+    genes <- colnames(exprMat)
+    thisNG <- ncol(exprMat)
 
-    ## initialize junk
-    testNames <- makeChiSqTable(c(0, 0), c(1, 1), '')
-    vcovNames <- coefNames <- colnames(MM)
-
-    ltests <- setNames(vector(mode='list', length=nhypo), names(hypothesis))
+    ## initialize outputs
+    summaries <- vector(mode='list', length=thisNG)
     hookOut <- if(!is.null(hook)) setNames(vector(mode='list', length=ng), genes) else NULL
-    for(h in seq_len(nhypo)){
-        ltests[[h]] <- array(0, dim=c(ng, nrow(testNames), ncol(testNames)), dimnames=list(primerid=genes, test.type=row.names(testNames), metric=colnames(testNames)))
-        ltests[[h]][,,'Pr(>Chisq)'] <- 1
-}
 
     ## Main loop.
     ## error counter--stop if exceeds 5 in a row
     nerror <- 0
     innerCatch <- ''
     ## coefs, vcov, etc
-    summaries <- initSummaries(genes, coefNames)
-    for(i in seq_len(ng)){
+
+    for(i in seq_len(thisNG)){
         outerCatch <- try({
-            obj <- fit(obj, response=ee[,i], silent=silent, ...)
-            .updateSummaries(i, obj, summaries)
+            obj <- fit(obj, response=exprMat[,i], silent=silent, ...)
+            summaries[[i]] <- summarize(obj)
             if(!is.null(hook)) hookOut[[i]] <- hook(obj)
-            for(h in seq_len(nhypo)){
-                 innerCatch <- try({ltests[[h]][i,,] <- test(obj, hypothesis[[h]])}, silent=silent)
-            }  
-        }, silent=silent)
-        if(is(outerCatch, 'try-error') || is(innerCatch, 'try-error')){
+        })
+        if(is(outerCatch, 'try-error')){
             message('!', appendLF=FALSE)
             nerror <- nerror+1
             if(nerror>5 & !force) {
-                msg <- c(outerCatch, innerCatch)[c(is(outerCatch, 'try-error'), is(innerCatch, 'try-error'))]
-                stop("We seem to be having a lot of problems here...are your tests specified correctly?  \n If you're sure, set force=TRUE.", msg)
-                }
+                msg <- outerCatch
+                stop("We seem to be having a lot of problems here...try rerunning with silent=FALSE to debug.  \n If you're sure you want to continue, set force=TRUE.", msg)
+            }
             next
         }     ## Made it through, reset error counter
         nerror <- 0
         message('.', appendLF=FALSE)
     }
+    structure(summaries, hookOut=hookOut)
+}
+
+
+    listOfSummaries <- lapply(listEE, .fitGeneSet, obj=obj, hook=hook)
+    
+#    listOfSummaries <- mclapply(listEE, .fitGeneSet, obj=obj, hook=hook, mc.silent=FALSE)
+
+
+    ## test for try-errors
+    
+
+    
+    
     message('\nDone!')
-    if(length(ltests)==1) ltests <- ltests[[1]]
+    summaries <- collectSummaries(listOfSummaries)
 
     ## add rest of slots, plus class name
     summaries[['modelMatrix']] <- MM
