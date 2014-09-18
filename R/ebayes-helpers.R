@@ -71,8 +71,11 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
     defaultCtl <- list(method='MLE', model='H0')
     if (is.null(ebayesControl)){
     ebayesControl <- list()
+    nms <- ''
+  } else{
+      nms <- names(ebayesControl)
   }
-    missingControl <- setdiff(names(ebayesControl), names(ebayesControl))
+    missingControl <- setdiff(names(defaultCtl), nms)
     ebayesControl[missingControl] <- defaultCtl[missingControl]
     method <- match.arg(ebayesControl[['method']], c('MOM', 'MLE'))
     model <- match.arg(ebayesControl[['model']], c('H0', 'H1'))
@@ -102,7 +105,7 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
         fn <- getMarginalHyperLikelihood(rNg, SSg, deriv=FALSE)
         grad <- getMarginalHyperLikelihood(rNg, SSg, deriv=TRUE)
         O <- optim(c(a0=1, b0=1), fn, gr=grad, method='L-BFGS', lower=.001, upper=Inf, control=list(fnscale=-1), hessian=TRUE)
-        if(O$convergence!=0) warning('Hyper parameter estimation might have failed', O$message)
+        if(O$convergence!=0) stop('Hyper parameter estimation might have failed', O$message)
         #O <- optim(c(a0=1, b0=1), fn, method='L-BFGS', lower=.001, upper=Inf, control=list(fnscale=-1))
         th <- O$par
     } else if(method == 'MOM'){

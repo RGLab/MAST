@@ -262,11 +262,13 @@ setClass('LMlike',
 setClass('GLMlike', contains='LMlike')
 setClass('BayesGLMlike', contains='GLMlike')
 setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity=function(object){
-    if(length(object@response)>0){
+    if(length(object@response)>0 & nrow(object@pseudoMM)>0){
         stopifnot(nrow(object@pseudoMM)==length(object@response))
     }
     if(object@priorDOF!=0) stop('Empirical bayes shrinkage not implemented for lmer/glmer.')
     })
+
+setClass('ConstrainedGLMlike', contains='LMlike')
 
 
 ## Ways to specify hypothesis

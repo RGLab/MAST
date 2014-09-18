@@ -1,6 +1,5 @@
 methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm'),
                          lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike'),
-                         lrtHypoType=c('SimpleHypothesis', 'TermHypothesis','TermHypothesis',  'SimpleHypothesis'),
                          implementsEbayes=c(TRUE, TRUE, FALSE, TRUE))
 
 
@@ -48,10 +47,13 @@ zlm <- function(formula, data, method='glm',silent=TRUE, ...){
   if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
   if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
 
-  ## lm initially just to get response vector
-  ## Turn glmer grouping "|" into "+" to get correct model frame
+  ## get response
   resp <- eval(formula[[2]], data)
-  obj <- new(methodDict[keyword==method, lmMethod], formula=formula, design=data, response=resp)
+  fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
+  ## get RHS
+  Formula <- as.formula(paste0('~', fsplit[1,2]))
+
+  obj <- new(methodDict[keyword==method, lmMethod], formula=Formula, design=data, response=resp)
   obj <- fit(obj)
   list(cont=obj@fitC, disc=obj@fitD)
 }
@@ -163,13 +165,14 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     priorVar <- 1
     priorDOF <- 0
     if(ebayes){
-        if(!methodDict[method,'implementsEbayes']) stop('Method', method, ' does not implement empirical bayes variance shrinkage.')
+        if(!methodDict[lmMethod==method,implementsEbayes]) stop('Method', method, ' does not implement empirical bayes variance shrinkage.')
         ebparm <- ebayes(sca, ebayesControl, Formula)
         priorVar <- ebparm['v']
         priorDOF <- ebparm['df']
+        stopifnot(all(!is.na(ebparm)))
     }
     ## initial value of priorVar, priorDOF default to no shrinkage
-    obj <- new(method, design=cData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF)
+    obj <- new(method, design=cData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
     
 
     ## always set hypothesis to be enclosed in a list
@@ -183,7 +186,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', hypothesis, type='Wa
     ng <- length(genes)
     ## in hopes of finding a typical gene to get coefficients
     upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
-    obj <- fit(obj, ee[,upperQgene], silent=silent, ...)
+    obj <- fit(obj, ee[,upperQgene], silent=silent)
     if(onlyReturnCoefs){
         print(show(obj))
         return(invisible(obj))
