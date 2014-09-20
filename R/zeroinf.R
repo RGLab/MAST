@@ -131,94 +131,92 @@ summary.zlm <- function(out){
 ##' length(twoTests)
 ##' dimnames(twoTests[[1]])
 ##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', .parallel=TRUE, silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, ...){
-    ## Which class are we using for the fits...look it up by keyword
-    method <- match.arg(method, methodDict[,keyword])
-    method <- methodDict[keyword==method,lmMethod]
-    
-    if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
-    if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
-    fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
-    if(nchar(fsplit[1,1])>0) message("Ignoring LHS of formula (", fsplit[1,1], ') and using exprs(sca)')
-    Formula <- as.formula(paste0('~', fsplit[1,2]))
+zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, LMlike, ...){
+    ## Default call
+    if(missing(LMlike)){
+        ## Which class are we using for the fits...look it up by keyword
+        method <- match.arg(method, methodDict[,keyword])
+        method <- methodDict[keyword==method,lmMethod]
+        
+        if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
+        if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
+        fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
+        if(nchar(fsplit[1,1])>0) message("Ignoring LHS of formula (", fsplit[1,1], ') and using exprs(sca)')
+        Formula <- as.formula(paste0('~', fsplit[1,2]))
 
-    ## Empirical bayes method
-    priorVar <- 1
-    priorDOF <- 0
-    if(ebayes){
-        if(!methodDict[lmMethod==method,implementsEbayes]) stop('Method', method, ' does not implement empirical bayes variance shrinkage.')
-        ebparm <- ebayes(sca, ebayesControl, Formula)
-        priorVar <- ebparm['v']
-        priorDOF <- ebparm['df']
-        stopifnot(all(!is.na(ebparm)))
-    }
-    ## initial value of priorVar, priorDOF default to no shrinkage
-    obj <- new(method, design=cData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
+        ## Empirical bayes method
+        priorVar <- 1
+        priorDOF <- 0
+        if(ebayes){
+            if(!methodDict[lmMethod==method,implementsEbayes]) stop('Method', method, ' does not implement empirical bayes variance shrinkage.')
+            ebparm <- ebayes(sca, ebayesControl, Formula)
+            priorVar <- ebparm['v']
+            priorDOF <- ebparm['df']
+            stopifnot(all(!is.na(ebparm)))
+        }
+        ## initial value of priorVar, priorDOF default to no shrinkage
+        obj <- new(method, design=cData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
+        ## End Default Call
+    } else{
+        ## Refitting
+        if(!missing(formula)) warning("Ignoring formula and using model defined in 'objLMLike'")
+        if(!inherits(LMlike, 'LMlike')) stop("'LMlike' must inherit from class 'LMlike'")
+           obj <- LMlike
+       }
     
     ## avoiding repeated calls to the S4 object speeds calls on large sca
     ## due to overzealous copying semantics on R's part
-    ee <- exprs(sca)    
+    ee <- exprs(sca)
     genes <- colnames(ee)
     ng <- length(genes)
     MM <- model.matrix(obj)
     coefNames <- colnames(MM)
     ## split into a largish number of pieces (greater than # cores for a typical machine)
     ## But not so large as to spend a bunch of time initializing/deinitializing
-    MAX_PIECES <- 24
-    pieces <- rep(1:MAX_PIECES, length.out=ng)
-    listEE <- tapply(1:ncol(ee), pieces, function(j) ee[,j,drop=FALSE])
-    ## ## in hopes of finding a typical gene to get coefficients
-    ## upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
-    ## obj <- fit(obj, ee[,upperQgene], silent=silent)
+    listEE <- seq_len(ng)
+    ## in hopes of finding a typical gene
+    upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
+    obj <- fit(obj, ee[,upperQgene], silent=silent)
     ## if(onlyReturnCoefs){
     ##     print(show(obj))
     ##     return(invisible(obj))
     ##     }
 
     ## called internally to do fitting, but want to get local variables in scope of function
-    .fitGeneSet <- function(obj, exprMat, hook){
-    genes <- colnames(exprMat)
-    thisNG <- ncol(exprMat)
-
-    ## initialize outputs
-    summaries <- vector(mode='list', length=thisNG)
-    hookOut <- if(!is.null(hook)) setNames(vector(mode='list', length=ng), genes) else NULL
-
-    ## Main loop.
-    ## error counter--stop if exceeds 5 in a row
     nerror <- 0
-    innerCatch <- ''
-    ## coefs, vcov, etc
-
-    for(i in seq_len(thisNG)){
-        outerCatch <- try({
-            obj <- fit(obj, response=exprMat[,i], silent=silent, ...)
-            summaries[[i]] <- summarize(obj)
-            if(!is.null(hook)) hookOut[[i]] <- hook(obj)
+    .fitGeneSet <- function(idx){
+        ## initialize outputs
+        hookOut <- NULL
+        tt <- try({
+            obj <- fit(obj, response=ee[,idx], silent=silent)
+            if(!is.null(hook)) hookOut <- hook(obj)
+            nerror <- 0
+            message('.', appendLF=FALSE)
         })
-        if(is(outerCatch, 'try-error')){
+
+        if(is(tt, 'try-error')){
             message('!', appendLF=FALSE)
             nerror <- nerror+1
             if(nerror>5 & !force) {
-                msg <- outerCatch
-                stop("We seem to be having a lot of problems here...try rerunning with silent=FALSE to debug.  \n If you're sure you want to continue, set force=TRUE.", msg)
+                stop("We seem to be having a lot of problems here...are your tests specified correctly?  \n If you're sure, set force=TRUE.", tt)                
             }
-            next
-        }     ## Made it through, reset error counter
-        nerror <- 0
-        message('.', appendLF=FALSE)
+        }
+        summaries <- summarize(obj)
+        structure(summaries, hookOut=hookOut)
     }
-    structure(summaries, hookOut=hookOut)
-}
 
 
-    listOfSummaries <- lapply(listEE, .fitGeneSet, obj=obj, hook=hook)
+    #listOfSummaries <- lapply(listEE, .fitGeneSet)
+    listOfSummaries <- mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
     
-#    listOfSummaries <- mclapply(listEE, .fitGeneSet, obj=obj, hook=hook, mc.silent=FALSE)
-
-
     ## test for try-errors
-    
+    cls <- sapply(listOfSummaries, function(x) class(x))
+    complain <- if(force) warn else stop
+    if(mean(cls=='try-error')>.5) complain('Lots of errors here..something is amiss.')
+
+    ## gethooks
+    hookOut <- NULL
+    if(!is.null(hook)) hookOut <- lapply(listOfSummaries, attr, which='hookOut')
 
     
     
@@ -226,13 +224,15 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', .parallel=TRUE, sile
     summaries <- collectSummaries(listOfSummaries)
 
     ## add rest of slots, plus class name
-    summaries[['modelMatrix']] <- MM
+    summaries[['LMlike']] <- obj
     summaries[['sca']] <- sca
     summaries[['priorVar']] <- obj@priorVar
     summaries[['priorDOF']] <- obj@priorDOF
+    summaries[['hookOut']] <- hookOut
     summaries[['Class']] <- 'ZlmFit'
     ## everything we need to call new
     zfit <- do.call(new, as.list(summaries))
     ## tests, summarized objects, example fit, hooks
-    structure(ltests, ZlmFit=zfit, obj=obj, hookOut=hookOut)
+    zfit
+    ## structure(zfit, LMlike=obj)
 }

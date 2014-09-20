@@ -273,9 +273,9 @@ setClass('ConstrainedGLMlike', contains='LMlike')
 
 ## Ways to specify hypothesis
 setClass('Hypothesis', contains='character', slots=list(transformed='matrix'))
-setClass('CoefficientHypothesis', contains='character', slots=list(transformed='character'))
+setClass('CoefficientHypothesis', contains='character', slots=list(transformed='numeric'))
 
-setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', modelMatrix='matrix', sca='SingleCellAssay', devianceC='numeric', devianceD='numeric', df.nullC='numeric', df.nullD='numeric', df.residC='numeric', df.residD='numeric', dispersionMLEC='numeric', priorDOF='numeric', priorVar='numeric'))
+setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellAssay', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
 ##'

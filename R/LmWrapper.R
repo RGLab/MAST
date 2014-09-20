@@ -34,7 +34,12 @@ setMethod('fit', signature=c(object='LMlike', response='vector'), function(objec
 
 setMethod('coef', signature=c(object='LMlike'), function(object, which, singular=TRUE, ...){
     stopifnot(which %in% c('C', 'D'))
-    co <- if(which=='C') coef(object@fitC) else coef(object@fitD)
+    co <- setNames(rep(NA, ncol(model.matrix(object))), colnames(model.matrix(object)))
+    if(which=='C' & object@fitted['C']){
+        co <- coef(object@fitC)}
+    else if(object@fitted['D']){
+        co <- coef(object@fitD)
+    }
     if(!singular) co <- co[!is.na(co)]
     co
 })
@@ -74,13 +79,25 @@ setReplaceMethod('model.matrix', signature=c(object='LMlike'), function(object, 
 
 
 makeChiSqTable <- function(lambda, df, test){
+    ## either data.frames or vectors
     stopifnot(all(names(lambda) == c('C', 'D')))
     stopifnot(all(names(df) == c('C', 'D')))
-    lambdaC <- c(lambda, sum(lambda))
-    dfC <- c(df, sum(df))
-    tab <- cbind(lambda=lambdaC,
-               df=dfC, 'Pr(>Chisq)'=pchisq(lambdaC, df=dfC, lower.tail=FALSE))
-    row.names(tab) <- c('cont', 'disc', 'hurdle')
+    ## which functions will we use for vectors vs data.frames
+    if(inherits(lambda, 'data.frame')){
+        Combine <- cbind
+        Sum <- rowSums
+        Glue <- function(...) abind(..., rev.along=0)
+    }else{
+        Combine <- c
+        Sum <- sum
+        Glue <- cbind
+    }
+    lambdaC <- setNames(Combine(lambda, Sum(lambda)), c('cont', 'disc', 'hurdle'))
+    dfC <- setNames(Combine(df, Sum(df)), c('cont', 'disc', 'hurdle'))
+
+    pchi <- pchisq(as.matrix(lambdaC), df=as.matrix(dfC), lower.tail=FALSE)
+    tab <- Glue(lambda=lambdaC,
+               df=dfC, 'Pr(>Chisq)'=pchi)
     structure(tab, test=test)
 }
 
@@ -100,12 +117,20 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='character'), func
 
 
 ## object1 full model (fitted)
-## object0 null model (possibly unfitted)
+## newMM is new model to be tested against
 ## returns chisqtable
-.lrTest <- function(object1, object0){
+.lrTest <- function(object1, newMM){        
     l1 <- logLik(object1)
+    object0 <- object1
+    model.matrix(object0) <- newMM
     object0 <- fit(object0)
     l0 <- logLik(object0)
+
+    ## don't test when all coefficients are aliased in large model
+    ## ...or maybe it's fine, though conservative
+    ## testName <- setdiff(colnames(model.matrix(object1)), colnames(newMM))
+    ## missingCoefC <- all(is.na(coef(object, which='C', singular=TRUE))[testName])
+    ## missingCoefD <- all(is.na(coef(object, which='D', singular=TRUE))[testName])
     bothfitted <- object1@fitted & object0@fitted
     dl <- ifelse(bothfitted, -2*(l0-l1), c(0, 0))
     df <- ifelse(bothfitted, dof(object1) - dof(object0), c(0, 0))
@@ -116,12 +141,11 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='character'), func
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
     F <- update.formula(object@formula, formula(sprintf(' ~. - %s', hypothesis)))
     U <- update(object, F)
-    .lrTest(object, U)
+    .lrTest(object, U@modelMatrix)
 })
 
-setMethod('lrTest', signature=c(object='LMlike', hypothesis='Hypothesis'), function(object, hypothesis){
-    ## from glmLRT in edgeR
-    contrast <- hypothesis@transformed
+.rotateMM <- function(object, contrast){
+      ## from glmLRT in edgeR
     qrc <- qr(contrast)
     ncontrasts <- qrc$rank
     if(ncontrasts==0) stop("contrasts are all zero")
@@ -145,25 +169,25 @@ setMethod('lrTest', signature=c(object='LMlike', hypothesis='Hypothesis'), funct
     ## Ok, so we rotated the design, and now the coefficients are arbitrary
     ## But might be needed for some subclasses (eg glmer)
     colnames(design) <- paste('X', seq_len(ncol(design)), sep='')
-    design0 <- design[,-testIdx,drop=FALSE]
-    object0 <- object
-    model.matrix(object0) <- design0
-
-    ## If we couldn't estimate a coefficient named in a contrast previously, we won't try to test it (since deleting a column from the design may not actually change the fit)
-    missingCoefC <- names(which(is.na(coef(object, which='C', singular=TRUE))[testIdx]))
-    missingCoefD <- names(which(is.na(coef(object, which='D', singular=TRUE))[testIdx]))
-
-    if(length(missingCoefC)>0){
-        warning('Not testing continuous. ', paste(missingCoefC, sep=','), ' was missing')
-        object@fitted['C'] <- FALSE
+    structure(design, testIdx=testIdx)
 }
-        if(length(missingCoefD)>0){
-        warning('Not testing discrete. ', paste(missingCoefD, sep=','), ' was missing')
-        object@fitted['D'] <- FALSE
-}
-    .lrTest(object, object0)
-    
+
+setMethod('lrTest', c(object='LMlike', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
+    testIdx <- hypothesis@transformed
+    .lrTest(object, model.matrix(object)[,-testIdx,drop=FALSE])
 })
+
+
+setMethod('lrTest', signature=c(object='LMlike', hypothesis='Hypothesis'), function(object, hypothesis){
+    lrTest(object, hypothesis@transformed)    
+})
+
+setMethod('lrTest', signature=c(object='LMlike', hypothesis='matrix'), function(object, hypothesis){
+    MM <- .rotateMM(object,  hypothesis)
+    testIdx <- attr(MM, 'testIdx')
+    .lrTest(object, MM[,-testIdx,drop=FALSE])
+    ## drop tested contrast
+    })
 
 setMethod('residuals', signature=c(object='LMlike'), function(object, type='response', which, ...){
     which <- match.arg(which, c('Discrete', 'Continuous', 'Marginal'))

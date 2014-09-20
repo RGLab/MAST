@@ -51,7 +51,7 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
 
     fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
-    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,], y=object@response[pos]), fitArgsC))
+    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos]), fitArgsC))
     object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
@@ -105,6 +105,23 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
 })
 
 
+## make a row matrix
+rowm <- function(C, D){
+    if(is.null(C) | missing(C))
+        C <- NA
+    if(is.null(D) | missing(D))
+        D <- NA
+    x <- c(C=C, D=D)
+    ## dim(x) <- c(1, length(x))
+    ## colnames(x) <- c('C', 'D')
+    x
+}
+
+torowm <- function(x){
+     ## dim(x) <- c(1, length(x))
+     ## colnames(x) <- c('C', 'D')
+     x
+}
 
 setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
     coefC <- coef(object, which='C')
@@ -115,7 +132,13 @@ setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
     vcD <- vcC <- matrix(NA, nrow=length(okC), ncol=length(okC), dimnames=list(names(okC), names(okC)))
     vcC[okC,okC] <- vcov(object, 'C')
     vcD[okD, okD] <- vcov(object, 'D')
-
+    
      list(coefC=coefC, vcovC=vcC,
-          devianceC=object@fitC$deviance, df.nullC=object@fitC$df.null, df.residC=object@fitC$df.residual, dispersionMLEC=object@fitC$dispersionMLE, coefD=coefD, vcovD=vcD, devianceD=object@fitD$deviance, df.nullD=object@fitD$df.null, df.residD=object@fitD$df.residual)
+          deviance=rowm(C=object@fitC$deviance, D=object@fitD$deviance),
+          df.null=rowm(C=object@fitC$df.null, D=object@fitD$df.null),
+          df.resid=rowm(C=object@fitC$df.residual, D=object@fitD$df.residual),
+          dispersion=rowm(C=object@fitC$dispersionMLE, D=object@fitD$dispersion),
+          dispersionNoshrink=rowm(C=object@fitC$dispersionMLENoShrink, D=object@fitD$dispersion),
+          loglik=torowm(logLik(object)),
+          coefD=coefD, vcovD=vcD, converged=torowm(object@fitted))
   })

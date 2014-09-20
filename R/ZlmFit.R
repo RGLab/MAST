@@ -4,42 +4,71 @@ initSummaries <- function(genes, coefNames){
     ng <- length(genes)
     coefD <- coefC <- matrix(NA, nrow=ng, ncol=p, dimnames=list(primerid=genes, coef=coefNames))
     vcovC <- vcovD <- array(NA, dim=c(ng, p, p), dimnames=list(primerid=genes, coefNames, coefNames))
-dispersionMLEC <- df.residD <- df.residC <- df.nullC <- df.nullD <- devianceC <- devianceD <- setNames(rep(NA, ng), genes)
-    as.environment(list(coefC=coefC, vcovC=vcovC, df.residC=df.residC, df.nullC=df.nullC, devianceC=devianceC, dispersionMLEC=dispersionMLEC, coefD=coefD, vcovD=vcovD, df.residD=df.residD, df.nullD=df.nullD, devianceD=devianceD))
+converged <- dispersion <- df.resid <- df.null <- deviance <- matrix(rep(NA, ng*2), nrow=ng, ncol=2, dimnames=list(genes, c('C', 'D')))
+    as.environment(list(coefC=coefC, vcovC=vcovC, df.resid=df.resid, df.null=df.null, deviance=deviance, dispersion=dispersion, coefD=coefD, vcovD=vcov, converged=converged))
 }
+
+Glue <- function(...) abind(..., rev.along=0)
 
 collectSummaries <- function(listOfSummaries){
     summaries <- list()
     summaries[['coefC']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'coefC'))
-    summaries[['vcovC']] <- do.call(abind, lapply(listOfSummaries, '[[', 'vcovC'))
-    summaries[['df.residC']] <- unlist(lapply(listOfSummaries, '[[', 'df.residC'))
-    summaries[['df.nullC']] <- unlist(lapply(listOfSummaries, '[[', 'df.nullC'))
-    summaries[['devianceC']] <- unlist(lapply(listOfSummaries, '[[', 'devianceC'))
-    summaries[['dispersionMLEC']] <- unlist(lapply(listOfSummaries, '[[', 'devianceC'))
-
+    summaries[['vcovC']] <- do.call(Glue, lapply(listOfSummaries, '[[', 'vcovC'))
+    summaries[['df.resid']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'df.resid'))
+    summaries[['df.null']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'df.null'))
+    summaries[['deviance']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'deviance'))
+    summaries[['dispersion']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersion'))
+summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersionNoshrink'))
+    summaries[['converged']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'converged'))
+    summaries[['loglik']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'loglik'))
     summaries[['coefD']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'coefD'))
-    summaries[['vcovD']] <- do.call(abind, lapply(listOfSummaries, '[[', 'vcovD'), along=-1)
-    summaries[['df.residD']] <- unlist(lapply(listOfSummaries, '[[', 'df.residD'))
-    summaries[['df.nullD']] <- unlist(lapply(listOfSummaries, '[[', 'df.nullD'))
-    summaries[['devianceD']] <- unlist(lapply(listOfSummaries, '[[', 'devianceD'))
+    summaries[['vcovD']] <- do.call(Glue, lapply(listOfSummaries, '[[', 'vcovD'))
 
     summaries
 }
 
-setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
+## Refit using new MM and calculate stats
+## hString is human-readable hypothesis
+.lrtZlmFit <- function(zlmfit, newMM, hString){
+    o1 <- zlmfit
+    LMlike <- o1@LMlike
+    model.matrix(LMlike) <- newMM
+    o0 <- zlm.SingleCellAssay(sca=o1@sca, LMlike=LMlike)
+    lambda <- -2*(o0@loglik-o1@loglik)
+    lambda <- ifelse(o0@converged & o1@converged, lambda, 0)
+    df <- o0@df.resid-o1@df.resid
+    df <- ifelse(o0@converged & o1@converged, df, 0)
+    makeChiSqTable(as.data.frame(lambda), as.data.frame(df), hString)
+}
 
+setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
+    o1 <- object
+    LMlike <- o1@LMlike
+    F <- update.formula(LMlike@formula, formula(sprintf(' ~. - %s', hypothesis)))
+    LMlike <- update(LMlike, F)
+    .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
+})
 
+setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
+    h <- generateHypothesis(hypothesis, colnames(object@coefD))
+    testIdx <- h@transformed
+    newMM <- model.matrix(object@LMlike)[,-testIdx, drop=FALSE]
+    .lrtZlmFit(object, newMM, hypothesis@.Data)
 })
 
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
-    ## initialize junk
-    testNames <- makeChiSqTable(c(0, 0), c(1, 1), '')
-    vcovNames <- coefNames <- colnames(MM)
+    ## original fit
+    h <- generateHypothesis(hypothesis, colnames(object@coefD))
+    LMlike <- object@LMlike
+    ## call using coefficient matrix
+    lrTest(object, h@transformed)
+})
 
-        for(h in seq_len(nhypo)){
-        ltests[[h]] <- array(0, dim=c(ng, nrow(testNames), ncol(testNames)), dimnames=list(primerid=genes, test.type=row.names(testNames), metric=colnames(testNames)))
-        ltests[[h]][,,'Pr(>Chisq)'] <- 1
-}
-
-
+## contrast matrices
+setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(object, hypothesis){
+    ## original fit
+    LMlike <- object@LMlike
+    MM <- .rotateMM(LMlike, hypothesis)
+    testIdx <- attr(MM, 'testIdx')
+    .lrtZlmFit(object, MM[,-testIdx, drop=FALSE], 'Contrast Matrix')
 })

@@ -3,40 +3,37 @@
 callName <- function(n=1){
     sc <- sys.calls()
     cl <- deparse(sc[[length(sc)-n]])
-    str_replace(cl, '\\(.*\\)', '')
+    str_replace(cl, '([^()]+)\\(.*', '\\1')
 }
 
 ##' Describe a linear model hypothesis to be tested
 ##'
-##' A \code{Hypothesis} can be any (set) linear combination of coefficients, (jointly) compared to zero.  Specify it as a character vector that can be parsed to yield the desired equalities ala \code{makeContrasts}.
-##' Note that non-syntactic names are allowed, but you'll need to escape them with backticks "`".  In this case, your contrast needs to be parseable by R as an expression representing the comparison you desire.
+##' A \code{Hypothesis} can be any linear combination of coefficients, compared to zero.  Specify it as a character vector that can be parsed to yield the desired equalities ala \code{makeContrasts}.
+##' A \code{CoefficientHypothesis} is a hypothesis for which terms are singly or jointly tested to be zero (generally the case in a t-test or F-test), by dropping coefficients from the model.
 ##' @param hypothesis a character vector specifying a hypothesis, following makeContrasts, or a character vector naming coefficients to be dropped.
-##' @return a Hypothesis
-##' @export
-##' @seealso zlm.SingleCellAssay waldTest lrTest makeContrasts
+##' @return a Hypothesis with a "transformed" component
+##' @export Hypothesis
+##' @export CoefficientHypothesis
+##' @aliases Hypothesis CoefficientHypothesis
+##' @seealso zlm.SingleCellAssay waldTest lrTest linearHypothesis
 ##  Eliminate boilerplate by dynamically inferring what our callname was 
-Hypothesis <- function(hypothesis){
+Hypothesis <- CoefficientHypothesis <- function(hypothesis){
     whoami <- callName()
-    new('Hypothesis', .Data=hypothesis)
+    new(whoami, .Data=hypothesis)
 }
 
 generateHypothesis <- function(h, terms){
     stopifnot(inherits(h, 'Hypothesis') | inherits(h, 'CoefficientHypothesis'))
-
+    ## if(length(h@transformed)>0) return(h)
     if(inherits(h, 'Hypothesis')){
-       trans <- makeContrasts2(contrasts=h@.Data, levels=terms)
-       rownames(trans) <- terms
-        
         ## makeContrasts can't handle non-syntactic names :-/
         ## So we'll use this instead
-        ## trans <- makeHypothesis(cnames=terms,h@.Data)
-        ## if(is.null(dim(trans))) trans <- as.matrix(trans)
-        ## ## kill *rhs* column
-        ## trans <- t(trans[-nrow(trans),,drop=FALSE])
+       trans <- makeContrasts2(contrasts=h@.Data, levels=terms)
+       rownames(trans) <- terms        
         sd <- setdiff(rownames(trans), terms)
-    } else{                             #CoefficientHypothesis
-        trans <- h@.Data
-        sd <- setdiff(h, terms)
+    } else {                             #CoefficientHypothesis
+        trans <- match(h@.Data, terms)
+        sd <- setdiff(h@.Data, terms)
     }
     if(length(sd)>0) stop("Term(s) '", paste(sd, ','), "' not found.\nTerms available: ", paste(terms, ", "))
 
@@ -58,7 +55,7 @@ escapeSymbols <- function(text, warn=TRUE){
         if(warn) warning("Some symbols already contain backticks ('`').  Deleting backticks and hoping for the best.")
         text <- str_replace_all(text, fixed('`'), '')
     }
-    hasSymbols <- str_detect(text, '[():+*/]|-')
+    hasSymbols <- str_detect(text, '[():+*/^]|-')
     text[hasSymbols] <- str_c('`', text[hasSymbols], '`')
     text
 
@@ -72,7 +69,7 @@ makeContrasts2 <- function (contrasts = NULL, levels, warn=TRUE)
         levels <- levels(levels)
     if (!is.character(levels)) 
         levels <- colnames(levels)
-    symbols <- str_detect(levels, '[():+*/]|-')
+    symbols <- str_detect(levels, '[():+*/^=]|-')
     if (any(symbols) && warn) 
         warning("Some levels contain symbols.  Be careful to escape these names with backticks ('`') when specifying contrasts.")
     n <- length(levels)

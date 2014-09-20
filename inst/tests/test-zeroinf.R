@@ -45,16 +45,10 @@ test_that('zlm can run lmer', {
  
 
 test_that('zlm.SingleCellAssay works', {
-    browser()
-  zz <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
-  expect_that(zz, is_a('array'))
-  expect_equal(dim(zz)[1], 20)
-
-  zz2 <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, hypothesis='Population:Stim.Condition', type='LRT'))
-  expect_that(zz, is_a('array'))
-  expect_equal(dim(zz)[1], 20)
-  
+  zzinit <<- zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2)
+  expect_that(zzinit, is_a('ZlmFit'))
 })
+
 
 ## test_that('Guessing coefficients in zlm.SingleCellAssay works', {
 ##     implicitCoefs <- zlm.SingleCellAssay(value ~ Subject.ID+Stim.Condition, fd2, hypo.terms=c('Subject.ID', 'Stim.Condition'), .drop=TRUE)
@@ -69,22 +63,32 @@ test_that('zlm.SingleCellAssay works', {
 ## })
 
 test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
-  ee <- exprs(fd2)
-  ee[,1] <- rnorm(nrow(fd))+20
-  exprs(fd2) <- ee
-  zz <- zlm.SingleCellAssay(~ Population*Stim.Condition, fd2, hypothesis='PopulationVbetaResponsive')
-  expect_that(zz, is_a('array'))
-  expect_equal(dim(zz)[1], 20)
+    fd3 <- fd2[,1:5]
+  ee <- exprs(fd3)
+  ee[,1] <- rnorm(nrow(fd3))+20
+  exprs(fd3) <- ee
+  zz <- zlm.SingleCellAssay( ~ Population, fd3)
+  expect_that(zz, is_a('ZlmFit'))
+  expect_false(zz@converged[1,'D'])
 
-  w.resp <- which(cData(fd2)$Population=='VbetaResponsive')
-  ee[,1][w.resp] <- rbinom(length(w.resp), 1, .1)
-  exprs(fd2) <- ee
-  zz <- suppressWarnings(zlm.SingleCellAssay( ~ Population, fd2, hypothesis='PopulationVbetaResponsive'))
-  expect_that(zz, is_a('array'))
-  expect_equal(dim(zz)[1], 20)  
+        if(require(arm)){
+            zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
+            expect_that(zz3, is_a('ZlmFit'))
+            expect_true(zz3@converged[1,'D'])
+            detach('package:arm')
+        }
+
+    w.resp <- which(cData(fd3)$Population=='VbetaResponsive')
+    ee[,1] <- 0
+    ee[,1][w.resp] <- rbinom(length(w.resp), 1, .2)
+    exprs(fd3) <- ee
+    zz2 <- zlm.SingleCellAssay( ~ Population, fd3)
+    expect_that(zz2, is_a('ZlmFit'))
+    expect_true(zz2@converged[1,'D'])
+    
 })
 
-if(require('lme4')) detach('package:lme4')
+try( if(require('lme4')) detach('package:lme4'))
 
 context('Empirical Bayes')
 if(require('numDeriv')){
@@ -101,39 +105,40 @@ test_that('Gradients match analytic', {
 }
 
 test_that('Empirical Bayes works', {
-     zz <- zlm.SingleCellAssay( ~ Population, fd2, hypothesis='PopulationVbetaResponsive', ebayes=TRUE)
+     zz <- zlm.SingleCellAssay( ~ Population, fd2,ebayes=TRUE)
+     expect_that(zz@dispersion, not(is_equivalent_to(zz@dispersionNoshrink)))
 })
 
 context('Test error handling')
 test_that('Give up after 5 errors', {
-     expect_error(zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='foo', force=FALSE), 'problems')
+     expect_error(zlm.SingleCellAssay(~ Population1234*Stim.Condition, fd2, force=FALSE), 'Population1234')
 
 })
 
 context('Test hooks')
 test_that('Identity Hook', {
-     zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='Population:Stim.Condition', type='LRT', hook=function(x) x)
+     zz <- zlm.SingleCellAssay(value ~ Population, fd2, hook=function(x) x)
      expect_is(revealHook(zz)[[1]], 'GLMlike')
 })
 
 test_that('Residuals Hook', {
-     zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hypothesis='Population:Stim.Condition', type='LRT', hook=residualsHook)
+     zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hook=residualsHook)
      fd3 <- collectResiduals(zz, fd2)
      expect_is(fd3, 'SingleCellAssay')
 })
 
 if(require('arm')){
 context('zlm and bayesglm')
-zz <- zlm.SingleCellAssay(~Population, fd2, hypothesis='Population', ebayes=FALSE, method='bayesglm', type='LRT', silent=FALSE)
+
 test_that('Can fit using bayesglm', {
-    expect_is(zz, 'array')
+    zzinit <<- zlm.SingleCellAssay(~Population, fd2, ebayes=FALSE, method='bayesglm', silent=FALSE)
+    expect_is(zzinit, 'ZlmFit')
 })
 
 test_that('Can do ebayes shrinkage using bayesglm', {
-    zzshrink <- zlm.SingleCellAssay(~Population, fd2, hypothesis='Population', ebayes=TRUE, method='bayesglm', type='LRT', silent=FALSE)
-    expect_equal(zz[,,'df'], zzshrink[,,'df'])
-    expect_equal(zz[,'disc',], zzshrink[,'disc',])
-    expect_true(all(zz[,'cont','lambda']>0))
+    zzinitshrink <- zlm.SingleCellAssay(~Population, fd2,  ebayes=TRUE, method='bayesglm', silent=FALSE)
+    expect_that(zzinit@dispersion, not(is_equivalent_to(zzinitshrink@dispersion)))
+    expect_equal(zzinit@dispersion, zzinitshrink@dispersionNoshrink)
 })
 
 detach('package:arm')

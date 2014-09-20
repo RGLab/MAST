@@ -229,7 +229,12 @@ setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
 
 setMethod('coef', signature=c(object='LMERlike'), function(object, which, singular=TRUE, ...){
     stopifnot(which %in% c('C', 'D'))
-    co <- if(which=='C') fixef(object@fitC) else fixef(object@fitD)
+    co <- setNames(rep(NA, ncol(model.matrix(object))), colnames(model.matrix(object)))
+    if(which=='C' & object@fitted['C']){
+        co <- fixef(object@fitC)}
+    else if(object@fitted['D']){
+        co <- fixef(object@fitD)
+    }
     if(!singular) co <- co[!is.na(co)]
     conm <- names(co)
     ## because of backtick schenangans
