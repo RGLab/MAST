@@ -8,6 +8,7 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 })
 
 
+## This is pinch point (up to 10% of computation time can be spent here)
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     if(which=='C') stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled else stats:::summary.glm(object@fitD)$cov.scaled

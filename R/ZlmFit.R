@@ -33,12 +33,15 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
     o1 <- zlmfit
     LMlike <- o1@LMlike
     model.matrix(LMlike) <- newMM
+    message('Refitting on reduced model...')
     o0 <- zlm.SingleCellAssay(sca=o1@sca, LMlike=LMlike)
     lambda <- -2*(o0@loglik-o1@loglik)
     lambda <- ifelse(o0@converged & o1@converged, lambda, 0)
     df <- o0@df.resid-o1@df.resid
     df <- ifelse(o0@converged & o1@converged, df, 0)
-    makeChiSqTable(as.data.frame(lambda), as.data.frame(df), hString)
+    cst <- makeChiSqTable(as.data.frame(lambda), as.data.frame(df), hString)
+    dimnames(cst)[[1]] <- fData(zlmfit@sca)$primerid
+    cst
 }
 
 setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
@@ -71,4 +74,8 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(
     MM <- .rotateMM(LMlike, hypothesis)
     testIdx <- attr(MM, 'testIdx')
     .lrtZlmFit(object, MM[,-testIdx, drop=FALSE], 'Contrast Matrix')
+})
+
+setMethod('show', signature=c(object='ZlmFit'), function(object){
+    cat('Fitted zlm on ', ncol(object@sca), ' genes and ', nrow(object@sca), ' cells.\n Using ', class(object@LMlike), ' to fit.\n')
 })

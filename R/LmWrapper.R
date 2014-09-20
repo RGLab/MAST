@@ -27,14 +27,14 @@ setMethod('fit', signature=c(object='LMlike', response='vector'), function(objec
     object@response <- response
     object@fitArgsC <- fitArgsC
     object@fitArgsD <- fitArgsD
-    validObject(object)
+    ## validObject(object)
     fit(object, silent=silent, ...)
 })
 
 
 setMethod('coef', signature=c(object='LMlike'), function(object, which, singular=TRUE, ...){
     stopifnot(which %in% c('C', 'D'))
-    co <- setNames(rep(NA, ncol(model.matrix(object))), colnames(model.matrix(object)))
+    co <- object@defaultCoef
     if(which=='C' & object@fitted['C']){
         co <- coef(object@fitC)}
     else if(object@fitted['D']){
@@ -69,7 +69,9 @@ setReplaceMethod('model.matrix', signature=c(object='LMlike'), function(object, 
     qrm <- qr(value)
     est <- qrm$pivot[seq_len(qrm$rank)]
     if(length(est)<ncol(value)) warning('Coefficients ', paste(colnames(value)[setdiff(qrm$pivot, est)], collapse=', '), ' are never estimible and will be dropped.')
-    object@modelMatrix <- value[,est, drop=FALSE]
+    MM <- value[,est, drop=FALSE]
+    object@modelMatrix <- MM
+    object@defaultCoef <- as.numeric(setNames(rep(NA, ncol(MM)), colnames(MM)))
     validObject(object)
     object
 })

@@ -191,7 +191,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
             obj <- fit(obj, response=ee[,idx], silent=silent)
             if(!is.null(hook)) hookOut <- hook(obj)
             nerror <- 0
-            message('.', appendLF=FALSE)
+            if((idx %% 20)==0) message('.', appendLF=FALSE)
         })
 
         if(is(tt, 'try-error')){
@@ -206,8 +206,11 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     }
 
 
-    #listOfSummaries <- lapply(listEE, .fitGeneSet)
+    if(options('mc.cores')==1){
+        listOfSummaries <- lapply(listEE, .fitGeneSet)
+    } else{
     listOfSummaries <- mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
+}
     
     ## test for try-errors
     cls <- sapply(listOfSummaries, function(x) class(x))

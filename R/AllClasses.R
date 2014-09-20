@@ -249,7 +249,9 @@ setClass("SCASet",
 ##' @name LMlike-class
 ##' @docType class
 setClass('LMlike',
-         slots=c(design='data.frame', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric'),
+         slots=c(design='data.frame', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
+             ## this speeds construction of coef and vcov, which is a pinch point in zlm
+             defaultCoef='numeric'),
          prototype=list(fitted =c(C=FALSE, D=FALSE), formula=formula(0~0),modelMatrix=matrix(nrow=0, ncol=0), priorVar=0, priorDOF=0), validity=function(object){
              stopifnot( all(c("C", "D") %in% names(object@fitted)))
              if(length(object@response)>0){
