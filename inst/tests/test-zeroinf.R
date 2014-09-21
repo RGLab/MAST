@@ -47,6 +47,7 @@ test_that('zlm can run lmer', {
 test_that('zlm.SingleCellAssay works', {
   zzinit <<- zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2)
   expect_that(zzinit, is_a('ZlmFit'))
+  expect_equal(rownames(zzinit@coefC), fData(fd2)$primerid)
 })
 
 
@@ -112,7 +113,19 @@ test_that('Empirical Bayes works', {
 context('Test error handling')
 test_that('Give up after 5 errors', {
      expect_error(zlm.SingleCellAssay(~ Population1234*Stim.Condition, fd2, force=FALSE), 'Population1234')
+})
 
+test_that('No holes in output', {
+    ee <- exprs(fd2)
+    ee[1,2] <- NA
+    exprs(fd2) <- ee
+    zze <- zlm.SingleCellAssay(~Stim.Condition, fd2)
+    expect_equal(nrow(zze@coefD), ncol(fd2))
+    expect_true(all(is.na(zze@coefD[2,])))
+    expect_equal(dim(zze@vcovD)[3], ncol(fd2))
+    expect_true(all(is.na(zze@vcovC[,,2])))
+    expect_equal(nrow(zze@dispersion), ncol(fd2))
+    expect_true(all(is.na(zze@dispersion[2,])))
 })
 
 context('Test hooks')

@@ -3,27 +3,16 @@
 \alias{zlm.SingleCellAssay}
 \title{Zero-inflated regression for SingleCellAssay}
 \usage{
-zlm.SingleCellAssay(formula, sca, method = "glm", hypothesis, type = "Wald",
-  onlyReturnCoefs = FALSE, keep.zlm = "false", .parallel = FALSE,
-  silent = TRUE, ebayes = FALSE, ebayesControl = NULL, force = FALSE,
-  hook = NULL, ...)
+zlm.SingleCellAssay(formula, sca, method = "glm", silent = TRUE,
+  ebayes = FALSE, ebayesControl = NULL, force = FALSE, hook = NULL,
+  LMlike, ...)
 }
 \arguments{
 \item{formula}{a formula with the measurement variable on the LHS and predictors present in cData on the RHS}
 
 \item{sca}{SingleCellAssay object}
 
-\item{method}{character vector, either 'glm' or 'glmer'}
-
-\item{hypothesis}{character vector, list of character vectors passed to \code{lrTest} or \code{waldTest}.  See details.}
-
-\item{type}{type of test to run, one of 'Wald' or 'LRT'}
-
-\item{onlyReturnCoefs}{if TRUE, don't actually test, only return a gene giving example coefficients}
-
-\item{keep.zlm}{should the model objects be returned?  May be memory intensive.}
-
-\item{.parallel}{currently ignored}
+\item{method}{character vector, either 'glm', 'glmer' or 'bayesglm'}
 
 \item{silent}{Silence common problems with fitting some genes}
 
@@ -31,33 +20,25 @@ zlm.SingleCellAssay(formula, sca, method = "glm", hypothesis, type = "Wald",
 
 \item{ebayesControl}{list with parameters for empirical bayes procedure.  See \link{ebayes}.}
 
-\item{hook}{a function called on the \code{fit} after each gene.}
-
 \item{force}{Should we continue testing genes even after many errors have occurred?}
 
-\item{...}{arguments passed fit method.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.}
+\item{hook}{a function called on the \code{fit} after each gene.}
+
+\item{LMlike}{if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.}
+
+\item{...}{arguments passed to the S4 model object.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.}
+
+\item{onlyReturnCoefs}{if TRUE, don't actually test, only return a gene giving example coefficients}
 }
 \value{
 either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
 }
 \description{
 For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
-Conducts tests specified in "hypothesis".
+Return an object of class \code{ZlmFit} containing slots giving the coefficients, variance-covariance matrices, etc.
 After each gene, optionally run the function on the fit named by 'hook'
 }
 \details{
-When keep.zlm is FALSE, a 3D array with first dimension being the genes,
-next dimension giving information about the test
-(the degrees of freedom, Chisq statistic, and P value), and final dimension
-being the value of these quantities on the
-discrete, continuous and hurdle (combined) levels.
-
-When keep.zlm is TRUE, a list of length two is returned.
-Component "tests" gives the above 3-D array.
-Component "models" is a list giving the model fit for each gene.
-
-When \code{hypothesis} is a list, then each test specified in the list will be run, and the returned object will also be a list of 3D arrays (or component "tests" will be a list if keep.zlm is TRUE).
-
 The empirical bayes regularization of the gene variance assumes that the precision (1/variance) is drawn from a
 gamma distribution with unknown parameters.
 These parameters are estimated by considering the distribution of sample variances over all genes.
@@ -73,16 +54,12 @@ testsByGene <- zlm.SingleCellAssay(~ Stim.Condition, vbetaFA, hypothesis='Stim.C
 # genes X metric X test type
 dimnames(testsByGene)
 
-modelsAndTestsByGene <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc, hypothesis='Stim.ConditionUnstim', keep.zlm=TRUE)
-names(modelsAndTestsByGene$models)
-summary(modelsAndTestsByGene$models[['IL13']]$disc)
-summary(modelsAndTestsByGene$models[['IL13']]$cont)
+zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc)
+slotNames(zlmVbeta)
+coef(zlmVbeta, 'C')['IL13',]
 
-## Separate tests that Stim.Condition=0 and the Intercept=0
-## (The second test doesn't make sense scientifically)
-twoTests <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc, hypothesis=list('Stim.ConditionUnstim', '(Intercept)'))
-length(twoTests)
-dimnames(twoTests[[1]])
+vcov(zlmVbeta, 'C')['IL13',,]
+waldTest(zlmVbeta)
 }
 }
 \seealso{

@@ -67,8 +67,8 @@ Below, we load the package and the data, then compute the expression threshold f
 suppressPackageStartupMessages(library(Biobase))
 library(knitr)
 opts_chunk$set(error=FALSE)
-#load_all('..')
-library(SingleCellAssay)
+load_all('..')
+#library(SingleCellAssay)
 require(plyr)
 data(vbeta)
 colnames(vbeta)
@@ -188,18 +188,43 @@ head(cData(vbeta.1))
 @
 Now, for each gene, we can regress on \texttt{Et} the factors \texttt{Population} and \texttt{Subject.ID}.
 
-In each gene, we'll test if the factor \texttt{Population} explains a significant amount of the variation by fitting models with and without \texttt{Population} as an explanatory factor.  An array of genes, metrics and test types is returned.
-We'll plot the -log10 P values by gene and test type.
+In each gene, we'll fit a Hurdle model with a separate intercept for each population and subject.
+A an S4 object of class ``ZlmFit'' is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
 <<zlmExample, warning=FALSE, message=FALSE, fig.width=4, fig.height=6>>=
+zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1)
+show(zlm.output)
+## returns an array of both discrete and continuous
+coefsAndCI <- adply( c('C', 'D'), 1, function(component){
+    ## coefficients for each gene
+    coefs <- coef(zlm.output, which=component)
+    ## standard errors for each gene
+    se2 <- se.coef(zlm.output, which=component)*2
+    ci.lo <- coefs-se2
+    ci.hi <- coefs+se2
+    data.frame(primerid=row.names(coefs), coefs, ci.lo, ci.hi)
+})
+
+mcoefAndCI <- melt(coefsAndCI)
+
+@
+Try \texttt{showMethods(classes='ZlmFit')} to see a full list of methods.
+
+<<tests>>=
 library(ggplot2)
 library(reshape)
-zlm.output <- zlm.SingleCellAssay(~ Stim.Condition + Subject.ID, vbeta.1, hypothesis='Stim.Condition', type='LRT', silent=TRUE)
+
 dimnames(zlm.output)
 pvalue <- ggplot(melt(zlm.output[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
 print(pvalue)
 @
+In fact, the \texttt{zlm} framework is quite general, and has wrappers for a variety of  modeling functions that accept \texttt{glm}-like arguments to be used, such as mixed models (using \texttt{lme4}) and Bayesian regression models (using \textt{arm}).
 
-%% In fact, the \text{zlm} framework is quite general, and allows any modeling function that accepts \text{glm}-like arguments to be used, including mixed models such as those available in \texttt{lme4}.
+to test if the factor \texttt{Population} explains a significant amount of the variation by fitting models with and without \texttt{Population} as an explanatory factor.  
+
+
+An array of genes, metrics and test types is returned.
+We'll plot the -log10 P values by gene and test type.
+
 
 <<lmerExample, warning=FALSE, message=FALSE>>=
 library(lme4)

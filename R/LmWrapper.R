@@ -23,11 +23,14 @@ setMethod('show',  signature=c(object='LMlike'), function(object){
     return(any(positive))
 }
 
-setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, fitArgsC=list(), fitArgsD=list(), ...){
+setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, fitArgsC=list(), fitArgsD=list(), quick=FALSE, ...){
     object@response <- response
     object@fitArgsC <- fitArgsC
     object@fitArgsD <- fitArgsD
-    ## validObject(object)
+    object@fitted <- c(C=FALSE, D=FALSE)
+    object@fitC <- NULL
+    object@fitD <- NULL
+    if(!quick) validObject(object)      #save time in inner loop in zlm.SingleCellAssay
     fit(object, silent=silent, ...)
 })
 
@@ -36,8 +39,10 @@ setMethod('coef', signature=c(object='LMlike'), function(object, which, singular
     stopifnot(which %in% c('C', 'D'))
     co <- object@defaultCoef
     if(which=='C' & object@fitted['C']){
-        co <- coef(object@fitC)}
-    else if(object@fitted['D']){
+        co <- coef(object@fitC)
+    }
+
+    if(which=='D' & object@fitted['D']){
         co <- coef(object@fitD)
     }
     if(!singular) co <- co[!is.na(co)]
@@ -71,7 +76,8 @@ setReplaceMethod('model.matrix', signature=c(object='LMlike'), function(object, 
     if(length(est)<ncol(value)) warning('Coefficients ', paste(colnames(value)[setdiff(qrm$pivot, est)], collapse=', '), ' are never estimible and will be dropped.')
     MM <- value[,est, drop=FALSE]
     object@modelMatrix <- MM
-    object@defaultCoef <- as.numeric(setNames(rep(NA, ncol(MM)), colnames(MM)))
+    object@defaultCoef <- setNames(as.numeric(rep(NA, ncol(MM))), colnames(MM))
+    object@defaultVcov <- object@defaultCoef %o% object@defaultCoef
     validObject(object)
     object
 })

@@ -48,6 +48,7 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##' summary(fit$cont)
 ##'
 ##' @seealso GLMlike, LMERlike
+##' @import stringr
 zlm <- function(formula, data, method='glm',silent=TRUE, ...){
   if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
   if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
@@ -71,21 +72,9 @@ summary.zlm <- function(out){
 ##' Zero-inflated regression for SingleCellAssay 
 ##'
 ##' For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
-##' Conducts tests specified in "hypothesis".
+##' Return an object of class \code{ZlmFit} containing slots giving the coefficients, variance-covariance matrices, etc.
 ##' After each gene, optionally run the function on the fit named by 'hook'
-##'
-##' When keep.zlm is FALSE, a 3D array with first dimension being the genes,
-##' next dimension giving information about the test
-##' (the degrees of freedom, Chisq statistic, and P value), and final dimension
-##' being the value of these quantities on the
-##' discrete, continuous and hurdle (combined) levels.
-##'
-##' When keep.zlm is TRUE, a list of length two is returned.
-##' Component "tests" gives the above 3-D array.
-##' Component "models" is a list giving the model fit for each gene.
-##'
-##' When \code{hypothesis} is a list, then each test specified in the list will be run, and the returned object will also be a list of 3D arrays (or component "tests" will be a list if keep.zlm is TRUE).
-##'
+##' 
 ##' The empirical bayes regularization of the gene variance assumes that the precision (1/variance) is drawn from a
 ##' gamma distribution with unknown parameters.
 ##' These parameters are estimated by considering the distribution of sample variances over all genes.
@@ -96,18 +85,15 @@ summary.zlm <- function(out){
 ##'
 ##' @param formula a formula with the measurement variable on the LHS and predictors present in cData on the RHS
 ##' @param sca SingleCellAssay object
-##' @param method character vector, either 'glm' or 'glmer'
-##' @param hypothesis character vector, list of character vectors passed to \code{lrTest} or \code{waldTest}.  See details.
-##' @param type type of test to run, one of 'Wald' or 'LRT'
-##' @param onlyReturnCoefs if TRUE, don't actually test, only return a gene giving example coefficients
-##' @param keep.zlm should the model objects be returned?  May be memory intensive.
-##' @param .parallel currently ignored
+##' @param method character vector, either 'glm', 'glmer' or 'bayesglm'
 ##' @param silent Silence common problems with fitting some genes
 ##' @param ebayes if TRUE, regularize variance using empirical bayes method
 ##' @param ebayesControl list with parameters for empirical bayes procedure.  See \link{ebayes}.
-##' @param hook a function called on the \code{fit} after each gene.
 ##' @param force Should we continue testing genes even after many errors have occurred?
-##' @param ... arguments passed fit method.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
+##' @param hook a function called on the \code{fit} after each gene.
+##' @param LMlike if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.
+##' @param ... arguments passed to the S4 model object.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
+##' @param onlyReturnCoefs if TRUE, don't actually test, only return a gene giving example coefficients
 ##' @return either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
 ##' @export
 ##' @seealso ebayes, glmlike-class
@@ -120,16 +106,12 @@ summary.zlm <- function(out){
 ##' # genes X metric X test type
 ##' dimnames(testsByGene)
 ##'
-##' modelsAndTestsByGene <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc, hypothesis='Stim.ConditionUnstim', keep.zlm=TRUE)
-##' names(modelsAndTestsByGene$models)
-##' summary(modelsAndTestsByGene$models[['IL13']]$disc)
-##' summary(modelsAndTestsByGene$models[['IL13']]$cont)
-##'
-##' ## Separate tests that Stim.Condition=0 and the Intercept=0
-##' ## (The second test doesn't make sense scientifically)
-##' twoTests <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc, hypothesis=list('Stim.ConditionUnstim', '(Intercept)'))
-##' length(twoTests)
-##' dimnames(twoTests[[1]])
+##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc)
+##' slotNames(zlmVbeta)
+##' coef(zlmVbeta, 'C')['IL13',]
+##' 
+##' vcov(zlmVbeta, 'C')['IL13',,]
+##' waldTest(zlmVbeta)
 ##' }
 zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, LMlike, ...){
     ## Default call
@@ -173,7 +155,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     coefNames <- colnames(MM)
     ## split into a largish number of pieces (greater than # cores for a typical machine)
     ## But not so large as to spend a bunch of time initializing/deinitializing
-    listEE <- seq_len(ng)
+    listEE <- setNames(seq_len(ng), genes)
     ## in hopes of finding a typical gene
     upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
     obj <- fit(obj, ee[,upperQgene], silent=silent)
@@ -188,13 +170,15 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         ## initialize outputs
         hookOut <- NULL
         tt <- try({
-            obj <- fit(obj, response=ee[,idx], silent=silent)
+            obj <- fit(obj, response=ee[,idx], silent=silent, quick=TRUE)
             if(!is.null(hook)) hookOut <- hook(obj)
             nerror <- 0
             if((idx %% 20)==0) message('.', appendLF=FALSE)
         })
 
         if(is(tt, 'try-error')){
+            obj@fitC <- obj@fitD <- NULL
+            obj@fitted <- c(C=FALSE, D=FALSE)
             message('!', appendLF=FALSE)
             nerror <- nerror+1
             if(nerror>5 & !force) {
@@ -206,7 +190,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     }
 
 
-    if(options('mc.cores')==1){
+    if(getOption('mc.cores', 1L)==1){
         listOfSummaries <- lapply(listEE, .fitGeneSet)
     } else{
     listOfSummaries <- mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)

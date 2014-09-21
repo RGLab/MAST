@@ -11,7 +11,17 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 ## This is pinch point (up to 10% of computation time can be spent here)
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
-    if(which=='C') stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled else stats:::summary.glm(object@fitD)$cov.scaled
+    vc <- object@defaultVcov
+    if(which=='C' & object@fitted['C']){
+        vc2 <- stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled
+    } else if(which=='D' & object@fitted['D']){
+        vc2 <- stats:::summary.glm(object@fitD)$cov.scaled
+    } else{
+        vc2 <- numeric()
+    }
+    ok <- colnames(vc2)
+    vc[ok,ok] <- vc2
+    vc
 })
 
 ## dispersion calculations for glm-like fitters
@@ -127,14 +137,12 @@ torowm <- function(x){
 setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
     coefC <- coef(object, which='C')
     coefD <- coef(object, which='D')
-    okC <- !is.na(coefC)
-    okD <- !is.na(coefD)
     ## make sure covariance matrices are constant size
-    vcD <- vcC <- matrix(NA, nrow=length(okC), ncol=length(okC), dimnames=list(names(okC), names(okC)))
-    vcC[okC,okC] <- vcov(object, 'C')
-    vcD[okD, okD] <- vcov(object, 'D')
+    ## if it's not fitted, then we'll throw an error here
+    vcC <- vcov(object, 'C')
+    vcD <- vcov(object, 'D')
     
-     list(coefC=coefC, vcovC=vcC,
+    list(coefC=coefC, vcovC=vcC,
           deviance=rowm(C=object@fitC$deviance, D=object@fitD$deviance),
           df.null=rowm(C=object@fitC$df.null, D=object@fitD$df.null),
           df.resid=rowm(C=object@fitC$df.residual, D=object@fitD$df.residual),
