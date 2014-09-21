@@ -44,6 +44,16 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
     cst
 }
 
+##' lrTest
+##'
+##' A 3D array with first dimension being the genes,
+##' next dimension giving information about the test
+##' (the degrees of freedom, Chisq statistic, and P value), and final dimension
+##' being the value of these quantities on the
+##' discrete, continuous and hurdle (combined) levels.
+##' @param object ZlmFit
+##' @param hypothesis See details
+##' @return 3D array
 setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
     o1 <- object
     LMlike <- o1@LMlike
@@ -79,3 +89,23 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(
 setMethod('show', signature=c(object='ZlmFit'), function(object){
     cat('Fitted zlm on ', ncol(object@sca), ' genes and ', nrow(object@sca), ' cells.\n Using ', class(object@LMlike), ' to fit.\n')
 })
+
+setMethod('coef', signature=c(object='ZlmFit'), function(object, which, ...){
+    which <- match.arg(which, c('C', 'D'))
+    if(which=='C') object@coefC else object@coefD
+})
+
+setMethod('vcov', signature=c(object='ZlmFit'), function(object, which, ...){
+    which <- match.arg(which, c('C', 'D'))
+    if(which=='C') object@vcovC else object@vcovD
+})
+
+##' @importMethodsFrom arm se.coef
+setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
+    which <- match.arg(which, c('C', 'D'))
+    vc <- if(which=='C') object@vcovC else object@vcovD
+    se <- sqrt(aaply(vc, 3, diag))
+    rownames(se) <- fData(object@sca)$primerid
+    se
+})
+
