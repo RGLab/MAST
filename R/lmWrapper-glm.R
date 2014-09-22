@@ -118,11 +118,13 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
 
 ## make a row matrix
 rowm <- function(C, D){
-    if(is.null(C) | missing(C))
+    x <- c(C=NA, D=NA)
+    try({if(is.null(C) | missing(C))
         C <- NA
     if(is.null(D) | missing(D))
         D <- NA
     x <- c(C=C, D=D)
+     }, silent=TRUE)
     ## dim(x) <- c(1, length(x))
     ## colnames(x) <- c('C', 'D')
     x

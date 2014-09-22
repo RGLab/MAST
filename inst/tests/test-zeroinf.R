@@ -38,9 +38,16 @@ if(require('lme4')){
   m$Stim.Condition <- factor(m$Stim.Condition)
 test_that('zlm can run lmer', {
     lrout2 <- suppressWarnings(zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, method='lmer'))
-      expect_is(lrout2$cont, c('mer','lmerMod','glmerMod'))
+    expect_is(lrout2$cont, c('mer','lmerMod','glmerMod'))
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
+options(mc.cores=3)
+  test_that('zlm.SingleCellAssay can run lmer', {
+      z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer')
+      expect_is(z, 'ZlmFit')
+      expect_equal(nrow(z@df.null), 20)
+      expect_equal(dim(z@vcovC)[[3]], 20)
+  })
     }
  
 
@@ -156,3 +163,4 @@ test_that('Can do ebayes shrinkage using bayesglm', {
 
 detach('package:arm')
 }
+
