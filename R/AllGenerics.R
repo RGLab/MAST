@@ -256,6 +256,14 @@ setGeneric('model.matrix<-', function(object, value) standardGeneric('model.matr
 ##' @export
 setGeneric('summarize', function(object, ...) standardGeneric('summarize'))
 
+##' Standard error on coefficients
+##'
+##' @param object ZlmFit
+##' @param which  character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned
+##' @return matrix of standard errors
+##' @export
+setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
+
 
 
 

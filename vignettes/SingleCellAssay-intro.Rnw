@@ -67,8 +67,8 @@ Below, we load the package and the data, then compute the expression threshold f
 suppressPackageStartupMessages(library(Biobase))
 library(knitr)
 opts_chunk$set(error=FALSE)
-load_all('..')
-#library(SingleCellAssay)
+#load_all('..')
+library(SingleCellAssay)
 require(plyr)
 data(vbeta)
 colnames(vbeta)
@@ -102,7 +102,7 @@ We see this gives us the set of genes measured in the assay, or the cell-level
 metadata (i.e. the number of cells measured in the well, the population this
 cell belongs to, the subject it came from, the chip it was run on, the well
 id, the stimulation it was subjected to, and the timepoint for the experiment
-this cell was part of). The wellKey is a hash of idvars columns, helping to
+this cell was part of). The wellKey are concatenated idvars columns, helping to
 ensure consistency when splitting and merging \sca objects. 
 \future{Some of this ``cell--level'' information could
   arguably be part of the \texttt{@phenoData} slot of the object. This
@@ -145,6 +145,14 @@ unloadNamespace("gplots")
 combine(x=sp1[[1]],y=sp1[[2]])
 combine(sp1)
 @ 
+
+\subsubsection{Modifying the cellData or featureData}
+Combine also can take a \texttt{vector} or \texttt{data.frame} or \texttt{AnnotatedDataFrame} and append it to the cellData or featureData.  The number of rows must match the number of wells or number of features, and determines to which component the argument will be appended.
+<<combineDF>>=
+newData <- data.frame(otherVariable=rnorm(nrow(vbeta.fa)))
+vbetaWithNewData <- combine(vbeta.fa, newData)
+head(cData(vbetaWithNewData))
+@
 
 \subsection{Filtering}
 We can filter and perform some significance tests on the \sca.
@@ -191,47 +199,44 @@ Now, for each gene, we can regress on \texttt{Et} the factors \texttt{Population
 In each gene, we'll fit a Hurdle model with a separate intercept for each population and subject.
 A an S4 object of class ``ZlmFit'' is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
 <<zlmExample, warning=FALSE, message=FALSE, fig.width=4, fig.height=6>>=
-zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1)
+library(ggplot2)
+library(reshape)
+library(abind)
+zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1, method='glm', ebayes=TRUE)
 show(zlm.output)
 ## returns an array of both discrete and continuous
-coefsAndCI <- adply( c('C', 'D'), 1, function(component){
+coefAndCI <- aaply( c(C='C', D='D'), 1, function(component){
     ## coefficients for each gene
     coefs <- coef(zlm.output, which=component)
     ## standard errors for each gene
     se2 <- se.coef(zlm.output, which=component)*2
     ci.lo <- coefs-se2
     ci.hi <- coefs+se2
-    data.frame(primerid=row.names(coefs), coefs, ci.lo, ci.hi)
-})
+    abind(coef=coefs, ci.lo=ci.lo, ci.hi=ci.hi, rev.along=0)
+}, .inform=TRUE)
 
-mcoefAndCI <- melt(coefsAndCI)
-
+mCoefAndCI <- setNames(melt(coefAndCI), c('component', 'gene', 'Coef', 'variable', 'value'))
+CoefAndCI <- cast(mCoefAndCI, ... ~ variable, subset=Coef != '(Intercept)')
+ggplot(CoefAndCI, aes(x=Coef, y=coef, ymin=ci.lo, ymax=ci.hi, col=component))+geom_pointrange(position=position_dodge(width=.5)) +facet_wrap(~gene) + theme(axis.text.x=element_text(angle=45, hjust=1)) + coord_cartesian(ylim=c(-3, 3))
 @
 Try \texttt{showMethods(classes='ZlmFit')} to see a full list of methods.
 
-<<tests>>=
-library(ggplot2)
-library(reshape)
-
-dimnames(zlm.output)
-pvalue <- ggplot(melt(zlm.output[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
-print(pvalue)
-@
-In fact, the \texttt{zlm} framework is quite general, and has wrappers for a variety of  modeling functions that accept \texttt{glm}-like arguments to be used, such as mixed models (using \texttt{lme4}) and Bayesian regression models (using \textt{arm}).
-
-to test if the factor \texttt{Population} explains a significant amount of the variation by fitting models with and without \texttt{Population} as an explanatory factor.  
-
-
+The combined test for differences in proportion expression/average expression is found by calling a likelihood ratio test on the fitted object.
 An array of genes, metrics and test types is returned.
 We'll plot the -log10 P values by gene and test type.
-
-
-<<lmerExample, warning=FALSE, message=FALSE>>=
-library(lme4)
-lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer',hypothesis='Stim.Condition', type='LRT', silent=TRUE)
+<<tests>>=
+zlm.lr <- lrTest(zlm.output, 'Population')
+dimnames(zlm.lr)
+pvalue <- ggplot(melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
+print(pvalue)
 @
- 
-It is possible to save the model fits so that coefficients can be examined.  See \texttt{?zlm.SingleCellAssay}.
+
+In fact, the \texttt{zlm} framework is quite general, and has wrappers for a variety of  modeling functions that accept \texttt{glm}-like arguments to be used, such as mixed models (using \texttt{lme4}) and Bayesian regression models (using \texttt{arm}).
+Multicore support is offered by setting \texttt{options(mc.cores=4)}, or however many cores your system has.
+<<lmerExample, warning=FALSE, message=FALSE, eval=TRUE>>=
+library(lme4)
+lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer')
+@
 
 \subsection{Two-sample Likelihood Ratio Test}
 Another way to test for differential expression is available through the \texttt{LRT} function, which is analogous to two-sample T tests.
@@ -245,7 +250,13 @@ The \texttt{Population} column shows which population is being compared, while \
 
 Other options are whether additional information about the tests are returned (\texttt{returnall=TRUE}) and if the testing should be stratified by a character vector naming columns in \texttt{cData} containing grouping variables (\texttt{groups}).
 
+These tests have been subsumed by \texttt{zlm.SingleCellAssay} but remain in the package for user convenience.
 
+\section{Use with single cell RNA-sequencing data}
+In RNA-sequencing data is essentially no different than qPCR-based single cell gene expression, once it has been aligned and mapped, if one is willing to reduce the experiment to counts or count-like data for a fixed set of genes/features.  
+We assume that suitable tools (eg, SAMseq or TopHat) have been applied to do this.
+
+**More details on convenience functions for RNAseq data**
 
 \section{Implementation Details}
 Here we provide some background on the implementation of the package. 

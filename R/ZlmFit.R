@@ -40,7 +40,7 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
     df <- o0@df.resid-o1@df.resid
     df <- ifelse(o0@converged & o1@converged, df, 0)
     cst <- makeChiSqTable(as.data.frame(lambda), as.data.frame(df), hString)
-    dimnames(cst)[[1]] <- fData(zlmfit@sca)$primerid
+    dimnames(cst) <- list(primerid=fData(zlmfit@sca)$primerid, test.type=dimnames(cst)[[2]], metric=dimnames(cst)[[3]])
     cst
 }
 
@@ -100,7 +100,6 @@ setMethod('vcov', signature=c(object='ZlmFit'), function(object, which, ...){
     if(which=='C') object@vcovC else object@vcovD
 })
 
-##' @importMethodsFrom arm se.coef
 setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     vc <- if(which=='C') object@vcovC else object@vcovD
