@@ -97,8 +97,6 @@ summary.zlm <- function(out){
 ##' @return either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
 ##' @export
 ##' @seealso ebayes, glmlike-class
-##' @importFrom stringr str_split_fixed
-##' @importFrom stringr fixed
 ##' @examples
 ##' \dontrun{
 ##' data(vbetaFA)

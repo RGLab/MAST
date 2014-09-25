@@ -8,7 +8,6 @@
 ## Fitting:
 ## establish pseudodesign and mutilate the formula
 
-##' @importFrom stringr str_replace_all
 getREvars <- function(Formula){
     termNames <- labels(terms(Formula))
     hasRE <- str_detect(termNames, fixed('|'))

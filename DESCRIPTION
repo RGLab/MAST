@@ -1,8 +1,8 @@
 Package: SingleCellAssay
 Type: Package
 Title: Core data structures for single-cell assays
-Version: 0.9
-Date: 2014-09-17
+Version: 0.901
+Date: 2014-09-25
 Author: Andrew McDavid <amcdavid@fhcrc.org>, Greg Finak <gfinak@fhcrc.org>
 Maintainer: Greg Finak <gfinak@fhcrc.org>
 VignetteBuilder: knitr
@@ -21,7 +21,7 @@ Imports:
     abind,
     car,
     methods,
-    limma
+    arm
 Suggests:
     parallel,
     flowClust(>= 2.99),
@@ -29,7 +29,6 @@ Suggests:
     testthat,
     lme4(>= 1.0),
     roxygen2(> 4.0.0),
-    arm,
     numDeriv
 Description: Core data structures and methods for handling single cell assay
     data.

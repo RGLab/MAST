@@ -1,5 +1,3 @@
-##' @importFrom limma makeContrasts
-##' @importFrom stringr str_replace
 callName <- function(n=1){
     sc <- sys.calls()
     cl <- deparse(sc[[length(sc)-n]])
@@ -47,7 +45,6 @@ listType <- function(alist){
     types[1]
 }
 
-##' @importFrom stringr str_replace_all str_c
 ## escape symbols with backticks
 escapeSymbols <- function(text, warn=TRUE){
     hasBT <- str_detect(text, fixed('`'))
@@ -62,7 +59,6 @@ escapeSymbols <- function(text, warn=TRUE){
 }
 
 ## Adapted from limma, but allowing for non-syntactic names
-##' @importFrom stringr str_detect
 makeContrasts2 <- function (contrasts = NULL, levels, warn=TRUE) 
 {
     if (is.factor(levels)) 
