@@ -100,6 +100,13 @@ setMethod('vcov', signature=c(object='ZlmFit'), function(object, which, ...){
     if(which=='C') object@vcovC else object@vcovD
 })
 
+##' Standard error on coefficients
+##'
+##' @param object ZlmFit
+##' @param which  character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned
+##' @return matrix of standard errors
+##' @importMethodsFrom arm se.coef
+##' @export
 setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     vc <- if(which=='C') object@vcovC else object@vcovD
@@ -107,4 +114,36 @@ setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     rownames(se) <- fData(object@sca)$primerid
     se
 })
+
+## just bootstrap
+##' @importFrom plyr raply
+bootVcov1 <- function(zlmfit, R=999){
+    sca <- zlmfit@sca
+    N <- nrow(sca)
+    manyvc <- raply(R, {
+        s <- sample(N, replace=TRUE)
+        newsca <- sca[s,]
+        z <- zlm.SingleCellAssay(sca=newsca, LMlike=zlmfit@LMlike)
+        abind(C=coef(z, 'C'), D=coef(z, 'D'), rev.along=0)
+    })
+
+   manyvc
+    
+}
+
+## use dfbetas
+bootVcov2 <- function(zlmfit, R=999){
+    sca <- zlmfit@sca
+    N <- nrow(sca)
+    z <- zlm.SingleCellAssay(sca=newsca, LMlike=zlmfit@LMlike, hook=function(lml){
+        cont <- lml@fitC
+        disc <- lml@fitD
+        class(disc) <-class(cont) <- 'glm'
+        dfc <- lm.influence(cont)$coefficients
+        dfd <- lm.influence(disc)$coefficients
+        list(cont=dfc, disc=dfd)
+        })
+    ## do stuff to this
+}
+
 
