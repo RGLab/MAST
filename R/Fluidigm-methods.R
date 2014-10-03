@@ -200,7 +200,7 @@ concordPlot <- function(concord0, concord1){
 ##' Remove, or flag wells that are outliers in discrete or continuous space.
 ##'
 ##' The function filters wells that don't pass filtering criteria described in filt_control.
-##' filt_control is a list with named elements \code{nOutliers}
+##' filt_control is a list with named elements \code{nOutlier}
 ##' (minimum nmber of outlier cells for a cell to be filtered [default = 2]
 ##' \code{sigmaContinuous} (the z-score outlier threshold for the continuous part of the signal) [default = 7]
 ##' and \code{sigmaProportion} (the z-score outlier threshold for the discrete part of the signal) [default = 7].
