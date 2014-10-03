@@ -82,10 +82,6 @@ setReplaceMethod('model.matrix', signature=c(object='LMlike'), function(object, 
     object
 })
 
-
-
-
-
 makeChiSqTable <- function(lambda, df, test){
     ## either data.frames or vectors
     stopifnot(all(names(lambda) == c('C', 'D')))
@@ -95,34 +91,78 @@ makeChiSqTable <- function(lambda, df, test){
         Combine <- cbind
         Sum <- rowSums
         Glue <- function(...) abind(..., rev.along=0)
+        Flatten <- function(x) x
     }else{
         Combine <- c
         Sum <- sum
         Glue <- cbind
+        Flatten <- as.vector
     }
     lambdaC <- setNames(Combine(lambda, Sum(lambda)), c('cont', 'disc', 'hurdle'))
     dfC <- setNames(Combine(df, Sum(df)), c('cont', 'disc', 'hurdle'))
 
-    pchi <- pchisq(as.matrix(lambdaC), df=as.matrix(dfC), lower.tail=FALSE)
+    pchi <- Flatten(pchisq(as.matrix(lambdaC), df=as.matrix(dfC), lower.tail=FALSE))
     tab <- Glue(lambda=lambdaC,
                df=dfC, 'Pr(>Chisq)'=pchi)
     structure(tab, test=test)
 }
 
-setMethod('waldTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
-    if(object@fitted['C']){
-            C <- car::linearHypothesis.default(object@fitC, hypothesis.matrix=hypothesis, test='Chisq', vcov.=vcov(object, which='C'), coef.=coef(object, which='C', singular=FALSE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
-    }else{
-        C <- list(Chisq=0, Df=0)
-    }
-    if(object@fitted['D']){
-        D <- car::linearHypothesis.default(object@fitD, hypothesis.matrix=hypothesis, test='Chisq', vcov.=vcov(object, which='D'), coef.=coef(object, which='D', singular=FALSE), singular.ok=TRUE)[2,c('Df', 'Chisq'), drop=TRUE]
-    }else{
-        D <- list(Chisq=0, Df=0)
-    }
-    makeChiSqTable(c(C[['Chisq']], D[['Chisq']]), c(C[['Df']],D[['Df']]),hypothesis)
+## this allows NAs to propagate via matrix multiplication, but still be killed when multiplied by zero
+complexifyNA <- function(x){
+    x[is.na(x)] <- 0+1i
+    x
+}
+uncomplexify <- function(x){
+    x[abs(Im(x))>.Machine$double.eps] <- NA
+    as.numeric(x)
+}
+
+
+
+## Takes coefficients (vector), contrast (matrix) and vcov (matrix), gets linear combination(s) defined by contrast matrix
+## Get squared length of linear combinations
+## This will be called by both ZlmFit and LmFit
+.waldTest <- function(coefC, coefD, vcC, vcD, cm, fitted){
+    ## linear combination of coefficients
+    ## complexify NA allows NAs to propagate algebraically rather than symbolically (ie 0*NA = 0)
+    contrC <- crossprod(cm, complexifyNA(coefC))
+    ## covariance matrix of linear combination
+    contrCovC <- crossprod(cm, complexifyNA(vcC) %*% cm)
+    contrD <- crossprod(cm, complexifyNA(coefD))
+    contrCovD <- crossprod(cm, complexifyNA(vcD) %*% cm)
+
+    ## Don't consider comparisons when we failed to fit
+    dof <- c(C=nrow(contrC), D=nrow(contrD))*(fitted*1)
+    contrC <- uncomplexify(contrC)
+    contrD <- uncomplexify(contrD)
+    ## squared length of coefficient linear combination, using its covariance
+    lambdaC <- contrC %*% solve(uncomplexify(contrCovC), contrC)
+    lambdaD <- contrD%*%solve(uncomplexify(contrCovD), contrD)
+    makeChiSqTable(c(C=lambdaC, D=lambdaD)*(fitted*1), dof,cm)
+}
+
+.makeContrastMatrixFromCoefficientHypothesis <- function(hypothesis, coefnames){
+    h <- generateHypothesis(hypothesis, coefnames)
+    testIdx <- h@transformed
+    cm <- matrix(0, nrow=length(testIdx), ncol=length(coefnames), dimnames=list(contrast=h, coefnames))
+    cm[cbind(seq_along(testIdx), testIdx)] <- 1
+    t(cm)
+}
+
+setMethod('waldTest', signature=c(object='LMlike', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
+    cm <- .makeContrastMatrixFromCoefficientHypothesis(hypothesis,names(object@defaultCoef))
+    waldTest(object, cm)
 })
 
+
+setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), function(object, hypothesis){
+    .waldTest(coef(object, 'C', singular=TRUE),
+                coef(object, 'D', singular=TRUE),
+                vcov(object, 'C', singular=TRUE),
+                vcov(object, 'D', singular=TRUE),
+              hypothesis,
+              object@fitted)
+})
 
 ## object1 full model (fitted)
 ## newMM is new model to be tested against
@@ -134,11 +174,6 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='character'), func
     object0 <- fit(object0)
     l0 <- logLik(object0)
 
-    ## don't test when all coefficients are aliased in large model
-    ## ...or maybe it's fine, though conservative
-    ## testName <- setdiff(colnames(model.matrix(object1)), colnames(newMM))
-    ## missingCoefC <- all(is.na(coef(object, which='C', singular=TRUE))[testName])
-    ## missingCoefD <- all(is.na(coef(object, which='D', singular=TRUE))[testName])
     bothfitted <- object1@fitted & object0@fitted
     dl <- ifelse(bothfitted, -2*(l0-l1), c(0, 0))
     df <- ifelse(bothfitted, dof(object1) - dof(object0), c(0, 0))
@@ -159,13 +194,6 @@ setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), functi
     if(ncontrasts==0) stop("contrasts are all zero")
     testIdx <- 1:ncontrasts
     if(ncontrasts < ncol(contrast)) contrast <- contrast[,qrc$pivot[testIdx]]
-    ## if(ncontrasts>1) {
-    ##     coef.name <- paste("LR test of",ncontrasts,"contrasts")
-    ## } else {
-    ##     contrast <- drop(contrast)
-    ##     i <- contrast!=0
-    ##     coef.name <- paste(paste(contrast[i],coef.names[i],sep="*"),collapse=" ")
-    ## }
 
     ## rotate design and drop columns
     design <- model.matrix(object)

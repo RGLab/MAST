@@ -135,8 +135,17 @@ test_that('Contrast Hypothesis Work', {
 ## })
 
 test_that('Wald For Glm', {
- atest <- waldTest(obj, 'Stim.ConditionUnstim')
- expect_is(atest, 'matrix')
+ btest <- waldTest(obj, as.matrix(c(0, 1)))
+ atest <- waldTest(obj, CoefficientHypothesis('Stim.ConditionUnstim'))
+ expect_is(btest, 'matrix')
+ expect_equivalent(btest, atest)
+ 
+     if(require(car)){
+          chic <- lht(obj@fitC, test='Chisq', 'Stim.ConditionUnstim', vcov.=vcov(obj, 'C'))[2,'Chisq']
+          chid <- lht(obj@fitD, 'Stim.ConditionUnstim', vcov.=vcov(obj, 'D'))[2,'Chisq']
+         expect_equal(btest['cont', 'lambda'], chic)
+         expect_equal(btest['disc', 'lambda'], chid)
+     }
 })
 
 

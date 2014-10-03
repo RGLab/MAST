@@ -2,14 +2,14 @@
 \docType{methods}
 \name{lrTest,ZlmFit,character-method}
 \alias{lrTest,ZlmFit,character-method}
-\title{lrTest}
+\title{Likelihood ratio test}
 \usage{
 \S4method{lrTest}{ZlmFit,character}(object, hypothesis)
 }
 \arguments{
 \item{object}{ZlmFit}
 
-\item{hypothesis}{See details}
+\item{hypothesis}{See Details}
 }
 \value{
 3D array

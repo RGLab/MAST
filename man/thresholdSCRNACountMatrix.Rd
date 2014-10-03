@@ -3,13 +3,18 @@
 \alias{thresholdSCRNACountMatrix}
 \title{Threshold a count matrix using an adaptive threshold.}
 \usage{
-thresholdSCRNACountMatrix(data, bins = 10, main = "", bin_by = "mean",
-  plot = FALSE)
+thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
+  nbins = 10, bin_by = "median", min_per_bin = 50, absolute_min = 2,
+  log_base = 2)
 }
 \arguments{
-\item{data}{\code{matrix} of counts}
+\item{data_all}{\code{matrix} of counts}
 
-\item{bin_by}{\code{character} "mean"}
+\item{cutbins}{\code{vector} of cut points.}
+
+\item{nbins}{\code{integer} number of bins when cutbins is not specified.}
+
+\item{bin_by}{\code{character} "median", "proportion", "mean"}
 
 \item{plot}{\code{logical}.}
 }

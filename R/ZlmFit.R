@@ -44,7 +44,7 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
     cst
 }
 
-##' lrTest
+##' Likelihood ratio test
 ##'
 ##' A 3D array with first dimension being the genes,
 ##' next dimension giving information about the test
@@ -52,7 +52,7 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
 ##' being the value of these quantities on the
 ##' discrete, continuous and hurdle (combined) levels.
 ##' @param object ZlmFit
-##' @param hypothesis See details
+##' @param hypothesis See Details
 ##' @return 3D array
 setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
     o1 <- object
@@ -72,7 +72,6 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothes
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
     ## original fit
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
-    LMlike <- object@LMlike
     ## call using coefficient matrix
     lrTest(object, h@transformed)
 })
@@ -85,6 +84,46 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(
     testIdx <- attr(MM, 'testIdx')
     .lrtZlmFit(object, MM[,-testIdx, drop=FALSE], 'Contrast Matrix')
 })
+
+##' Wald test
+##'
+##' A 3D array with first dimension being the genes,
+##' next dimension giving information about the test
+##' (the degrees of freedom, Chisq statistic, and P value), and final dimension
+##' being the value of these quantities on the
+##' discrete, continuous and hurdle (combined) levels.
+##' @param object ZlmFit
+##' @param hypothesis See Details
+##' @return 3D array
+setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='matrix'), function(object, hypothesis){
+    coefC <- coef(object, 'C')
+    coefD <- coef(object, 'D')
+    vcovC <- vcov(object, 'C')
+    vcovD <- vcov(object, 'D')
+    converged <- object@converged
+    genes <- rownames(coefC)
+    tests <- aaply(seq_along(genes), 1, function(i){
+         .waldTest(coefC[i,],
+                coefD[i,],
+                vcovC[,,i],
+                vcovD[,,i],
+                hypothesis, converged[i,])
+    }, .drop=FALSE)
+    dimnames(tests)[[1]] <- genes
+    names(dimnames(tests)) <- c('primerid', 'test.type', 'metric')
+    tests
+})
+
+setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
+    cm <- .makeContrastMatrixFromCoefficientHypothesis(hypothesis,colnames(object@coefC))
+    waldTest(object, cm)
+})
+
+setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
+    h <- generateHypothesis(hypothesis, colnames(object@coefD))
+    waldTest(object, h@transformed)
+})
+
 
 setMethod('show', signature=c(object='ZlmFit'), function(object){
     cat('Fitted zlm on ', ncol(object@sca), ' genes and ', nrow(object@sca), ' cells.\n Using ', class(object@LMlike), ' to fit.\n')
