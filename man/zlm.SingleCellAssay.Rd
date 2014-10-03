@@ -27,8 +27,6 @@ zlm.SingleCellAssay(formula, sca, method = "glm", silent = TRUE,
 \item{LMlike}{if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.}
 
 \item{...}{arguments passed to the S4 model object.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.}
-
-\item{onlyReturnCoefs}{if TRUE, don't actually test, only return a gene giving example coefficients}
 }
 \value{
 either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
@@ -50,16 +48,12 @@ H0 model estimates the precisions using the intercept alone in each gene, while 
 \examples{
 \dontrun{
 data(vbetaFA)
-testsByGene <- zlm.SingleCellAssay(~ Stim.Condition, vbetaFA, hypothesis='Stim.ConditionUnstim', method='glm', type='Wald')
-# genes X metric X test type
-dimnames(testsByGene)
-
 zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc)
 slotNames(zlmVbeta)
 coef(zlmVbeta, 'C')['IL13',]
 
 vcov(zlmVbeta, 'C')['IL13',,]
-waldTest(zlmVbeta)
+waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 }
 }
 \seealso{

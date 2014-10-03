@@ -93,23 +93,18 @@ summary.zlm <- function(out){
 ##' @param hook a function called on the \code{fit} after each gene.
 ##' @param LMlike if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.
 ##' @param ... arguments passed to the S4 model object.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
-##' @param onlyReturnCoefs if TRUE, don't actually test, only return a gene giving example coefficients
 ##' @return either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
 ##' @export
 ##' @seealso ebayes, glmlike-class
 ##' @examples
 ##' \dontrun{
 ##' data(vbetaFA)
-##' testsByGene <- zlm.SingleCellAssay(~ Stim.Condition, vbetaFA, hypothesis='Stim.ConditionUnstim', method='glm', type='Wald')
-##' # genes X metric X test type
-##' dimnames(testsByGene)
-##'
 ##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc)
 ##' slotNames(zlmVbeta)
 ##' coef(zlmVbeta, 'C')['IL13',]
 ##' 
 ##' vcov(zlmVbeta, 'C')['IL13',,]
-##' waldTest(zlmVbeta)
+##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 ##' }
 zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, LMlike, ...){
     ## Default call
