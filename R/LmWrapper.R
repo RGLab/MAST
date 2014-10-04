@@ -136,8 +136,16 @@ uncomplexify <- function(x){
     contrC <- uncomplexify(contrC)
     contrD <- uncomplexify(contrD)
     ## squared length of coefficient linear combination, using its covariance
-    lambdaC <- contrC %*% solve(uncomplexify(contrCovC), contrC)
-    lambdaD <- contrD%*%solve(uncomplexify(contrCovD), contrD)
+    lambdaC <- tryCatch(contrC %*% solve(uncomplexify(contrCovC), contrC), error=function(e){
+        reraise(e, convertToWarning=TRUE)
+        return(0)
+    })
+    
+    lambdaD <- tryCatch(contrD%*%solve(uncomplexify(contrCovD), contrD), error=function(e){
+        reraise(e, convertToWarning=TRUE)
+        return(0)
+    })
+    
     makeChiSqTable(c(C=lambdaC, D=lambdaD)*(fitted*1), dof,cm)
 }
 
