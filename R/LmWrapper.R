@@ -19,7 +19,7 @@ setMethod('show',  signature=c(object='LMlike'), function(object){
     object@fitted <- c(C=FALSE, D=FALSE)
     assign('pos', positive, pos=frame)
     assign('object', object, pos=frame)
-    
+
     return(any(positive))
 }
 
@@ -136,16 +136,16 @@ uncomplexify <- function(x){
     contrC <- uncomplexify(contrC)
     contrD <- uncomplexify(contrD)
     ## squared length of coefficient linear combination, using its covariance
-    lambdaC <- tryCatch(contrC %*% solve(uncomplexify(contrCovC), contrC), error=function(e){
+    lambdaC <- tryCatch(contrC %*% solve(matrix(uncomplexify(contrCovC),ncol=ncol(contrCovC)), contrC), error=function(e){
         reraise(e, convertToWarning=TRUE)
         return(0)
     })
-    
-    lambdaD <- tryCatch(contrD%*%solve(uncomplexify(contrCovD), contrD), error=function(e){
+
+    lambdaD <- tryCatch(contrD%*%solve(matrix(uncomplexify(contrCovD),ncol=ncol(contrCovD)), contrD), error=function(e){
         reraise(e, convertToWarning=TRUE)
         return(0)
     })
-    
+
     makeChiSqTable(c(C=lambdaC, D=lambdaD)*(fitted*1), dof,cm)
 }
 
@@ -175,7 +175,7 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), functio
 ## object1 full model (fitted)
 ## newMM is new model to be tested against
 ## returns chisqtable
-.lrTest <- function(object1, newMM){        
+.lrTest <- function(object1, newMM){
     l1 <- logLik(object1)
     object0 <- object1
     model.matrix(object0) <- newMM
@@ -223,7 +223,7 @@ setMethod('lrTest', c(object='LMlike', hypothesis='CoefficientHypothesis'), func
 
 
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='Hypothesis'), function(object, hypothesis){
-    lrTest(object, hypothesis@transformed)    
+    lrTest(object, hypothesis@transformed)
 })
 
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='matrix'), function(object, hypothesis){
