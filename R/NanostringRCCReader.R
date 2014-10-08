@@ -44,7 +44,9 @@ ei <- match(END, x)
 if(is.na(si) || is.na(ei) || ei<si){
   stop('Malformed ', type, ' in ', file)
 }
-  section<-read.csv(textConnection(x[(si+1):(ei-1)]),...)
+tcon <- textConnection(x[(si+1):(ei-1)])
+section<-read.csv(textConnection(x[(si+1):(ei-1)]),...)
+close(tcon)
 if(recast){
   wide <- data.frame(t(section), stringsAsFactors=FALSE)[-1,]
   names(wide) <- t(section)[1,]
