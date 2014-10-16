@@ -1,158 +1,4 @@
-
-## find_peaks<-function (x, y = NULL, num_peaks = NULL, adjust = 2, plot = FALSE,
-##                       ...)
-## {
-##   x <- as.vector(x)
-##   if (length(x) < 2) {
-##     warning("At least 2 observations must be given in 'x' to find peaks.")
-##     return(NA)
-##   }
-##   if (is.null(y)) {
-##     dens <- density(x, adjust = adjust, ...)
-##   }
-##   else {
-##     y <- as.vector(y)
-##     if (length(x) != length(y)) {
-##       stop("The lengths of 'x' and 'y' must be equal.")
-##     }
-##     dens <- list(x = x, y = y)
-##   }
-##   second_deriv <- diff(sign(diff(dens$y)))
-##   which_maxima <- which(second_deriv == -2) + 1
-##   which_maxima <- which_maxima[findInterval(dens$x[which_maxima],
-##                                             range(x)) == 1]
-##   which_maxima <- which_maxima[order(dens$y[which_maxima],
-##                                      decreasing = TRUE)]
-##   if (length(which_maxima) > 0) {
-##     peaks <- dens$x[which_maxima]
-##     if (is.null(num_peaks) || num_peaks > length(peaks)) {
-##       num_peaks <- length(peaks)
-##     }
-##     peaks <- peaks[seq_len(num_peaks)]
-##   }
-##   else {
-##     peaks <- NA
-##   }
-##   peaks <- data.frame(x = peaks, y = dens$y[which_maxima][seq_len(num_peaks)])
-##   if (plot) {
-##     plot(dens, main = paste("adjust =", adjust))
-##     points(peaks, , col = "red")
-##   }
-##   peaks
-## }
-## find_valleys<-function (x, y = NULL, num_valleys = NULL, adjust = 2, ...)
-## {
-##   x <- as.vector(x)
-##   if (length(x) < 2) {
-##     warning("At least 2 observations must be given in 'x' to find valleys.")
-##     return(NA)
-##   }
-##   if (is.null(y)) {
-##     dens <- density(x, adjust = adjust, ...)
-##   }
-##   else {
-##     y <- as.vector(y)
-##     if (length(x) != length(y)) {
-##       stop("The lengths of 'x' and 'y' must be equal.")
-##     }
-##     dens <- list(x = x, y = y)
-##   }
-##   second_deriv <- diff(sign(diff(dens$y)))
-##   which_minima <- which(second_deriv == 2) + 1
-##   which_minima <- which_minima[findInterval(dens$x[which_minima],
-##                                             range(x)) == 1]
-##   which_minima <- which_minima[order(dens$y[which_minima],
-##                                      decreasing = FALSE)]
-##   if (length(which_minima) > 0) {
-##     valleys <- dens$x[which_minima]
-##     if (is.null(num_valleys) || num_valleys > length(valleys)) {
-##       num_valleys <- length(valleys)
-##     }
-##     valleys <- valleys[seq_len(num_valleys)]
-##   }
-##   else {
-##     valleys <- NA
-##   }
-##   valleys
-## }
-## between_interval<-function (x, interval)
-## {
-##   x <- x[findInterval(x, interval) == 1]
-##   if (length(x) == 0) {
-##     x <- NA
-##   }
-##   x
-## }
-
-## #'Threshold a count matrix using an adaptive threshold.
-## #'
-## #'An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
-## #'of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
-## #'binned data.
-## #'@param data \code{matrix} of counts
-## #'@param bin_by \code{character} "mean"
-## #'@param plot \code{logical}.
-## #'@return \code{list} of thresholded counts, thresholds, and bins
-## #'@export
-## thresholdSCRNACountMatrix<-function(data,bins=10,main="",bin_by="mean",plot=FALSE){
-##   arg<-match.arg(bin_by,c("proportion","mean"))
-##   if(bins!=10){
-##     message("bins is ignored, using default of 10")
-##     bins<-10
-##   }
-##   if(arg=="mean"){
-##     proportions<-apply(data,1,function(x)log1p(mean(x[x>0],na.rm=TRUE)))
-##     proportions[is.nan(proportions)]<-0
-##   }else{
-##     proportions<-rowMeans(data>0)
-##   }
-##   proportion_bins<-cut(proportions, bins)
-##   peaks<-by(data,proportion_bins,function(x)find_peaks(unlist(log1p(x)),adjust = 2))
-##   valleys<-by(data,proportion_bins,function(x)find_valleys(unlist(log1p(x)),adjust = 2))
-##   dens<-by(data,proportion_bins,function(x)density(unlist(log1p(x)),adjust=2))
-##   single_modes<-do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,1]))))<1|(lapply(list(do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,2]))))),function(x)(x-median(na.omit(x)))/mad(na.omit(x)))[[1]]>2)
-##   cutpoints<-lapply(seq_along(peaks),function(j){
-##     valleys[[j]][which(findInterval(valleys[[j]],sort(peaks[[j]][1:2,1]))==1)]
-##   })
-##   cutpoints[single_modes]<-NA
-##   cutpoints<-lapply(cutpoints,function(x)ifelse(length(x)==0,NA,max(x)))
-##   names(cutpoints)<-names(peaks)
-
-##   #impute cutpoints if NA
-##   for(i in 1:length(cutpoints)){
-##     if(is.na(cutpoints[[i]])){
-##       if(i!=length(cutpoints)){
-##         cutpoints[[i]]<-do.call(c,cutpoints)[min(which(!is.na(do.call(c,cutpoints))))]
-##       }else{
-##         cutpoints[[i]]<-do.call(c,cutpoints)[max(which(!is.na(do.call(c,cutpoints))))]
-##       }
-##     }
-##   }
-
-##   #ensure cutpoints are increasing
-##   for(i in length(cutpoints):2){
-##     if(cutpoints[[i-1]]>cutpoints[[i]]){
-##       cutpoints[[i-1]]<-cutpoints[[i]]
-##     }
-##   }
-
-##   data_threshold<-log1p(data)
-##   for(i in levels(proportion_bins)){
-##     data_threshold[proportion_bins%in%i,][data_threshold[proportion_bins%in%i,]<cutpoints[i]]<-0
-##   }
-##   if(plot){
-##     par(mfrow=c(2,5))
-##     for(i in 1:bins){
-##       xl<-c(0,max(dens[[i]]$x,unlist(cutpoints)))
-##       plot(dens[[i]],xlim=xl,xlab="Conditional Mean Expression",ylab="Density",main=paste0("Bin=",levels(proportion_bins)[[i]]));
-##       abline(v=cutpoints[[i]])
-##     }
-##   }
-##   nms<-names(cutpoints)
-##   cutpoints<-unlist(cutpoints)
-##   names(cutpoints)<-nms
-##   list(counts_threshold=expm1(data_threshold),cutpoint=cutpoints,bin=proportion_bins)
-## }
+require(plyr)
 
 find_peaks<-function (x, y = NULL, num_peaks = NULL, adjust = 2, plot = FALSE,
                       ...)
@@ -240,14 +86,13 @@ between_interval<-function (x, interval)
     return( x )
 }
 
-
-
 apply_by<-function(x,by_idx,fun,...){
     res<-sapply(unique(by_idx),function(a){
         apply(x[,by_idx==a],1,fun,...)}
     )
     return(res)
 }
+
 
 #'Threshold a count matrix using an adaptive threshold.
 #'
@@ -265,11 +110,13 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       cutbins     = NULL    ,
                                       nbins       = 10      ,
                                       bin_by      = "median",
+                                      qt          = 0.975,
                                       min_per_bin = 50      ,
-                                      absolute_min= 2.0     ,
+                                      absolute_min= 1.0     ,
                                       log_base    = 2
                                     )
 {
+    suppressPackageStartupMessages({require(plyr)})
     # when there is no condition to stratefy
     if( is.null( conditions ) ) conditions <- rep( 1, dim( data_all )[2] )
     comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> absolute_min ) == 0
@@ -277,7 +124,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     uni_cond      <- unique( conditions )
     log_data      <- log( data + 1, base = log_base )
 
-    arg <- match.arg( bin_by, c( "proportion", "mean", "median" ) )
+    arg <- match.arg( bin_by, c( "quantile", "proportion", "mean", "median","iqr" ) )
     if( arg == "median" ){
         cond_stat <- apply_by( log_data, conditions, function( x ) if( all( x <= absolute_min ) ){ 0 } else { median( x[x>absolute_min]) })
     } else if( arg == "mean" ){
@@ -285,10 +132,13 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         cond_stat <- apply_by( data, conditions, function( x ) if( all(x <= absolute_min ) ){ 0 } else { log( mean( x[x>absolute_min])+1, base = log_base) } )
     } else if( arg == "proportion" ){
         cond_stat <- apply_by( data > 0, conditions, mean )
+    } else if( arg == "quantile" ){
+        cond_stat <- apply_by( log_data, conditions, function(x) if( all( x <= absolute_min ) ){ 0 } else { quantile( x[x>absolute_min], qt ) } )
+    } else if( arg == "iqr" ){
+        cond_stat <- apply_by( log_data, conditions, function(x) if( all( x <= absolute_min ) ){ 0 } else { IQR( x[x>absolute_min]) } )
     } else {
         stop("choose bin_by from c('proportion', 'mean', 'median' )")
     }
-
     rprop     <- range( unlist(cond_stat) )
     # log bin
     if( is.null(cutbins) ){
@@ -318,7 +168,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
             cutbins <- cutbins[ -ifelse( t_prop_bins[i-1] < t_prop_bins[ i + 1 ], i, ( i + 1 ) ) ]
         }
         cond_stat_bins <- cut( cond_stat, cutbins )
-        t_prop_bins      <- table( cond_stat_bins )
+        t_prop_bins    <- table( cond_stat_bins )
     }
     cond_stat_bins_array<-array(cond_stat_bins, dim(cond_stat))
     dimnames(cond_stat_bins_array)<-dimnames(cond_stat)
@@ -334,9 +184,9 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         }
 
     }
-    dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 2 ) )
-    peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 2 ) )
-    valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 2 ) )
+    dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
+    peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
+    valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 1 ) )
 
     single_modes<-do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,1]))))<1|(lapply(list(do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,2]))))),function(x)(x-median(na.omit(x)))/mad(na.omit(x)))[[1]]>2)
     #Check for single peaks found
@@ -396,4 +246,5 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     return( res_obj )
 
 }
+
 
