@@ -105,6 +105,7 @@ apply_by<-function(x,by_idx,fun,...){
 #'@param bin_by \code{character} "median", "proportion", "mean"
 #'@param plot \code{logical}.
 #'@return \code{list} of thresholded counts, thresholds, and bins
+#'@export
 thresholdSCRNACountMatrix <-function( data_all              ,
                                       conditions  = NULL    ,
                                       cutbins     = NULL    ,
