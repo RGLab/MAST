@@ -8,9 +8,20 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 })
 
 
+## This is pinch point (up to 10% of computation time can be spent here)
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
-    if(which=='C') stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled else stats:::summary.glm(object@fitD)$cov.scaled
+    vc <- object@defaultVcov
+    if(which=='C' & object@fitted['C']){
+        vc2 <- stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled
+    } else if(which=='D' & object@fitted['D']){
+        vc2 <- stats:::summary.glm(object@fitD)$cov.scaled
+    } else{
+        vc2 <- numeric()
+    }
+    ok <- colnames(vc2)
+    vc[ok,ok] <- vc2
+    vc
 })
 
 ## dispersion calculations for glm-like fitters
@@ -51,7 +62,7 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
 
     fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
-    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,], y=object@response[pos]), fitArgsC))
+    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos]), fitArgsC))
     object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
@@ -105,8 +116,40 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
 })
 
 
+## make a row matrix
+rowm <- function(C, D){
+    x <- c(C=NA, D=NA)
+    try({if(is.null(C) | missing(C))
+        C <- NA
+    if(is.null(D) | missing(D))
+        D <- NA
+    x <- c(C=C, D=D)
+     }, silent=TRUE)
+    ## dim(x) <- c(1, length(x))
+    ## colnames(x) <- c('C', 'D')
+    x
+}
+
+torowm <- function(x){
+     ## dim(x) <- c(1, length(x))
+     ## colnames(x) <- c('C', 'D')
+     x
+}
 
 setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
-     list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'),
-          devianceC=object@fitC$deviance, df.nullC=object@fitC$df.null, df.residC=object@fitC$df.residual, dispersionMLEC=object@fitC$dispersionMLE, coefD=coef(object, which='D'), vcovD=vcov(object, 'D'), devianceD=object@fitD$deviance, df.nullD=object@fitD$df.null, df.residD=object@fitD$df.residual)
+    coefC <- coef(object, which='C')
+    coefD <- coef(object, which='D')
+    ## make sure covariance matrices are constant size
+    ## if it's not fitted, then we'll throw an error here
+    vcC <- vcov(object, 'C')
+    vcD <- vcov(object, 'D')
+    
+    list(coefC=coefC, vcovC=vcC,
+          deviance=rowm(C=object@fitC$deviance, D=object@fitD$deviance),
+          df.null=rowm(C=object@fitC$df.null, D=object@fitD$df.null),
+          df.resid=rowm(C=object@fitC$df.residual, D=object@fitD$df.residual),
+          dispersion=rowm(C=object@fitC$dispersionMLE, D=object@fitD$dispersion),
+          dispersionNoshrink=rowm(C=object@fitC$dispersionMLENoShrink, D=object@fitD$dispersion),
+          loglik=torowm(logLik(object)),
+          coefD=coefD, vcovD=vcD, converged=torowm(object@fitted))
   })

@@ -13,11 +13,14 @@ Installation Instructions
 
 **Needs roxygen2 4.0.0.99** or higher (available on github) if the documentation is regenerated--otherwise the NAMESPACE file will not be correct.
 
-New Features in version .85
+Changes
 ------------
-- The interface to zlm.SingleCellAssay has changed somewhat, and is not completely backwards compatible
-    * But now it is easier to add hurdle models with different modeling functions.  Try method='glmer' or method='bayesglm' for mixed effects or bayesian methods.
-    * Multiple hypothesis can be tested by passing a list of hypothesis (either terms to drop for Likelihood Ratio Tests, or hypotheses formated *a la* car::lht
-- Thresholding support for NanoString in thresholdNanoString
+New interface for zlm.SingleCellAssay to specify hypothesis.  See ?Hypothesis
+API for zlm.SingleCellAssay has changed.  Now a ZlmFit object is returned. Testing is done by calling `waldTest` or `lrTest` after the initial fit.
+
+
+New Features 
+------------
+- Support tests of arbitrary contrasts using LRT/zlm.SingleCellAssay
 
 ![doi/10.5281/zendoo.9810](http://zenodo.org/badge/doi/10.5281/zenodo.9810.png)

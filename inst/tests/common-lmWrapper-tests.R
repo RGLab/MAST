@@ -29,17 +29,19 @@ test_that('Handle 100% expression', {
     expect_false(obj2@fitted['D'])
 })
 
-test_that('Handle NA', {
-    resp <- obj@response
-    resp[1] <- NA
-    expect_error(obj2 <- fit(obj, resp), 'NA')
-})
-
-## test_that('Handle expressions in formulae', {
-##     obj2 <- update(obj, (~ . +cut(Experiment.Number, 2)))
-##     obj2 <- fit(obj2)
-##     expect_is(obj2, 'LMlike')
+## Not sure what the best way to handle this is...lmer just drops NAs, while glm.fit throws an ugly error
+## test_that('Handle NA', {
+##     resp <- obj@response
+##     resp[1] <- NA
+##     browser()
+##     expect_error(obj2 <- fit(obj, resp), 'NA')
 ## })
+
+test_that('Handle expressions in formulae', {
+    obj2 <- update(obj, (~ . +cut(Chip.Number, 2)))
+    obj2 <- fit(obj2)
+    expect_is(obj2, 'LMlike')
+})
 
 context('Testing fit summaries')
 
@@ -133,8 +135,23 @@ test_that('Contrast Hypothesis Work', {
 ## })
 
 test_that('Wald For Glm', {
- atest <- waldTest(obj, 'Stim.ConditionUnstim')
- expect_is(atest, 'matrix')
+ btest <- waldTest(obj, as.matrix(c(0, 1)))
+ atest <- waldTest(obj, CoefficientHypothesis('Stim.ConditionUnstim'))
+ expect_is(btest, 'matrix')
+ expect_equivalent(btest, atest)
+ 
+     if(require(car)){
+          chic <- lht(obj@fitC, test='Chisq', 'Stim.ConditionUnstim', vcov.=vcov(obj, 'C'))[2,'Chisq']
+          chid <- lht(obj@fitD, 'Stim.ConditionUnstim', vcov.=vcov(obj, 'D'))[2,'Chisq']
+         expect_equal(btest['cont', 'lambda'], chic)
+         expect_equal(btest['disc', 'lambda'], chid)
+     }
+})
+
+
+test_that('Residuals', {
+    expect_equivalent(as.numeric(residuals(obj, which='C', type='response')), residuals(objC))
+    expect_equivalent(as.numeric(residuals(obj, which='D', type='response')), residuals(objD, type='response'))
 })
 
 

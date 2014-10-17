@@ -8,7 +8,6 @@
 ## Fitting:
 ## establish pseudodesign and mutilate the formula
 
-##' @importFrom stringr str_replace_all
 getREvars <- function(Formula){
     termNames <- labels(terms(Formula))
     hasRE <- str_detect(termNames, fixed('|'))
@@ -211,25 +210,30 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
 
 setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
-    V <- if(which=='C') vcov(object@fitC) else vcov(object@fitD)
-    V <- as.matrix(V)
+    vc <- object@defaultVcov
+
+    if(which=='C' & object@fitted['C']){
+        V <- vcov(object@fitC)
+    } else if(which=='D' & object@fitted['D']){
+        V <- vcov(object@fitD)
+    } else{
+        V <- matrix(nrow=0, ncol=0)
+    }
     nm <- str_replace_all(colnames(V), fixed('`'), '')
     dimnames(V) <- list(nm, nm)
-    V
+    ok <- colnames(V)
+    vc[ok,ok] <- as.numeric(V)
+    vc
 })
-
-## setMethod('vcovC', signature=c(object='LMERlike'), function(object){
-##     vcov(object@fitC)
-## })
-
-## setMethod('coefC', signature=c(object='LMERlike'), function(object){
-##     fixef(object@fitC)
-## })
-
 
 setMethod('coef', signature=c(object='LMERlike'), function(object, which, singular=TRUE, ...){
     stopifnot(which %in% c('C', 'D'))
-    co <- if(which=='C') fixef(object@fitC) else fixef(object@fitD)
+    co <- setNames(rep(NA, ncol(model.matrix(object))), colnames(model.matrix(object)))
+    if(which=='C' & object@fitted['C']){
+        co <- fixef(object@fitC)}
+    else if(object@fitted['D']){
+        co <- fixef(object@fitD)
+    }
     if(!singular) co <- co[!is.na(co)]
     conm <- names(co)
     ## because of backtick schenangans
@@ -247,8 +251,16 @@ setMethod('dof', signature=c(object='LMERlike'), function(object){
 })
 
 setMethod('summarize', signature=c(object='LMERlike'), function(object, ...){
-    li <- list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'), devianceC=deviance(object@fitC), df.nullC=nobs(object@fitC), dispersionMLEC=sigma(object@fitC), coefD=coef(object, which='D'), vcovD=vcov(object, 'D'), devianceD=deviance(object@fitD), df.nullD=nobs(object@fitD))
-    li[['df.residC']] <- li[['df.nullC']]-length(coef(object, which='C', singular=FALSE))
-    li[['df.residD']] <- li[['df.nullD']]-length(coef(object, which='D', singular=FALSE))
+
+    li <- list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'),
+               deviance=rowm(deviance(object@fitC), deviance(object@fitD)),
+               df.null=rowm(nobs(object@fitC),nobs(object@fitD)),
+               dispersion=rowm(sigma(object@fitC), NA),
+               coefD=coef(object, which='D'), vcovD=vcov(object, 'D'),
+               loglik=torowm(logLik(object)),
+               converged=torowm(object@fitted))
+    
+    li[['df.resid']] <- li[['df.null']]-c(sum(!is.na(li[['coefC']])), sum(!is.na(li[['coefD']])))
+    li[['dispersionNoshrink']] <- li[['dispersion']]
     li
 })

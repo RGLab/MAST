@@ -177,6 +177,8 @@ setGeneric('copy', function(object) standardGeneric('copy'))
 ##' @param response a vector, same length as the design, or if missing then use the current response
 ##' @param ... currently ignored
 ##' @return LMlike or subclass
+##' @aliases fit,GLMlike,missing-method
+##' @aliases fit,BayesGLMlike,missing-method
 ##' @export
 setGeneric('fit', function(object, response, ...) standardGeneric('fit'))
 
@@ -187,27 +189,32 @@ setGeneric('fit', function(object, response, ...) standardGeneric('fit'))
 ##' @param which  character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned
 ##' @param ... passed to methods
 ##' @return numeric vector
+##' @aliases coef,LMlike-method
+##' @aliases coef,LMERlike-method
+##' @aliases coef,ZlmFit-method
 ##' @export
 setGeneric('coef', function(object, ...) standardGeneric('coef'))
-#setGeneric('coefD', function(object) standardGeneric('coefD'))
 
 ##' Run a likelihood-ratio test
 ##'
-##' Compares the change in likelihood between the current \code{formula} and one dropping terms in \code{drop.terms}.
-##' Only complete terms can be tested at this time
+##' Compares the change in likelihood between the current model and one subject to contrasts tested in \code{hypothesis}.
+##' \code{hypothesis} can be one of a \code{character} giving complete factors or terms to be dropped from the model, \code{CoefficientHypothesis} giving names of  coefficients to be dropped, \code{Hypothesis} giving contrasts using the symbolically, or a contrast \code{matrix}, with one row for each coefficient in the full model, and one column for each contrast being tested.
 ##' @param object LMlike or subclass
-##' @param drop.terms character vector of \code{formula} terms
+##' @param hypothesis the hypothesis to be tested.  See details.
 ##' @return array giving test statistics
 ##' @export
 ##' @seealso fit
 ##' @seealso waldTest
+##' @seealso Hypothesis
+##' @seealso CoefficientHypothesis
 setGeneric('lrTest', function(object, hypothesis) standardGeneric('lrTest'))
 
 ##' Run a Wald test
 ##'
 ##' Run a Wald tests on discrete and continuous components
+##' \code{hypothesis} can be one of a \code{character} giving complete factors or terms to be dropped from the model, \code{CoefficientHypothesis} giving names of  coefficients to be dropped, \code{Hypothesis} giving contrasts using the symbolically, or a contrast \code{matrix}, with one row for each coefficient in the full model, and one column for each contrast being tested.
 ##' @param object LMlike or subclass
-##' @param hypothesis.matrix argument suitable to be passed to car::lht
+##' @param hypothesis the hypothesis to be tested.  See details.
 ##' @return array giving test statistics
 ##' @export
 ##' @seealso fit
@@ -229,6 +236,8 @@ setGeneric('vcov', function(object) standardGeneric('vcov'))
 ##'
 ##' @param object LMlike or subclass
 ##' @return vector giving the model degrees of freedom for continuous and discrete
+##' @aliases dof,GLMlike-method
+##' @aliases dof,LMERlike-method
 ##' @export
 setGeneric('dof', function(object) standardGeneric('dof'))
 
@@ -255,6 +264,7 @@ setGeneric('model.matrix<-', function(object, value) standardGeneric('model.matr
 ##' @return list of parameters characterizing fit
 ##' @export
 setGeneric('summarize', function(object, ...) standardGeneric('summarize'))
+
 
 
 
