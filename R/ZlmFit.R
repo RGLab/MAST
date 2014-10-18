@@ -154,8 +154,14 @@ setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     se
 })
 
-## just bootstrap
+##' Bootstrap a zlmfit
+##'
+##' Sample cells with replacement to find bootstrapped distribution of coefficients
+##' @param zlmfit class \code{ZlmFit}
+##' @param R number of bootstrap replicates
+##' @return array of bootstrapped coefficients
 ##' @importFrom plyr raply
+##' @export
 bootVcov1 <- function(zlmfit, R=999){
     sca <- zlmfit@sca
     N <- nrow(sca)
@@ -170,7 +176,7 @@ bootVcov1 <- function(zlmfit, R=999){
     
 }
 
-## use dfbetas
+## use dfbetas? Incomplete...
 bootVcov2 <- function(zlmfit, R=999){
     sca <- zlmfit@sca
     N <- nrow(sca)

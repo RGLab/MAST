@@ -21,6 +21,7 @@ API for zlm.SingleCellAssay has changed.  Now a ZlmFit object is returned. Testi
 
 New Features 
 ------------
+- `gseaAfterBoot` for competitive geneset analysis under variance inflation
 - Support tests of arbitrary contrasts using LRT/zlm.SingleCellAssay
 
 ![doi/10.5281/zendoo.9810](http://zenodo.org/badge/doi/10.5281/zenodo.9810.png)
