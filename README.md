@@ -9,6 +9,8 @@ Installation Instructions
      install.packages('devtools')
      library(devtools)
      install_github('SingleCellAssay', 'RGLab')
+     # *or* if you don't have a working latex setup
+     install_github('SingleCellAssay', 'RGLab', build_vignettes=FALSE)
      vignette('SingleCellAssay-intro')
 
 **Needs roxygen2 4.0.0.99** or higher (available on github) if the documentation is regenerated--otherwise the NAMESPACE file will not be correct.

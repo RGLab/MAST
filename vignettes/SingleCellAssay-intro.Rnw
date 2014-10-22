@@ -73,7 +73,10 @@ require(plyr)
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
-vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='Et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
+                          primerid='Gene', measurement='Et', ncells='Number.of.Cells',
+                          geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'),
+                          phenovars=c('Stim.Condition','Time'), id='vbeta all')
 show(vbeta.fa)
 @
 
@@ -162,7 +165,9 @@ We'll split the assay by the number of cells and look at the concordance plot af
 <<splitbyncells,warning=FALSE, fig.height=4, fig.width=4>>=
 vbeta.split<-split(vbeta.fa,"Number.of.Cells")
 #see default parameters for plotSCAConcordance
-plotSCAConcordance(vbeta.split[[1]],vbeta.split[[2]],filterCriteria=list(nOutlier = 1, sigmaContinuous = 9,sigmaProportion = 9))
+plotSCAConcordance(vbeta.split[[1]],vbeta.split[[2]],
+                   filterCriteria=list(nOutlier = 1, sigmaContinuous = 9,
+                       sigmaProportion = 9))
 @
 
 The filtering function has several other options, including whether the filter shuld be applied (thus returning a new SingleCellAssay object) or returned as a matrix of boolean values.
@@ -202,7 +207,8 @@ A an S4 object of class ``ZlmFit'' is returned, containing slots with the genewi
 library(ggplot2)
 library(reshape)
 library(abind)
-zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1, method='glm', ebayes=TRUE)
+zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1, method='glm',
+                                  ebayes=TRUE)
 show(zlm.output)
 ## returns an array of both discrete and continuous
 coefAndCI <- aaply( c(C='C', D='D'), 1, function(component){
@@ -217,7 +223,10 @@ coefAndCI <- aaply( c(C='C', D='D'), 1, function(component){
 
 mCoefAndCI <- setNames(melt(coefAndCI), c('component', 'gene', 'Coef', 'variable', 'value'))
 CoefAndCI <- cast(mCoefAndCI, ... ~ variable, subset=Coef != '(Intercept)')
-ggplot(CoefAndCI, aes(x=Coef, y=coef, ymin=ci.lo, ymax=ci.hi, col=component))+geom_pointrange(position=position_dodge(width=.5)) +facet_wrap(~gene) + theme(axis.text.x=element_text(angle=45, hjust=1)) + coord_cartesian(ylim=c(-3, 3))
+ggplot(CoefAndCI, aes(x=Coef, y=coef, ymin=ci.lo, ymax=ci.hi, col=component))+
+    geom_pointrange(position=position_dodge(width=.5)) +facet_wrap(~gene) +
+    theme(axis.text.x=element_text(angle=45, hjust=1)) + coord_cartesian(ylim=c(-3, 3))
+
 @
 Try \texttt{showMethods(classes='ZlmFit')} to see a full list of methods.
 
@@ -227,7 +236,8 @@ We'll plot the -log10 P values by gene and test type.
 <<tests>>=
 zlm.lr <- lrTest(zlm.output, 'Population')
 dimnames(zlm.lr)
-pvalue <- ggplot(melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
+pvalue <- ggplot(melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+
+    geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
 print(pvalue)
 @
 
@@ -235,7 +245,9 @@ In fact, the \texttt{zlm} framework is quite general, and has wrappers for a var
 Multicore support is offered by setting \texttt{options(mc.cores=4)}, or however many cores your system has.
 <<lmerExample, warning=FALSE, message=FALSE, eval=TRUE>>=
 library(lme4)
-lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer')
+
+lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1,
+                                   method='glmer')
 @
 
 \subsection{Two-sample Likelihood Ratio Test}
