@@ -130,7 +130,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
 
     ## this will need to be abstracted if we want to support arbitrary contrasts
     CC <- coef(zFit, 'C')
-    CD <- coef(zFit, 'C')
+    CD <- coef(zFit, 'D')
     tstat <- cbind(C=CC[,testIdx],
                    D=CD[,testIdx])
     bootstat <- boots[,testIdx,,]

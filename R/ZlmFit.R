@@ -153,6 +153,38 @@ setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     rownames(se) <- fData(object@sca)$primerid
     se
 })
+##' Bootstrap a zlmfit
+##'
+##' Sample cells with replacement to find bootstrapped distribution of coefficients
+##' @param cl a \code{cluster} object created by \code{makeCluster}
+##' @param zlmfit class \code{ZlmFit}
+##' @param R number of bootstrap replicates
+##' @return array of bootstrapped coefficients
+##' @importFrom plyr raply
+##' @importFrom parallel parSapply
+##' @export
+pbootVcov1<-function (cl,zlmfit, R = 999)
+{
+    sca <- zlmfit@sca
+    N <- nrow(sca)
+    clusterEvalQ(cl,require(SingleCellAssay))
+    clusterEvalQ(cl,require(abind))
+    clusterExport(cl,"N",envir=environment())
+    clusterExport(cl,"zlmfit",envir=environment())
+    clusterExport(cl,"sca",envir=environment())
+    manyvc <- parSapply(cl,1:R, function(i,...){
+        s <- sample(N, replace = TRUE)
+        newsca <- sca[s, ]
+        z <- zlm.SingleCellAssay(sca = newsca, LMlike = zlmfit@LMlike)
+        abind(C = coef(z, "C"), D = coef(z, "D"), rev.along = 0)
+    })
+  
+    d<-dim(coef(zlmfit,"D"))
+    manyvc<-aperm(array(manyvc,c(d,2,R)),c(4,1,2,3))
+    dimnames(manyvc)<-c(list(NULL),dimnames(coef(zlmfit,"D")),list(c("C","D")))
+    manyvc
+}
+
 
 ##' Bootstrap a zlmfit
 ##'
