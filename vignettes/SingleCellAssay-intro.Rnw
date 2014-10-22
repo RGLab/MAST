@@ -72,7 +72,10 @@ require(plyr)
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
-vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='Et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
+                          primerid='Gene', measurement='Et', ncells='Number.of.Cells',
+                          geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'),
+                          phenovars=c('Stim.Condition','Time'), id='vbeta all')
 show(vbeta.fa)
 @
 
@@ -153,7 +156,9 @@ We'll split the assay by the number of cells and look at the concordance plot af
 <<splitbyncells,warning=FALSE, fig.height=4, fig.width=4>>=
 vbeta.split<-split(vbeta.fa,"Number.of.Cells")
 #see default parameters for plotSCAConcordance
-plotSCAConcordance(vbeta.split[[1]],vbeta.split[[2]],filterCriteria=list(nOutlier = 1, sigmaContinuous = 9,sigmaProportion = 9))
+plotSCAConcordance(vbeta.split[[1]],vbeta.split[[2]],
+                   filterCriteria=list(nOutlier = 1, sigmaContinuous = 9,
+                       sigmaProportion = 9))
 @
 
 The filtering function has several other options, including whether the filter shuld be applied (thus returning a new SingleCellAssay object) or returned as a matrix of boolean values.
@@ -192,9 +197,11 @@ We'll plot the -log10 P values by gene and test type.
 <<zlmExample, warning=FALSE, message=FALSE, fig.width=4, fig.height=6>>=
 library(ggplot2)
 library(reshape)
-zlm.output <- zlm.SingleCellAssay(~ Stim.Condition + Subject.ID, vbeta.1, hypothesis='Stim.Condition', type='LRT')
+zlm.output <- zlm.SingleCellAssay(~ Stim.Condition + Subject.ID, vbeta.1,
+                                  hypothesis='Stim.Condition', type='LRT')
 dimnames(zlm.output)
-pvalue <- ggplot(melt(zlm.output[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
+pvalue <- ggplot(melt(zlm.output[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+
+    geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
 print(pvalue)
 @
 
@@ -202,7 +209,8 @@ print(pvalue)
 
 <<lmerExample, warning=FALSE, message=FALSE>>=
 library(lme4)
-lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer',hypothesis='Stim.Condition', type='LRT')
+lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer',
+                                   hypothesis='Stim.Condition', type='LRT')
 @
  
 It is possible to save the model fits so that coefficients can be examined.  See \texttt{?zlm.SingleCellAssay}.
