@@ -161,6 +161,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     }
 
     ## sum of (idx,jdx) block of covariance, and the DOF in that sum
+    ## returnCor should always be FALSE when idx!=jdx, but we won't check that
     getVstat <- function(idx, jdx, returnCor=FALSE){
         ## this ends up being quite awkward because we only want to drop one dimension
         bsi <- bootstat[idx,,,drop=FALSE]
@@ -170,9 +171,9 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
             tcp <- tcrossprod(Drop(bsi[,comp,,drop=FALSE], 2),
                               Drop(bsj[,comp,,drop=FALSE], 2))
             vstat['stat', comp] <- sum(tcp)/dimb['rep']
-            if(returnCor){
-                ccp <- cov2cor(tcp)
-                vstat['avgCor', comp] <- mean(ccp[upper.tri(ccp)])
+            if(returnCor && length(idx)>1){ # so we don't emit warnings or die on empty or singleton idx
+                ccp <- suppressWarnings(cov2cor(tcp))
+                vstat['avgCor', comp] <- mean(ccp[upper.tri(ccp)], na.rm=TRUE)
             }
         }
         
