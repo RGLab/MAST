@@ -1,6 +1,6 @@
-methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm'),
-                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike'),
-                         implementsEbayes=c(TRUE, TRUE, FALSE, TRUE))
+methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglm2'),
+                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlike2'),
+                         implementsEbayes=c(TRUE, TRUE, FALSE, TRUE, TRUE))
 
 
 residualsHook <- function(fit){

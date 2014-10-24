@@ -264,6 +264,7 @@ setClass('LMlike',
 
 setClass('GLMlike', contains='LMlike')
 setClass('BayesGLMlike', contains='GLMlike')
+setClass('BayesGLMlike2', contains='GLMlike')
 setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity=function(object){
     if(length(object@response)>0 & nrow(object@pseudoMM)>0){
         stopifnot(nrow(object@pseudoMM)==length(object@response))
