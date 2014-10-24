@@ -9,7 +9,7 @@ calcZ(tests)
 \item{tests}{output from \code{gseaAfterBoot}}
 }
 \value{
-3D array with dimensinos set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat or two sided 'P' value that P(z>|Z|))
+3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat or two sided 'P' value that P(z>|Z|))
 }
 \description{
 Get Z statistics and P values after running gseaAfterBoot

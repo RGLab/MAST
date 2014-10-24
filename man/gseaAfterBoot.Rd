@@ -41,6 +41,5 @@ dimnames(gsea)
 calcZ(gsea)
 stopifnot(all.equal(gsea['A',,,],gsea['D',,,]))
 stopifnot(all.equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
-stopifnot(all.equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
 }
 

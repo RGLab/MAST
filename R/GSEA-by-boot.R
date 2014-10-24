@@ -99,7 +99,6 @@ Drop <- function(x, d){
 ##' calcZ(gsea)
 ##' stopifnot(all.equal(gsea['A',,,],gsea['D',,,]))
 ##' stopifnot(all.equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
-##' stopifnot(all.equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
 gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=1000)){
 
     ## Basic idea is to average statistics (based on coefficients defined in Zfit) and find the variance of that average using the bootstraps
@@ -154,34 +153,48 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
         tstat <- matrix(c(tstat, dof), nrow=2,
                         dimnames=list(stat=c('stat', 'dof'), comp=c('C', 'D')), byrow=TRUE)
         ## variance of sum over idx
-        vstat <- getVstat(idx, idx)
-        abind(t=tstat, v=vstat, rev.along=0)
+        vstat <- getVstat(idx, idx, returnCor=TRUE)
+        vstatCor <- vstat[2,]
+        vstat <- vstat[-2,]
+        list(stat=abind(t=tstat, v=vstat, rev.along=0),
+             cor=vstatCor)
     }
 
     ## sum of (idx,jdx) block of covariance, and the DOF in that sum
-    getVstat <- function(idx, jdx){
+    getVstat <- function(idx, jdx, returnCor=FALSE){
         ## this ends up being quite awkward because we only want to drop one dimension
         bsi <- bootstat[idx,,,drop=FALSE]
         bsj <- bootstat[jdx,,,drop=FALSE]
-        vstat <- aaply(c('C', 'D'), 1, function(comp){
-            sum(tcrossprod(Drop(bsi[,comp,,drop=FALSE], 2),
-                           Drop(bsj[,comp,,drop=FALSE], 2)))/dimb['rep']
-        })
+        vstat <- matrix(NA, nrow=2, ncol=2, dimnames=list(c('stat', 'avgCor'), c('C', 'D')))
+        for(comp in c('C', 'D')){
+            tcp <- tcrossprod(Drop(bsi[,comp,,drop=FALSE], 2),
+                              Drop(bsj[,comp,,drop=FALSE], 2))
+            vstat['stat', comp] <- sum(tcp)/dimb['rep']
+            if(returnCor){
+                ccp <- cov2cor(tcp)
+                vstat['avgCor', comp] <- mean(ccp[upper.tri(ccp)])
+            }
+        }
+        
         dofi <- colSums(!naAny[idx,,drop=FALSE])
         dofj <- colSums(!naAny[jdx,,drop=FALSE])
-        matrix(c(vstat, dofi*dofj), nrow=2, dimnames=list(stat=c('stat', 'dof'), comp=c('C', 'D')), byrow=TRUE)
+        if(returnCor){
+            return(rbind(vstat, dof=dofi*dofj))
+        } else{
+            return(rbind(vstat[-2,,drop=FALSE], dof=dofi*dofj))
+        }
     }
 
     ## subtract off genes that were in the test set from the statistics in the non-test set
     ## and divide the statistics and variance by the DOF (number of terms int he sum)
-    scalenames2 <- c('stat', 'var', 'dof')
+    scalenames2 <- c('stat', 'var', 'dof', 'avgCor')
     scalenames1 <- c('cont', 'disc')
     scalenames3 <- c('test', 'null')
-    scaleStats <- function(teststat, overlapstat, nullstat){
+    scaleStats <- function(test, overlap, null){
         ## adjust the null stats and DOF
-        nullstat <- nullstat - overlapstat
-        nullscaled <- cbind(nullstat['stat',,]/nullstat['dof',,], dof=nullstat['dof',,'t'])
-        testscaled <- cbind(teststat['stat',,]/teststat['dof',,], dof=teststat['dof',,'t'])
+        null$stat <- null$stat - overlap$stat
+        nullscaled <- cbind(null$stat['stat',,]/null$stat['dof',,], dof=null$stat['dof',,'t'], cor=null$cor)
+        testscaled <- cbind(test$stat['stat',,]/test$stat['dof',,], dof=test$stat['dof',,'t'], cor=test$cor)
         abind(test=testscaled, null=nullscaled, rev.along=0)
     }
 
@@ -194,7 +207,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
         ## off-diagonal block for T (covariance between T and O)
         ## multiply be 2 because we want to kill TO as well as OT blocks
         OT <- 2*getVstat(Oidx, nullgenes)
-        OO[,,'v'] <- OO[,,'v']+OT
+        OO$stat[,,'v'] <- OO$stat[,,'v']+OT
         TT <- getStats(Tidx)
         tests[sidx,,,] <- scaleStats(TT, OO, NN)
     }
@@ -204,7 +217,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
 ##' Get Z statistics and P values after running gseaAfterBoot
 ##'
 ##' @param tests output from \code{gseaAfterBoot}
-##' @return 3D array with dimensinos set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat or two sided 'P' value that P(z>|Z|))
+##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat or two sided 'P' value that P(z>|Z|))
 ##' @export
 calcZ <- function(tests){
     Z <- (tests[,,'stat','test']-tests[,,'stat','null'])/sqrt(tests[,,'var','test']+tests[,,'var','null'])
