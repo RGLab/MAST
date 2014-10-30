@@ -115,6 +115,10 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     boots <- aperm(boots, c(2,3,4,1))
     dimb <- setNames(dim(boots), c('genes', 'coef', 'comp', 'rep'))
     dnb <- setNames(dimnames(boots), names(dimb))
+
+    if(dimb['genes']!=nrow(zFit@coefD)) stop('Bootstraps must be run on same set of genes as `zFit`')
+    if(!all(is.numeric(unlist(sets)))) stop('`sets` should be indices of genes in `zFit`')
+    
     ## average coefficient over replicates
     bmean <- rowMeans(boots, dims=3)
     boots <- applyFlat(boots, bmean, FUN='-')

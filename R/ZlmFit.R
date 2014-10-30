@@ -58,6 +58,7 @@ setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), funct
     o1 <- object
     LMlike <- o1@LMlike
     F <- update.formula(LMlike@formula, formula(sprintf(' ~. - %s', hypothesis)))
+    if(F==LMlike@formula) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
     LMlike <- update(LMlike, F)
     .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
 })
