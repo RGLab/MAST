@@ -263,8 +263,22 @@ setClass('LMlike',
          })
 
 setClass('GLMlike', contains='LMlike')
-setClass('BayesGLMlike', contains='GLMlike')
-setClass('BayesGLMlike2', contains='GLMlike')
+
+.defaultPrior <- function(names){
+    names <- setdiff(names, '(Intercept)')
+    p <- length(names)
+    ar <- array(rep(c(0, 2.5, 1), times=2*p), dim=c(3, 2,p), dimnames=list(metric=c('loc', 'scale', 'df'), comp=c('C', 'D'), names))
+    #if(p>0)     ar['scale',,names=='(Intercept)'] <- 10
+    ar
+}
+
+setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array'),
+         prototype=list(prior=.defaultPrior(character(0))),
+         validity=function(object){
+             if(length(object@coefPrior>0))
+                 if(dim(object@coefPrior)[3] != sum(colnames(model.matrix(object))!='(Intercept)')) stop('prior must have same number of components as model.matrix')
+         })
+setClass('BayesGLMlike2', contains='BayesGLMlike')
 setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity=function(object){
     if(length(object@response)>0 & nrow(object@pseudoMM)>0){
         stopifnot(nrow(object@pseudoMM)==length(object@response))

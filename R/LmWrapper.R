@@ -31,7 +31,7 @@ setMethod('fit', signature=c(object='LMlike', response='vector'), function(objec
     object@fitC <- NULL
     object@fitD <- NULL
     if(!quick) validObject(object)      #save time in inner loop in zlm.SingleCellAssay
-    fit(object, silent=silent, ...)
+    fit(object, silent=silent, start=start, ...)
 })
 
 
@@ -114,7 +114,8 @@ complexifyNA <- function(x){
 }
 uncomplexify <- function(x){
     x[abs(Im(x))>.Machine$double.eps] <- NA
-    as.numeric(x)
+    x[] <- as.numeric(x)
+    x
 }
 
 

@@ -8,8 +8,15 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
         return(object)
     }
 
-     fitArgsC <- object@fitArgsC
+    fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
+    if(length(object@coefPrior)>0){
+        fitArgsD$prior.mean <- object@coefPrior['loc', 'D',]
+        fitArgsD$prior.scale <- object@coefPrior['scale', 'D',]
+        fitArgsD$prior.df <- object@coefPrior['df', 'D', ]
+    }
+    
+    
     object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos]), fitArgsC))
     object@fitD <- do.call(bayesglm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
 
@@ -28,3 +35,14 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
     object
 })
 
+setReplaceMethod('model.matrix', 'BayesGLMlike', function(object, value){
+    oldcols <- dimnames(object@coefPrior)[[3]]
+    newcols <- colnames(value)
+    keepcols <- intersect(oldcols, newcols)
+    if(length(object@coefPrior)>0){
+        newprior <- .defaultPrior(newcols)
+        newprior[,,keepcols] <- object@coefPrior[,,keepcols]
+        object@coefPrior <- newprior
+    }
+    callNextMethod()
+})
