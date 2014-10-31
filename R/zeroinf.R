@@ -31,7 +31,7 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##' is modeled as a logistic regression
 ##' and (conditional on the the response being >0), the continuous process is Gaussian, ie, a linear regression.
 ##' @param formula model formula
-##' @param data a data.frame, list or environment in which formula is evaluated
+##' @param data a data.frame, list, environment or SingleCellAssay in which formula is evaluated
 ##' @param method one of 'glm' or 'glmer'.  See SingleCellAssay:::methodDict for other possibilities.
 ##' @param silent if TRUE suppress common errors from fitting continuous part
 ##' @param ... passed to \code{fit}, and eventually to the linear model fitting function
@@ -50,18 +50,23 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##' @seealso GLMlike, LMERlike
 ##' @import stringr
 zlm <- function(formula, data, method='glm',silent=TRUE, ...){
-  if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
-  if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
+    ## perhaps we should be generic, but since we are dispatching on second argument, which might be an S3 class, let's just do this instead.
+    if(inherits(data, 'SingleCellAssay')){
+        return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, ...))
+    }
+    
+    if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
+    if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
 
-  ## get response
-  resp <- eval(formula[[2]], data)
-  fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
-  ## get RHS
-  Formula <- as.formula(paste0('~', fsplit[1,2]))
+    ## get response
+    resp <- eval(formula[[2]], data)
+    fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
+    ## get RHS
+    Formula <- as.formula(paste0('~', fsplit[1,2]))
 
-  obj <- new(methodDict[keyword==method, lmMethod], formula=Formula, design=data, response=resp)
-  obj <- fit(obj)
-  list(cont=obj@fitC, disc=obj@fitD)
+    obj <- new(methodDict[keyword==method, lmMethod], formula=Formula, design=data, response=resp)
+    obj <- fit(obj)
+    list(cont=obj@fitC, disc=obj@fitD)
 }
 
 summary.zlm <- function(out){
