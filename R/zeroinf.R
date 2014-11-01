@@ -111,7 +111,7 @@ summary.zlm <- function(out){
 ##' vcov(zlmVbeta, 'C')['IL13',,]
 ##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 ##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, LMlike, ...){
+zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
     ## Default call
     if(missing(LMlike)){
         ## Which class are we using for the fits...look it up by keyword
@@ -183,17 +183,23 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
                 stop("We seem to be having a lot of problems here...are your tests specified correctly?  \n If you're sure, set force=TRUE.", tt)                
             }
         }
+        if(onlyCoef) return(cbind(C=coef(obj, 'C'), D=coef(obj, 'D')))
         summaries <- summarize(obj)
         structure(summaries, hookOut=hookOut)
     }
 
 
-    if(getOption('mc.cores', 1L)==1){
+    if(!parallel || getOption('mc.cores', 1L)==1){
         listOfSummaries <- lapply(listEE, .fitGeneSet)
     } else{
     listOfSummaries <- mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
 }
-    
+
+    if(onlyCoef){
+        out <- do.call(abind, c(listOfSummaries, rev.along=0))
+        return(aperm(out, c(3,1,2)))
+    }
+        
     ## test for try-errors
     cls <- sapply(listOfSummaries, function(x) class(x))
     complain <- if(force) warn else stop

@@ -100,7 +100,6 @@ makeChiSqTable <- function(lambda, df, test){
     }
     lambdaC <- setNames(Combine(lambda, Sum(lambda)), c('cont', 'disc', 'hurdle'))
     dfC <- setNames(Combine(df, Sum(df)), c('cont', 'disc', 'hurdle'))
-
     pchi <- Flatten(pchisq(as.matrix(lambdaC), df=as.matrix(dfC), lower.tail=FALSE))
     tab <- Glue(lambda=lambdaC,
                df=dfC, 'Pr(>Chisq)'=pchi)
@@ -114,8 +113,9 @@ complexifyNA <- function(x){
 }
 uncomplexify <- function(x){
     x[abs(Im(x))>.Machine$double.eps] <- NA
-    x[] <- as.numeric(x)
-    x
+    nx <- as.numeric(x)
+    dim(nx) <- dim(x)
+    nx
 }
 
 
