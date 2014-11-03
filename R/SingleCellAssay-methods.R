@@ -478,7 +478,7 @@ setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
 ##' The union of columns from featureData will be taken
 ##' The union (padded if necessary with NA) will be taken from cellData.
 ##' @importMethodsFrom BiocGenerics combine
-##' @importFrom abind abind
+##' @import abind
 ##' @export
 ##' @aliases combine,DataLayer,Datalayer-method
 ##' @note

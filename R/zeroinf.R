@@ -96,7 +96,9 @@ summary.zlm <- function(out){
 ##' @param ebayesControl list with parameters for empirical bayes procedure.  See \link{ebayes}.
 ##' @param force Should we continue testing genes even after many errors have occurred?
 ##' @param hook a function called on the \code{fit} after each gene.
+##' @param parallel If TRUE and \code{option(mc.cores)>1} then multiple cores will be used in fitting.
 ##' @param LMlike if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.
+##' @param onlyCoef If TRUE then only an array of model coefficients will be returned (maybe only  useful for bootstrapping).
 ##' @param ... arguments passed to the S4 model object.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
 ##' @return either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
 ##' @export

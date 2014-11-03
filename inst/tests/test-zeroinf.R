@@ -52,23 +52,10 @@ options(mc.cores=3)
  
 
 test_that('zlm.SingleCellAssay works', {
-  zzinit <<- zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2)
+  zzinit <<- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
   expect_that(zzinit, is_a('ZlmFit'))
   expect_equal(rownames(zzinit@coefC), fData(fd2)$primerid)
 })
-
-
-## test_that('Guessing coefficients in zlm.SingleCellAssay works', {
-##     implicitCoefs <- zlm.SingleCellAssay(value ~ Subject.ID+Stim.Condition, fd2, hypo.terms=c('Subject.ID', 'Stim.Condition'), .drop=TRUE)
-##     explicitCoefs <- zlm.SingleCellAssay(value ~ Subject.ID+Stim.Condition, fd2, hypo.contrasts=c('Subject.IDSub02', 'Stim.ConditionUnstim'), .drop=TRUE, keep.zlm=TRUE)
-##     expect_equal(implicitCoefs, explicitCoefs$tests)
-
-##     ## TODO
-##     ## lrt <- zlm.SingleCellAssay(value ~ Subject.ID+Stim.Condition, fd2, hypothesis.matrix=c('Subject.ID', 'Stim.Condition'), type='LRT', .drop=TRUE, keep.zlm=TRUE)
-##     ## lrt1.d <- drop1(lrt$models[[1]]$disc, ~Subject.ID + Stim.Condition, test='Chisq')
-##     ## expect_equal(lrt$tests[1,'Chisq', 'disc'], lrt1.d[3, 'LRT'])
-    
-## })
 
 test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
     fd3 <- fd2[,1:5]
@@ -82,7 +69,7 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
         if(require(arm)){
             zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
             expect_that(zz3, is_a('ZlmFit'))
-            expect_true(zz3@converged[1,'D'])
+            expect_false(zz3@converged[1,'D'])
             detach('package:arm')
         }
 
@@ -96,7 +83,7 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
     
 })
 
-try( if(require('lme4')) detach('package:lme4'))
+try(detach('package:lme4'), silent=TRUE)
 
 context('Empirical Bayes')
 if(require('numDeriv')){
@@ -126,7 +113,7 @@ test_that('No holes in output', {
     ee <- exprs(fd2)
     ee[1,2] <- NA
     exprs(fd2) <- ee
-    zze <- zlm.SingleCellAssay(~Stim.Condition, fd2)
+    zze <- zlm.SingleCellAssay(~Stim.Condition, fd2, parallel=FALSE)
     expect_equal(nrow(zze@coefD), ncol(fd2))
     expect_true(all(is.na(zze@coefD[2,])))
     expect_equal(dim(zze@vcovD)[3], ncol(fd2))
@@ -142,12 +129,12 @@ test_that('Identity Hook', {
 })
 
 test_that('Residuals Hook', {
-     zz <- zlm.SingleCellAssay(value ~ Population*Stim.Condition, fd2, hook=residualsHook)
+     zz <- zlm.SingleCellAssay(value ~ Population, fd2, hook=residualsHook)
      fd3 <- collectResiduals(zz, fd2)
      expect_is(fd3, 'SingleCellAssay')
 })
 
-if(require('arm')){
+if(suppressPackageStartupMessages(require('arm'))){
 context('zlm and bayesglm')
 
 test_that('Can fit using bayesglm', {
@@ -161,6 +148,6 @@ test_that('Can do ebayes shrinkage using bayesglm', {
     expect_equal(zzinit@dispersion, zzinitshrink@dispersionNoshrink)
 })
 
-detach('package:arm')
+try(detach('package:arm'), silent=TRUE)
 }
 

@@ -22,10 +22,12 @@ apply FUN by recycling y as necessary over dimension K of x.
 }
 \examples{
 ##Dumb example, could be done with scale(...,scale=FALSE)
+\dontrun{
 x0 = matrix(1:10, ncol=2)
 y0 = colMeans(x0)
 dim(y0) = c(2,1)
 x1 = applyFlat(x0,y0)
 stopifnot(colMeans(x1)==0)
+}
 }
 

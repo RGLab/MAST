@@ -46,7 +46,7 @@ combined_residuals_hook<- function(x){
 
 #' Used to compute module "scores"
 #'
-#' Hook to compute y_i-E(V_i)-\beta_{ngeneson}*ng_i for y_i>0 and E(U_i)(E(V_i)-\beta_{ngeneson}*ng_i) for y_i=0
+#' Hook to compute \eqn{ y_i-E(V_i)-\beta_{ngeneson} ng_i} for \eqn{y_i>0} and \eqn{E(U_i)(E(V_i)-\beta_{ngeneson} \times ng_i)} for \eqn{y_i=0}
 #' @param x the ZLMFit
 #' @export
 score_hook <- function(x){

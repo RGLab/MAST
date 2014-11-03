@@ -8,7 +8,7 @@ zlm(formula, data, method = "glm", silent = TRUE, ...)
 \arguments{
 \item{formula}{model formula}
 
-\item{data}{a data.frame, list or environment in which formula is evaluated}
+\item{data}{a data.frame, list, environment or SingleCellAssay in which formula is evaluated}
 
 \item{method}{one of 'glm' or 'glmer'.  See SingleCellAssay:::methodDict for other possibilities.}
 

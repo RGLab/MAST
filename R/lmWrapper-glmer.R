@@ -61,114 +61,114 @@ setReplaceMethod('model.matrix', signature=c(object='LMERlike'), function(object
     object
 })
 
-lmerMM <- function (formula, data = NULL, REML = TRUE, control = lmerControl(), 
-    start = NULL, verbose = 0L, subset, weights, na.action, offset, 
-    contrasts = NULL, devFunOnly = FALSE, modelMatrix, ...) 
-{
-    mc <- mcout <- match.call()
-    missCtrl <- missing(control)
-    if (!missCtrl && !inherits(control, "lmerControl")) {
-        if (!is.list(control)) 
-            stop("'control' is not a list; use lmerControl()")
-        warning("passing control as list is deprecated: please use lmerControl() instead", 
-            immediate. = TRUE)
-        control <- do.call(lmerControl, control)
-    }
-    if (!is.null(list(...)[["family"]])) {
-        warning("calling lmer with 'family' is deprecated; please use glmer() instead")
-        mc[[1]] <- quote(lme4::glmer)
-        if (missCtrl) 
-            mc$control <- glmerControl()
-        return(eval(mc, parent.frame(1L)))
-    }
-    mc$control <- control
-    mc[[1]] <- quote(lme4::lFormula)
-    lmod <- eval(mc, parent.frame(1L))
-    lmod$X <- modelMatrix
-    mcout$formula <- lmod$formula
-    lmod$formula <- NULL
-    devfun <- do.call(mkLmerDevfun, c(lmod, list(start = start, 
-        verbose = verbose, control = control)))
-    if (devFunOnly) 
-        return(devfun)
-    opt <- optimizeLmer(devfun, optimizer = control$optimizer, 
-        restart_edge = control$restart_edge, boundary.tol = control$boundary.tol, 
-        control = control$optCtrl, verbose = verbose, start = start, 
-        calc.derivs = control$calc.derivs, use.last.params = control$use.last.params)
-    cc <- checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, 
-        lbound = environment(devfun)$lower)
-    mkMerMod(environment(devfun), opt, lmod$reTrms, fr = lmod$fr, 
-        mcout, lme4conv = cc)
-}
+## lmerMM <- function (formula, data = NULL, REML = TRUE, control = lmerControl(), 
+##     start = NULL, verbose = 0L, subset, weights, na.action, offset, 
+##     contrasts = NULL, devFunOnly = FALSE, modelMatrix, ...) 
+## {
+##     mc <- mcout <- match.call()
+##     missCtrl <- missing(control)
+##     if (!missCtrl && !inherits(control, "lmerControl")) {
+##         if (!is.list(control)) 
+##             stop("'control' is not a list; use lmerControl()")
+##         warning("passing control as list is deprecated: please use lmerControl() instead", 
+##             immediate. = TRUE)
+##         control <- do.call(lmerControl, control)
+##     }
+##     if (!is.null(list(...)[["family"]])) {
+##         warning("calling lmer with 'family' is deprecated; please use glmer() instead")
+##         mc[[1]] <- quote(lme4::glmer)
+##         if (missCtrl) 
+##             mc$control <- glmerControl()
+##         return(eval(mc, parent.frame(1L)))
+##     }
+##     mc$control <- control
+##     mc[[1]] <- quote(lme4::lFormula)
+##     lmod <- eval(mc, parent.frame(1L))
+##     lmod$X <- modelMatrix
+##     mcout$formula <- lmod$formula
+##     lmod$formula <- NULL
+##     devfun <- do.call(mkLmerDevfun, c(lmod, list(start = start, 
+##         verbose = verbose, control = control)))
+##     if (devFunOnly) 
+##         return(devfun)
+##     opt <- optimizeLmer(devfun, optimizer = control$optimizer, 
+##         restart_edge = control$restart_edge, boundary.tol = control$boundary.tol, 
+##         control = control$optCtrl, verbose = verbose, start = start, 
+##         calc.derivs = control$calc.derivs, use.last.params = control$use.last.params)
+##     cc <- checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, 
+##         lbound = environment(devfun)$lower)
+##     mkMerMod(environment(devfun), opt, lmod$reTrms, fr = lmod$fr, 
+##         mcout, lme4conv = cc)
+## }
 
-glmerMM <- function (formula, data = NULL, family = gaussian, control = glmerControl(), 
-    start = NULL, verbose = 0L, nAGQ = 1L, subset, weights, na.action, 
-    offset, contrasts = NULL, mustart, etastart, devFunOnly = FALSE, modelMatrix,
-    ...) 
-{
-    if (!inherits(control, "glmerControl")) {
-        if (!is.list(control)) 
-            stop("'control' is not a list; use glmerControl()")
-        msg <- "Use control=glmerControl(..) instead of passing a list"
-        if (length(cl <- class(control))) 
-            msg <- paste(msg, "of class", dQuote(cl[1]))
-        warning(msg, immediate. = TRUE)
-        control <- do.call(glmerControl, control)
-    }
-    mc <- mcout <- match.call()
-    if (is.character(family)) 
-        family <- get(family, mode = "function", envir = parent.frame(2))
-    if (is.function(family)) 
-        family <- family()
-    if (isTRUE(all.equal(family, gaussian()))) {
-        warning("calling glmer() with family=gaussian (identity link) as a shortcut to lmer() is deprecated;", 
-            " please call lmer() directly")
-        mc[[1]] <- quote(lme4::lmer)
-        mc["family"] <- NULL
-        return(eval(mc, parent.frame()))
-    }
-    mc[[1]] <- quote(lme4::glFormula)
-    glmod <- eval(mc, parent.frame(1L))
-    glmod$X <- modelMatrix
-    mcout$formula <- glmod$formula
-    glmod$formula <- NULL
-    devfun <- do.call(mkGlmerDevfun, c(glmod, list(verbose = verbose, 
-        control = control, nAGQ = 0)))
-    if (nAGQ == 0 && devFunOnly) 
-        return(devfun)
-    if (is.list(start) && !is.null(start$fixef)) 
-        if (nAGQ == 0) 
-            stop("should not specify both start$fixef and nAGQ==0")
-    opt <- optimizeGlmer(devfun, optimizer = control$optimizer[[1]], 
-        restart_edge = if (nAGQ == 0) 
-            control$restart_edge
-        else FALSE, boundary.tol = if (nAGQ == 0) 
-            control$boundary.tol
-        else 0, control = control$optCtrl, start = start, nAGQ = 0, 
-        verbose = verbose, calc.derivs = FALSE)
-    if (nAGQ > 0L) {
-        start <- updateStart(start, theta = opt$par)
-        devfun <- updateGlmerDevfun(devfun, glmod$reTrms, nAGQ = nAGQ)
-        if (devFunOnly) 
-            return(devfun)
-        opt <- optimizeGlmer(devfun, optimizer = control$optimizer[[2]], 
-            restart_edge = control$restart_edge, boundary.tol = control$boundary.tol, 
-            control = control$optCtrl, start = start, nAGQ = nAGQ, 
-            verbose = verbose, stage = 2, calc.derivs = control$calc.derivs, 
-            use.last.params = control$use.last.params)
-    }
-    cc <- if (!control$calc.derivs) 
-        NULL
-    else {
-        if (verbose > 10) 
-            cat("checking convergence\n")
-        checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, 
-            lbound = environment(devfun)$lower)
-    }
-    mcout <- call('LMERlike')
-    mkMerMod(environment(devfun), opt, glmod$reTrms, fr = glmod$fr, 
-        mcout, lme4conv = cc)
-}
+## glmerMM <- function (formula, data = NULL, family = gaussian, control = glmerControl(), 
+##     start = NULL, verbose = 0L, nAGQ = 1L, subset, weights, na.action, 
+##     offset, contrasts = NULL, mustart, etastart, devFunOnly = FALSE, modelMatrix,
+##     ...) 
+## {
+##     if (!inherits(control, "glmerControl")) {
+##         if (!is.list(control)) 
+##             stop("'control' is not a list; use glmerControl()")
+##         msg <- "Use control=glmerControl(..) instead of passing a list"
+##         if (length(cl <- class(control))) 
+##             msg <- paste(msg, "of class", dQuote(cl[1]))
+##         warning(msg, immediate. = TRUE)
+##         control <- do.call(glmerControl, control)
+##     }
+##     mc <- mcout <- match.call()
+##     if (is.character(family)) 
+##         family <- get(family, mode = "function", envir = parent.frame(2))
+##     if (is.function(family)) 
+##         family <- family()
+##     if (isTRUE(all.equal(family, gaussian()))) {
+##         warning("calling glmer() with family=gaussian (identity link) as a shortcut to lmer() is deprecated;", 
+##             " please call lmer() directly")
+##         mc[[1]] <- quote(lme4::lmer)
+##         mc["family"] <- NULL
+##         return(eval(mc, parent.frame()))
+##     }
+##     mc[[1]] <- quote(lme4::glFormula)
+##     glmod <- eval(mc, parent.frame(1L))
+##     glmod$X <- modelMatrix
+##     mcout$formula <- glmod$formula
+##     glmod$formula <- NULL
+##     devfun <- do.call(mkGlmerDevfun, c(glmod, list(verbose = verbose, 
+##         control = control, nAGQ = 0)))
+##     if (nAGQ == 0 && devFunOnly) 
+##         return(devfun)
+##     if (is.list(start) && !is.null(start$fixef)) 
+##         if (nAGQ == 0) 
+##             stop("should not specify both start$fixef and nAGQ==0")
+##     opt <- optimizeGlmer(devfun, optimizer = control$optimizer[[1]], 
+##         restart_edge = if (nAGQ == 0) 
+##             control$restart_edge
+##         else FALSE, boundary.tol = if (nAGQ == 0) 
+##             control$boundary.tol
+##         else 0, control = control$optCtrl, start = start, nAGQ = 0, 
+##         verbose = verbose, calc.derivs = FALSE)
+##     if (nAGQ > 0L) {
+##         start <- updateStart(start, theta = opt$par)
+##         devfun <- updateGlmerDevfun(devfun, glmod$reTrms, nAGQ = nAGQ)
+##         if (devFunOnly) 
+##             return(devfun)
+##         opt <- optimizeGlmer(devfun, optimizer = control$optimizer[[2]], 
+##             restart_edge = control$restart_edge, boundary.tol = control$boundary.tol, 
+##             control = control$optCtrl, start = start, nAGQ = nAGQ, 
+##             verbose = verbose, stage = 2, calc.derivs = control$calc.derivs, 
+##             use.last.params = control$use.last.params)
+##     }
+##     cc <- if (!control$calc.derivs) 
+##         NULL
+##     else {
+##         if (verbose > 10) 
+##             cat("checking convergence\n")
+##         checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, 
+##             lbound = environment(devfun)$lower)
+##     }
+##     mcout <- call('LMERlike')
+##     mkMerMod(environment(devfun), opt, glmod$reTrms, fr = glmod$fr, 
+##         mcout, lme4conv = cc)
+## }
 
 
 ##' ##' @include AllClasses.R

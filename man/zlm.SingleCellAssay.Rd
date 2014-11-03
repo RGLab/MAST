@@ -5,7 +5,7 @@
 \usage{
 zlm.SingleCellAssay(formula, sca, method = "glm", silent = TRUE,
   ebayes = FALSE, ebayesControl = NULL, force = FALSE, hook = NULL,
-  LMlike, ...)
+  parallel = TRUE, LMlike, onlyCoef = FALSE, ...)
 }
 \arguments{
 \item{formula}{a formula with the measurement variable on the LHS and predictors present in cData on the RHS}

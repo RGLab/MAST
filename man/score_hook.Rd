@@ -9,6 +9,6 @@ score_hook(x)
 \item{x}{the ZLMFit}
 }
 \description{
-Hook to compute y_i-E(V_i)-\beta_{ngeneson}*ng_i for y_i>0 and E(U_i)(E(V_i)-\beta_{ngeneson}*ng_i) for y_i=0
+Hook to compute \eqn{ y_i-E(V_i)-\beta_{ngeneson} ng_i} for \eqn{y_i>0} and \eqn{E(U_i)(E(V_i)-\beta_{ngeneson} \times ng_i)} for \eqn{y_i=0}
 }
 

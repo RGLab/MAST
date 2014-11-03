@@ -325,6 +325,7 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 ##' Constructs a FluidigmAssay object. Differs little from the SingleCellAssay constructor. Only the \code{ncells} parameter is additionally required.
 ##' @inheritParams SingleCellAssay
 ##' @param ncells A \code{character} specifying the column which gives the number of cells per well
+##' @param geneid An optional \code{character} alternate id for primers.
 ##' @return A FluidigmAssay object
 ##' @author Andrew McDavid and Greg Finak
 ##' @examples
