@@ -10,6 +10,17 @@ setMethod('fit', signature=c(object='BayesGLMlike2', response='missing'), functi
 
      fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
+
+    if(length(object@coefPrior)>0){
+        fitArgsD$prior.mean <- object@coefPrior['loc', 'D',]
+        fitArgsD$prior.scale <- object@coefPrior['scale', 'D',]
+        fitArgsD$prior.df <- object@coefPrior['df', 'D', ]
+        fitArgsC$prior.mean <- object@coefPrior['loc', 'C',]
+        fitArgsC$prior.scale <- object@coefPrior['scale', 'C',]
+        fitArgsC$prior.df <- object@coefPrior['df', 'C', ]
+        
+    }
+
     object@fitC <- do.call(bayesglm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos]), fitArgsC))
     object@fitD <- do.call(bayesglm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
 

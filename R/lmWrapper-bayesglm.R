@@ -36,13 +36,14 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
 })
 
 setReplaceMethod('model.matrix', 'BayesGLMlike', function(object, value){
+    object <- callNextMethod()
     oldcols <- dimnames(object@coefPrior)[[3]]
-    newcols <- colnames(value)
+    newcols <- colnames(model.matrix(object))
     keepcols <- intersect(oldcols, newcols)
     if(length(object@coefPrior)>0){
         newprior <- .defaultPrior(newcols)
         newprior[,,keepcols] <- object@coefPrior[,,keepcols]
         object@coefPrior <- newprior
     }
-    callNextMethod()
+    object
 })

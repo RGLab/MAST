@@ -113,7 +113,9 @@ test_that('Contrast Hypothesis Work', {
     expect_warning(coefh <- generateHypothesis(Hypothesis('`Stim.ConditionUnstim:PopulationVbetaResponsive`'), names(coef(obj2, 'D'))), 'backticks')
     btest <- lrTest(obj2, coefh)
     ctest <- lrTest(obj2, 'Stim.Condition:Population')
-    expect_equivalent(btest,ctest)
+    ## prior, hence results changes slightly due to bayesglm magic scaling...
+    err <- if(inherits(obj2, 'BayesGLMlike')) .01 else 1e-7
+    expect_true(all.equal(btest,ctest, tolerance=err, check.attributes=FALSE))
     
     suppressWarnings(coefh <- generateHypothesis(Hypothesis(c('`Stim.ConditionUnstim:PopulationVbetaResponsive`-`(Intercept)`', 'PopulationVbetaResponsive')), names(coef(obj2, 'D'))))                          
     dtest <- lrTest(obj2, coefh)

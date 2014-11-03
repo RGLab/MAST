@@ -11,14 +11,14 @@ test_that('Ebayes shrinkage corner cases', {
     expect_equal(obj@fitC$dispersionNoShrink, summary(objC)$dispersion)
 })
 
-context('Torture test for convergence')
-test_that('Throw error or signal non-convergence', {
-    obj3 <- new(class(obj), design=data.frame(x=rep(1, 4)), formula=~1, fitArgsD=list(start=-1.81))
-    ## An error is acceptable
-     tt <- try({
-    obj3 <- fit(obj3, response=c(1,1,1,0))
-})
-    if(!is(tt, 'try-error')){
-        expect_true(abs(coef(obj3, 'D'))<2)
-    }
-})
+## context('Torture test for convergence')
+## test_that('Throw error or signal non-convergence', {
+##     obj3 <- new(class(obj), design=data.frame(x=rep(1, 4)), formula=~1, fitArgsD=list(start=-1.81))
+##     ## An error is acceptable
+##      tt <- try({
+##     obj3 <- fit(obj3, response=c(1,1,1,0))
+## })
+##     if(!is(tt, 'try-error') && inherits(obj, 'BayesGLMlike')){
+##         expect_true(abs(coef(obj3, 'D'))<2)
+##     }
+## })
