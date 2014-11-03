@@ -176,8 +176,7 @@ pbootVcov1<-function (cl,zlmfit, R = 999)
     manyvc <- parSapply(cl,1:R, function(i,...){
         s <- sample(N, replace = TRUE)
         newsca <- sca[s, ]
-        z <- zlm.SingleCellAssay(sca = newsca, LMlike = zlmfit@LMlike)
-        abind(C = coef(z, "C"), D = coef(z, "D"), rev.along = 0)
+        zlm.SingleCellAssay(sca = newsca, LMlike = zlmfit@LMlike, onlyCoef=TRUE)
     })
   
     d<-dim(coef(zlmfit,"D"))
@@ -201,7 +200,7 @@ bootVcov1 <- function(zlmfit, R=999){
     manyvc <- raply(R, {
         s <- sample(N, replace=TRUE)
         newsca <- sca[s,]
-        z <- zlm.SingleCellAssay(sca=newsca, LMlike=zlmfit@LMlike, onlyCoef=TRUE)
+        zlm.SingleCellAssay(sca=newsca, LMlike=zlmfit@LMlike, onlyCoef=TRUE)
     })
 
    manyvc
