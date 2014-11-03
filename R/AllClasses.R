@@ -264,7 +264,21 @@ setClass('LMlike',
 
 setClass('GLMlike', contains='LMlike')
 
-.defaultPrior <- function(names){
+##' Initialize a prior to be used a prior for BayeGLMlike/BayesGLMlike2
+##'
+##' @param names character vector of coefficients.  The `(Intercept)` will be ignored.
+##' @return 3d array, with leading dimension giving the prior 'loc'ation, 'scale' and degrees of freedom (df),
+##' second dimension giving the component ('C'ontinuous or 'D'iscrete)
+##' and trailing dimension giving the coefficient to which the prior applies.
+##' The location is initialized to be 0, the scale to 2, and degrees of freedom of 1, following the default of \link{bayesglm}
+##' @export
+##' @examples
+##' dp <- defaultPrior('Stim.ConditionUnstim')
+##' \dontrun{
+##' data(vbetaFA)
+##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc, method='bayesglm', coefPrior=dp)
+##' }
+defaultPrior <- function(names){
     names <- setdiff(names, '(Intercept)')
     p <- length(names)
     ar <- array(rep(c(0, 2.5, 1), times=2*p), dim=c(3, 2,p), dimnames=list(metric=c('loc', 'scale', 'df'), comp=c('C', 'D'), names))
@@ -273,10 +287,11 @@ setClass('GLMlike', contains='LMlike')
 }
 
 setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array'),
-         prototype=list(prior=.defaultPrior(character(0))),
+         prototype=list(prior=defaultPrior(character(0))),
          validity=function(object){
-             if(length(object@coefPrior>0))
-                 if(dim(object@coefPrior)[3] != sum(colnames(model.matrix(object))!='(Intercept)')) stop('prior must have same number of components as model.matrix')
+             ## if(length(object@coefPrior>0))
+             ##     if(dim(object@coefPrior)[3] != sum(colnames(model.matrix(object))!='(Intercept)')) stop('prior must have same number of components as model.matrix')
+             TRUE
          })
 setClass('BayesGLMlike2', contains='BayesGLMlike')
 setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity=function(object){
