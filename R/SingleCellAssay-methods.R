@@ -57,7 +57,6 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
   fvars.in <- featurevars %in% names(dataframe)
   if( !all(cvars.in)) stop(cellvars[!cvars.in][1], ' not found')
   if( !all(fvars.in)) stop(featurevars[!fvars.in][1], ' not found')
-  
   nuniquef<-nrow(uniqueModNA(dataframe[,featurevars,with=FALSE], 'primerid'))
   nuniquec<-nrow(uniqueModNA(dataframe[,cellvars,with=FALSE], 'wellKey'))  
   if(nuniquef != nc)
@@ -129,7 +128,6 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
   
   if(incomplete){
     message("dataframe appears incomplete, attempting to complete it with NAs")
-    df[,unique(primerid)]
     skeleton <- data.table((expand.grid(unique(df[,primerid]), unique(df[, wellKey]),stringsAsFactors=FALSE)))
     setnames(skeleton,c("primerid","wellKey"))
     setkey(skeleton,primerid,wellKey);
@@ -242,8 +240,10 @@ uniqueModNA.old <- function(df, exclude){
 ## columns named in exclude
 ## Precondition: keyed data.table
 uniqueModNA <- function(df, exclude){
-  if(!is(df, 'data.table') || ! all(key(df) %in% colnames(df)))
-      stop('df must be data.table fully keyed by its columns')
+    setkey(df,NULL)                     # so that unique operates on all columns
+    if(!is(df, 'data.table') || ! all(colnames(df) %in% key(df))){
+        warning('df should be data.table fully keyed by its columns')
+    }
   w.include <- names(df)
   if(ncol(df)>1){
   w.include <- setdiff(w.include, exclude)
