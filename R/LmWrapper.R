@@ -23,10 +23,11 @@ setMethod('show',  signature=c(object='LMlike'), function(object){
     return(any(positive))
 }
 
-setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, fitArgsC=list(), fitArgsD=list(), quick=FALSE, ...){
+setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, quick=FALSE, ...){
     object@response <- response
-    object@fitArgsC <- fitArgsC
-    object@fitArgsD <- fitArgsD
+    dargs <- list(...)
+    if('fitArgsC' %in% names(dargs)) object@fitArgsC <- fitArgsC
+    if('fitArgsD' %in% names(dargs)) object@fitArgsD <- fitArgsD
     object@fitted <- c(C=FALSE, D=FALSE)
     object@fitC <- NULL
     object@fitD <- NULL
@@ -78,7 +79,7 @@ setReplaceMethod('model.matrix', signature=c(object='LMlike'), function(object, 
     object@modelMatrix <- MM
     object@defaultCoef <- setNames(as.numeric(rep(NA, ncol(MM))), colnames(MM))
     object@defaultVcov <- object@defaultCoef %o% object@defaultCoef
-    validObject(object)
+    validObject(as(object, "LMlike"))
     object
 })
 
