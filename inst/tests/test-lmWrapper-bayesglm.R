@@ -1,8 +1,8 @@
 context('test prior construction')
 test_that('default prior', {
-    dp <- .defaultPrior(character(0))
+    dp <- defaultPrior(character(0))
     expect_equal(length(dp),0)
-    dp <- .defaultPrior('a')
+    dp <- defaultPrior('a')
     dpn <- dimnames(dp)
     expect_equal(dpn[[1]],c('loc', 'scale', 'df'))
 })
@@ -10,7 +10,7 @@ test_that('default prior', {
 
 source('common-fixtures.R')
  obj <- new('BayesGLMlike', design=cData(fd), formula=~Stim.Condition + Population)
-coefPrior <- .defaultPrior(colnames(model.matrix(obj)))
+coefPrior <- defaultPrior(colnames(model.matrix(obj)))
 obj@coefPrior <- coefPrior
 test_that('update prior with model', {
     expect_equal(dim(obj@coefPrior)[3], ncol(model.matrix(obj))-1)

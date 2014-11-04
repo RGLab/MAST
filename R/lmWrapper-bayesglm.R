@@ -41,7 +41,7 @@ setReplaceMethod('model.matrix', 'BayesGLMlike', function(object, value){
     newcols <- colnames(model.matrix(object))
     keepcols <- intersect(oldcols, newcols)
     if(length(object@coefPrior)>0){
-        newprior <- .defaultPrior(newcols)
+        newprior <- defaultPrior(newcols)
         newprior[,,keepcols] <- object@coefPrior[,,keepcols]
         object@coefPrior <- newprior
     }
