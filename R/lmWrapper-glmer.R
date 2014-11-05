@@ -242,7 +242,10 @@ setMethod('coef', signature=c(object='LMERlike'), function(object, which, singul
 })
 
 setMethod('logLik', signature=c(object='LMERlike'), function(object){
-    setNames(ifelse(object@fitted, c(logLik(object@fitC), logLik(object@fitD)), c(0,0)), c('C', 'D'))
+    L <- c(C=0, D=0)
+     if(object@fitted['C']) L['C'] <- logLik(object@fitC)
+    if(object@fitted['D']) L['D'] <- logLik(object@fitD)
+    L
 })
 
 setMethod('dof', signature=c(object='LMERlike'), function(object){
