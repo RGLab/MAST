@@ -56,7 +56,7 @@ Collate:
     'helper-methods.R'
     'lmWrapper-bayesglm.R'
     'lmWrapper-bayesglm2.R'
-    'lmWrapper-bayesglmWeight.R’
+    'lmWrapper-bayesglmWeight.R'
     'lmWrapper-cglm.R'
     'lmWrapper-glm.R'
     'lmWrapper-glmer.R'
