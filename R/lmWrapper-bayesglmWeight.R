@@ -16,8 +16,10 @@ setMethod('fit', signature=c(object='BayesGLMlikeWeight', response='missing'), f
         fitArgsD$prior.df <- object@coefPrior['df', 'D', ]
     }
     
-    
+
+    #browser() 
     object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos]), fitArgsC))
+    object@fitted["C"]=TRUE
     object<-.dispersion(object)
     wgt<- (nu+1)/(object@fitC$residuals^2/object@fitC$dispersion^2+nu)
     object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos], weights=wgt ), fitArgsC))
