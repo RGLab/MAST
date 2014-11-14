@@ -100,7 +100,6 @@ test_that('uniqueModNA works on multiple columns', {
     setkeyv(naframe, colnames(naframe))
     expect_equal(unique(naframe), SingleCellAssay:::uniqueModNA(naframe, exclude='var'))
 })
-
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
   expect_that(sci, is_a("SingleCellAssay"))

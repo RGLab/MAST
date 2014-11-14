@@ -242,18 +242,21 @@ uniqueModNA.old <- function(df, exclude){
 ## columns named in exclude
 ## Precondition: keyed data.table
 uniqueModNA <- function(df, exclude){
-  if(!is(df, 'data.table') || ! all(key(df) %in% colnames(df)))
-      stop('df must be data.table fully keyed by its columns')
-  w.include <- names(df)
-  if(ncol(df)>1){
-  w.include <- setdiff(w.include, exclude)
+    if(!is(df, 'data.table')){
+        stop('df should be data.table')
+    }
+    setkey(df,NULL)                     # so that unique operates on all columns
+    w.include <- names(df)
+    if(ncol(df)>1){
+        w.include <- setdiff(w.include, exclude)
 }
-  #u <- unique(df)
-  #anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
-  #u[!anyNa,,drop=FALSE]
-  u<-unique(df)
-  allNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
-  u<-u[!allNa,] #either we spend time above or here..
+    ##u <- unique(df)
+    ##anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+    ##u[!anyNa,,drop=FALSE]
+    u<-unique(df)
+    allNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+    u<-u[!allNa,] #either we spend time above or here..
+    u
 }
 
 #setGeneric("melt",function(data,...){
