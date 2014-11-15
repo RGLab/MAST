@@ -337,6 +337,65 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   new('SingleCellAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars)
 }
 
+checkArrayNames <- function(exprsArray, fData, cData){
+    if(!is.numeric(exprsArray)) stop('`exprsArray` must be numeric')
+    if(length(dim(exprsArray))<2) stop('`exprsArray` must be matrix or array')
+    if(length(dim(exprsArray))<3) dim(exprsArray) <- c(dim(exprsArray), 1)
+    dn <- dimnames(exprsArray)[1:2]
+    dl <- new('DataLayer', .Data=exprsArray)
+    if(missing(fData)) fData <- data.frame(primerid=sprintf('%0*d', ceiling(log10(ncol(dl)+1)), seq_len(ncol(dl))), stringsAsFactors=FALSE)
+    if(missing(cData)) cData <- data.frame(wellKey=sprintf('%0*d', ceiling(log10(nrow(dl)+1)), seq_len(nrow(dl))),  stringsAsFactors=FALSE)
+    
+    
+    if(nrow(dl) != nrow(cData)) stop('`cData` must contain as many rows as `exprsArray`')
+    if(ncol(dl) != nrow(fData)) stop('`fData` must contain as many columns as `exprsArray`')
+    
+    if(!('primerid' %in% names(fData))){
+        warning("`fData` has no primerid.  I'll use the row.names.")
+        fData$primerid <- row.names(fData)
+    }
+
+    if(!('wellKey' %in% names(cData))){
+        warning("`cData` has no wellKey.  I'll use the row.names.")
+        cData$wellKey <- row.names(cData)
+    }
+
+    if(is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])){
+        message('No dimnames in `exprsArray`, assuming `fData` and `cData` are sorted according to `exprsArray`')
+        dn <- list(wellkey=row.names(cData), primerid=row.names(fData), measure='et')            
+    }
+    if(!isTRUE(all.equal(dn[[1]], cData$wellKey))) stop('Order of `exprsArray` and `cData` doesn\'t match')
+    if(!isTRUE(all.equal(dn[[2]], fData$primerid))) stop('Order of `exprsArray` and `fData` doesn\'t match')
+    dimnames(dl) <- dn
+    fData <- as(fData, 'AnnotatedDataFrame')
+    cData <- as(cData, 'AnnotatedDataFrame')
+    list(exprsArray=dl, fData=fData, cData=cData)
+}
+
+##' Construct a SingleCellAssay from a matrix or array of expression
+##'
+##' If 
+##' @param class What class of object are we constructing?
+##' @param exprsArray matrix or array, rows are cells, columns are genes
+##' @param cData cellData data.frame or AnnotatedDataFrame
+##' @param fData featureData data.frame or AnnotatedDataFrame
+##' @return an object of class \code{class}
+##' @examples
+##' ncells <- 10
+##' ngenes <- 5
+##' fData <- data.frame(primerid=LETTERS[1:ngenes])
+##' cData <- data.frame(wellKey=seq_len(ngenes))
+##' mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
+##' sca <- FromMatrix('SingleCellAssay', mat, cData, fData)
+##' stopifnot(inherits(sca, 'SingleCellAssay'))
+FromMatrix <- function(class, exprsArray, cData, fData){
+    can <- checkArrayNames(exprsArray, fData, cData)
+    dl <- can$exprsArray
+    fData <- can$fData
+    cData <- can$cData
+    new(class, .Data=dl, cellData=cData, featureData=fData, sort=FALSE)
+}
+
 ##' Constructor for a FluidigmAssay
 ##'
 ##' Constructs a FluidigmAssay object. Differs little from the SingleCellAssay constructor. Only the \code{ncells} parameter is additionally required.

@@ -9,9 +9,9 @@ test_that('Create a two-column id SingleCellAssay', {
   expect_that(tmp, is_a('SingleCellAssay'))
 })
 
+tmp <- SingleCellAssay(singleid, idvars='id1', geneid='f1', primerid='f1', measurement='et')
 test_that('Create a one-column id SingleCellAssay', {
-  tmp <- SingleCellAssay(singleid, idvars='id1', geneid='f1', primerid='f1', measurement='et')
-  expect_that(tmp, is_a('SingleCellAssay'))
+    expect_that(tmp, is_a('SingleCellAssay'))
 })
 
 test_that('duplicate primers doesn\'t throw error', {
@@ -19,4 +19,15 @@ test_that('duplicate primers doesn\'t throw error', {
   expect_equal(ncol(sc), 5)
   expect_warning(sc <- SingleCellAssay(dataframe=duplicateprimers2, idvars='id1', primerid='primerid', measurement='et'), 'A')
   expect_true('primerid.orig' %in% names(fData(sc)))
+})
+
+context('Construction from matrix')
+test_that('Can recreate', {
+    tmp2 <- suppressMessages(FromMatrix('SingleCellAssay', exprs(tmp), cData(tmp), fData(tmp)))
+    expect_is(tmp2, 'SingleCellAssay')
+    expect_equivalent(tmp, tmp2)
+    cd <- cData(tmp)
+    cd$ncells <- 1
+    expect_message(tmp3 <- FromMatrix('FluidigmAssay', exprs(tmp), cd), 'dimnames')
+    expect_is(tmp3, 'FluidigmAssay')
 })
