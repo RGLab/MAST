@@ -37,20 +37,3 @@ test_that('Three flavors of wald on ZlmFit', {
 
 
 })
-
-context("Bootstrap")
-test_that("Only return coef works", {
-    zzinit2 <- zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, onlyCoef=TRUE)
-    expect_that(zzinit2, is_a('array'))
-    expect_equal(dim(zzinit2)[1], ncol(fd2))
-})
-
-test_that("Bootstrap", {
-    zf <- zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2)
-    boot <- bootVcov1(zf, R=10)
-    expect_is(boot, 'array')
-    ## rep, genes, coef, comp
-    expect_equal(dim(boot),c(10, dim(coef(zf, 'D')), 2))
-})
-
-

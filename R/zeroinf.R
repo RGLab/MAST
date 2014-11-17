@@ -1,6 +1,6 @@
-methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglm2', 'bayesglmW'),
-                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlike2','BayesGLMlikeWeight'),
-                         implementsEbayes=c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE))
+methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglm2'),
+                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlike2'),
+                         implementsEbayes=c(TRUE, TRUE, FALSE, TRUE, TRUE))
 
 
 residualsHook <- function(fit){
@@ -96,9 +96,7 @@ summary.zlm <- function(out){
 ##' @param ebayesControl list with parameters for empirical bayes procedure.  See \link{ebayes}.
 ##' @param force Should we continue testing genes even after many errors have occurred?
 ##' @param hook a function called on the \code{fit} after each gene.
-##' @param parallel If TRUE and \code{option(mc.cores)>1} then multiple cores will be used in fitting.
 ##' @param LMlike if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.
-##' @param onlyCoef If TRUE then only an array of model coefficients will be returned (maybe only  useful for bootstrapping).
 ##' @param ... arguments passed to the S4 model object.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
 ##' @return either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
 ##' @export
@@ -143,7 +141,9 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         ## Refitting
         if(!missing(formula)) warning("Ignoring formula and using model defined in 'objLMLike'")
         if(!inherits(LMlike, 'LMlike')) stop("'LMlike' must inherit from class 'LMlike'")
-           obj <- LMlike
+        ## update design matrix with possibly new/permuted cData
+                                        ##obj <- update(LMlike, design=cData(sca))
+        obj <- LMlike
        }
     
     ## avoiding repeated calls to the S4 object speeds calls on large sca

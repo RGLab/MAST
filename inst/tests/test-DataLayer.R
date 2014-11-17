@@ -38,6 +38,9 @@ context('subset and replace')
 test_that('subset works', {
   expect_equal(dl[[,1]], mat[,1,drop=FALSE], check.names=FALSE)
   expect_equal(dl[[1,]], mat[1,,drop=FALSE], check.names=FALSE)
+  ## repeated indices work as expected
+  expect_equal(dl[[c(2, 2, 1, 2),]], mat[c(2, 2, 1, 2),,drop=FALSE], check.names=FALSE)
+   expect_equal(dl[[,c(2, 2, 1, 2)]], mat[,c(2, 2, 1, 2),drop=FALSE], check.names=FALSE)
   matidx <- cbind(c(1, 1, 2), 1:3)
   expect_equal(dl[[matidx]], mat[matidx])
   mat[matidx] <- -999
@@ -53,6 +56,8 @@ test_that('[ subscripting works', {
   expect_is(dl[1,], 'DataLayer')
   expect_is(dl[,2:3], 'DataLayer')
   expect_equal(exprs(dl[1,]), dl[[1,,drop=FALSE]], check.attributes=FALSE)
+  expect_equal(exprs(dl[c(2, 2, 1, 2),]), dl[[c(2, 2, 1, 2),]], check.attributes=FALSE)
+  expect_equal(exprs(dl[,c(2, 2, 1, 2)]), dl[[,c(2, 2, 1, 2)]], check.attributes=FALSE)
 })
 
  spl <- split(dl, 1:2)
