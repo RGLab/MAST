@@ -353,7 +353,7 @@ checkArrayNames <- function(exprsArray, fData, cData){
     
     if(nrow(dl) != nrow(cData)) stop('`cData` must contain as many rows as `exprsArray`')
     if(ncol(dl) != nrow(fData)) stop('`fData` must contain as many columns as `exprsArray`')
-    
+
     if(!('primerid' %in% names(fData))){
         warning("`fData` has no primerid.  I'll make something up.")
         fData$primerid <- pidDefault
@@ -364,7 +364,7 @@ checkArrayNames <- function(exprsArray, fData, cData){
         warning("`cData` has no wellKey.  I'll make something up.")
         cData$wellKey <- wkDefault
     }
-    row.names(cData) <- wkDefault
+    row.names(cData) <- cData$wellKey
     
 
     if(is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])){

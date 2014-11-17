@@ -23,7 +23,7 @@ test_that('duplicate primers doesn\'t throw error', {
 
 context('Construction from matrix')
 test_that('Can recreate', {
-    tmp2 <- suppressMessages(FromMatrix('SingleCellAssay', exprs(tmp), cData(tmp), fData(tmp)))
+    tmp2 <- suppressMessages( FromMatrix('SingleCellAssay', exprs(tmp), cData(tmp), fData(tmp)))
     expect_is(tmp2, 'SingleCellAssay')
     expect_equivalent(tmp, tmp2)
     cd <- cData(tmp)
