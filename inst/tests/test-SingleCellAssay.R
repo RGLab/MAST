@@ -68,7 +68,7 @@ test_that('Cell data and feature data are correctly assigned on construction', {
     })
     vb.manip <- vb.manip[sample(nrow(vb.manip)),]
     fd.manip <- FluidigmAssay(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
-    expect_true(all(exprs(subset(fd.manip, Stim.Condition=='Stim(SEB)'))==2000))    
+    expect_true(all(exprs(subset(fd.manip, Stim.Condition=='Stim(SEB)'))==2000))
 })
 
 sc <- fd
@@ -150,11 +150,33 @@ test_that("Can subset complete data with integer indices",{
 })
 
   boolind<- c(FALSE, TRUE, FALSE)
-test_that("Can subset complete data with boolean indices",{
-  sub <- sc[[boolind]]
-  expect_that(sub, is_a("SingleCellAssay"))
-  expect_that(getwellKey(sub), equals(getwellKey(sc)[boolind]))
-})
+  intind <- c(1, 1, 3, 2, 4)
+
+testCompleteIndices <- function(ind){
+    sub <- sc[[ind]]
+    sub2 <- sc[ind,]
+    expect_that(sub, is_a("SingleCellAssay"))
+    expect_that(getwellKey(sub), equals(getwellKey(sc)[ind]))
+    expect_that(sub2, is_a("SingleCellAssay"))
+    expect_that(getwellKey(sub2), equals(getwellKey(sc)[ind]))
+
+}
+
+test_that("Can subset complete data with boolean indices",testCompleteIndices(boolind))
+test_that("Can subset complete data with integer indices",testCompleteIndices(intind))
+
+testPreserveCellAndFeature <- function(ind){
+    sub <- scd[[ind]]
+    expect_that(sub, is_a("SingleCellAssay"))
+    expect_that(getwellKey(sub), equals(getwellKey(scd)[ind]))
+    expect_equal(featureData(sub), featureData(scd))
+    expect_equivalent(cData(sub), cData(scd)[ind,])
+    ## expect_equivalent(cData(sub2), cData(sub)[ind,]) #check if the cData subset is the same as the subset of the cData
+}
+
+test_that('Boolean subsetting preserves cell and featuredata', testPreserveCellAndFeature(boolind))
+test_that('Integer subsetting preserves cell and featuredata', testPreserveCellAndFeature(intind))
+
 
 ## This makes more sense to me than to propagate new wells/features consisting entirely of NA
 test_that('NAs throw error when subsetting', {
@@ -187,15 +209,6 @@ test_that('can subset by character', {
   expect_error(sc[,'NOT_PRESENT'], 'NOT_PRESENT')
   expect_error(sc['NOT_PRESENT',], 'NOT_PRESENT')
   expect_equal(getwellKey(fd["Sub02 3 Stim(SEB) VbetaResponsive C02",]), "Sub02 3 Stim(SEB) VbetaResponsive C02")
-})
-
-test_that('Subsetting preserves cell and featuredata',{
-  sub <- scd[[boolind]]
-  expect_that(sub, is_a("SingleCellAssay"))
-  expect_that(getwellKey(sub), equals(getwellKey(scd)[boolind]))
-  expect_equal(featureData(sub), featureData(scd))
-  expect_equivalent(cData(sub), cData(scd)[boolind,])
-#expect_equivalent(cData(sub2), cData(sub)[boolind,]) #check if the cData subset is the same as the subset of the cData
 })
 
 exprComplete <- exprs(sc)
