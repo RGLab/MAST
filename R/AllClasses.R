@@ -381,12 +381,15 @@ checkArrayNames <- function(exprsArray, fData, cData){
 
 ##' Construct a SingleCellAssay from a matrix or array of expression
 ##'
-##' If 
+##' If the gene expression measurements are already in a rectangular form,
+##' then this function allows an easy way to construct a SingleCellAssay object while
+##' still doing some sanity checking of inputs.
 ##' @param class What class of object are we constructing?
 ##' @param exprsArray matrix or array, rows are cells, columns are genes
 ##' @param cData cellData data.frame or AnnotatedDataFrame
 ##' @param fData featureData data.frame or AnnotatedDataFrame
 ##' @return an object of class \code{class}
+##' @export
 ##' @examples
 ##' ncells <- 10
 ##' ngenes <- 5
@@ -395,6 +398,10 @@ checkArrayNames <- function(exprsArray, fData, cData){
 ##' mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
 ##' sca <- FromMatrix('SingleCellAssay', mat, cData, fData)
 ##' stopifnot(inherits(sca, 'SingleCellAssay'))
+##' ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
+##' cData$ncells <- 1
+##' fd <- FromMatrix('FluidigmAssay', mat, cData, fData)
+##' stopifnot(inherits(fd, 'FluidigmAssay'))
 FromMatrix <- function(class, exprsArray, cData, fData){
     can <- checkArrayNames(exprsArray, fData, cData)
     dl <- can$exprsArray

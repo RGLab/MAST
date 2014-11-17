@@ -18,6 +18,8 @@ FluidigmAssay(dataframe = NULL, idvars, primerid, measurement, ncells,
 
 \item{ncells}{A \code{character} specifying the column which gives the number of cells per well}
 
+\item{geneid}{An optional \code{character} alternate id for primers.}
+
 \item{id}{An identifier (eg, experiment name) for the resulting object}
 
 \item{cellvars}{Character vector naming columns containing additional cellular metadata}
