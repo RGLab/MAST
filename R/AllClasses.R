@@ -343,22 +343,29 @@ checkArrayNames <- function(exprsArray, fData, cData){
     if(length(dim(exprsArray))<3) dim(exprsArray) <- c(dim(exprsArray), 1)
     dn <- dimnames(exprsArray)[1:2]
     dl <- new('DataLayer', .Data=exprsArray)
-    if(missing(fData)) fData <- data.frame(primerid=sprintf('%0*d', ceiling(log10(ncol(dl)+1)), seq_len(ncol(dl))), stringsAsFactors=FALSE)
-    if(missing(cData)) cData <- data.frame(wellKey=sprintf('%0*d', ceiling(log10(nrow(dl)+1)), seq_len(nrow(dl))),  stringsAsFactors=FALSE)
+
+    pidDefault <- sprintf('p%0*d', ceiling(log10(ncol(dl)+1)), seq_len(ncol(dl)))
+    wkDefault <- sprintf('wk%0*d', ceiling(log10(nrow(dl)+1)), seq_len(nrow(dl)))
+    
+    if(missing(fData)) fData <- data.frame(primerid=pidDefault, stringsAsFactors=FALSE)
+    if(missing(cData)) cData <- data.frame(wellKey=wkDefault,  stringsAsFactors=FALSE)
     
     
     if(nrow(dl) != nrow(cData)) stop('`cData` must contain as many rows as `exprsArray`')
     if(ncol(dl) != nrow(fData)) stop('`fData` must contain as many columns as `exprsArray`')
     
     if(!('primerid' %in% names(fData))){
-        warning("`fData` has no primerid.  I'll use the row.names.")
-        fData$primerid <- row.names(fData)
+        warning("`fData` has no primerid.  I'll make something up.")
+        fData$primerid <- pidDefault
     }
+    row.names(fData) <- fData$primerid
 
     if(!('wellKey' %in% names(cData))){
-        warning("`cData` has no wellKey.  I'll use the row.names.")
-        cData$wellKey <- row.names(cData)
+        warning("`cData` has no wellKey.  I'll make something up.")
+        cData$wellKey <- wkDefault
     }
+    row.names(cData) <- wkDefault
+    
 
     if(is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])){
         message('No dimnames in `exprsArray`, assuming `fData` and `cData` are sorted according to `exprsArray`')
