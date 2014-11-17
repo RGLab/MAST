@@ -5,22 +5,23 @@
 ##' @param zlmfit class \code{ZlmFit}
 ##' @param R number of bootstrap replicates
 ##' @return array of bootstrapped coefficients
-##' @importFrom plyr raply
 ##' @importFrom parallel parSapply
 ##' @export
 pbootVcov1<-function (cl,zlmfit, R = 999)
 {
     sca <- zlmfit@sca
     N <- nrow(sca)
+    LMlike <- zlmfit@LMlike
     clusterEvalQ(cl,require(SingleCellAssay))
     clusterEvalQ(cl,require(abind))
     clusterExport(cl,"N",envir=environment())
-    clusterExport(cl,"zlmfit",envir=environment())
+    clusterExport(cl,"LMlike",envir=environment())
     clusterExport(cl,"sca",envir=environment())
     manyvc <- parSapply(cl,1:R, function(i,...){
         s <- sample(N, replace = TRUE)
         newsca <- sca[s, ]
-        zlm.SingleCellAssay(sca = newsca, LMlike = zlmfit@LMlike, onlyCoef=TRUE)
+        LMlike <- update(LMlike, design=cData(newsca))
+        zlm.SingleCellAssay(sca = newsca, LMlike = LMlike, onlyCoef=TRUE)
     })
   
     d<-dim(coef(zlmfit,"D"))
@@ -41,10 +42,12 @@ pbootVcov1<-function (cl,zlmfit, R = 999)
 bootVcov1 <- function(zlmfit, R=999){
     sca <- zlmfit@sca
     N <- nrow(sca)
+    LMlike <- zlmfit@LMlike
     manyvc <- raply(R, {
         s <- sample(N, replace=TRUE)
         newsca <- sca[s,]
-        zlm.SingleCellAssay(sca=newsca, LMlike=zlmfit@LMlike, onlyCoef=TRUE)
+        LMlike <- update(LMlike, design=cData(newsca))
+        zlm.SingleCellAssay(sca=newsca, LMlike=LMlike, onlyCoef=TRUE)
     })
 
    manyvc

@@ -59,8 +59,14 @@ setMethod('summary', signature=c(object='LMlike'), function(object){
     print(coef(object, 'C'))
 })
 
-setMethod('update', signature=c(object='LMlike'), function(object, formula., ...){
-    object@formula <- update.formula(object@formula, formula.)
+
+setMethod('update', signature=c(object='LMlike'), function(object, formula., design, ...){
+    if(!missing(formula.)){
+        object@formula <- update.formula(object@formula, formula.)
+    }
+    if(!missing(design)){
+        object@design <- design
+    }
     model.matrix(object) <- model.matrix(object@formula, object@design, ...)
     object@fitC <- object@fitD <- numeric(0)
     object@fitted <- c(C=FALSE, D=FALSE)
