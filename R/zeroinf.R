@@ -1,7 +1,6 @@
-methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglm2'),
-                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlike2'),
-                         implementsEbayes=c(TRUE, TRUE, FALSE, TRUE, TRUE))
-
+methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglm2', 'bayesglmW'),
+                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlike2','BayesGLMlikeWeight'),
+                         implementsEbayes=c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE))
 
 residualsHook <- function(fit){
     residuals(fit, which='Marginal')
@@ -96,11 +95,13 @@ summary.zlm <- function(out){
 ##' @param ebayesControl list with parameters for empirical bayes procedure.  See \link{ebayes}.
 ##' @param force Should we continue testing genes even after many errors have occurred?
 ##' @param hook a function called on the \code{fit} after each gene.
+##' @param parallel If TRUE and \code{option(mc.cores)>1} then multiple cores will be used in fitting.
 ##' @param LMlike if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.
-##' @param ... arguments passed to the S4 model object.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.
-##' @return either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
+##' @param onlyCoef If TRUE then only an array of model coefficients will be returned (probably only useful for bootstrapping).
+##' @param ... arguments passed to the S4 model object upon construction.  For example, \code{fitArgsC} and \code{fitArgsD}, or \code{coefPrior}.
+##' @return a object of class \code{ZlmFit} with methods to extract coefficients, etc.
 ##' @export
-##' @seealso ebayes, glmlike-class
+##' @seealso ebayes, glmlike-class, ZlmFit-class
 ##' @examples
 ##' \dontrun{
 ##' data(vbetaFA)

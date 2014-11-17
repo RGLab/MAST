@@ -24,12 +24,16 @@ zlm.SingleCellAssay(formula, sca, method = "glm", silent = TRUE,
 
 \item{hook}{a function called on the \code{fit} after each gene.}
 
+\item{parallel}{If TRUE and \code{option(mc.cores)>1} then multiple cores will be used in fitting.}
+
 \item{LMlike}{if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.}
 
-\item{...}{arguments passed to the S4 model object.  For example, \code{fitArgsC} and \code{fitArgsD}.  These are a list of arguments passed to the underlying modeling functions.}
+\item{onlyCoef}{If TRUE then only an array of model coefficients will be returned (probably only useful for bootstrapping).}
+
+\item{...}{arguments passed to the S4 model object upon construction.  For example, \code{fitArgsC} and \code{fitArgsD}, or \code{coefPrior}.}
 }
 \value{
-either an array of tests (one per primer), a list of such arrays (one per hypothesis),  or a list with components "models" and "fits".
+a object of class \code{ZlmFit} with methods to extract coefficients, etc.
 }
 \description{
 For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
@@ -57,6 +61,6 @@ waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 }
 }
 \seealso{
-ebayes, glmlike-class
+ebayes, glmlike-class, ZlmFit-class
 }
 
