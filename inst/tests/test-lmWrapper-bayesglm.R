@@ -1,3 +1,5 @@
+if(!suppressPackageStartupMessages(require(arm))) skip('Please install arm.')
+
 context('test prior construction')
 test_that('default prior', {
     dp <- defaultPrior(character(0))
@@ -50,3 +52,4 @@ objC <- glm(obj@response ~ Stim.Condition, data=obj@design, subset=obj@response>
 
 source('common-lmWrapper-tests.R', local=TRUE)
 source('common-lmWrapper-glm-tests.R', local=TRUE)
+try(detach('package:arm'), silent=TRUE)

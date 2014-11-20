@@ -33,22 +33,24 @@ test_that('zlm accepts expressions in formulae', {
   fd2 <- fd[, 1:20]
 
 if(require('lme4')){
+    skip_on_cran()
   m <- melt(fd2)
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
-test_that('zlm can run lmer', {
+  test_that('zlm can run lmer', {
     lrout2 <- suppressWarnings(zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, method='lmer'))
     expect_is(lrout2$cont, c('mer','lmerMod','glmerMod'))
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
-options(mc.cores=3)
-  test_that('zlm.SingleCellAssay can run lmer', {
-      z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer')
-      expect_is(z, 'ZlmFit')
-      expect_equal(nrow(z@df.null), 20)
-      expect_equal(dim(z@vcovC)[[3]], 20)
-  })
-    }
+    test_that('zlm.SingleCellAssay can run lmer', {
+        z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer')
+        expect_is(z, 'ZlmFit')
+        expect_equal(nrow(z@df.null), 20)
+        expect_equal(dim(z@vcovC)[[3]], 20)
+    })
+} else{
+    message('Install lme4')
+}
  
 
 test_that('zlm.SingleCellAssay works', {
@@ -66,11 +68,13 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   expect_that(zz, is_a('ZlmFit'))
   expect_false(zz@converged[1,'D'])
 
-        if(require(arm)){
+        if(suppressPackageStartupMessages(require(arm))){
             zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
             expect_that(zz3, is_a('ZlmFit'))
             expect_false(zz3@converged[1,'D'])
             detach('package:arm')
+        } else{
+            message('install arm')
         }
 
     w.resp <- which(cData(fd3)$Population=='VbetaResponsive')
@@ -97,6 +101,8 @@ test_that('Gradients match analytic', {
     for(i in nrow(pts))
         expect_equivalent(grad(fn, pts[i,]), Grad(pts[i,]))
 })
+} else{
+    message('Install numDeriv')
 }
 
 test_that('Empirical Bayes works', {
@@ -113,7 +119,7 @@ test_that('No holes in output', {
     ee <- exprs(fd2)
     ee[1,2] <- NA
     exprs(fd2) <- ee
-    zze <- zlm.SingleCellAssay(~Stim.Condition, fd2, parallel=FALSE)
+    zze <- zlm.SingleCellAssay(~Stim.Condition, fd2)
     expect_equal(nrow(zze@coefD), ncol(fd2))
     expect_true(all(is.na(zze@coefD[2,])))
     expect_equal(dim(zze@vcovD)[3], ncol(fd2))

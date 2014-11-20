@@ -86,7 +86,7 @@ test_that("Cellkey unique identifies a cell", {
 
 
 context('test construction helper funcs')
-library(data.table)
+suppressPackageStartupMessages(library(data.table))
   naframe <- data.table(var=rep(c(1, 2), each=3), na=c(NA, -9, NA, -9, NA, -9))
 test_that("uniqueModNA doesn't include NA", {
     setkeyv(naframe, colnames(naframe))

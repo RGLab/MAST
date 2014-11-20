@@ -3,7 +3,7 @@ fd2 <- fd[, 1:20]
 
 context("ZlmFit")
 test_that('zlm.SingleCellAssay works', {
-  zzinit <<- zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2)
+  zzinit <<- zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, parallel=FALSE)
   expect_that(zzinit, is_a('ZlmFit'))
 })
 

@@ -1,3 +1,4 @@
+skip_on_cran()
 getX <- function(groups, minsize, N){
     gid <- LETTERS[seq_len(groups)]
     fidMin <- rep(gid, each=minsize)
