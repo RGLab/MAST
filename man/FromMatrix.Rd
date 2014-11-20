@@ -26,8 +26,8 @@ still doing some sanity checking of inputs.
 ncells <- 10
 ngenes <- 5
 fData <- data.frame(primerid=LETTERS[1:ngenes])
-cData <- data.frame(wellKey=seq_len(ngenes))
-mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
+cData <- data.frame(wellKey=seq_len(ncells))
+mat <- matrix(rnorm(ncells*ngenes), ncol=ngenes)
 sca <- FromMatrix('SingleCellAssay', mat, cData, fData)
 stopifnot(inherits(sca, 'SingleCellAssay'))
 ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself

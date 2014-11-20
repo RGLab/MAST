@@ -337,7 +337,7 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
   new('SingleCellAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars)
 }
 
-checkArrayNames <- function(exprsArray, fData, cData){
+checkArrayNames <- function(exprsArray, cData, fData){
     if(!is.numeric(exprsArray)) stop('`exprsArray` must be numeric')
     if(length(dim(exprsArray))<2) stop('`exprsArray` must be matrix or array')
     if(length(dim(exprsArray))<3) dim(exprsArray) <- c(dim(exprsArray), 1)
@@ -357,12 +357,16 @@ checkArrayNames <- function(exprsArray, fData, cData){
     if(!('primerid' %in% names(fData))){
         warning("`fData` has no primerid.  I'll make something up.")
         fData$primerid <- pidDefault
+    } else{
+        fData$primerid <- as.character(fData$primerid)
     }
     row.names(fData) <- fData$primerid
 
     if(!('wellKey' %in% names(cData))){
         warning("`cData` has no wellKey.  I'll make something up.")
         cData$wellKey <- wkDefault
+    } else{
+        cData$wellKey <- as.character(cData$wellKey)
     }
     row.names(cData) <- cData$wellKey
     
@@ -376,7 +380,7 @@ checkArrayNames <- function(exprsArray, fData, cData){
     dimnames(dl) <- dn
     fData <- as(fData, 'AnnotatedDataFrame')
     cData <- as(cData, 'AnnotatedDataFrame')
-    list(exprsArray=dl, fData=fData, cData=cData)
+    list(exprsArray=dl, cData=cData, fData=fData)
 }
 
 ##' Construct a SingleCellAssay from a matrix or array of expression
@@ -394,8 +398,8 @@ checkArrayNames <- function(exprsArray, fData, cData){
 ##' ncells <- 10
 ##' ngenes <- 5
 ##' fData <- data.frame(primerid=LETTERS[1:ngenes])
-##' cData <- data.frame(wellKey=seq_len(ngenes))
-##' mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
+##' cData <- data.frame(wellKey=seq_len(ncells))
+##' mat <- matrix(rnorm(ncells*ngenes), ncol=ngenes)
 ##' sca <- FromMatrix('SingleCellAssay', mat, cData, fData)
 ##' stopifnot(inherits(sca, 'SingleCellAssay'))
 ##' ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
@@ -403,10 +407,10 @@ checkArrayNames <- function(exprsArray, fData, cData){
 ##' fd <- FromMatrix('FluidigmAssay', mat, cData, fData)
 ##' stopifnot(inherits(fd, 'FluidigmAssay'))
 FromMatrix <- function(class, exprsArray, cData, fData){
-    can <- checkArrayNames(exprsArray, fData, cData)
+    can <- checkArrayNames(exprsArray, cData, fData)
     dl <- can$exprsArray
-    fData <- can$fData
     cData <- can$cData
+    fData <- can$fData
     new(class, .Data=dl, cellData=cData, featureData=fData, sort=FALSE)
 }
 

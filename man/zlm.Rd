@@ -31,8 +31,8 @@ y <- (runif(500)<exp(logit.y)/(1+exp(logit.y)))*1
 y[y>0] <- mu.y[y>0]
 data$y <- y
 fit <- zlm(y ~ x+z, data)
-summary(fit$disc)
-summary(fit$cont)
+summary.glm(fit$disc)
+summary.glm(fit$cont)
 }
 \seealso{
 GLMlike, LMERlike
