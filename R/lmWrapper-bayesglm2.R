@@ -1,6 +1,5 @@
 ##' @include AllClasses.R
 ##' @include AllGenerics.R
-##' @import arm
 setMethod('fit', signature=c(object='BayesGLMlike2', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){

@@ -12,7 +12,7 @@
 ##' 
 ##' @export
 ##' @docType methods
-##' @rdname cData-methods
+##' @rdname cData-method
 ##' @keywords accessor
 setGeneric('cData', function(sc) standardGeneric('cData'))
 
@@ -154,6 +154,8 @@ NULL
 ##' @keywords transformation
 setGeneric('subset')
 
+##' @importMethodsFrom BiocGenerics combine
+NULL
 
 ##' Return a deep copy of an object
 ##'
@@ -220,7 +222,6 @@ setGeneric('lrTest', function(object, hypothesis) standardGeneric('lrTest'))
 ##' @seealso fit
 ##' @seealso lrTest
 ##' @seealso lht
-##' @importFrom car linearHypothesis.default
 setGeneric('waldTest', function(object, hypothesis) standardGeneric('waldTest'))
 
 ##' Variance-covariance matrix for zero inflated

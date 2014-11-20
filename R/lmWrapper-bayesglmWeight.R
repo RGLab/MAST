@@ -1,6 +1,6 @@
 ##' @include AllClasses.R
 ##' @include AllGenerics.R
-##' @import arm
+##' @importFrom arm bayesglm.fit
 setMethod('fit', signature=c(object='BayesGLMlikeWeight', response='missing'), function(object, response, silent=TRUE, nu=1, ...){
     prefit <- .fit(object)
     if(!prefit){
@@ -38,18 +38,5 @@ setMethod('fit', signature=c(object='BayesGLMlikeWeight', response='missing'), f
     object <- .dispersion(object)
     
     if(!silent & !all(object@fitted)) warning('At least one component failed to converge')
-    object
-})
-
-setReplaceMethod('model.matrix', 'BayesGLMlike', function(object, value){
-    object <- callNextMethod()
-    oldcols <- dimnames(object@coefPrior)[[3]]
-    newcols <- colnames(model.matrix(object))
-    keepcols <- intersect(oldcols, newcols)
-    if(length(object@coefPrior)>0){
-        newprior <- defaultPrior(newcols)
-        newprior[,,keepcols] <- object@coefPrior[,,keepcols]
-        object@coefPrior <- newprior
-    }
     object
 })

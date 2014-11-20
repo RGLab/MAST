@@ -13,13 +13,11 @@ Imports:
     gdata,
     reshape,
     lattice,
-    gplots,
     ggplot2,
     latticeExtra,
     plyr,
     stringr,
     abind,
-    car,
     methods,
     arm,
     parallel

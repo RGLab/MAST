@@ -3,16 +3,29 @@
 \name{cData}
 \alias{cData}
 \alias{cData<-,SingleCellAssay-method}
-\title{Replace cData}
+\title{cData}
 \usage{
+cData(sc)
+
 \S4method{cData}{SingleCellAssay}(sc) <- value
 }
 \arguments{
-\item{sc}{SingleCellAssay}
+\item{sc}{An object with \code{cellData}}
 
 \item{value}{AnnotatedDataFrame or data.frame}
+
+\item{sc}{SingleCellAssay}
+}
+\value{
+\code{data.frame}
 }
 \description{
+Accessor for cellData \code{data.frame}
+
 Replace cData
 }
+\details{
+Returns the \code{cellData} \code{data.frame}.
+}
+\keyword{accessor}
 

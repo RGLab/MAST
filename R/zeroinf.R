@@ -105,11 +105,11 @@ summary.zlm <- function(out){
 ##' @examples
 ##' \dontrun{
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc)
+##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1))
 ##' slotNames(zlmVbeta)
-##' coef(zlmVbeta, 'C')['IL13',]
+##' coef(zlmVbeta, 'D')['CD27',]
 ##' 
-##' vcov(zlmVbeta, 'C')['IL13',,]
+##' vcov(zlmVbeta, 'D')[,,'CD27']
 ##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 ##' }
 zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
@@ -158,7 +158,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     ## But not so large as to spend a bunch of time initializing/deinitializing
     listEE <- setNames(seq_len(ng), genes)
     ## in hopes of finding a typical gene
-    upperQgene <- which(rank(freq(sca), ties='random')==floor(.75*ng))
+    upperQgene <- which(rank(freq(sca), ties.method='random')==floor(.75*ng))
     obj <- fit(obj, ee[,upperQgene], silent=silent)
     ## if(onlyReturnCoefs){
     ##     print(show(obj))

@@ -1,5 +1,3 @@
-require(plyr)
-
 find_peaks<-function (x, y = NULL, num_peaks = NULL, adjust = 2, plot = FALSE,
                       ...)
 {
@@ -99,12 +97,18 @@ apply_by<-function(x,by_idx,fun,...){
 #'An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
 #'of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
 #'binned data.
-#'@param data_all \code{matrix} of counts
-#'@param cutbins \code{vector} of cut points.
-#'@param nbins \code{integer} number of bins when cutbins is not specified.
-#'@param bin_by \code{character} "median", "proportion", "mean"
-#'@param plot \code{logical}.
+#' @param data_all \code{matrix} of counts
+#' @param conditions ??
+#' @param cutbins \code{vector} of cut points.
+#' @param nbins \code{integer} number of bins when cutbins is not specified.
+#' @param bin_by \code{character} "median", "proportion", "mean"
+#' @param qt ??
+#' @param min_per_bin ??
+#' @param absolute_min ??
+#' @param log_base ??
+#' @param plot \code{logical}.
 #'@return \code{list} of thresholded counts, thresholds, and bins
+#'@importFrom plyr ldply
 #'@export
 thresholdSCRNACountMatrix <-function( data_all              ,
                                       conditions  = NULL    ,
@@ -117,7 +121,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       log_base    = 2
                                     )
 {
-    suppressPackageStartupMessages({require(plyr)})
+
     # when there is no condition to stratefy
     if( is.null( conditions ) ) conditions <- rep( 1, dim( data_all )[2] )
     comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> absolute_min ) == 0

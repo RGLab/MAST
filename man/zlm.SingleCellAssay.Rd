@@ -52,11 +52,11 @@ H0 model estimates the precisions using the intercept alone in each gene, while 
 \examples{
 \dontrun{
 data(vbetaFA)
-zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc)
+zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1))
 slotNames(zlmVbeta)
-coef(zlmVbeta, 'C')['IL13',]
+coef(zlmVbeta, 'D')['CD27',]
 
-vcov(zlmVbeta, 'C')['IL13',,]
+vcov(zlmVbeta, 'D')[,,'CD27']
 waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 }
 }
