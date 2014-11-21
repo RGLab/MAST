@@ -1,13 +1,3 @@
-## static constructor of summary components
-initSummaries <- function(genes, coefNames){
-    p <- length(coefNames)
-    ng <- length(genes)
-    coefD <- coefC <- matrix(NA, nrow=ng, ncol=p, dimnames=list(primerid=genes, coef=coefNames))
-    vcovC <- vcovD <- array(NA, dim=c(ng, p, p), dimnames=list(primerid=genes, coefNames, coefNames))
-converged <- dispersion <- df.resid <- df.null <- deviance <- matrix(rep(NA, ng*2), nrow=ng, ncol=2, dimnames=list(genes, c('C', 'D')))
-    as.environment(list(coefC=coefC, vcovC=vcovC, df.resid=df.resid, df.null=df.null, deviance=deviance, dispersion=dispersion, coefD=coefD, vcovD=vcov, converged=converged))
-}
-
 Glue <- function(...) abind(..., rev.along=0)
 
 collectSummaries <- function(listOfSummaries){
@@ -63,6 +53,7 @@ setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), funct
     .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
 })
 
+##'  @describeIn ZlmFit Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
     testIdx <- h@transformed
@@ -70,6 +61,7 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothes
     .lrtZlmFit(object, newMM, hypothesis@.Data)
 })
 
+##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which can be a call to \link{Hypothesis} or \link{CoefficientHypothesis} or a contrast matrix.
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
     ## original fit
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
@@ -93,6 +85,7 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(
 ##' (the degrees of freedom, Chisq statistic, and P value), and final dimension
 ##' being the value of these quantities on the
 ##' discrete, continuous and hurdle (combined) levels.
+##' 
 ##' @param object ZlmFit
 ##' @param hypothesis See Details
 ##' @return 3D array
@@ -115,37 +108,40 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='matrix'), functi
     tests
 })
 
+##' @describeIn ZlmFit Returns an array with Wald Tests on contrasts defined using \code{CoefficientHypothesis()}.
 setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
     cm <- .makeContrastMatrixFromCoefficientHypothesis(hypothesis,colnames(object@coefC))
     waldTest(object, cm)
 })
 
+##' @param hypothesis call to \link{Hypothesis} or \link{CoefficientHypothesis} or a matrix giving such contrasts.
+##' @describeIn ZlmFit Returns an array with Wald Tests on contrasts defined in \code{Hypothesis()}
 setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
     waldTest(object, h@transformed)
 })
 
-
 setMethod('show', signature=c(object='ZlmFit'), function(object){
     cat('Fitted zlm on ', ncol(object@sca), ' genes and ', nrow(object@sca), ' cells.\n Using ', class(object@LMlike), ' to fit.\n')
 })
 
+##' @describeIn ZlmFit Returns the matrix of coefficients for component \code{which}.
 setMethod('coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     if(which=='C') object@coefC else object@coefD
 })
 
+##' @describeIn ZlmFit Returns an array of variance/covariance matrices for component \code{which}.
+##' @export
 setMethod('vcov', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     if(which=='C') object@vcovC else object@vcovD
 })
 
-##' Standard error on coefficients
-##'
-##' @param object ZlmFit
+
 ##' @param which  character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned
-##' @return matrix of standard errors
 ##' @importMethodsFrom arm se.coef
+##' @describeIn ZlmFit Returns a matrix of standard error estimates for coefficients on component \code{which}.
 ##' @export
 setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
@@ -155,97 +151,45 @@ setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     se
 })
 
-.expit <- function(eta) exp(eta)/(1+exp(eta))
-## derivative of expit w/r/t beta
-.dexpit <- function(eta) exp(eta)/(1+exp(eta))^2
-
-## dot product of contrast and Coef
-safeContrastDP <- function(contrast, Coef) uncomplexify(complexifyNA(Coef) %*% t(contrast))
-
-## quadratic form of `contrast` about `vc` to give the covariance of the transformation defined by `contrast`
-safeContrastQF <- function(contrast, vc) uncomplexify(tcrossprod(contrast, complexifyNA(vc)) %*% t(contrast))
-
-##' Calculate log-fold changes from hurdle model components
-##'
-##' Using the delta method, estimate the log-fold change from a state given by a vector contrast0 and the state(s) given by contrast1 
-##' @param zlmfit ZlmFit output
-##' @param contrast0 vector of coefficients giving baseline contrast.  If missing, then the '(Intercept)' is used as baseline.
-##' @param contrast1 matrix of coefficients giving comparison contrasts.  If missing, then all non-(Intercept) coefficients are compared.
-##' @return list of matrices `logFC` and `varLogFC`, giving the log-fold-changes for each contrast (columns) and genes (rows) and the estimated sampling variance thereof
+##' @param object ZlmFit
+##' @param logFC If TRUE, calcualte log-fold changes, or output from a call to \code{getLogFC}.
+##' @param ... \code{waldTests} or \code{lrTests} on \code{ZlmFit} to be combined in the output
 ##' @export
-logFC <- function(zlmfit, contrast0, contrast1){
-    coname <- colnames(coef(zlmfit, 'D'))
-    genes <- rownames(coef(zlmfit, 'D'))
-    if(missing(contrast0)){
-        if(! '(Intercept)' %in% coname) stop("Assuming comparision to intercept, but I can't figure out what coefficient that corresponds to.  Provide `contrast0`.")
-        contrast0 <- t(as.matrix(setNames(rep(0, length(coname)), coname)))
-        contrast0[,'(Intercept)'] <- 1
-        rownames(contrast0) <- '(Intercept)'
-    }
-    if(missing(contrast1)){
-        contrast1 <- cbind(0, diag(1, nrow=length(coname)-1))
-        colnames(contrast1) <- coname
-        rownames(contrast1) <- setdiff(coname, rownames(contrast0))
-        ## add contrast0
-        contrast1 <- t(t(contrast1)+as.numeric(contrast0))
-    }
-    Contr <- rbind(contrast0, contrast1)
-    ## Get expectation and variance of contrasts, discrete and continuous
-    ## expectation of contrast.  genes x contrast
-    mu.cont <- safeContrastDP(Contr, coef(zlmfit, 'C'))
-    eta.disc <- safeContrastDP(Contr, coef(zlmfit, 'D'))
-    ## variance of contrasts.  genes x contrast x contrast
-    vcont <- aaply(vcov(zlmfit, 'C'), 3, safeContrastQF, contrast=Contr)
-    vcd <- vcov(zlmfit, 'D')
-    ## variance of contrast _times_ jacobian due to expit transformation
-    vdisc <- aaply(seq_along(genes), 1, function(i){
-        ## variance-covariance of discrete beta
-        vcc <- safeContrastQF(Contr, vcd[,,i])
-        ## gradient of expit function. it's actually a diagonal matrix.
-        jacobian <- .dexpit(eta.disc[i,])
-        ## same as pre and post multiplying by diagonal jacobian
-        vcc*tcrossprod(jacobian)
+##' @describeIn ZlmFit  Returns a \code{data.table} summary of fit (invisibly).
+setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=FALSE,  ...){
+    message('Combining coefficients and standard errors')
+    coefAndCI <- aaply( c(C='C', D='D'), 1, function(component){
+        ## coefficients for each gene
+        coefs <- coef(object, which=component)
+        ## standard errors for each gene
+        se2 <- se.coef(object, which=component)*2
+        names(dimnames(se2)) <- names(dimnames(coefs)) <- c('primerid', 'Coefficient')
+        ci.lo <- coefs-se2
+        ci.hi <- coefs+se2
+        z <- coefs/(se2/2)
+        abind(coef=coefs, z=z, ci.lo=ci.lo, ci.hi=ci.hi, rev.along=0, hier.names=TRUE)
     })
-    mu.disc <- .expit(eta.disc)
-
-    ## expectation of all contrasts, product of discrete and continuous
-    mu.prod <- mu.cont*mu.disc
+    names(dimnames(coefAndCI)) <- c('component', 'primerid', 'contrast', 'metric')
+    dt <- dcast.data.table(data.table(melt(coefAndCI)), primerid + component + contrast ~ metric)
+    setkey(dt, primerid, contrast)
+ 
+    if(is.logical(logFC) && logFC){
+        message("Calculating log-fold changes")
+        logFC <- getLogFC(zlmfit=object)
+    }
     
-    ## variance of the above
-    ## diagonals of covariance matrices
-    diagIdx <- as.matrix(expand.grid(i=seq_along(genes), j=seq_len(nrow(Contr))))
-    diagIdx <- cbind(diagIdx, k=diagIdx[,'j'])
-    dvcont <- matrix(vcont[diagIdx], nrow=length(genes))
-    dvdisc <- matrix(vdisc[diagIdx], nrow=length(genes))
-    ## debugging assertion
-    stopifnot(all.equal(dvcont[1,], diag(vcont[1,,]), check.attributes=FALSE))
-    stopifnot(all.equal(dvdisc[10,], diag(vdisc[10,,]), check.attributes=FALSE))
-    ## variance of product is product of variance + higher order terms 
-    v.prod <- dvcont*dvdisc + mu.cont^2*dvdisc + mu.disc^2*dvcont
+    if(!is.logical(logFC)){
+        lfc <- logFC
+        lfc[,se2:=2*sqrt(varLogFC)]
+        setnames(lfc, 'logFC', 'coef')
+        lfc <- lfc[,c('component', 'ci.lo', 'ci.hi', 'varLogFC', 'se2'):=list('logFC', coef-se2, coef+se2, NULL, NULL)]
+        dt <- rbind(dt, lfc, fill=TRUE)
+    }
     
-    ## covariance between contrast1 and contrast0
-    covc1c0Idx <- diagIdx[-(seq_along(genes)),] #drop j=k=1 indices, ie, 1,1 entry of covariances
-    covc1c0Idx[,'k'] <- 1
-    c1c0cont <- matrix(vcont[covc1c0Idx], nrow=length(genes))
-    c1c0disc <- matrix(vdisc[covc1c0Idx], nrow=length(genes))
-    ## debugging assertion
-    stopifnot(all.equal(c1c0cont[1,], vcont[1,2:nrow(Contr),1], check.attributes=FALSE))
-    stopifnot(all.equal(c1c0disc[10,], vdisc[10,2:nrow(Contr),1], check.attributes=FALSE))
-    cov.prod <- c1c0cont*c1c0disc+genewiseMult(mu.cont[,1], mu.cont[,-1,drop=FALSE])*c1c0disc + genewiseMult(mu.disc[,1], mu.disc[,-1,drop=FALSE])*c1c0cont
-
-    ## _differences_ between expectation of baseline contrast and all others
-    ## baseline is in row 1
-    lfc <-mu.prod[,-1,drop=FALSE]-mu.prod[,1,drop=TRUE]
-    ## var of difference is sum of variances minus 2*covariance
-    vlfc <- v.prod[,-1,drop=FALSE]+v.prod[,1,drop=TRUE]-2*cov.prod
-    dimnames(lfc) <- dimnames(vlfc) <- list(primerid=genes, contrast=rownames(contrast1))
-    list(logFC=lfc,varLogFC=vlfc)
-}
-
-## attempting to be careful with a sneaky use of recycling of rowvec
-genewiseMult <- function(rowvec, rowMajorMatrix){
-    res <- rowvec*rowMajorMatrix
-    ## debugging assertion
-    stopifnot(all.equal(res[3,], rowvec[3]*rowMajorMatrix[3,]))
-    res
-}
+    vargs <- list(...)
+    if(length(vargs)>0){
+        browser()
+        MTests <- do.call(melt, vargs)
+    }
+    return(dt)
+})
