@@ -309,6 +309,26 @@ setClass('ConstrainedGLMlike', contains='LMlike')
 setClass('Hypothesis', contains='character', slots=list(transformed='matrix'))
 setClass('CoefficientHypothesis', contains='character', slots=list(transformed='numeric'))
 
+##' An S4 class to hold the output of a call to zlm
+##'
+##' This holds output from a call to zlm.SingleCellAssay.  Many methods are defined to operate on it.  See below.
+##' @slot coefC
+##' @slot coefD matrices of coefficients
+##' @slot vcovC
+##' @slot vcovD array of variance/covariance matrices for coefficients
+##' @slot LMlike the LmWrapper object used
+##' @slot sca the \code{SingleCellAssay} object used
+##' @slot deviance
+##' @slot loglik
+##' @slot df.null
+##' @slot df.resid
+##' @slot dispersion
+##' @slot dispersionNoShrink
+##' @slot priorDOF
+##' @slot priorVar
+##' @slot converged output that may optionally be set by the underlying modeling function
+##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
+##' @seealso zlm.SingleCellAssay
 setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellAssay', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
@@ -425,7 +445,9 @@ FromMatrix <- function(class, exprsArray, cData, fData){
 ##' data(vbeta)
 ##' colnames(vbeta)
 ##' vbeta <- computeEtFromCt(vbeta)
-##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='Et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene',
+##' measurement='Et', ncells='Number.of.Cells', geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
+##' phenovars=c('Stim.Condition','Time'), id='vbeta all')
 ##' show(vbeta.fa)
 ##' nrow(vbeta.fa)
 ##' ncol(vbeta.fa)

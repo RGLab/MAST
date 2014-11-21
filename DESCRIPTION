@@ -1,7 +1,7 @@
 Package: SingleCellAssay
 Type: Package
 Title: Core data structures for single-cell assays
-Version: 0.911
+Version: 0.912
 Date: 2014-11-20
 Author: Andrew McDavid <amcdavid@fhcrc.org>, Greg Finak <gfinak@fhcrc.org>
 Maintainer: Greg Finak <gfinak@fhcrc.org>
@@ -49,6 +49,7 @@ Collate:
     'SingleCellAssay-methods.R'
     'UtilityFunctions.R'
     'ZlmFit-bootstrap.R'
+    'ZlmFit-logFC.R'
     'ZlmFit.R'
     'ebayes-helpers.R'
     'filterEval.R'

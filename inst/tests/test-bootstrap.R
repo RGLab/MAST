@@ -43,13 +43,14 @@ test_that("Only return coef works", {
 
 test_that("Bootstrap", {
     zf <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
-    boot <- bootVcov1(zf, R=10)
+    boot <- bootVcov1(zf, R=3)
     expect_is(boot, 'array')
     ## rep, genes, coef, comp
-    expect_equal(dim(boot),c(10, dim(coef(zf, 'D')), 2))
+    expect_equal(dim(boot),c(3, dim(coef(zf, 'D')), 2))
 })
 
 context("Bootstrap consistency")
+set.seed(1234)
 N <- 200
 m <- 20
 middle <- floor(seq(from=m/3, to=2*m/3))

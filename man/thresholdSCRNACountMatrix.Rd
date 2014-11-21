@@ -10,11 +10,21 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 \arguments{
 \item{data_all}{\code{matrix} of counts}
 
+\item{conditions}{??}
+
 \item{cutbins}{\code{vector} of cut points.}
 
 \item{nbins}{\code{integer} number of bins when cutbins is not specified.}
 
 \item{bin_by}{\code{character} "median", "proportion", "mean"}
+
+\item{qt}{??}
+
+\item{min_per_bin}{??}
+
+\item{absolute_min}{??}
+
+\item{log_base}{??}
 
 \item{plot}{\code{logical}.}
 }

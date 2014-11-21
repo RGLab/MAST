@@ -39,7 +39,7 @@ melt.SingleCellAssay<-function(data,...){
     cData(data)[rep(seq_len(nrow(data)), ncol(data)),,drop=FALSE],
     fData(data)[rep(seq_len(ncol(data)), each=nrow(data)),,drop=FALSE],
     value=as.vector(exprs(data)))
-  rn <-  c('value'=dimnames(data)[[3]][SingleCellAssay:::layer(data)])
+  rn <-  c('value'=dimnames(data)[[3]][layer(data)])
   if(data@keep.names) return(rename(m,rn))
   return(m)
 }

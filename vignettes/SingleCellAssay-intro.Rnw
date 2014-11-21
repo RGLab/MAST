@@ -203,32 +203,24 @@ Now, for each gene, we can regress on \texttt{Et} the factors \texttt{Population
 
 In each gene, we'll fit a Hurdle model with a separate intercept for each population and subject.
 A an S4 object of class ``ZlmFit'' is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
-<<zlmExample, warning=FALSE, message=FALSE, fig.width=4, fig.height=6>>=
+<<zlmExample, warning=FALSE, message=FALSE, fig.width=6, fig.height=6>>=
 library(ggplot2)
 library(reshape)
 library(abind)
 zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1, method='glm',
                                   ebayes=TRUE)
 show(zlm.output)
-## returns an array of both discrete and continuous
-coefAndCI <- aaply( c(C='C', D='D'), 1, function(component){
-    ## coefficients for each gene
-    coefs <- coef(zlm.output, which=component)
-    ## standard errors for each gene
-    se2 <- se.coef(zlm.output, which=component)*2
-    ci.lo <- coefs-se2
-    ci.hi <- coefs+se2
-    abind(coef=coefs, ci.lo=ci.lo, ci.hi=ci.hi, rev.along=0)
-}, .inform=TRUE)
 
-mCoefAndCI <- setNames(melt(coefAndCI), c('component', 'gene', 'Coef', 'variable', 'value'))
-CoefAndCI <- cast(mCoefAndCI, ... ~ variable, subset=Coef != '(Intercept)')
-ggplot(CoefAndCI, aes(x=Coef, y=coef, ymin=ci.lo, ymax=ci.hi, col=component))+
-    geom_pointrange(position=position_dodge(width=.5)) +facet_wrap(~gene) +
+## returns a data.table with a summary of the fit
+coefAndCI <- summary(zlm.output, logFC=FALSE)
+coefAndCI <- coefAndCI[contrast != '(Intercept)',]
+coefAndCI[,contrast:=abbreviate(contrast)]
+ggplot(coefAndCI, aes(x=contrast, y=coef, ymin=ci.lo, ymax=ci.hi, col=component))+
+    geom_pointrange(position=position_dodge(width=.5)) +facet_wrap(~primerid) +
     theme(axis.text.x=element_text(angle=45, hjust=1)) + coord_cartesian(ylim=c(-3, 3))
 
 @
-Try \texttt{showMethods(classes='ZlmFit')} to see a full list of methods.
+Try \verb|?ZlmFit-class| or \verb|showMethods(classes='ZlmFit')| to see a full list of methods.
 
 The combined test for differences in proportion expression/average expression is found by calling a likelihood ratio test on the fitted object.
 An array of genes, metrics and test types is returned.

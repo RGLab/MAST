@@ -112,7 +112,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     
     n_randomize <- control$n_randomize
     stopifnot(inherits(hypothesis, 'CoefficientHypothesis'))
-    hypothesis <- SingleCellAssay:::generateHypothesis(hypothesis, colnames(zFit@coefD))
+    hypothesis <- generateHypothesis(hypothesis, colnames(zFit@coefD))
     testIdx <- hypothesis@transformed
     
     ## put bootstrap replicates last
