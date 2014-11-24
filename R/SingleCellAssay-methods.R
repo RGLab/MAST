@@ -270,7 +270,7 @@ uniqueModNA <- function(df, exclude){
 setGeneric("melt",function(data,...){
 standardGeneric("melt")
 #  UseMethod(generic="melt",data)
- },useAsDefault=reshape::melt.default)
+ },useAsDefault=reshape::melt)
 
 
 
