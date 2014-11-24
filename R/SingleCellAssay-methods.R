@@ -27,6 +27,14 @@ NULL
 ##' @aliases melt
 ##' @keywords transformation
 ##' @importFrom reshape melt
+##' @importFrom reshape melt.default
+##' @importFrom reshape melt.array
+##' @importFrom reshape melt.cast_df
+##' @importFrom reshape melt.list
+##' @importFrom reshape melt.matrix
+##' @importFrom reshape melt.cast_matrix
+##' @importFrom reshape melt.data.frame
+##' @importFrom reshape melt.table
 ##' @export
 ## melt.SingleCellAssay<-function(data,...){
 ##   m <- melt.data.frame(cbind(cData(data), exprs(data)), id.vars=names(cData(data)), variable_name='primerid')
@@ -259,10 +267,10 @@ uniqueModNA <- function(df, exclude){
     u
 }
 
-#setGeneric("melt",function(data,...){
-#standardGeneric("melt")
+setGeneric("melt",function(data,...){
+standardGeneric("melt")
 #  UseMethod(generic="melt",data)
-#  },useAsDefault=reshape::melt)
+ },useAsDefault=reshape::melt.default)
 
 
 
