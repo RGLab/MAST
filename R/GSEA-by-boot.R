@@ -13,7 +13,6 @@
 ##    This would eliminate the need to bootstrap
 ## 2. Standardize bootstrap coefficients by asymptotic gene covariance
 ##    This might make the bootstrap more efficient 
-## 3. Combine 
 
 ## Validation ##
 ################
@@ -91,6 +90,7 @@ Drop <- function(x, d){
 ##' @import abind
 ##' @importFrom plyr aaply
 ##' @export
+##' @seealso calcZ
 ##' @examples
 ##' data(vbetaFA)
 ##' vb1 = subset(vbetaFA, ncells==1)
@@ -103,7 +103,7 @@ Drop <- function(x, d){
 ##' calcZ(gsea)
 ##' stopifnot(all.equal(gsea['A',,,],gsea['D',,,]))
 ##' stopifnot(all.equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
-gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=1000)){
+gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=Inf)){
 
     ## Basic idea is to average statistics (based on coefficients defined in Zfit) and find the variance of that average using the bootstraps
     ## However, don't want to naively find the covariance across all genes then keep summing up different terms in it, because that will have quadratic complexity
@@ -220,17 +220,28 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
         TT <- getStats(Tidx)
         tests[sidx,,,] <- scaleStats(TT, OO, NN)
     }
-    tests
+    structure(tests, bootR=dimb['rep'])
 }
 
-##' Get Z statistics and P values after running gseaAfterBoot
+##' Get Z or T statistics and P values after running gseaAfterBoot
 ##'
 ##' @param tests output from \code{gseaAfterBoot}
-##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat or two sided 'P' value that P(z>|Z|))
+##' @param testType either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.
+##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|))
 ##' @export
-calcZ <- function(tests){
+##' @seealso gseaAfterBoot
+calcZ <- function(tests, testType='t'){
+    testType <- match.arg(testType, c('t', 'normal'))
     Z <- (tests[,,'stat','test']-tests[,,'stat','null'])/sqrt(tests[,,'var','test']+tests[,,'var','null'])
-    P <- pnorm(abs(Z), lower.tail=FALSE)
+    
+    if(testType=='t'){
+        bootR <- attr(tests, 'bootR')
+        ## satterthwaite approximation to degrees of freedom
+        dof <- (bootR-1)*(tests[,,'var','test']+tests[,,'var','null'])^2/(tests[,,'var','test']^2+tests[,,'var','null']^2) 
+    } else if(testType=='normal'){
+        dof <- Inf
+    }
+    P <- pt(abs(Z), df=dof, lower.tail=FALSE)*2
     ab <- abind(Z=Z, P=P, rev.along=0)
     names(dimnames(ab)) <- c('set', 'comp', 'metric')
     ab
