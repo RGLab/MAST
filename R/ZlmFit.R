@@ -152,11 +152,11 @@ setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
 })
 
 ##' @param object ZlmFit
-##' @param logFC If TRUE, calcualte log-fold changes, or output from a call to \code{getLogFC}.
-##' @param ... \code{waldTests} or \code{lrTests} on \code{ZlmFit} to be combined in the output
+##' @param logFC If TRUE, calculate log-fold changes, or output from a call to \code{getLogFC}.
+##' @param doLRT if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.
 ##' @export
 ##' @describeIn ZlmFit  Returns a \code{data.table} summary of fit (invisibly).
-setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=FALSE,  ...){
+setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE){
     message('Combining coefficients and standard errors')
     coefAndCI <- aaply( c(C='C', D='D'), 1, function(component){
         ## coefficients for each gene
@@ -170,7 +170,7 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=FALSE,
         abind(coef=coefs, z=z, ci.lo=ci.lo, ci.hi=ci.hi, rev.along=0, hier.names=TRUE)
     })
     names(dimnames(coefAndCI)) <- c('component', 'primerid', 'contrast', 'metric')
-    dt <- dcast.data.table(data.table(melt(coefAndCI)), primerid + component + contrast ~ metric)
+    dt <- dcast.data.table(data.table(melt(coefAndCI, as.is=TRUE)), primerid + component + contrast ~ metric)
     setkey(dt, primerid, contrast)
  
     if(is.logical(logFC) && logFC){
@@ -185,11 +185,55 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=FALSE,
         lfc <- lfc[,c('component', 'ci.lo', 'ci.hi', 'varLogFC', 'se2'):=list('logFC', coef-se2, coef+se2, NULL, NULL)]
         dt <- rbind(dt, lfc, fill=TRUE)
     }
-    
-    vargs <- list(...)
-    if(length(vargs)>0){
-        browser()
-        MTests <- do.call(melt, vargs)
+    setkey(dt, contrast, z)
+
+    if(is.logical(doLRT) && doLRT){
+        doLRT <- setdiff(colnames(coef(object, 'D')), '(Intercept)')
     }
-    return(dt)
+    if(!is.logical(doLRT)){
+        message('Calculating likelihood ratio tests')
+        llrt <- lapply(doLRT, function(x) lrTest(object, CoefficientHypothesis(x))[,,'Pr(>Chisq)'])
+        names(llrt) <-  doLRT
+        llrt <- data.table(melt(llrt))
+        setnames(llrt, c('test.type', 'L1', 'value'), c('component', 'contrast', 'Pr(>Chisq)'))
+        llrt[,component := c(disc='D', comp='C', hurdle='H')[component]]
+        setkey(llrt, primerid, component, contrast)
+        setkey(dt, primerid, component, contrast)
+        dt <- llrt[dt,,nomatch=NA]
+    }
+    setattr(dt, 'class', c('summaryZlmFit', class(dt)))
+    dt
 })
+
+print.summaryZlmFit <- function(dt, n=2, by='logFC', digits=1, ...){
+    class(dt) <- class(dt)[-1]
+    ns <- seq_len(n)
+    dt <- dt[contrast!='(Intercept)',]
+    by <- match.arg(by, c('logFC', 'D', 'C'))
+    if(length(intersect(dt$component, 'logFC'))==0 & by=='logFC'){
+        warning('Log fold change not calculated, selecting discrete', call.=FALSE)
+        by <- 'D'
+    }
+    dt[,metric:=ifelse(is.na(z), 0, -abs(z))]
+     describe <- switch(by, logFC='log fold change Z-score', D='Wald Z-scores on discrete', C='Wald Z-scores tests on continuous')
+    
+    ## if('Pr(>Chisq)' %in% names(dt)){
+    ##     keyv <- 'contrast'
+    ##     dt[,metric:=`Pr(>Chisq)`]
+    ##     jj <- quote(.(primerid=primerid[ns], value=`Pr(>Chisq)`[ns]))
+    ##     sel <- quote(component=='H')
+    ## } else
+    dt <- dt[component==by,]
+    setkey(dt, contrast, metric)
+    pid <- dt[,.(primerid=primerid[ns]),by=contrast]
+    setkey(dt, primerid)
+    setkey(pid, primerid, contrast)
+    dts <- dt[unique(pid[,.(primerid)]), .(contrast=contrast, primerid=primerid, z=z)]
+    setkey(dts, primerid, contrast)
+    dts[pid,value:=sprintf('%6.1f*',  z)]
+    dts[!pid,value:=sprintf('%6.1f ',  z)]
+    cdts <- as.data.frame(dcast.data.table(dts, primerid ~ contrast))
+    cat('Fitted zlm with top', n, 'genes per contrast:\n')
+    cat('(', describe, ')\n')
+    print(cdts, right=FALSE, row.names=FALSE)
+}

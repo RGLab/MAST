@@ -39,7 +39,7 @@ test_that('Three flavors of wald on ZlmFit', {
 
 context('Log fold change calcs')
 test_that('log fold changes match zero-inflated regression', {
-    zzsimple <<- zlm.SingleCellAssay( ~ Population, fd2)
+    zzsimple <<- zlm.SingleCellAssay( ~ Stim.Condition, fd2)
     lfc <- logFC(zzsimple)
     expect_equal(nrow(lfc$logFC), ncol(zzsimple@sca))
     expect_true(all(lfc$varLogFC>0, na.rm=TRUE))
@@ -51,4 +51,18 @@ test_that('log fold changes match zero-inflated regression', {
     ## drop intercept terms
     vzlfcNoIntercept <- vzlfc[-seq(1, to=length(vzlfc), by=nrow(coef(zlfc)))]
     expect_more_than(cor(as.numeric(t(lfc$var)), vzlfcNoIntercept, use='pairwise'), .85)    
+})
+
+context('summary')
+test_that('summary works', {
+    zzs <- summary(zzsimple, logFC=TRUE, doLRT=FALSE)
+    expect_is(zzs, 'data.table')
+    expect_equivalent(unique(as.character(zzs$contrast)), c('(Intercept)', 'Stim.ConditionUnstim'))
+    expect_equivalent(unique(as.character(zzs$component)), c('D', 'C', 'logFC'))
+    expect_equal(nrow(zzs), ncol(fd2)*(2*3-1)) #primerid, contrast (no intercept for logFC), component
+    expect_output(print(zzs, n=2), c("Fitted zlm with top 2 genes per contrast:
+( log fold change Z-score )
+ primerid Stim.ConditionUnstim
+ CCR7        7.3*             
+ CD27        5.2*"), fixed=TRUE)
 })
