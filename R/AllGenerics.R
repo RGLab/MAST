@@ -266,6 +266,13 @@ setGeneric('model.matrix<-', function(object, value) standardGeneric('model.matr
 ##' @export
 setGeneric('summarize', function(object, ...) standardGeneric('summarize'))
 
+##' Return a human-readable summary
+##'
+##' @param object some object to be summarized
+##' @return a summary, possibly printed
+##' @export
+setGeneric('summary', function(object, ...) standardGeneric('summary'))
+
 
 
 
