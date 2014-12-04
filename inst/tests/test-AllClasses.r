@@ -28,6 +28,15 @@ test_that('Can recreate', {
     expect_equivalent(tmp, tmp2)
     cd <- cData(tmp)
     cd$ncells <- 1
-    expect_message(tmp3 <- FromMatrix('FluidigmAssay', exprs(tmp), cd), 'dimnames')
+    expect_that(tmp3 <- FromMatrix('FluidigmAssay', exprs(tmp), cd), not(shows_message('dimnames')))
     expect_is(tmp3, 'FluidigmAssay')
+})
+
+test_that('Preserve dimnames in exprsArray', {
+    expect_that(tmp2 <- FromMatrix('SingleCellAssay', exprs(tmp)), not(shows_message()))
+    etmp <- exprs(tmp)
+    rownames(etmp) <- NULL
+    tmp3 <- FromMatrix('SingleCellAssay', etmp)
+    expect_equal(getwellKey(tmp3), c('wk1', 'wk2', 'wk3'))
+    expect_equal(fData(tmp3)$primerid, 'A')
 })

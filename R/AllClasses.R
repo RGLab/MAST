@@ -359,12 +359,15 @@ SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=N
 checkArrayNames <- function(exprsArray, cData, fData){
     if(!is.numeric(exprsArray)) stop('`exprsArray` must be numeric')
     if(length(dim(exprsArray))<2) stop('`exprsArray` must be matrix or array')
-    if(length(dim(exprsArray))<3) dim(exprsArray) <- c(dim(exprsArray), 1)
     dn <- dimnames(exprsArray)[1:2]
+    noDimnames <- is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])
+    if(length(dim(exprsArray))<3){
+        dim(exprsArray) <- c(dim(exprsArray), 1)
+    }
     dl <- new('DataLayer', .Data=exprsArray)
 
-    pidDefault <- sprintf('p%0*d', ceiling(log10(ncol(dl)+1)), seq_len(ncol(dl)))
-    wkDefault <- sprintf('wk%0*d', ceiling(log10(nrow(dl)+1)), seq_len(nrow(dl)))
+    pidDefault <- if(is.null(dn[[2]])) sprintf('p%0*d', ceiling(log10(ncol(dl)+1)), seq_len(ncol(dl))) else dn[[2]]
+    wkDefault <- if(is.null(dn[[1]])) sprintf('wk%0*d', ceiling(log10(nrow(dl)+1)), seq_len(nrow(dl))) else dn[[1]]
     
     if(missing(fData)) fData <- data.frame(primerid=pidDefault, stringsAsFactors=FALSE)
     if(missing(cData)) cData <- data.frame(wellKey=wkDefault,  stringsAsFactors=FALSE)
@@ -390,10 +393,11 @@ checkArrayNames <- function(exprsArray, cData, fData){
     row.names(cData) <- cData$wellKey
     
 
-    if(is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])){
+    if(noDimnames){
         message('No dimnames in `exprsArray`, assuming `fData` and `cData` are sorted according to `exprsArray`')
-        dn <- list(wellkey=row.names(cData), primerid=row.names(fData), measure='et')            
+        dn <- list(wellkey=row.names(cData), primerid=row.names(fData), measure='et')  
     }
+    
     if(!isTRUE(all.equal(dn[[1]], cData$wellKey))) stop('Order of `exprsArray` and `cData` doesn\'t match')
     if(!isTRUE(all.equal(dn[[2]], fData$primerid))) stop('Order of `exprsArray` and `fData` doesn\'t match')
     dimnames(dl) <- dn
