@@ -102,12 +102,11 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param cutbins \code{vector} of cut points.
 #' @param nbins \code{integer} number of bins when cutbins is not specified.
 #' @param bin_by \code{character} "median", "proportion", "mean"
-#' @param qt ??
+#' @param qt when \code{bin_by} is "quantile", what quantile should be used to form the bins
 #' @param min_per_bin ??
-#' @param absolute_min ??
-#' @param log_base ??
-#' @param plot \code{logical}.
-#'@return \code{list} of thresholded counts, thresholds, and bins
+#' @param absolute_min \code{numeric} giving an initial threshold below which everything is assumed to be noise
+#' @param plot \code{logical}. ??
+#'@return \code{list} of thresholded counts (on natural scale), thresholds, and bins
 #'@importFrom plyr ldply
 #'@export
 thresholdSCRNACountMatrix <-function( data_all              ,
@@ -117,12 +116,13 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       bin_by      = "median",
                                       qt          = 0.975,
                                       min_per_bin = 50      ,
-                                      absolute_min= 1.0     ,
-                                      log_base    = 2
+                                      absolute_min= 1.0
                                     )
 {
 
-    # when there is no condition to stratefy
+                                        # when there is no condition to stratefy
+    ## I see no reason by this needs to be an argument
+    log_base <- 2
     if( is.null( conditions ) ) conditions <- rep( 1, dim( data_all )[2] )
     comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> absolute_min ) == 0
     data          <- data_all[!comp_zero_idx,]
