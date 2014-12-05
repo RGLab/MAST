@@ -122,7 +122,7 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), fu
 })
 
 setMethod('show', signature=c(object='ZlmFit'), function(object){
-    cat('Fitted zlm on ', ncol(object@sca), ' genes and ', nrow(object@sca), ' cells.\n Using ', class(object@LMlike), ' to fit.\n')
+    cat('Fitted zlm on', ncol(object@sca), 'genes and', nrow(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
 })
 
 ##' @describeIn ZlmFit Returns the matrix of coefficients for component \code{which}.
@@ -156,7 +156,7 @@ setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
 ##' @param doLRT if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.
 ##' @export
 ##' @describeIn ZlmFit  Returns a \code{data.table} summary of fit (invisibly).
-setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE){
+setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE, ...){
     message('Combining coefficients and standard errors')
     coefAndCI <- aaply( c(C='C', D='D'), 1, function(component){
         ## coefficients for each gene
@@ -199,16 +199,25 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
         llrt[,component := c(disc='D', comp='C', hurdle='H')[component]]
         setkey(llrt, primerid, component, contrast)
         setkey(dt, primerid, component, contrast)
-        dt <- llrt[dt,,nomatch=NA]
+        dt <- merge(llrt, dt, all.x=TRUE, all.y=TRUE)
+        dt[is.na(component), component :='H']
     }
     setattr(dt, 'class', c('summaryZlmFit', class(dt)))
     dt
 })
 
-print.summaryZlmFit <- function(dt, n=2, by='logFC', digits=1, ...){
-    class(dt) <- class(dt)[-1]
+##' Print summary of a ZlmFit
+##'
+##' Shows the top `n` genes by z score on `by`
+##' @param x output from summary(ZlmFit)
+##' @param n number of genes to show
+##' @param by one of 'C' , 'D' or 'logFC' for continuous, discrete and log fold change z-scores for each contrast
+##' @return data.frame of z scores, invisibly
+##' @export
+print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
+    class(x) <- class(x)[-1]
     ns <- seq_len(n)
-    dt <- dt[contrast!='(Intercept)',]
+    dt <- x[contrast!='(Intercept)',]
     by <- match.arg(by, c('logFC', 'D', 'C'))
     if(length(intersect(dt$component, 'logFC'))==0 & by=='logFC'){
         warning('Log fold change not calculated, selecting discrete', call.=FALSE)
@@ -236,4 +245,5 @@ print.summaryZlmFit <- function(dt, n=2, by='logFC', digits=1, ...){
     cat('Fitted zlm with top', n, 'genes per contrast:\n')
     cat('(', describe, ')\n')
     print(cdts, right=FALSE, row.names=FALSE)
+    invisible(cdts)
 }

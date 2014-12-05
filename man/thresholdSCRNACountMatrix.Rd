@@ -5,7 +5,7 @@
 \usage{
 thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
   nbins = 10, bin_by = "median", qt = 0.975, min_per_bin = 50,
-  absolute_min = 1, log_base = 2)
+  absolute_min = 1)
 }
 \arguments{
 \item{data_all}{\code{matrix} of counts}
@@ -18,18 +18,16 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 
 \item{bin_by}{\code{character} "median", "proportion", "mean"}
 
-\item{qt}{??}
+\item{qt}{when \code{bin_by} is "quantile", what quantile should be used to form the bins}
 
 \item{min_per_bin}{??}
 
-\item{absolute_min}{??}
+\item{absolute_min}{\code{numeric} giving an initial threshold below which everything is assumed to be noise}
 
-\item{log_base}{??}
-
-\item{plot}{\code{logical}.}
+\item{plot}{\code{logical}. ??}
 }
 \value{
-\code{list} of thresholded counts, thresholds, and bins
+\code{list} of thresholded counts (on natural scale), thresholds, and bins
 }
 \description{
 An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins

@@ -275,8 +275,6 @@ setGeneric('summary', function(object, ...) standardGeneric('summary'))
 
 
 
-
-
 ###############################
 ## old style LRT
 ###############################

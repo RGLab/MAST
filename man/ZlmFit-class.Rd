@@ -26,7 +26,7 @@
 
 \S4method{se.coef}{ZlmFit}(object, which, ...)
 
-\S4method{summary}{ZlmFit}(object, logFC = FALSE, doLRT = FALSE)
+\S4method{summary}{ZlmFit}(object, logFC = TRUE, doLRT = FALSE, ...)
 }
 \arguments{
 \item{object}{ZlmFit}

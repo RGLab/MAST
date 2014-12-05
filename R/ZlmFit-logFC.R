@@ -31,6 +31,8 @@ logFC <- function(zlmfit, contrast0, contrast1){
         rownames(contrast1) <- setdiff(coname, rownames(contrast0))
         ## add contrast0
         contrast1 <- t(t(contrast1)+as.numeric(contrast0))
+    } else{
+        contrast1 <- t(contrast1)
     }
     Contr <- rbind(contrast0, contrast1)
     ## Get expectation and variance of contrasts, discrete and continuous
@@ -96,6 +98,7 @@ genewiseMult <- function(rowvec, rowMajorMatrix){
 ##' @import data.table
 ##' @importFrom reshape melt
 ##' @describeIn logFC Return results as a perhaps friendlier \code{data.table}
+##' @export
 getLogFC <- function(zlmfit, contrast0, contrast1){
     lfc <- logFC(zlmfit, contrast0, contrast1)
     logFC <- dcast.data.table(data.table(melt(lfc)), primerid + contrast ~ L1)
