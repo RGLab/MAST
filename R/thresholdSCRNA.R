@@ -98,14 +98,13 @@ apply_by<-function(x,by_idx,fun,...){
 #'of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
 #'binned data.
 #' @param data_all \code{matrix} of counts
-#' @param conditions ??
+#' @param conditions Bins are be determined per gene and per condition.  Typically contrasts of interest should be specified.
 #' @param cutbins \code{vector} of cut points.
 #' @param nbins \code{integer} number of bins when cutbins is not specified.
 #' @param bin_by \code{character} "median", "proportion", "mean"
 #' @param qt when \code{bin_by} is "quantile", what quantile should be used to form the bins
-#' @param min_per_bin ??
+#' @param min_per_bin minimum number of genes within a bin
 #' @param absolute_min \code{numeric} giving an initial threshold below which everything is assumed to be noise
-#' @param plot \code{logical}. ??
 #'@return \code{list} of thresholded counts (on natural scale), thresholds, and bins
 #'@importFrom plyr ldply
 #'@export
@@ -116,7 +115,8 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       bin_by      = "median",
                                       qt          = 0.975,
                                       min_per_bin = 50      ,
-                                      absolute_min= 1.0
+                                      absolute_min= 1.0     ,
+                                      return_log  = TRUE
                                     )
 {
 
@@ -189,9 +189,12 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         }
 
     }
-    dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
-    peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
-    valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 1 ) )
+    #dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
+    #peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
+    #valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 1 ) )
+    dens   <- lapply( log_data_list, function( x )  { if(length(x)>2){ density( x, adjust = 1 ) } else{ NULL } })
+    peaks  <- lapply(          dens, function( dd ) { if( is.null(dd) ){ data.frame( x=0, y=0 ) }else{ find_peaks( dd$x,dd$y, adjust = 1 )}} ) 
+    valleys<- lapply(          dens, function( dd ) { if( is.null(dd) ){ list(0)} else{find_valleys( dd$x,dd$y, adjust = 1 ) } })
 
     single_modes<-do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,1]))))<1|(lapply(list(do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,2]))))),function(x)(x-median(na.omit(x)))/mad(na.omit(x)))[[1]]>2)
     #Check for single peaks found
@@ -229,7 +232,12 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         }
         cutpoints <- lapply( cutpoints, function(x) max( absolute_min ,x ) )
     }
-    data_threshold <- data#log_data
+    if(return_log){
+         data_threshold <- log_data
+    } else {
+         data_threshold <- data#log_data
+    }
+   
     for( j in uni_cond ){
         for( i in levels(cond_stat_bins) ){
             if(any(cond_stat_bins_array[,j]==i))
@@ -240,8 +248,8 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     cutpoints          <- unlist( cutpoints )
     names( cutpoints ) <- nms
     print( cutpoints )
-    data_threshold_all                  <- data_all
-    data_threshold_all[comp_zero_idx, ] <- 0
+    data_threshold_all                  <- data_all*0
+    #data_threshold_all[comp_zero_idx, ] <- 0
     data_threshold_all[!comp_zero_idx,] <- data_threshold #2^( data_threshold ) - 1
     bin_all        <- cond_stat_bins_array
     res_obj       <- list( counts_threshold = data_threshold_all ,
