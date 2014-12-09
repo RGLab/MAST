@@ -104,7 +104,7 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param bin_by \code{character} "median", "proportion", "mean"
 #' @param qt when \code{bin_by} is "quantile", what quantile should be used to form the bins
 #' @param min_per_bin minimum number of genes within a bin
-#' @param absolute_min \code{numeric} giving an initial threshold below which everything is assumed to be noise
+#' @param absolute_min \code{numeric} giving a hard threshold below which everything is assumed to be noise
 #' @param return_log return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).
 #'@return \code{list} of thresholded counts (on natural scale), thresholds, and bins
 #'@importFrom plyr ldply
@@ -116,7 +116,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       bin_by      = "median",
                                       qt          = 0.975,
                                       min_per_bin = 50      ,
-                                      absolute_min= 1.0     ,
+                                      absolute_min= 0.0     ,
                                       return_log  = TRUE
                                     )
 {
@@ -125,23 +125,23 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     ## I see no reason by this needs to be an argument
     log_base <- 2
     if( is.null( conditions ) ) conditions <- rep( 1, dim( data_all )[2] )
-    comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> absolute_min ) == 0
+    comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> 0.0 ) == 0
     data          <- data_all[!comp_zero_idx,]
     uni_cond      <- unique( conditions )
     log_data      <- log( data + 1, base = log_base )
 
     arg <- match.arg( bin_by, c( "quantile", "proportion", "mean", "median","iqr" ) )
     if( arg == "median" ){
-        cond_stat <- apply_by( log_data, conditions, function( x ) if( all( x <= absolute_min ) ){ 0 } else { median( x[x>absolute_min]) })
+        cond_stat <- apply_by( log_data, conditions, function( x ) if( all( x <= 0.0 ) ){ 0 } else { median( x[x>0.0]) })
     } else if( arg == "mean" ){
         # mean is taken on the original scale than loged
-        cond_stat <- apply_by( data, conditions, function( x ) if( all(x <= absolute_min ) ){ 0 } else { log( mean( x[x>absolute_min])+1, base = log_base) } )
+        cond_stat <- apply_by( data, conditions, function( x ) if( all(x <= 0.0 ) ){ 0 } else { log( mean( x[x>0.0])+1, base = log_base) } )
     } else if( arg == "proportion" ){
         cond_stat <- apply_by( data > 0, conditions, mean )
     } else if( arg == "quantile" ){
-        cond_stat <- apply_by( log_data, conditions, function(x) if( all( x <= absolute_min ) ){ 0 } else { quantile( x[x>absolute_min], qt ) } )
+        cond_stat <- apply_by( log_data, conditions, function(x) if( all( x <= 0.0 ) ){ 0 } else { quantile( x[x>0.0], qt ) } )
     } else if( arg == "iqr" ){
-        cond_stat <- apply_by( log_data, conditions, function(x) if( all( x <= absolute_min ) ){ 0 } else { IQR( x[x>absolute_min]) } )
+        cond_stat <- apply_by( log_data, conditions, function(x) if( all( x <= 0.0 ) ){ 0 } else { IQR( x[x>0.0]) } )
     } else {
         stop("choose bin_by from c('proportion', 'mean', 'median' )")
     }
@@ -186,7 +186,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         log_data_list[[i]]<-NULL
         for( j in uni_cond){
             x<-unlist(log_data[cond_stat_bins_array[,j]==i,conditions==j])
-            log_data_list[[i]]<-c(log_data_list[[i]],x[x>absolute_min])
+            log_data_list[[i]]<-c(log_data_list[[i]],x[x>0.0])
         }
 
     }
@@ -212,7 +212,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     #Check if all cutpoints are NA
     if( all( is.na( ldply( cutpoints )[,2] ) ) ){
         for( i in 1:length( cutpoints ) ){
-            cutpoints[[i]] <- absolute_min #0
+            cutpoints[[i]] <- 0.0 #0
         }
     } else {
         #impute cutpoints if NA
@@ -255,10 +255,27 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     bin_all        <- cond_stat_bins_array
     res_obj       <- list( counts_threshold = data_threshold_all ,
                            cutpoint         = cutpoints          ,
-                           bin              = factor( bin_all )  )
+                           bin              = factor( bin_all )  ,
+                           density          = dens )
     class( res_obj )<- c( "list", "thresholdSCRNACountMatrix" )
     return( res_obj )
 
 }
 
+
+# plotting routine
+plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, ...)
+{
+    op <- par(ask=ask)
+    par(mar=c(3,3,2,1), mgp=c(2,.7,0), tck=-.01)
+    for(i in 1:length(object$density)){
+            plot(object$density[[i]],main=names(res_thresh_monocle$cutpoint)[i], ...)
+            abline(v=object$cutpoint[i],col="red",lty=2)
+            Sys.sleep(wait.time)
+    }
+    par(op)
+}
+
+#par(mfrow=c(5,5) )
+#plot(res_thresh,xlim=c(0,15), wait.time=0.1)
 
