@@ -105,6 +105,7 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param qt when \code{bin_by} is "quantile", what quantile should be used to form the bins
 #' @param min_per_bin minimum number of genes within a bin
 #' @param absolute_min \code{numeric} giving an initial threshold below which everything is assumed to be noise
+#' @param return_log return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).
 #'@return \code{list} of thresholded counts (on natural scale), thresholds, and bins
 #'@importFrom plyr ldply
 #'@export
