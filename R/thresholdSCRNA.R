@@ -84,7 +84,7 @@ between_interval<-function (x, interval)
     return( x )
 }
 
-apply_by<-function(x,by_idx,fun,...){
+applyby<-function(x,by_idx,fun,...){
     res<-sapply(unique(by_idx),function(a){
         apply(x[,by_idx==a],1,fun,...)}
     )
@@ -97,7 +97,7 @@ apply_by<-function(x,by_idx,fun,...){
 #'An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
 #'of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
 #'binned data.
-#' @param data_all \code{matrix} of counts
+#' @param data_all \code{matrix} of counts.  Rows are cells and columns are genes.
 #' @param conditions Bins are be determined per gene and per condition.  Typically contrasts of interest should be specified.
 #' @param cutbins \code{vector} of cut points.
 #' @param nbins \code{integer} number of bins when cutbins is not specified.
@@ -106,7 +106,7 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param min_per_bin minimum number of genes within a bin
 #' @param absolute_min \code{numeric} giving a hard threshold below which everything is assumed to be noise
 #' @param return_log return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).
-#'@return \code{list} of thresholded counts (on natural scale), thresholds, and bins
+#'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data
 #'@importFrom plyr ldply
 #'@export
 thresholdSCRNACountMatrix <-function( data_all              ,
@@ -121,8 +121,8 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                     )
 {
 
+    data_all <- t(data_all)   #internally we work with the data having rows as genes and columns as cells
                                         # when there is no condition to stratefy
-    ## I see no reason by this needs to be an argument
     log_base <- 2
     if( is.null( conditions ) ) conditions <- rep( 1, dim( data_all )[2] )
     comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> 0.0 ) == 0
@@ -252,30 +252,108 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     data_threshold_all                  <- data_all*0
     #data_threshold_all[comp_zero_idx, ] <- 0
     data_threshold_all[!comp_zero_idx,] <- data_threshold #2^( data_threshold ) - 1
-    bin_all        <- cond_stat_bins_array
-    res_obj       <- list( counts_threshold = data_threshold_all ,
-                           cutpoint         = cutpoints          ,
-                           bin              = factor( bin_all )  ,
-                           density          = dens )
+    bin_all       <- factor(cond_stat_bins_array)
+    dim(bin_all)  <- dim(cond_stat_bins_array)
+    res_obj       <- list( counts_threshold = t(data_threshold_all),
+                          original_data     = t(log_data),
+                          cutpoint          = cutpoints,
+                          bin               =  bin_all,
+                          conditions        = conditions,
+                          density           = dens )
     class( res_obj )<- c( "list", "thresholdSCRNACountMatrix" )
     return( res_obj )
 
 }
 
 
-# plotting routine
-plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, ...)
+##' Plot cutpoints and densities for thresholding
+##'
+##' @param object output of \code{thresholdSCRNACountMatrix}
+##' @param ask if TRUE then will prompt before displaying each plot
+##' @param wait.time pause (in seconds) between each plot
+##' @param type one or more of the following: 'bin' (plot the genes by the binning used for thresholding), or 'gene' (plot thresholding by gene -- see next argument)
+##' @param indices if \code(type) is equal to 'gene', and is a integer of length 1, then a random sample of \code{indices} genes is taken.  If it is NULL, then 10 genes are sampled.  If it is a integer vector of length > 1, then it is interpreted as giving a list of indices of genes to be displayed.
+##' @param ... further arguments passed to \code{plot}
+##' @return displays plots
+##' @export
+plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, type='bin', indices=NULL, ...)
 {
+    type <- match.arg(type, c('bin', 'gene'), several.ok=TRUE)
     op <- par(ask=ask)
     par(mar=c(3,3,2,1), mgp=c(2,.7,0), tck=-.01)
-    for(i in 1:length(object$density)){
+    if('bin' %in% type){
+        ## plot by bins
+        for(i in 1:length(object$density)){
             plot(object$density[[i]],main=names(object$cutpoint)[i], ...)
             abline(v=object$cutpoint[i],col="red",lty=2)
             Sys.sleep(wait.time)
+        }
+    }
+
+    if('gene' %in% type){
+        ## plot by genes
+        uni_cond <- unique(object$conditions)
+        num_cond <- as.numeric(as.factor(object$conditions))
+        if(is.null(indices)){
+            indices <- 10L
+        }
+        if(is.finite(indices) && length(indices)==1){
+            indices <- sample(ncol(object$original_data), indices)
+        }
+        if(any(indices < 1 | indices>ncol(object$original_data))) stop('`indices` must range between 1 and the number of columns of the count matrix.')
+        for(i in indices){
+            den <- density(object$original_data[,i])
+            plot(den, main=paste0('Index ', i, '(', colnames(object$original_data)[i], ')'), ...)
+            for(j in seq_along(uni_cond)){
+                abline(v=with(object, cutpoint[bin[i,j]]), col=j, lty=2)
+                with(object, rug(original_data[j==num_cond,i], col=j))
+            }
+        }
     }
     par(op)
 }
 
-#par(mfrow=c(5,5) )
-#plot(res_thresh,xlim=c(0,15), wait.time=0.1)
+##' Summarize the effect of thresholding
+##'
+##' Returns the proportion of (putative) expression, the variance of expressed cells, and -log10 shapiro-wilk tests for normality on the expressed cells
+##' @param object a \code{thresholdSCRNACountMatrix}
+##' @param ... currently ignored
+##' @return a list of statistics on the original data, and thresholded data
+##' @export
+summary.thresholdSCRNACountMatrix <- function(object, ...){
+    zeros <- lapply(object[c('original_data', 'counts_threshold')], function(o){
+        apply(o>0, 2, mean)
+    })
+    vars <- lapply(object[c('original_data', 'counts_threshold')], function(o){
+        o[o==0] <- NA
+        apply(o, 2, var, na.rm=TRUE)
+    })
+    shapiro <- lapply(object[c('original_data', 'counts_threshold')], function(o){
+        apply(o, 2, function(x){
+            pos <- x[x>0]
+            if(length(pos)>3 & length(pos) < 5000)            -log10(shapiro.test(pos)$p.value) else NA
+        })
+    })
+    out <- list(zeros=zeros, vars=vars, shapiro=shapiro)
+    class(out) <- c(class(out), 'summaryThresholdSCRNA')
+    out
+}
+
+##' @export
+##' @describeIn summary.thresholdSCRNACountMatrix prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
+print.summaryThresholdSCRNA <- function(object, ...){
+    class(object) <- class(object)[-length(class(object))]
+    m <- as.data.table(melt(object, na.rm=TRUE))
+    setnames(m, c('L1', 'metric'))
+    summ <- m[,list(stat=names(summary(value)), value=summary(value)),keyby=list(L2, metric)]
+    summ$stat <- factor(summ$stat, levels=c('Min.', '1st Qu.', 'Median', 'Mean', '3rd Qu.', 'Max.'))
+    dc <- dcast.data.table(summ, stat + L2  ~  metric)
+    
+    setnames(dc, c('stat', 'L2', 'vars', 'zeros'), c('Quantile', 'Data', 'variance', 'prop. expressed'))
+    dcdf <- as.data.frame(dc)
+    print(dcdf, right=FALSE, row.names=FALSE)
+    invisible(dc)
+}
+
+
 

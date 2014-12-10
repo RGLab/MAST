@@ -5,12 +5,12 @@
 \usage{
 thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
   nbins = 10, bin_by = "median", qt = 0.975, min_per_bin = 50,
-  absolute_min = 1)
+  absolute_min = 0, return_log = TRUE)
 }
 \arguments{
-\item{data_all}{\code{matrix} of counts}
+\item{data_all}{\code{matrix} of counts.  Rows are cells and columns are genes.}
 
-\item{conditions}{??}
+\item{conditions}{Bins are be determined per gene and per condition.  Typically contrasts of interest should be specified.}
 
 \item{cutbins}{\code{vector} of cut points.}
 
@@ -20,14 +20,14 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 
 \item{qt}{when \code{bin_by} is "quantile", what quantile should be used to form the bins}
 
-\item{min_per_bin}{??}
+\item{min_per_bin}{minimum number of genes within a bin}
 
-\item{absolute_min}{\code{numeric} giving an initial threshold below which everything is assumed to be noise}
+\item{absolute_min}{\code{numeric} giving a hard threshold below which everything is assumed to be noise}
 
-\item{plot}{\code{logical}. ??}
+\item{return_log}{return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).}
 }
 \value{
-\code{list} of thresholded counts (on natural scale), thresholds, and bins
+\code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data
 }
 \description{
 An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
