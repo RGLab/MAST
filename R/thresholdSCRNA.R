@@ -269,7 +269,7 @@ plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, ...)
     op <- par(ask=ask)
     par(mar=c(3,3,2,1), mgp=c(2,.7,0), tck=-.01)
     for(i in 1:length(object$density)){
-            plot(object$density[[i]],main=names(res_thresh_monocle$cutpoint)[i], ...)
+            plot(object$density[[i]],main=names(object$cutpoint)[i], ...)
             abline(v=object$cutpoint[i],col="red",lty=2)
             Sys.sleep(wait.time)
     }
