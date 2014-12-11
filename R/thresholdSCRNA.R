@@ -124,7 +124,11 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     data_all <- t(data_all)   #internally we work with the data having rows as genes and columns as cells
                                         # when there is no condition to stratefy
     log_base <- 2
-    if( is.null( conditions ) ) conditions <- rep( 1, dim( data_all )[2] )
+    if( is.null( conditions ) ){ 
+        conditions <- rep( 1, dim( data_all )[2] ) 
+    } else { 
+        condtions <- as.character( condtions )
+    }
     comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> 0.0 ) == 0
     data          <- data_all[!comp_zero_idx,]
     uni_cond      <- unique( conditions )
