@@ -84,7 +84,7 @@ between_interval<-function (x, interval)
     return( x )
 }
 
-applyby<-function(x,by_idx,fun,...){
+apply_by<-function(x,by_idx,fun,...){
     res<-sapply(unique(by_idx),function(a){
         apply(x[,by_idx==a],1,fun,...)}
     )
@@ -272,7 +272,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 ##' @param ask if TRUE then will prompt before displaying each plot
 ##' @param wait.time pause (in seconds) between each plot
 ##' @param type one or more of the following: 'bin' (plot the genes by the binning used for thresholding), or 'gene' (plot thresholding by gene -- see next argument)
-##' @param indices if \code(type) is equal to 'gene', and is a integer of length 1, then a random sample of \code{indices} genes is taken.  If it is NULL, then 10 genes are sampled.  If it is a integer vector of length > 1, then it is interpreted as giving a list of indices of genes to be displayed.
+##' @param indices if \code{type} is equal to 'gene', and is a integer of length 1, then a random sample of \code{indices} genes is taken.  If it is NULL, then 10 genes are sampled.  If it is a integer vector of length > 1, then it is interpreted as giving a list of indices of genes to be displayed.
 ##' @param ... further arguments passed to \code{plot}
 ##' @return displays plots
 ##' @export
@@ -321,6 +321,18 @@ plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, type='b
 ##' @return a list of statistics on the original data, and thresholded data
 ##' @export
 summary.thresholdSCRNACountMatrix <- function(object, ...){
+    ## original <- with(object, data.table:::melt.data.table(data.table(conditions=conditions, type='original_data', original_data), id.vars=c('conditions', 'type')))
+    ## threshold <- with(object, data.table:::melt.data.table(data.table(conditions=conditions, type='counts_threshold', counts_threshold), id.vars=c('conditions', 'type')))
+    ## both <- rbind(original, threshold)
+    ## summaries <- both[,list(zeroes=mean(value>0),
+    ##            vars=var(value[value>0]),
+    ##                         shapiro={
+    ##                             pos <- value[value>0]
+    ##                             if(length(pos)>3 & length(pos) < 5000)            -log10(shapiro.test(pos)$p.value) else NA_real_
+    ##                         })
+    ##                  ,keyby=list(conditions, type, variable)]
+    
+                 
     zeros <- lapply(object[c('original_data', 'counts_threshold')], function(o){
         apply(o>0, 2, mean)
     })
@@ -330,8 +342,7 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
     })
     shapiro <- lapply(object[c('original_data', 'counts_threshold')], function(o){
         apply(o, 2, function(x){
-            pos <- x[x>0]
-            if(length(pos)>3 & length(pos) < 5000)            -log10(shapiro.test(pos)$p.value) else NA
+           
         })
     })
     out <- list(zeros=zeros, vars=vars, shapiro=shapiro)
@@ -343,8 +354,9 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
 ##' @describeIn summary.thresholdSCRNACountMatrix prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
 print.summaryThresholdSCRNA <- function(object, ...){
     class(object) <- class(object)[-length(class(object))]
-    m <- as.data.table(melt(object, na.rm=TRUE))
-    setnames(m, c('L1', 'metric'))
+    m <- as.data.table(reshape::melt.list(object, na.rm=TRUE))
+    m <- m[!is.na(value),]
+    setnames(m, 'L1', 'metric')
     summ <- m[,list(stat=names(summary(value)), value=summary(value)),keyby=list(L2, metric)]
     summ$stat <- factor(summ$stat, levels=c('Min.', '1st Qu.', 'Median', 'Mean', '3rd Qu.', 'Max.'))
     dc <- dcast.data.table(summ, stat + L2  ~  metric)
