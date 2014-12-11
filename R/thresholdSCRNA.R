@@ -127,7 +127,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     if( is.null( conditions ) ){ 
         conditions <- rep( 1, dim( data_all )[2] ) 
     } else { 
-        condtions <- as.character( condtions )
+        conditions <- as.character( conditions )
     }
     comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> 0.0 ) == 0
     data          <- data_all[!comp_zero_idx,]
