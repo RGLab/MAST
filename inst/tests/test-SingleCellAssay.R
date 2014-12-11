@@ -348,13 +348,16 @@ test_that('Can cast to data.table', {
     #expect_true(all.equal(df, M, check.attributes=FALSE))
 })
 
-context('Play nicely with reshape/reshape2')
+context('Play nicely with reshape/reshape2/data.table')
 datArray <- array(c(1:39, NA), dim=c(2,4,5))
+datList <- list(A=datArray, B=1:10)
 test_that('Can melt with reshape2', {
-    try(detach('package:reshape', force=TRUE), silent=TRUE)
+    #try(detach('package:reshape', force=TRUE), silent=TRUE)
     tryCatch(library(reshape2, pos=length(search())), error = function(e) skip('Install reshape2'))
     M <- reshape2::melt(datArray, na.rm=TRUE, value.name='foo')
     expect_equal(M, melt(datArray, na.rm=TRUE, value.name='foo'))
+    M2 <- reshape2::melt(datList, na.rm=TRUE, value.name='foo')
+    expect_equal(M2, melt(datList, na.rm=TRUE, value.name='foo'))
     detach('package:reshape2')
 })
 
@@ -362,5 +365,13 @@ test_that('Can melt with reshape', {
     library(reshape, pos=length(search()))
     M <- reshape::melt(datArray)
     expect_equal(M, melt(datArray))
-    try(detach('package:reshape'), silent=TRUE)
+    M2 <- reshape::melt(datList, value.name='foo')
+    expect_equal(M2, melt(datList, value.name='foo'))
+})
+
+test_that('Can melt with data.table', {
+    #library(data.table, pos=length(search()))
+    dt <- data.table(A=rep(LETTERS, 2), B=rnorm(52))
+    dtm <- melt(dt, id.var='A')
+    expect_is(dtm, 'data.table')
 })

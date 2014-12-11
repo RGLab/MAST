@@ -11,7 +11,6 @@ Imports:
     data.table,
     BiocGenerics,
     gdata,
-    reshape,
     lattice,
     ggplot2,
     latticeExtra,
@@ -29,6 +28,8 @@ Suggests:
     roxygen2(> 4.0.0),
     numDeriv,
     car
+Depends:
+    reshape
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0
