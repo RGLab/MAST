@@ -229,10 +229,17 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                 }
             }
         }
-        #ensure cutpoints are increasing
-        for( i in length( cutpoints ):2 ){
+        #ensure cutpoints are increasing and decreasing from the middle
+        vals2<-unlist(valleys[which(unlist(lapply(peaks,nrow))==2)])
+        midindex<-which(names(peaks)==names(which.min(abs(vals2-median(vals2,na.rm=TRUE)))))
+        for( i in midindex:2 ){
             if( cutpoints[[i-1]] > cutpoints[[i]] ){
                 cutpoints[[i-1]] <- cutpoints[[i]]
+            }
+        }
+        for( i in midindex:(length( cutpoints )-1) ){
+            if( cutpoints[[i+1]] < cutpoints[[i]] ){
+                cutpoints[[i+1]] <- cutpoints[[i]]
             }
         }
         cutpoints <- lapply( cutpoints, function(x) max( absolute_min ,x ) )
@@ -263,12 +270,14 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                           cutpoint          = cutpoints,
                           bin               =  bin_all,
                           conditions        = conditions,
-                          density           = dens )
+                          density           = dens 
+                          ,peaks             = peaks, valleys= valleys)
     class( res_obj )<- c( "list", "thresholdSCRNACountMatrix" )
     return( res_obj )
 
 }
 
+thresholded_withcond <- thresholdSCRNACountMatrix((exprs(filtered_0)),conditions=as.character(cData(filtered_0)$Stim_Time), nbins=100,min_per_bin=50,bin_by="median", return_log=FALSE)
 
 ##' Plot cutpoints and densities for thresholding
 ##'
@@ -288,9 +297,11 @@ plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, type='b
     if('bin' %in% type){
         ## plot by bins
         for(i in 1:length(object$density)){
-            plot(object$density[[i]],main=names(object$cutpoint)[i], ...)
-            abline(v=object$cutpoint[i],col="red",lty=2)
-            Sys.sleep(wait.time)
+            if(!is.null(object$density[[i]])){
+                plot(object$density[[i]],main=names(object$cutpoint)[i], ...)
+                abline(v=object$cutpoint[i],col="red",lty=2)
+                Sys.sleep(wait.time)
+            }
         }
     }
 
@@ -316,6 +327,7 @@ plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, type='b
     }
     par(op)
 }
+thresholded_withcond <- thresholdSCRNACountMatrix((exprs(filtered_0)),conditions=as.character(cData(filtered_0)$Stim_Time), nbins=100,min_per_bin=50,bin_by="median", return_log=FALSE)
 
 ##' Summarize the effect of thresholding
 ##'
