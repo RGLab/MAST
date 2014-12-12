@@ -277,8 +277,6 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 
 }
 
-thresholded_withcond <- thresholdSCRNACountMatrix((exprs(filtered_0)),conditions=as.character(cData(filtered_0)$Stim_Time), nbins=100,min_per_bin=50,bin_by="median", return_log=FALSE)
-
 ##' Plot cutpoints and densities for thresholding
 ##'
 ##' @param object output of \code{thresholdSCRNACountMatrix}
@@ -327,7 +325,6 @@ plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, type='b
     }
     par(op)
 }
-thresholded_withcond <- thresholdSCRNACountMatrix((exprs(filtered_0)),conditions=as.character(cData(filtered_0)$Stim_Time), nbins=100,min_per_bin=50,bin_by="median", return_log=FALSE)
 
 ##' Summarize the effect of thresholding
 ##'
