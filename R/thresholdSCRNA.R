@@ -245,7 +245,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                 cutpoints[[i+1]] <- cutpoints[[i]]
             }
         }
-    } else {
+    } else { # when no clear 2 peaked distribution exists, start from the top
         for( i in length( cutpoints ):2 ){
             if( cutpoints[[i-1]] > cutpoints[[i]] ){
                 cutpoints[[i-1]] <- cutpoints[[i]]
