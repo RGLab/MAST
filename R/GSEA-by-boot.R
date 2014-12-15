@@ -77,14 +77,18 @@ Drop <- function(x, d){
 ##'
 ##' Modules defined in \code{sets} are tested for average differences in expression from the "average" gene.
 ##' By using bootstraps, the between-gene covariance of terms in the hurdle model is found, and is used to adjust for coexpression between genes
-##' 
-##' \code{control} is a list with elements \code{n_randomize}, giving the number of genes to sample to approximate the non-module average expression. Default 1000.  Set to \code{Inf} to turn off the approximation.
 ##'
+##' @section \code{control}:
+##' \code{control} is a list with elements:
+##' \itemize{
+##' \item \code{n_randomize}, giving the number of genes to sample to approximate the non-module average expression. Set to \code{Inf} to turn off the approximation (the default).
+##' \item \code{var_estimate}, giving the method used to estimate the variance of the modules.  \code{bootall} uses the bootstrapped covariance matrices.  \code{bootdiag} uses only the diagonal of the bootstrapped covariance matrix (so assuming independence across genes). \code{modelbased} assumes independence across genes and uses the variance estimated from the model.}
+##' @section Return Value:
 ##' A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete or 'cont'inuous), "metric" ('stat' gives the average of the coefficient, 'var' gives the variance of that average, 'dof' gives the number of genes in the set), "group" ('test' for the genes in test-set, "null" for all genes outside the test-set).
 ##' @param zFit object of class ZlmFit
 ##' @param boots bootstraps of zFit
 ##' @param sets list of indices of genes
-##' @param hypothesis a \code{Hypothesis} to test. Currently only one degree \code{CoefficientHypothesis} are supported
+##' @param hypothesis a \code{Hypothesis} to test. Currently only one degree \code{CoefficientHypothesis} are supported.
 ##' @param control list of control parameters.  See details.
 ##' @return 4D array.  See details.
 ##' @import abind
@@ -103,7 +107,7 @@ Drop <- function(x, d){
 ##' calcZ(gsea)
 ##' stopifnot(all.equal(gsea['A',,,],gsea['D',,,]))
 ##' stopifnot(all.equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
-gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=Inf)){
+gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=Inf, var_estimate='bootall')){
 
     ## Basic idea is to average statistics (based on coefficients defined in Zfit) and find the variance of that average using the bootstraps
     ## However, don't want to naively find the covariance across all genes then keep summing up different terms in it, because that will have quadratic complexity
@@ -111,6 +115,8 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     ## An efficiency might be to accumulate the sum of the crossproducts as we interate over genes (this corresponds to the matrix product 1*boots*t(boots)*1, where 1 is the 1-vector), rather than explicitly forming boots * t(boots), then summing
     
     n_randomize <- control$n_randomize
+    var_est <- control$var_estimate
+    var_est <- match.arg(var_est, c('bootall', 'bootdiag', 'modelbased'))
     stopifnot(inherits(hypothesis, 'CoefficientHypothesis'))
     hypothesis <- generateHypothesis(hypothesis, colnames(zFit@coefD))
     testIdx <- hypothesis@transformed
@@ -140,7 +146,13 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     CD <- coef(zFit, 'D')
     tstat <- cbind(C=CC[,testIdx],
                    D=CD[,testIdx])
-    bootstat <- boots[,testIdx,,]
+    if(var_est!='modelbased'){
+        bootstat <- boots[,testIdx,,]
+    } else{
+        dimb['rep'] <- Inf
+        bootstat <- array(c(vcov(zFit, 'C')[testIdx,testIdx,], vcov(zFit,'D')[testIdx,testIdx,]), dim=c(dimb['genes'], 2, 1), dimnames=list(genes=dnb$genes, comp=c('C', 'D'), rep='1'))
+    }
+    
     natstat <- is.na(tstat)
     naboots <- rowSums(is.na(bootstat), dims=2)
     ## set all bootstrap and t statistics to zero if either had an NA for a gene
@@ -168,30 +180,71 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
              cor=vstatCor)
     }
 
-    ## sum of (idx,jdx) block of covariance, and the DOF in that sum
-    ## returnCor should always be FALSE when idx!=jdx, but we won't check that
-    getVstat <- function(idx, jdx, returnCor=FALSE){
-        ## this ends up being quite awkward because we only want to drop one dimension
+    ## methods to calculate the variance of a block of genes
+    ## bootstrap based
+    vstatboot <- function(idx, jdx, onlyDiag=FALSE, returnCor=FALSE){
+        ## sum of (idx,jdx) block of covariance, and the DOF in that sum
+        ## returnCor should always be FALSE when idx!=jdx, but we won't check that
+
+        if(onlyDiag){
+            if(!isTRUE(all.equal(idx,jdx))) idx <- jdx <- integer(0)
+            dof <- colSums(!naAny[idx,,drop=FALSE])^2
+        } else{
+            dofi <- colSums(!naAny[idx,,drop=FALSE])
+            dofj <- colSums(!naAny[jdx,,drop=FALSE])
+            dof <- dofi*dofj
+        }
         bsi <- bootstat[idx,,,drop=FALSE]
         bsj <- bootstat[jdx,,,drop=FALSE]
         vstat <- matrix(NA, nrow=2, ncol=2, dimnames=list(c('stat', 'avgCor'), c('C', 'D')))
         for(comp in c('C', 'D')){
             tcp <- tcrossprod(Drop(bsi[,comp,,drop=FALSE], 2),
                               Drop(bsj[,comp,,drop=FALSE], 2))
-            vstat['stat', comp] <- sum(tcp)/dimb['rep']
+            if(onlyDiag){
+                vstat['stat', comp] <- sum(diag(tcp))/dimb['rep']
+            } else{
+                vstat['stat', comp] <- sum(tcp)/dimb['rep']
+            }
+
             if(returnCor && length(idx)>1){ # so we don't emit warnings or die on empty or singleton idx
                 ccp <- suppressWarnings(cov2cor(tcp))
                 vstat['avgCor', comp] <- mean(ccp[upper.tri(ccp)], na.rm=TRUE)
             }
-        }
-        
-        dofi <- colSums(!naAny[idx,,drop=FALSE])
-        dofj <- colSums(!naAny[jdx,,drop=FALSE])
+        }   
         if(returnCor){
-            return(rbind(vstat, dof=dofi*dofj))
+            return(rbind(vstat, dof=dof))
         } else{
-            return(rbind(vstat[-2,,drop=FALSE], dof=dofi*dofj))
+            return(rbind(vstat[-2,,drop=FALSE], dof=dof))
         }
+    }
+    
+    ## modelbased
+    vstatmodelbased <- function(idx, jdx, returnCor=FALSE){
+        if(!isTRUE(all.equal(idx,jdx))) idx <- jdx <- integer(0)
+        dof <- colSums(!naAny[idx,,drop=FALSE])^2
+        
+        vstat <- matrix(NA, nrow=2, ncol=2, dimnames=list(c('stat', 'avgCor'), c('C', 'D')))
+        for(comp in c('C', 'D')){
+            vstat['stat', comp] <- sum(bootstat[idx,comp,])
+        }
+
+        if(returnCor){
+            return(rbind(vstat, dof=dof))
+        } else{
+            return(rbind(vstat[-2,,drop=FALSE], dof=dof))
+        }
+    }
+        
+
+    ## define the method to calculate the variance
+    if(var_est=='modelbased'){
+        getVstat <- vstatmodelbased
+    } else if(var_est=='bootall'){
+        getVstat <- vstatboot
+    } else if(var_est=='bootdiag'){
+        getVstat <- function(idx, jdx, returnCor=FALSE) vstatboot(idx, jdx, onlyDiag=TRUE, returnCor)
+    } else{
+        stop("unreachable code")
     }
 
     ## subtract off genes that were in the test set from the statistics in the non-test set

@@ -15,3 +15,9 @@ test_that('Singletons agree with coefficients', {
     expect_equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim'])
     expect_equal(gsea['C','disc','stat','test'], coef(zf, 'D')[15,'Stim.ConditionUnstim'])
 })
+
+test_that('model-based singletons agree with model', {
+    gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=20, var_estimate='modelbased'))
+    expect_equal(gsea['C','cont','var','test'], vcov(zf, 'C')['Stim.ConditionUnstim','Stim.ConditionUnstim', 15])
+    expect_equal(gsea['C','disc','var','test'], vcov(zf, 'D')['Stim.ConditionUnstim', 'Stim.ConditionUnstim', 15])
+})

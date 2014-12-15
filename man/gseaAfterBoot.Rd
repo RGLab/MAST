@@ -3,8 +3,8 @@
 \alias{gseaAfterBoot}
 \title{Gene set analysis for hurdle model}
 \usage{
-gseaAfterBoot(zFit, boots, sets, hypothesis, control = list(n_randomize =
-  Inf))
+gseaAfterBoot(zFit, boots, sets, hypothesis, control = list(n_randomize = Inf,
+  var_estimate = "bootall"))
 }
 \arguments{
 \item{zFit}{object of class ZlmFit}
@@ -13,7 +13,7 @@ gseaAfterBoot(zFit, boots, sets, hypothesis, control = list(n_randomize =
 
 \item{sets}{list of indices of genes}
 
-\item{hypothesis}{a \code{Hypothesis} to test. Currently only one degree \code{CoefficientHypothesis} are supported}
+\item{hypothesis}{a \code{Hypothesis} to test. Currently only one degree \code{CoefficientHypothesis} are supported.}
 
 \item{control}{list of control parameters.  See details.}
 }
@@ -24,8 +24,15 @@ gseaAfterBoot(zFit, boots, sets, hypothesis, control = list(n_randomize =
 Modules defined in \code{sets} are tested for average differences in expression from the "average" gene.
 By using bootstraps, the between-gene covariance of terms in the hurdle model is found, and is used to adjust for coexpression between genes
 }
-\details{
-\code{control} is a list with elements \code{n_randomize}, giving the number of genes to sample to approximate the non-module average expression. Default 1000.  Set to \code{Inf} to turn off the approximation.
+\section{\code{control}}{
+
+\code{control} is a list with elements:
+\itemize{
+\item \code{n_randomize}, giving the number of genes to sample to approximate the non-module average expression. Set to \code{Inf} to turn off the approximation (the default).
+\item \code{var_estimate}, giving the method used to estimate the variance of the modules.  \code{bootall} uses the bootstrapped covariance matrices.  \code{bootdiag} uses only the diagonal of the bootstrapped covariance matrix (so assuming independence across genes). \code{modelbased} assumes independence across genes and uses the variance estimated from the model.}
+}
+
+\section{Return Value}{
 
 A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete or 'cont'inuous), "metric" ('stat' gives the average of the coefficient, 'var' gives the variance of that average, 'dof' gives the number of genes in the set), "group" ('test' for the genes in test-set, "null" for all genes outside the test-set).
 }
