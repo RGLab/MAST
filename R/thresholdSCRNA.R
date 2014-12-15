@@ -232,8 +232,9 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     }
     # ensure cutpoints are increasing and decreasing from the 75% of bins with 2 modes.
     # could be improved. 
-        vals2    <- unlist(valleys[which(unlist(lapply(peaks,nrow))==2)])
-        midindex <- which(names(peaks)==names(which.min(abs(vals2-quantile(vals2,c(0.75),na.rm=TRUE)))))
+    vals2    <- unlist(valleys[which(unlist(lapply(peaks,nrow))==2)])
+    midindex <- which(names(peaks)==names(which.min(abs(vals2-quantile(vals2,c(0.75),na.rm=TRUE)))))
+    if( length(midindex) > 0 ){
         for( i in midindex:2 ){
             if( cutpoints[[i-1]] > cutpoints[[i]] ){
                 cutpoints[[i-1]] <- cutpoints[[i]]
@@ -244,7 +245,15 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                 cutpoints[[i+1]] <- cutpoints[[i]]
             }
         }
-        cutpoints <- lapply( cutpoints, function(x) max( absolute_min ,x ) )
+    } else {
+        for( i in length( cutpoints ):2 ){
+            if( cutpoints[[i-1]] > cutpoints[[i]] ){
+                cutpoints[[i-1]] <- cutpoints[[i]]
+            }
+        }
+
+    }
+    cutpoints <- lapply( cutpoints, function(x) max( absolute_min ,x ) )
 
     if(return_log){
          data_threshold <- log_data
