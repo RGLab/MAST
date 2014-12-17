@@ -63,8 +63,8 @@ logFC <- function(zlmfit, contrast0, contrast1){
     dvcont <- matrix(vcont[diagIdx], nrow=length(genes))
     dvdisc <- matrix(vdisc[diagIdx], nrow=length(genes))
     ## debugging assertion
-    stopifnot(all.equal(dvcont[1,], diag(vcont[1,,]), check.attributes=FALSE))
-    stopifnot(all.equal(dvdisc[10,], diag(vdisc[10,,]), check.attributes=FALSE))
+    ## stopifnot(all.equal(dvcont[1,], diag(vcont[1,,]), check.attributes=FALSE))
+    ## stopifnot(all.equal(dvdisc[10,], diag(vdisc[10,,]), check.attributes=FALSE))
     ## variance of product is product of variance + higher order terms 
     v.prod <- dvcont*dvdisc + mu.cont^2*dvdisc + mu.disc^2*dvcont
     
@@ -74,8 +74,8 @@ logFC <- function(zlmfit, contrast0, contrast1){
     c1c0cont <- matrix(vcont[covc1c0Idx], nrow=length(genes))
     c1c0disc <- matrix(vdisc[covc1c0Idx], nrow=length(genes))
     ## debugging assertion
-    stopifnot(all.equal(c1c0cont[1,], vcont[1,2:nrow(Contr),1], check.attributes=FALSE))
-    stopifnot(all.equal(c1c0disc[10,], vdisc[10,2:nrow(Contr),1], check.attributes=FALSE))
+    ## stopifnot(all.equal(c1c0cont[1,], vcont[1,2:nrow(Contr),1], check.attributes=FALSE))
+    ## stopifnot(all.equal(c1c0disc[10,], vdisc[10,2:nrow(Contr),1], check.attributes=FALSE))
     cov.prod <- c1c0cont*c1c0disc+genewiseMult(mu.cont[,1], mu.cont[,-1,drop=FALSE])*c1c0disc + genewiseMult(mu.disc[,1], mu.disc[,-1,drop=FALSE])*c1c0cont
 
     ## _differences_ between expectation of baseline contrast and all others
@@ -91,7 +91,7 @@ logFC <- function(zlmfit, contrast0, contrast1){
 genewiseMult <- function(rowvec, rowMajorMatrix){
     res <- rowvec*rowMajorMatrix
     ## debugging assertion
-    stopifnot(all.equal(res[3,], rowvec[3]*rowMajorMatrix[3,]))
+    ## stopifnot(all.equal(res[3,], rowvec[3]*rowMajorMatrix[3,]))
     res
 }
 
