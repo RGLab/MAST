@@ -109,7 +109,7 @@ makeChiSqTable <- function(lambda, df, test){
     dfC <- setNames(Combine(df, Sum(df)), c('cont', 'disc', 'hurdle'))
     pchi <- Flatten(pchisq(as.matrix(lambdaC), df=as.matrix(dfC), lower.tail=FALSE))
     tab <- Glue(lambda=lambdaC,
-               df=dfC, 'Pr(>Chisq)'=pchi)
+               df=dfC, 'Pr(>Chisq)'=ifelse(dfC>0,pchi,1))
     structure(tab, test=test)
 }
 

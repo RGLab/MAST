@@ -7,6 +7,12 @@ test_that('zlm.SingleCellAssay works', {
   expect_that(zzinit, is_a('ZlmFit'))
 })
 
+context("makeChiSqTable")
+test_that("Zero dof gives unit P values", {
+    ct <- makeChiSqTable(c(C=1, D=1), df=c(C=0, D=0), test='N')
+    expect_equal(ct[,'Pr(>Chisq)'], c(1, 1, 1), check.attributes=FALSE)
+})
+
 context("Likelihood ratio tests")
 test_that('Three flavors of lrt on ZlmFit', {
     zz <- lrTest(zzinit, CoefficientHypothesis('PopulationVbetaResponsive:Stim.ConditionUnstim'))
