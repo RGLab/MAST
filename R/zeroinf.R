@@ -1,6 +1,6 @@
-methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglm2', 'bayesglmW'),
-                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlike2','BayesGLMlikeWeight'),
-                         implementsEbayes=c(TRUE, TRUE, FALSE, TRUE, TRUE, TRUE))
+methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglmW'),
+                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlikeWeight'),
+                         implementsEbayes=c(TRUE, FALSE, FALSE, TRUE, TRUE))
 
 residualsHook <- function(fit){
     residuals(fit, which='Marginal')
@@ -154,16 +154,11 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     ng <- length(genes)
     MM <- model.matrix(obj)
     coefNames <- colnames(MM)
-    ## split into a largish number of pieces (greater than # cores for a typical machine)
-    ## But not so large as to spend a bunch of time initializing/deinitializing
+    ## to facilitate our call to mclapply
     listEE <- setNames(seq_len(ng), genes)
     ## in hopes of finding a typical gene
     upperQgene <- which(rank(freq(sca), ties.method='random')==floor(.75*ng))
     obj <- fit(obj, ee[,upperQgene], silent=silent)
-    ## if(onlyReturnCoefs){
-    ##     print(show(obj))
-    ##     return(invisible(obj))
-    ##     }
 
     ## called internally to do fitting, but want to get local variables in scope of function
     nerror <- 0
@@ -228,5 +223,4 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     zfit <- do.call(new, as.list(summaries))
     ## tests, summarized objects, example fit, hooks
     zfit
-    ## structure(zfit, LMlike=obj)
 }

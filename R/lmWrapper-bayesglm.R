@@ -14,11 +14,17 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
         fitArgsD$prior.mean <- object@coefPrior['loc', 'D',]
         fitArgsD$prior.scale <- object@coefPrior['scale', 'D',]
         fitArgsD$prior.df <- object@coefPrior['df', 'D', ]
+        if(object@useContinuousBayes){
+                 fitArgsC$prior.mean <- object@coefPrior['loc', 'C',]
+                 fitArgsC$prior.scale <- object@coefPrior['scale', 'C',]
+                 fitArgsC$prior.df <- object@coefPrior['df', 'C', ]
+             }
     }
     
+    contFit <- if(object@useContinuousBayes) bayesglm.fit else glm.fit
     
-    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos]), fitArgsC))
-    object@fitD <- do.call(bayesglm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
+    object@fitC <- do.call(contFit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos],  weights=object@weightFun(object@response[pos])), fitArgsC))
+    object@fitD <- do.call(bayesglm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
 
     ## bayesglm doesn't correctly set the residual DOF
     object@fitC$df.residual <- sum(pos) - object@fitC$rank

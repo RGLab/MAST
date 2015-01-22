@@ -62,8 +62,8 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
 
     fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
-    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos]), fitArgsC))
-    object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=pos*1, family=binomial()), fitArgsD))
+    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos], weights=object@weightFun(object@response[pos])), fitArgsC))
+    object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
     object@fitted <- c(C=object@fitC$converged & object@fitC$df.residual>0, D=object@fitD$converged & object@fitD$df.residual>0)

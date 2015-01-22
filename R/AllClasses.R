@@ -261,7 +261,9 @@ setClass('LMlike',
              }
          })
 
-setClass('GLMlike', contains='LMlike')
+setClass('GLMlike', contains='LMlike', slots=c(weightFun='function'), prototype=list(weightFun=function(x){
+    ifelse(x>0, 1, 0)
+}))
 
 ##' Initialize a prior to be used a prior for BayeGLMlike/BayesGLMlike2
 ##'
@@ -285,15 +287,15 @@ defaultPrior <- function(names){
     ar
 }
 
-setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array'),
-         prototype=list(prior=defaultPrior(character(0))),
+setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array', useContinuousBayes='logical'),
+         prototype=list(prior=defaultPrior(character(0)), useContinuousBayes=FALSE),
          validity=function(object){
              ## if(length(object@coefPrior>0))
              ##     if(dim(object@coefPrior)[3] != sum(colnames(model.matrix(object))!='(Intercept)')) stop('prior must have same number of components as model.matrix')
              TRUE
          })
-setClass('BayesGLMlike2', contains='BayesGLMlike')
 setClass('BayesGLMlikeWeight', contains='BayesGLMlike')
+                                                                                      
 
 setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity=function(object){
     if(length(object@response)>0 & nrow(object@pseudoMM)>0){
