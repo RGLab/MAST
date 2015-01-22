@@ -290,7 +290,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 
 ##' Plot cutpoints and densities for thresholding
 ##'
-##' @param object output of \code{thresholdSCRNACountMatrix}
+##' @param x output of \code{thresholdSCRNACountMatrix}
 ##' @param ask if TRUE then will prompt before displaying each plot
 ##' @param wait.time pause (in seconds) between each plot
 ##' @param type one or more of the following: 'bin' (plot the genes by the binning used for thresholding), or 'gene' (plot thresholding by gene -- see next argument)
@@ -298,17 +298,17 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 ##' @param ... further arguments passed to \code{plot}
 ##' @return displays plots
 ##' @export
-plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, type='bin', indices=NULL, ...)
+plot.thresholdSCRNACountMatrix<-function(x, ask=FALSE, wait.time=0, type='bin', indices=NULL, ...)
 {
     type <- match.arg(type, c('bin', 'gene'), several.ok=TRUE)
     op <- par(ask=ask)
     par(mar=c(3,3,2,1), mgp=c(2,.7,0), tck=-.01)
     if('bin' %in% type){
         ## plot by bins
-        for(i in 1:length(object$density)){
-            if(!is.null(object$density[[i]])){
-                plot(object$density[[i]],main=names(object$cutpoint)[i], ...)
-                abline(v=object$cutpoint[i],col="red",lty=2)
+        for(i in 1:length(x$density)){
+            if(!is.null(x$density[[i]])){
+                plot(x$density[[i]],main=names(x$cutpoint)[i], ...)
+                abline(v=x$cutpoint[i],col="red",lty=2)
                 Sys.sleep(wait.time)
             }
         }
@@ -316,21 +316,21 @@ plot.thresholdSCRNACountMatrix<-function(object, ask=FALSE, wait.time=0, type='b
 
     if('gene' %in% type){
         ## plot by genes
-        uni_cond <- unique(object$conditions)
-        num_cond <- as.numeric(as.factor(object$conditions))
+        uni_cond <- unique(x$conditions)
+        num_cond <- as.numeric(as.factor(x$conditions))
         if(is.null(indices)){
             indices <- 10L
         }
         if(is.finite(indices) && length(indices)==1){
-            indices <- sample(ncol(object$original_data), indices)
+            indices <- sample(ncol(x$original_data), indices)
         }
-        if(any(indices < 1 | indices>ncol(object$original_data))) stop('`indices` must range between 1 and the number of columns of the count matrix.')
+        if(any(indices < 1 | indices>ncol(x$original_data))) stop('`indices` must range between 1 and the number of columns of the count matrix.')
         for(i in indices){
-            den <- density(object$original_data[,i])
-            plot(den, main=paste0('Index ', i, '(', colnames(object$original_data)[i], ')'), ...)
+            den <- density(x$original_data[,i])
+            plot(den, main=paste0('Index ', i, '(', colnames(x$original_data)[i], ')'), ...)
             for(j in seq_along(uni_cond)){
-                abline(v=with(object, cutpoint[bin[i,j]]), col=j, lty=2)
-                with(object, rug(original_data[j==num_cond,i], col=j))
+                abline(v=with(x, cutpoint[bin[i,j]]), col=j, lty=2)
+                with(x, rug(original_data[j==num_cond,i], col=j))
             }
         }
     }
@@ -376,9 +376,9 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
 
 ##' @export
 ##' @describeIn summary.thresholdSCRNACountMatrix prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
-print.summaryThresholdSCRNA <- function(object, ...){
-    class(object) <- class(object)[-length(class(object))]
-    m <- as.data.table(reshape::melt.list(object, na.rm=TRUE))
+print.summaryThresholdSCRNA <- function(x, ...){
+    class(x) <- class(x)[-length(class(x))]
+    m <- as.data.table(reshape::melt.list(x, na.rm=TRUE))
     m <- m[!is.na(value),]
     setnames(m, 'L1', 'metric')
     summ <- m[,list(stat=names(summary(value)), value=summary(value)),keyby=list(L2, metric)]

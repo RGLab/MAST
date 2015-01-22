@@ -3,11 +3,11 @@
 \alias{plot.thresholdSCRNACountMatrix}
 \title{Plot cutpoints and densities for thresholding}
 \usage{
-\method{plot}{thresholdSCRNACountMatrix}(object, ask = FALSE, wait.time = 0,
+\method{plot}{thresholdSCRNACountMatrix}(x, ask = FALSE, wait.time = 0,
   type = "bin", indices = NULL, ...)
 }
 \arguments{
-\item{object}{output of \code{thresholdSCRNACountMatrix}}
+\item{x}{output of \code{thresholdSCRNACountMatrix}}
 
 \item{ask}{if TRUE then will prompt before displaying each plot}
 
