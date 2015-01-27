@@ -428,7 +428,7 @@ thresholdMMfit<-function(log_data_list=NULL,cutpoints=NULL,plot=FALSE,G=3){
     if(length(cutpoints)>4){
       x<-length(cutpoints)%%4
     }else{
-      
+     x<-1
     }
     if(x>4){
       x<-4
