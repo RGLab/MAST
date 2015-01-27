@@ -106,7 +106,9 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param min_per_bin minimum number of genes within a bin
 #' @param absolute_min \code{numeric} giving a hard threshold below which everything is assumed to be noise
 #' @param return_log return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).
-#'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data
+#' @param G \code{integer} number of mixture model components to fit to the data above the threshold (default 2)
+#' @param plot \code{logical} whether or not to plot thresholding results
+#'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, as well as null component weights for each observation from the mixture model fit, and the original data
 #'@importFrom plyr ldply
 #'@export
 thresholdSCRNACountMatrix <-function( data_all              ,
@@ -117,7 +119,9 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       qt          = 0.975,
                                       min_per_bin = 50      ,
                                       absolute_min= 0.0     ,
-                                      return_log  = TRUE
+                                      return_log  = TRUE,
+                                      G=2,
+                                      plot=FALSE
                                     )
 {
 
@@ -192,7 +196,6 @@ thresholdSCRNACountMatrix <-function( data_all              ,
             x<-unlist(log_data[cond_stat_bins_array[,j]==i,conditions==j])
             log_data_list[[i]]<-c(log_data_list[[i]],x[x>0.0])
         }
-
     }
     #dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
     #peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
@@ -260,6 +263,20 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     } else {
          data_threshold <- data#log_data
     }
+    
+   #' Mixture model fit given cutpoints and bins
+   Zout<-thresholdMMfit(log_data_list=log_data_list,cutpoints=cutpoints,plot=plot,G=G)
+   data_null_weights<-matrix(1,nrow(data),ncol(data))
+   dimnames(data_null_weights)<-dimnames(data)
+   for( i in levels(cond_stat_bins)){
+     log_data_list[[i]]<-NULL
+     for( j in uni_cond){
+       #grab the data originally in the bin
+       x<-unlist(log_data[cond_stat_bins_array[,j]==i,conditions==j])
+       #grab the weights in the same fashion and set them to the output for the non-zero elements.
+       data_null_weights[cond_stat_bins_array[,j]==i,conditions==j][x>0.0]<-Zout[[i]][,1]
+     }
+   }
    
     for( j in uni_cond ){
         for( i in levels(cond_stat_bins) ){
@@ -267,6 +284,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
             data_threshold[cond_stat_bins_array[,j]==i,conditions==j][log_data[cond_stat_bins_array[,j]==i,conditions==j]<cutpoints[i]]<-0
         }
     }
+   
     nms                <- names(  cutpoints )
     cutpoints          <- unlist( cutpoints )
     names( cutpoints ) <- nms
@@ -281,8 +299,10 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                           cutpoint          = cutpoints,
                           bin               =  bin_all,
                           conditions        = conditions,
-                          density           = dens 
-                          ,peaks             = peaks, valleys= valleys)
+                          density           = dens, 
+                          peaks             = peaks, 
+                          valleys= valleys,
+                          null_weights=data_null_weights)
     class( res_obj )<- c( "list", "thresholdSCRNACountMatrix" )
     return( res_obj )
 
@@ -391,5 +411,78 @@ print.summaryThresholdSCRNA <- function(object, ...){
     invisible(dc)
 }
 
-
+#'thresholdMMfit
+#'
+#'Fit a gamma distribution to the data below the cutpoint. Fit a G component mixture to the data above the cutpoint.
+#'Compute the full density and calculate the mixture weights for each observation.
+#'@param log_data_list the list of binned data
+#'@param cutpoints the vector of cutpoints
+#'@param plot logical whether to show plots or not
+#'@param G number of components
+#'@author Greg Finak
+#'@import mclust
+#'@export
+thresholdMMfit<-function(log_data_list=NULL,cutpoints=NULL,plot=FALSE,G=3){
+  options(warn=-1)
+  if(plot==TRUE){
+    if(length(cutpoints)>4){
+      x<-length(cutpoints)%%4
+    }else{
+      
+    }
+    if(x>4){
+      x<-4
+    }
+    #4 x 4 grid at most
+    par(mfrow=c(x,4))
+  }
+  Zout<-list()
+  message("Fitting mixtures to binned genes")
+  for(i in names(cutpoints)){
+    dat<-log_data_list[[i]]
+    cut<-cutpoints[[i]]
+    
+    #'3-component Gaussian fit to positive part
+    fit_pos<-densityMclust(dat[which(dat>cut)],G=G)
+    
+    #'Gamma fit to negative part
+    #'Gradient Descent fit, starting at method of moment estimates
+    neg_data<-dat[dat<=cut]
+    ll<-function(par,data){-sum(dgamma(data,log=TRUE,shape = par[1],scale=par[2]))}
+    opt_fit<-optim(par=c(mean(neg_data)/(mean(neg_data)-mean(log(neg_data))),mean(neg_data)-mean(log(neg_data))),fn=ll,data=neg_data,method = "L-BFGS-B",lower = c(1e-10,1e-10))
+    #'Check for convergence
+    if(opt_fit$convergence!=0){
+      #Try Nelder Mead
+      opt_fit<-optim(par=c(mean(neg_data)/(mean(neg_data)-mean(log(neg_data))),mean(neg_data)-mean(log(neg_data))),fn=ll,data=neg_data,method="Nelder-Mead")
+      if(opt_fit$convergence!=0){
+        warning("Fitting gamma failed to converge during thresholding for bin ",i)
+      }
+    }
+    
+    #'Mixture proportions
+    p<-length(neg_data)/(length(neg_data)+fit_pos$n)
+    
+    #'Density of negative and positive parts
+    Dneg<-dgamma(dat,shape=opt_fit$par[1],scale=opt_fit$par[2])
+    Dpos<-dens(fit_pos$modelName,data = dat,logarithm = FALSE,parameters = fit_pos$parameters)
+    
+    #'Weights
+    z<-(p*Dneg)/((p*Dneg+(1-p)*Dpos))
+    Z<-cbind(z,1-z)
+    Z[order(dat),1]<-smooth(Z[order(dat),1])
+    Z[,2]<-1-Z[,1]
+    if(plot==TRUE){
+      plot(sort(dat),(p*Dneg+(1-p)*Dpos)[order(dat)],type="l",xlab="log(tpm)",ylab="density",main=paste0("Bin ",i))
+      hist(dat,prob=TRUE,add=TRUE,50)
+      abline(v=cut,lwd=2,col="black")
+      lines(x=sort(dat),Z[order(dat),1],type="l",col="red",lwd=1)
+      lines(x=sort(dat),Z[order(dat),2],type="l",col="green",lwd=1)
+    }
+    Zout[[i]]<-Z
+  }
+  message("Done")
+  names(Zout)<-names(cutpoints)
+  options(warn=0)
+  return(Zout)
+}
 
