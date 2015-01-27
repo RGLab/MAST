@@ -108,7 +108,7 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param return_log return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).
 #' @param G \code{integer} number of mixture model components to fit to the data above the threshold (default 2)
 #' @param plot \code{logical} whether or not to plot thresholding results
-#'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, as well as null component weights for each observation from the mixture model fit, and the original data
+#'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, as well as observation weights from the mixture model fit, and the original data
 #'@importFrom plyr ldply
 #'@export
 thresholdSCRNACountMatrix <-function( data_all              ,
@@ -266,7 +266,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     
    #' Mixture model fit given cutpoints and bins
    Zout<-thresholdMMfit(log_data_list=log_data_list,cutpoints=cutpoints,plot=plot,G=G)
-   data_null_weights<-matrix(1,nrow(data),ncol(data))
+   data_null_weights<-matrix(0,nrow(data),ncol(data))
    dimnames(data_null_weights)<-dimnames(data)
    for( i in levels(cond_stat_bins)){
      log_data_list[[i]]<-NULL
@@ -274,7 +274,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
        #grab the data originally in the bin
        x<-unlist(log_data[cond_stat_bins_array[,j]==i,conditions==j])
        #grab the weights in the same fashion and set them to the output for the non-zero elements.
-       data_null_weights[cond_stat_bins_array[,j]==i,conditions==j][x>0.0]<-Zout[[i]][,1]
+       data_null_weights[cond_stat_bins_array[,j]==i,conditions==j][x>0.0]<-Zout[[i]][,2]
      }
    }
    
@@ -302,7 +302,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                           density           = dens, 
                           peaks             = peaks, 
                           valleys= valleys,
-                          null_weights=data_null_weights)
+                          weights=data_null_weights)
     class( res_obj )<- c( "list", "thresholdSCRNACountMatrix" )
     return( res_obj )
 

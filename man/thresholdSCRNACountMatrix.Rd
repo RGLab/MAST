@@ -32,7 +32,7 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 \item{plot}{\code{logical} whether or not to plot thresholding results}
 }
 \value{
-\code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, as well as null component weights for each observation from the mixture model fit, and the original data
+\code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, as well as observation weights from the mixture model fit, and the original data
 }
 \description{
 An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
