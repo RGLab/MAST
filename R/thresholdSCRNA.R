@@ -426,7 +426,7 @@ thresholdMMfit<-function(log_data_list=NULL,cutpoints=NULL,plot=FALSE,G=3){
   options(warn=-1)
   if(plot==TRUE){
     if(length(cutpoints)>4){
-      x<-length(cutpoints)%%4
+      x<-floor(length(cutpoints)/4)
     }else{
      x<-1
     }
@@ -443,6 +443,9 @@ thresholdMMfit<-function(log_data_list=NULL,cutpoints=NULL,plot=FALSE,G=3){
     cut<-cutpoints[[i]]
     
     #'3-component Gaussian fit to positive part
+    if(sum(dat>cut)<10){
+      stop("Insufficient observations beyond cutpoint")
+    }
     fit_pos<-densityMclust(dat[which(dat>cut)],G=G)
     
     #'Gamma fit to negative part
@@ -469,8 +472,9 @@ thresholdMMfit<-function(log_data_list=NULL,cutpoints=NULL,plot=FALSE,G=3){
     #'Weights
     z<-(p*Dneg)/((p*Dneg+(1-p)*Dpos))
     Z<-cbind(z,1-z)
-    Z[order(dat),1]<-smooth(Z[order(dat),1])
+    Z[dat<1,1]<-0 #everything below 1 should be weighted zero.
     Z[,2]<-1-Z[,1]
+    
     if(plot==TRUE){
       plot(sort(dat),(p*Dneg+(1-p)*Dpos)[order(dat)],type="l",xlab="log(tpm)",ylab="density",main=paste0("Bin ",i))
       hist(dat,prob=TRUE,add=TRUE,50)
