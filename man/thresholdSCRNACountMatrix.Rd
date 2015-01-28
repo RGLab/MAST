@@ -39,6 +39,8 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 \description{
 An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
 of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
-binned data.
+binned data. You can adjust the bandwidth of the density estimation with \code{adj}. For each bin, the code will also fit a Gamma to the data on the left side of the cutpoint and a \code{G} component gaussian
+mixture to the data on the right side of the cutpoint. The complete data in the bin is modeled as a mixture of these two, and observation weights from this mixture are returned as the \code{weights} component of the result.
+If these are used for model fitting, the unthresholded data should be used. The code expects unlogged data as input.
 }
 
