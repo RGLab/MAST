@@ -6,7 +6,7 @@
 \usage{
 thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
   nbins = 10, bin_by = "median", qt = 0.975, min_per_bin = 50,
-  absolute_min = 0, return_log = TRUE, G = 2, plot = FALSE)
+  absolute_min = 0, return_log = TRUE, G = 2, plot = FALSE, adj = 1)
 }
 \arguments{
 \item{data_all}{\code{matrix} of counts.  Rows are cells and columns are genes.}
@@ -30,6 +30,8 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 \item{G}{\code{integer} number of mixture model components to fit to the data above the threshold (default 2)}
 
 \item{plot}{\code{logical} whether or not to plot thresholding results}
+
+\item{adj}{\code{numeric} specifying the adjustment to the bandwidth}
 }
 \value{
 \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, as well as observation weights from the mixture model fit, and the original data

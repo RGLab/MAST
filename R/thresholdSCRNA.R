@@ -108,6 +108,7 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param return_log return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).
 #' @param G \code{integer} number of mixture model components to fit to the data above the threshold (default 2)
 #' @param plot \code{logical} whether or not to plot thresholding results
+#' @param adj \code{numeric} specifying the adjustment to the bandwidth
 #'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, as well as observation weights from the mixture model fit, and the original data
 #'@importFrom plyr ldply
 #'@export
@@ -120,8 +121,9 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       min_per_bin = 50      ,
                                       absolute_min= 0.0     ,
                                       return_log  = TRUE,
-                                      G=2,
-                                      plot=FALSE
+                                      G=2,                                      
+                                      plot=FALSE,
+                                      adj=1
                                     )
 {
 
@@ -200,9 +202,9 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     #dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
     #peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
     #valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 1 ) )
-    dens   <- lapply( log_data_list, function( x )  { if(length(x)>2){ density( x, adjust = 1 ) } else{ NULL } })
-    peaks  <- lapply(          dens, function( dd ) { if( is.null(dd) ){ data.frame( x=0, y=0 ) }else{ find_peaks( dd$x,dd$y, adjust = 1 )}} ) 
-    valleys<- lapply(          dens, function( dd ) { if( is.null(dd) ){ list(0)} else{find_valleys( dd$x,dd$y, adjust = 1 ) } })
+    dens   <- lapply( log_data_list, function( x )  { if(length(x)>2){ density( x, adjust = adj ) } else{ NULL } })
+    peaks  <- lapply(          dens, function( dd ) { if( is.null(dd) ){ data.frame( x=0, y=0 ) }else{ find_peaks( dd$x,dd$y, adjust = adj )}} ) 
+    valleys<- lapply(          dens, function( dd ) { if( is.null(dd) ){ list(0)} else{find_valleys( dd$x,dd$y, adjust = adj ) } })
 
     single_modes<-do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,1]))))<1|(lapply(list(do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,2]))))),function(x)(x-median(na.omit(x)))/mad(na.omit(x)))[[1]]>2)
     #Check for single peaks found
@@ -476,7 +478,7 @@ thresholdMMfit<-function(log_data_list=NULL,cutpoints=NULL,plot=FALSE,G=3){
     Z[,2]<-1-Z[,1]
     
     if(plot==TRUE){
-      plot(sort(dat),(p*Dneg+(1-p)*Dpos)[order(dat)],type="l",xlab="log(tpm)",ylab="density",main=paste0("Bin ",i))
+      plot(sort(dat),(p*Dneg+(1-p)*Dpos)[order(dat)],type="l",xlab="log(tpm)",ylab="density",main=paste0("Bin ",i),ylim=c(0,1.1))
       hist(dat,prob=TRUE,add=TRUE,50)
       abline(v=cut,lwd=2,col="black")
       lines(x=sort(dat),Z[order(dat),1],type="l",col="red",lwd=1)
