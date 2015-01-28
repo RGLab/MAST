@@ -48,10 +48,10 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##'
 ##' @seealso GLMlike, LMERlike
 ##' @import stringr
-zlm <- function(formula, data, method='glm',silent=TRUE, ...){
+zlm <- function(formula, data, weights, method='glm',silent=TRUE, ...){
     ## perhaps we should be generic, but since we are dispatching on second argument, which might be an S3 class, let's just do this instead.
     if(inherits(data, 'SingleCellAssay')){
-        return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, ...))
+        return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, weights=weights, ...))
     }
     
     if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
@@ -62,8 +62,8 @@ zlm <- function(formula, data, method='glm',silent=TRUE, ...){
     fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
     ## get RHS
     Formula <- as.formula(paste0('~', fsplit[1,2]))
-
-    obj <- new(methodDict[keyword==method, lmMethod], formula=Formula, design=data, response=resp)
+    if(missing(weights)) weights <- (resp>0)*1
+    obj <- new(methodDict[keyword==method, lmMethod], formula=Formula, design=data, response=resp, weights=weights)
     obj <- fit(obj)
     list(cont=obj@fitC, disc=obj@fitD)
 }
@@ -112,7 +112,7 @@ summary.zlm <- function(out){
 ##' vcov(zlmVbeta, 'D')[,,'CD27']
 ##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 ##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
+zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE,weights, ...){
     ## Default call
     if(missing(LMlike)){
         ## Which class are we using for the fits...look it up by keyword
@@ -150,6 +150,21 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     ## avoiding repeated calls to the S4 object speeds calls on large sca
     ## due to overzealous copying semantics on R's part
     ee <- exprs(sca)
+    ## get weights
+    if(missing(weights) && ('weights' %in% dimnames(sca)[[3]])){
+        ww <- getExprs(sca, 'weights')
+    } else if(!missing(weights)){
+        ww <- weights
+    } else{
+        ww <- (ee>0)*1
+    }
+    if(!all(dim(ee)==dim(ww))) stop("Weights must be same dimension as 'sca'")
+    if(any(is.na(ww))){
+        warning("NA weights found. Setting to zero.")
+        ww[is.na(ww)] <- 0
+    }
+    if(any(ww<0) || any(ww>1)) stop("Some weights were NA, less than 0 or greater than 1!")
+    
     genes <- colnames(ee)
     ng <- length(genes)
     MM <- model.matrix(obj)
@@ -158,7 +173,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     listEE <- setNames(seq_len(ng), genes)
     ## in hopes of finding a typical gene
     upperQgene <- which(rank(freq(sca), ties.method='random')==floor(.75*ng))
-    obj <- fit(obj, ee[,upperQgene], silent=silent)
+    obj <- fit(obj, response=ee[,upperQgene], weights=ww[,upperQgene], silent=silent)
 
     ## called internally to do fitting, but want to get local variables in scope of function
     nerror <- 0
@@ -166,7 +181,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         ## initialize outputs
         hookOut <- NULL
         tt <- try({
-            obj <- fit(obj, response=ee[,idx], silent=silent, quick=TRUE)
+            obj <- fit(obj, response=ee[,idx], weights=ww[,idx], silent=silent, quick=TRUE)
             if(!is.null(hook)) hookOut <- hook(obj)
             nerror <- 0
             if((idx %% 20)==0) message('.', appendLF=FALSE)

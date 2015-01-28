@@ -78,6 +78,13 @@ setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
 ##' @aliases layername,DataLayer-method
 setGeneric('layername', function(x) standardGeneric('layername'))
 
+##' Get Expression matrix by layer name
+##'
+##' @param object DataLayer
+##' @return matrix
+##' @export
+setGeneric('getExprs', function(object, layer) standardGeneric('getExprs'))
+
 ##' Set name of active layer
 ##'
 ##' @param x DataLayer

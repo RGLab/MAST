@@ -130,12 +130,12 @@ test_that('No holes in output', {
 
 context('Test hooks')
 test_that('Identity Hook', {
-     zz <- zlm.SingleCellAssay(value ~ Population, fd2, hook=function(x) x)
+     zz <- zlm.SingleCellAssay(~ Population, fd2, hook=function(x) x)
      expect_is(revealHook(zz)[[1]], 'GLMlike')
 })
 
 test_that('Residuals Hook', {
-     zz <- zlm.SingleCellAssay(value ~ Population, fd2, hook=residualsHook)
+     zz <- zlm.SingleCellAssay( ~ Population, fd2, hook=residualsHook)
      fd3 <- collectResiduals(zz, fd2)
      expect_is(fd3, 'SingleCellAssay')
 })

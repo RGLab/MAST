@@ -19,7 +19,8 @@ Imports:
     abind,
     methods,
     arm,
-    parallel
+    parallel,
+    mclust
 Suggests:
     flowClust(>= 2.99),
     knitr,

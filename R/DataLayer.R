@@ -38,6 +38,21 @@ setMethod("exprs",signature(object="DataLayer"),function(object){
   o
 })
 
+setMethod('getExprs', signature(object='DataLayer', layer='numeric'), function(object, layer){
+    if(layer<1 | layer > dim(x)[3]) stop("'layer' out of bounds.")
+    o <- object@.Data[,,layer, drop=FALSE]
+    dn <- dimnames(o)
+    dim(o) <- dim(o)[-3]
+    dimnames(o) <- dn[-3]
+    o
+})
+
+
+setMethod('getExprs', signature(object='DataLayer', layer='character'), function(object, layer){
+    layerI <- match(layer, dimnames(object)[[3]])
+    if(is.na(layer) || !is.numeric(layer)) stop("'layer'", layer, 'not found')
+    getExprs(object, layerI)
+})
 
 setMethod('initialize', 'DataLayer',
           function(.Object, ...){
