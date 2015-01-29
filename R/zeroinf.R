@@ -51,7 +51,8 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 zlm <- function(formula, data, weights, method='glm',silent=TRUE, ...){
     ## perhaps we should be generic, but since we are dispatching on second argument, which might be an S3 class, let's just do this instead.
     if(inherits(data, 'SingleCellAssay')){
-        return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, weights=weights, ...))
+        if(!missing(weights)) stop("Specify `weights` as a layer in your `SingleCellAssay` object.")
+        return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, ...))
     }
     
     if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
@@ -112,7 +113,7 @@ summary.zlm <- function(out){
 ##' vcov(zlmVbeta, 'D')[,,'CD27']
 ##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 ##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE,weights, ...){
+zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
     ## Default call
     if(missing(LMlike)){
         ## Which class are we using for the fits...look it up by keyword
@@ -151,14 +152,11 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     ## due to overzealous copying semantics on R's part
     ee <- exprs(sca)
     ## get weights
-    if(missing(weights) && ('weights' %in% dimnames(sca)[[3]])){
-        ww <- getExprs(sca, 'weights')
-    } else if(!missing(weights)){
-        ww <- weights
-    } else{
+    if('weights' %in% dimnames(sca)[[3]]){
+        ww <- exprsLayer(sca, 'weights')
+    } else {
         ww <- (ee>0)*1
     }
-    if(!all(dim(ee)==dim(ww))) stop("Weights must be same dimension as 'sca'")
     if(any(is.na(ww))){
         warning("NA weights found. Setting to zero.")
         ww[is.na(ww)] <- 0

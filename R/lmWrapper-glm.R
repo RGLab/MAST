@@ -66,7 +66,12 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     object@fitD <- hushWarning(do.call(glm.fit, c(list(x=object@modelMatrix, y=object@weights, family=binomial()), fitArgsD)), fixed("non-integer #successes in a binomial glm"))
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
-    object@fitted <- c(C=object@fitC$converged & object@fitC$df.residual>0, D=object@fitD$converged & object@fitD$df.residual>0)
+
+     object@fitted <- c(C=object@fitC$converged &
+                           object@fitC$df.residual>0, #kill unconverged or empty
+                       D=object@fitD$converged &      #kill unconverged
+                           (object@fitD$df.residual>0) & #note that we technically get a fit here, but it's probably not worth using
+                               (min(sum(object@weights), sum(1-object@weights))-object@fitD$rank)>0)
     ## cheap additional test for convergence
     ## object@fitted['D'] <- object@fitted['D'] & (object@fitD$null.deviance >= object@fitD$deviance)
     ## update dispersion, possibly shrinking by prior

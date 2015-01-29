@@ -43,7 +43,7 @@ if(require('lme4')){
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
     test_that('zlm.SingleCellAssay can run lmer', {
-        z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer')
+        z <- hushWarning(zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer'), '(Model failed to converge)|(fixed-effect model matrix is rank deficient)|(number of columns of result is not a multiple of vector length)')
         expect_is(z, 'ZlmFit')
         expect_equal(nrow(z@df.null), 20)
         expect_equal(dim(z@vcovC)[[3]], 20)
@@ -119,7 +119,7 @@ test_that('No holes in output', {
     ee <- exprs(fd2)
     ee[1,2] <- NA
     exprs(fd2) <- ee
-    zze <- zlm.SingleCellAssay(~Stim.Condition, fd2)
+    zze <- hushWarning(zlm.SingleCellAssay(~Stim.Condition, fd2), fixed('NA weights found.'))
     expect_equal(nrow(zze@coefD), ncol(fd2))
     expect_true(all(is.na(zze@coefD[2,])))
     expect_equal(dim(zze@vcovD)[3], ncol(fd2))
@@ -157,3 +157,24 @@ test_that('Can do ebayes shrinkage using bayesglm', {
 try(detach('package:arm'), silent=TRUE)
 }
 
+context('Test weights')
+test_that('weights can zero out positive observations', {
+    weights <- (exprs(fd2)>0)*1
+    fd2 <- addlayer(fd2, 'weights')
+    exprsLayer(fd2, 'weights') <- weights
+    zzFirst <- zlm.SingleCellAssay(~Population, fd2, ebayes=F, method='bayesglm')
+    ## now all positive, but we should get same fit except for continuous intercept
+    
+    exprsLayer(fd2, 'et') <- exprsLayer(fd2,'et')+2
+    
+    zzSecond <- zlm.SingleCellAssay(~Population, fd2, ebayes=F, method='bayesglm')
+    expect_equal(zzFirst@converged[,'D'], zzSecond@converged[,'D'])
+    expect_equal(coef(zzFirst, 'C')[,-1], coef(zzSecond, 'C')[,-1])
+    expect_equal(coef(zzFirst, 'D'), coef(zzSecond, 'D'))
+
+    ## weights persist for LRT
+    l1 <- lrTest(zzFirst, 'Population')
+    l2 <- lrTest(zzSecond, 'Population')
+    expect_equal(l1, l2)
+
+})

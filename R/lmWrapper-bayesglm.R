@@ -29,13 +29,13 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
 
     ## bayesglm doesn't correctly set the residual DOF
     object@fitC$df.residual <- sum(pos) - object@fitC$rank
-    object@fitD$df.residual <- length(pos) - object@fitD$rank
+    object@fitD$df.residual <- sum(object@weights) - object@fitD$rank
     
     object@fitted <- c(C=object@fitC$converged &
                            object@fitC$df.residual>0, #kill unconverged or empty
                        D=object@fitD$converged &      #kill unconverged
                            (object@fitD$df.residual>0) & #note that we technically get a fit here, but it's probably not worth using
-                               (min(sum(!pos), sum(pos))-object@fitD$rank)>0)
+                               (min(sum(object@weights), sum(1-object@weights))-object@fitD$rank)>0)
     object <- .dispersion(object)
     
     if(!silent & !all(object@fitted)) warning('At least one component failed to converge')
