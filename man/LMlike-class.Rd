@@ -15,10 +15,15 @@ To implement a new type of zero-inflated model, extend this class.
 \item{fitC}{The continuous fit}
 \item{fitD}{The discrete fit}
 \item{response}{The left hand side of the regression}
+\item{weights}{(Optional) weights giving the probability that an observation comes from the Normal (continuous) component.}
 \item{fitted}{A \code{logical} with components "C" and "D", TRUE if the respective component has converge}
 \item{formula}{A \code{formula} for the regression}
 \item{fitArgsC}{}
 \item{fitArgsD}{Both \code{list}s giving arguments that will be passed to the fitter (such as convergence criteria or case weights)}
+\item{priorVar}{}
+\item{priorDOF}{shrinkage weights for the variance of the continuous component}
+\item{defaultCoef}{}
+\item{defaultVcov}{Used internally to speed calls to vcov/coef}
 }
 }
 \seealso{
