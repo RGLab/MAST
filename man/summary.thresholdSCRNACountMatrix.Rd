@@ -6,7 +6,7 @@
 \usage{
 summary.thresholdSCRNACountMatrix(object, ...)
 
-\method{print}{summaryThresholdSCRNA}(object, ...)
+\method{print}{summaryThresholdSCRNA}(x, ...)
 }
 \arguments{
 \item{object}{a \code{thresholdSCRNACountMatrix}}

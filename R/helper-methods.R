@@ -32,3 +32,14 @@ reraise <- function(err, convertToWarning=FALSE, silent=FALSE){
     return(err)
 }
 
+##' Selectively muffle warnings based on output
+##'
+##' @param expr an expression
+##' @param regexp a regexp to be matched (with str_detect)
+##' @return the result of expr
+##' @export
+hushWarning <- function(expr, regexp){
+    withCallingHandlers(expr, warning=function(w){
+        if(str_detect(conditionMessage(w), regexp)) invokeRestart("muffleWarning")
+    })
+}

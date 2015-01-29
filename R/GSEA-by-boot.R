@@ -76,7 +76,10 @@ Drop <- function(x, d){
 ##' Gene set analysis for hurdle model
 ##'
 ##' Modules defined in \code{sets} are tested for average differences in expression from the "average" gene.
-##' By using bootstraps, the between-gene covariance of terms in the hurdle model is found, and is used to adjust for coexpression between genes
+##' By using bootstraps, the between-gene covariance of terms in the hurdle model is found, and is used to adjust for coexpression between genes.
+##' We drop genes if the coefficient we are testing was not estimible in original model fit in \code{zFit} or in any of the bootstrap replicates (evidenced an \code{NA} in the bootstrap array).  This might yield overly conservative inference.
+##' Since bootstrapping is a randomized procedure, the degrees of freedom of a module (and its variance parameters) might differ from run-to-run.
+##' You might try setting \code{var_estimate='modelbased'} to relax this requirement by assuming independence between genes and then using the asymptotic covariance estimates, which are deterministic, but may result in overly-generous inference.
 ##'
 ##' @section \code{control}:
 ##' \code{control} is a list with elements:
@@ -84,7 +87,7 @@ Drop <- function(x, d){
 ##' \item \code{n_randomize}, giving the number of genes to sample to approximate the non-module average expression. Set to \code{Inf} to turn off the approximation (the default).
 ##' \item \code{var_estimate}, giving the method used to estimate the variance of the modules.  \code{bootall} uses the bootstrapped covariance matrices.  \code{bootdiag} uses only the diagonal of the bootstrapped covariance matrix (so assuming independence across genes). \code{modelbased} assumes independence across genes and uses the variance estimated from the model.}
 ##' @section Return Value:
-##' A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete or 'cont'inuous), "metric" ('stat' gives the average of the coefficient, 'var' gives the variance of that average, 'dof' gives the number of genes in the set), "group" ('test' for the genes in test-set, "null" for all genes outside the test-set).
+##' A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete or 'cont'inuous), "metric" ('stat' gives the average of the coefficient, 'var' gives the variance of that average, 'dof' gives the number of genes that were actually tested in the set), "group" ('test' for the genes in test-set, "null" for all genes outside the test-set).
 ##' @param zFit object of class ZlmFit
 ##' @param boots bootstraps of zFit
 ##' @param sets list of indices of genes
@@ -147,10 +150,15 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     tstat <- cbind(C=CC[,testIdx],
                    D=CD[,testIdx])
     if(var_est!='modelbased'){
+        ## put bootstraps of coefficient of interest into array
         bootstat <- boots[,testIdx,,]
     } else{
+        ## put model-based covariances into array (with trailing dimension=1)
         dimb['rep'] <- Inf
-        bootstat <- array(c(vcov(zFit, 'C')[testIdx,testIdx,], vcov(zFit,'D')[testIdx,testIdx,]), dim=c(dimb['genes'], 2, 1), dimnames=list(genes=dnb$genes, comp=c('C', 'D'), rep='1'))
+        bootstat <- array(c(vcov(zFit, 'C')[testIdx,testIdx,],
+                            vcov(zFit,'D')[testIdx,testIdx,]),
+                          dim=c(dimb['genes'], 2, 1),
+                          dimnames=list(genes=dnb$genes, comp=c('C', 'D'), rep='1'))
     }
     
     natstat <- is.na(tstat)
@@ -207,7 +215,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
             }
 
             if(returnCor && length(idx)>1){ # so we don't emit warnings or die on empty or singleton idx
-                ccp <- suppressWarnings(cov2cor(tcp))
+                ccp <- hushWarnings(cov2cor(tcp), fixed("diag(.) had 0 or NA entries"))
                 vstat['avgCor', comp] <- mean(ccp[upper.tri(ccp)], na.rm=TRUE)
             }
         }   

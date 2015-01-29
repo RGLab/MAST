@@ -22,7 +22,10 @@ gseaAfterBoot(zFit, boots, sets, hypothesis, control = list(n_randomize = Inf,
 }
 \description{
 Modules defined in \code{sets} are tested for average differences in expression from the "average" gene.
-By using bootstraps, the between-gene covariance of terms in the hurdle model is found, and is used to adjust for coexpression between genes
+By using bootstraps, the between-gene covariance of terms in the hurdle model is found, and is used to adjust for coexpression between genes.
+We drop genes if the coefficient we are testing was not estimible in original model fit in \code{zFit} or in any of the bootstrap replicates (evidenced an \code{NA} in the bootstrap array).  This might yield overly conservative inference.
+Since bootstrapping is a randomized procedure, the degrees of freedom of a module (and its variance parameters) might differ from run-to-run.
+You might try setting \code{var_estimate='modelbased'} to relax this requirement by assuming independence between genes and then using the asymptotic covariance estimates, which are deterministic, but may result in overly-generous inference.
 }
 \section{\code{control}}{
 
@@ -34,7 +37,7 @@ By using bootstraps, the between-gene covariance of terms in the hurdle model is
 
 \section{Return Value}{
 
-A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete or 'cont'inuous), "metric" ('stat' gives the average of the coefficient, 'var' gives the variance of that average, 'dof' gives the number of genes in the set), "group" ('test' for the genes in test-set, "null" for all genes outside the test-set).
+A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete or 'cont'inuous), "metric" ('stat' gives the average of the coefficient, 'var' gives the variance of that average, 'dof' gives the number of genes that were actually tested in the set), "group" ('test' for the genes in test-set, "null" for all genes outside the test-set).
 }
 \examples{
 data(vbetaFA)
