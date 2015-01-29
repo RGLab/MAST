@@ -71,3 +71,16 @@ test_that('combine works', {
   expect_is(c, 'DataLayer')
   expect_equivalent(c, dl)
 })
+
+context("Add layer")
+test_that('Can add layer', {
+    dl2 <- addlayer(dl, 'new')
+    expect_true(all(is.na(exprsLayer(dl2, 'new'))))
+    expect_equivalent(exprsLayer(dl2, 1), exprs(dl))
+
+    exprsLayer(dl2, 'new') <- 999
+    expect_true(all(exprsLayer(dl2, 'new')==999))
+    layer(dl2) <- 'new'
+    expect_true(all(exprs(dl2)==999))
+
+})

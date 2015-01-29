@@ -1,4 +1,3 @@
-
 ##' @export
 setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, name){
   newLayer <- array(NA, dim=c(nrow(x), ncol(x), 1), dimnames=c(dimnames(x)[-3], name))
@@ -21,38 +20,33 @@ setReplaceMethod('layername', signature(x='DataLayer', 'character'), function(x,
 ##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
 ##'
 ##' Return or set a matrix of the measurement: cells by primerids
-##' @title exprs
-##' @name exprs
 ##' @param object DataLayer
-##' @return numeric matrix
-##' @docType methods
-##' @rdname exprs-methods
-##' @aliases exprs,DataLayer-method
+##' @param layernm optional \code{character} or \code{numeric} giving the expression layer to be returned
 ##' @return a \code{matrix} of measurement values with wells on the rows and features on the columns of the default layer
+##' @aliases exprsLayer-DataLayer-character
+##' @aliases exprsLayer-DataLayer-missing
+##' @aliases exprs-DataLayer
 ##' @export
-setMethod("exprs",signature(object="DataLayer"),function(object){
-  o <- object@.Data[,,layer(object), drop=FALSE]
-  dn <- dimnames(o)
-  dim(o) <- dim(o)[-3]
-  dimnames(o) <- dn[-3]
-  o
-})
-
-setMethod('getExprs', signature(object='DataLayer', layer='numeric'), function(object, layer){
-    if(layer<1 | layer > dim(x)[3]) stop("'layer' out of bounds.")
-    o <- object@.Data[,,layer, drop=FALSE]
+setMethod("exprsLayer",signature(object="DataLayer", layernm='numeric'),function(object, layernm){
+    if(length(layernm)>1 || is.na(layernm) || layernm<1 || layernm > dim(object)[3]) stop("layer '", layernm, "' out of bounds.")
+    o <- object@.Data[,,layernm, drop=FALSE]
     dn <- dimnames(o)
     dim(o) <- dim(o)[-3]
     dimnames(o) <- dn[-3]
-    o
+  o
+})
+
+setMethod('exprsLayer',signature(object="DataLayer", layernm='character'),function(object, layernm){
+    layernm <- match(layernm, dimnames(object)[[3]])
+    exprsLayer(object, layernm)
 })
 
 
-setMethod('getExprs', signature(object='DataLayer', layer='character'), function(object, layer){
-    layerI <- match(layer, dimnames(object)[[3]])
-    if(is.na(layer) || !is.numeric(layer)) stop("'layer'", layer, 'not found')
-    getExprs(object, layerI)
+setMethod('exprsLayer',signature(object="DataLayer", layernm='missing'),function(object, layernm){
+    exprsLayer(object, layer(object))
 })
+
+setMethod('exprs', signature(object='DataLayer'),function(object) exprsLayer(object))
 
 setMethod('initialize', 'DataLayer',
           function(.Object, ...){
@@ -71,14 +65,33 @@ setMethod('initialize', 'DataLayer',
 ##' @exportMethod "exprs<-"
 ##' @docType methods
 ##' @aliases exprs<-,DataLayer,ANY-method
-setReplaceMethod('exprs', c('DataLayer', 'ANY'),
-                 function(object, value){
-                   if(!is.null(dim(value)) && !conform(object, value)) stop('Replacement must be same dimension as target')
-                   object[[,]] <- value
+setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='numeric', value='ANY'),
+                 function(object, layernm, ..., value){
+                     if(!is.null(dim(value)) && !conform(object, value)) stop('Replacement must be same dimension as target')
+                     if(length(layernm)>1 || is.na(layernm) || layernm<1 || layernm > dim(object)[3]) stop("layer '", layernm, "' out of bounds.")
+                   object@.Data[,,layernm] <- value
                    object@valid <- FALSE
                    object
                  })
 
+setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='character', value='ANY'),
+                 function(object, layernm, ..., value){
+                     layernm <- match(layernm, dimnames(object)[[3]])
+                     exprsLayer(object, layernm) <- value
+                     object
+                 })
+
+setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='missing', value='ANY'),
+                 function(object, layernm, ..., value){
+                     layernm <- layer(object)
+                     exprsLayer(object, layernm) <- value
+                     object
+                 })
+
+setReplaceMethod('exprs', c(object='DataLayer', value='ANY'), function(object, value){
+    exprsLayer(object) <- value
+    object
+})
 
 setMethod('conform', c('DataLayer', 'ANY'),
           function(dl, other){

@@ -78,12 +78,23 @@ setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
 ##' @aliases layername,DataLayer-method
 setGeneric('layername', function(x) standardGeneric('layername'))
 
-##' Get Expression matrix by layer name
+##' Get Expression matrix by layername
 ##'
 ##' @param object DataLayer
+##' @param ANY layernm
 ##' @return matrix
 ##' @export
-setGeneric('getExprs', function(object, layer) standardGeneric('getExprs'))
+##' @importMethodsFrom Biobase exprs
+##' @importMethodsFrom Biobase exprs<-
+setGeneric('exprsLayer', function(object, layernm, ...) standardGeneric('exprsLayer'))
+
+##' Set an Expression matrix by layername
+##'
+##' @param object DataLayer
+##' @param ANY layernm
+##' @return matrix
+##' @export
+setGeneric('exprsLayer<-', function(object, layernm, ..., value) standardGeneric('exprsLayer<-'))
 
 ##' Set name of active layer
 ##'
