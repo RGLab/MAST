@@ -27,4 +27,4 @@ simMat <- aaply(1:p, 1, function(i){
     sim1SCA(N, mu1[i], mu0[i], sigma1[i], sigma0[i], pi[i])
 })
 
-tt <- thresholdSCRNACountMatrix(2^(simMat)-1, nbins=10, plot=T)
+##tt <- thresholdSCRNACountMatrix(2^(simMat)-1, nbins=10, plot=T)

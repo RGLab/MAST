@@ -43,7 +43,7 @@ test_that("Only return coef works", {
 
 test_that("Bootstrap", {
     zf <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
-    boot <- bootVcov1(zf, R=3)
+    boot <- hushWarning(bootVcov1(zf, R=3), fixed('never estimible'))
     expect_is(boot, 'array')
     ## rep, genes, coef, comp
     expect_equal(dim(boot),c(3, dim(coef(zf, 'D')), 2))
