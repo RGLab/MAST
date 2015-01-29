@@ -215,7 +215,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
             }
 
             if(returnCor && length(idx)>1){ # so we don't emit warnings or die on empty or singleton idx
-                ccp <- hushWarnings(cov2cor(tcp), fixed("diag(.) had 0 or NA entries"))
+                ccp <- hushWarning(cov2cor(tcp), fixed("diag(.) had 0 or NA entries"))
                 vstat['avgCor', comp] <- mean(ccp[upper.tri(ccp)], na.rm=TRUE)
             }
         }   
