@@ -4,7 +4,11 @@
 \name{exprs}
 \alias{exprs}
 \alias{exprs<-,DataLayer,ANY-method}
+\title{exprs methods}
 \usage{
-\S4method{exprsLayer}{DataLayer}(object) <- value
+\S4method{exprsLayer}{DataLayer,numeric}(object, layernm, ...) <- value
+}
+\description{
+exprs methods
 }
 

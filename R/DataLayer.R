@@ -62,6 +62,7 @@ setMethod('initialize', 'DataLayer',
 ##' @import Biobase
 ##' @rdname exprs-methods
 ##' @name exprs
+#' @title exprs methods
 ##' @exportMethod "exprs<-"
 ##' @docType methods
 ##' @aliases exprs<-,DataLayer,ANY-method

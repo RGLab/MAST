@@ -296,8 +296,10 @@ thresholdSCRNACountMatrix <-function( data_all              ,
   names( cutpoints ) <- nms
   print( cutpoints )
   data_threshold_all                  <- data_all*0
+  weights_all<- data_all*0
   #data_threshold_all[comp_zero_idx, ] <- 0
   data_threshold_all[!comp_zero_idx,] <- data_threshold #2^( data_threshold ) - 1
+  weights_all[!comp_zero_idx,]<-data_null_weights
   bin_all       <- factor(cond_stat_bins_array)
   dim(bin_all)  <- dim(cond_stat_bins_array)
   res_obj       <- list( counts_threshold = t(data_threshold_all),
@@ -308,7 +310,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                          density           = dens, 
                          peaks             = peaks, 
                          valleys= valleys,
-                         weights=data_null_weights)
+                         weights=weights_all)
   class( res_obj )<- c( "list", "thresholdSCRNACountMatrix" )
   return( res_obj )
   
@@ -478,8 +480,8 @@ thresholdMMfit<-function(log_data_list=NULL,cutpoints=NULL,plot=FALSE,G=3){
     #'Weights
     z<-(p*Dneg)/((p*Dneg+(1-p)*Dpos))
     Z<-cbind(z,1-z)
-    Z[dat<1,1]<-0 #everything below 1 should be weighted zero.
-    Z[,2]<-1-Z[,1]
+    Z[dat<1,2]<-0 #everything below 1 should be weighted zero.
+    Z[,1]<-1-Z[,2]
     
     if(plot==TRUE){
       plot(sort(dat),(p*Dneg+(1-p)*Dpos)[order(dat)],type="l",xlab="log(tpm)",ylab="density",main=paste0("Bin ",i),ylim=c(0,1.1))
@@ -494,5 +496,54 @@ thresholdMMfit<-function(log_data_list=NULL,cutpoints=NULL,plot=FALSE,G=3){
   names(Zout)<-names(cutpoints)
   options(warn=0)
   return(Zout)
+}
+
+#' Threshold SingleCellAssay
+#' 
+#' Threshold a SingleCellAssay object. Uses the "count" layer by default to call \code{thresholdSCRNACountMatrix}. The parameter \code{isLog} is a \code{logical} specifying whether \code{layername} is log transformed (i.e. log counts).
+#' @param assay \code{SingleCellAssay} object.
+#' @param layername \code{character} the name of the layer to use for thresholding. Defaults to \code{"count"}.
+#' @param isLog \code{logical} default \code{FALSE}, specifies if \code{layername} is log transformed.
+#' @name thresholdRNASeqSingleCellAssay
+#' @title Threshold and RNASeq SingleCellAssay object
+#' @param ... additional arguments passed on to \code{thresholdSCRNACountMatrix}.
+#' \code{conditions} NULL by default, \code{cutbins} pre-specified cutpoints, \code{nbins} number of bins, \code{bin_by} bin by "median" by default, \code{qt} quantile 0.975 default, \code{min_per_bin} min features per bin (50), \code{absolute_min} lower level below which expression is off, \code{return_log} return a log transformed matrix (TRUE), \code{G} number of mixture components to fit (2), \code{plot} the mixture fit (FALSE), \code{adj} adjust bandwidth (1).
+#' @return \code{SingleCellAssay} with additional layers \code{layername_t} the thresholded layer, and \code{weights} the estimated weights for each observation.
+#' @export
+thresholdRNASeqSingleCellAssay<-function(assay=NULL,layername="count",isLog=FALSE,...){
+  error<-try(layer(assay)<-layername)
+  if(inherits(error,"try-error")){
+    stop("No layer ",layername," found in assay object")
+  }
+  if(layername=="count"&isLog){
+    stop("Layer is ",layername," but isLog=",isLog,". Assay \"count\" layer should not be log transformed")
+  }
+  M<-exprs(assay)
+  if(isLog){
+    M<-exp(M)-1
+  }
+  result<-thresholdSCRNACountMatrix(M,...)
+  if(is.null(list(...)[["return_log"]])){
+    return_log=FALSE
+  }else{
+    return_log=list(...)[["return_log"]]
+  }
+  if(return_log){
+    message("Returning log(",layername,") thresholded data in log_",layername,"_t")
+    assay<-addlayer(assay,paste0("log_",layername,"_t"))
+    layer(assay)<-paste0("log_",layername,"_t")
+    exprs(assay)<-result$counts_threshold
+  }else{
+    message("Returning thresholded ",layername," data in ",layername,"_t")
+    assay<-addlayer(assay,paste0(layername,"_t"))
+    layer(assay)<-paste0(layername,"_t")
+    exprs(assay)<-result$counts_threshold
+  }
+  message("Returning weights in layer \"weights\"")
+  assay<-addlayer(assay,"weights")
+  layer(assay)<-"weights"
+  exprs(assay)<-t(result$weights)
+  layer(assay)<-layername
+  return(assay)
 }
 
