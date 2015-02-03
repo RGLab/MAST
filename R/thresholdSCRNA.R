@@ -308,7 +308,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                          density           = dens, 
                          peaks             = peaks, 
                          valleys= valleys,
-                         weights=data_null_weights)
+                         weights=t(data_null_weights))
   class( res_obj )<- c( "list", "thresholdSCRNACountMatrix" )
   return( res_obj )
   
