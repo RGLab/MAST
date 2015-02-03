@@ -17,15 +17,7 @@ setReplaceMethod('layername', signature(x='DataLayer', 'character'), function(x,
   x
 })
 
-##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
-##'
-##' Return or set a matrix of the measurement: cells by primerids
-##' @param object DataLayer
-##' @param layernm optional \code{character} or \code{numeric} giving the expression layer to be returned
-##' @return a \code{matrix} of measurement values with wells on the rows and features on the columns of the default layer
-##' @aliases exprsLayer-DataLayer-character
-##' @aliases exprsLayer-DataLayer-missing
-##' @aliases exprs-DataLayer
+##' @describeIn exprsLayer Return layer \code{layernm}.
 ##' @export
 setMethod("exprsLayer",signature(object="DataLayer", layernm='numeric'),function(object, layernm){
     if(length(layernm)>1 || is.na(layernm) || layernm<1 || layernm > dim(object)[3]) stop("layer '", layernm, "' out of bounds.")
@@ -36,16 +28,20 @@ setMethod("exprsLayer",signature(object="DataLayer", layernm='numeric'),function
   o
 })
 
+##' @describeIn exprsLayer  Return layer \code{layernm}.
 setMethod('exprsLayer',signature(object="DataLayer", layernm='character'),function(object, layernm){
     layernm <- match(layernm, dimnames(object)[[3]])
     exprsLayer(object, layernm)
 })
 
-
+##' @describeIn exprsLayer Return current layer.
 setMethod('exprsLayer',signature(object="DataLayer", layernm='missing'),function(object, layernm){
     exprsLayer(object, layer(object))
 })
 
+
+##' @export exprs
+##' @describeIn exprsLayer Return current layer.
 setMethod('exprs', signature(object='DataLayer'),function(object) exprsLayer(object))
 
 setMethod('initialize', 'DataLayer',
@@ -57,14 +53,13 @@ setMethod('initialize', 'DataLayer',
             dn <- dimnames(.Object@.Data)
             dimnames(.Object@.Data) <-if(is.null(dn)) list(wells=NULL, features=NULL, layers=NULL) else dn            
             .Object
-          })
+        })
 
-##' @import Biobase
-##' @rdname exprs-methods
-##' @name exprs
-##' @exportMethod "exprs<-"
-##' @docType methods
-##' @aliases exprs<-,DataLayer,ANY-method
+
+
+##' @describeIn exprsLayer Replace layer \code{layernm}.
+##' @param value replacement value with conforming dimensions as layer \code{layernm}.
+##' @export
 setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='numeric', value='ANY'),
                  function(object, layernm, ..., value){
                      if(!is.null(dim(value)) && !conform(object, value)) stop('Replacement must be same dimension as target')
@@ -74,6 +69,7 @@ setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='numeric', value='A
                    object
                  })
 
+##' @describeIn exprsLayer Replace layer \code{layernm}.
 setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='character', value='ANY'),
                  function(object, layernm, ..., value){
                      layernm <- match(layernm, dimnames(object)[[3]])
@@ -81,6 +77,7 @@ setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='character', value=
                      object
                  })
 
+##' @describeIn exprsLayer Replace current layer.
 setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='missing', value='ANY'),
                  function(object, layernm, ..., value){
                      layernm <- layer(object)
@@ -88,6 +85,8 @@ setReplaceMethod('exprsLayer', c(object='DataLayer', layernm='missing', value='A
                      object
                  })
 
+##' @describeIn exprsLayer Replace current layer.
+##' @export "exprs<-"
 setReplaceMethod('exprs', c(object='DataLayer', value='ANY'), function(object, value){
     exprsLayer(object) <- value
     object

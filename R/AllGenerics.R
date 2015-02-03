@@ -78,21 +78,25 @@ setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
 ##' @aliases layername,DataLayer-method
 setGeneric('layername', function(x) standardGeneric('layername'))
 
-##' Get Expression matrix by layername
+##' Get or set expression matrix by layername
+##' 
 ##'
-##' @param object DataLayer
-##' @param ANY layernm
-##' @return matrix
+##' @param object DataLayer or subclass.
+##' @param layernm character, numeric or missing.
+##' @return a \code{matrix} of measurement values with wells on the rows and features on the columns of the default layer.
 ##' @export
 ##' @importMethodsFrom Biobase exprs
 ##' @importMethodsFrom Biobase exprs<-
+##' @aliases exprsLayer<-
+##' @examples
+##' data(vbetaFA)
+##' show(vbetaFA)
+##' exprs(vbetaFA)[1:5,1:5]
+##' exprsLayer(vbetaFA, 'Et')[1:5,1:5]
+##' exprsLayer(vbetaFA, 'Et') <- 999
+##' exprs(vbetaFA)[1:5, 1:5]
 setGeneric('exprsLayer', function(object, layernm, ...) standardGeneric('exprsLayer'))
 
-##' Set an Expression matrix by layername
-##'
-##' @param object DataLayer
-##' @param ANY layernm
-##' @return matrix
 ##' @export
 setGeneric('exprsLayer<-', function(object, layernm, ..., value) standardGeneric('exprsLayer<-'))
 
