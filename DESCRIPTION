@@ -1,8 +1,8 @@
 Package: SingleCellAssay
 Type: Package
 Title: Core data structures for single-cell assays
-Version: 0.922
-Date: 2015-01-27
+Version: 0.924
+Date: 2015-02-08
 Author: Andrew McDavid <amcdavid@fhcrc.org>, Greg Finak <gfinak@fhcrc.org>
 Maintainer: Greg Finak <gfinak@fhcrc.org>
 VignetteBuilder: knitr
