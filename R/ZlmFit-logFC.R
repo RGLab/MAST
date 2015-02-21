@@ -105,6 +105,6 @@ getLogFC <- function(zlmfit, contrast0, contrast1){
     logFC[,primerid:=as.character(primerid)]
     logFC[,z:=logFC/sqrt(varLogFC)]
     setkey(logFC,primerid)
-    logFC=logFC[dimnames(lfc[[1]])$primerid,]
+    logFC <- logFC[dimnames(lfc[[1]])$primerid,]
     logFC
 }

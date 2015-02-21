@@ -436,7 +436,9 @@ FromMatrix <- function(class, exprsArray, cData, fData){
     dl <- can$exprsArray
     cData <- can$cData
     fData <- can$fData
-    new(class, .Data=dl, cellData=cData, featureData=fData, sort=FALSE)
+    obj <- new(class, .Data=dl, cellData=cData, featureData=fData, sort=FALSE)
+    validObject(obj)
+    obj
 }
 
 ##' Constructor for a FluidigmAssay
