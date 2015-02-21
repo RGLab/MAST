@@ -7,7 +7,7 @@
 ##' @return array of bootstrapped coefficients
 ##' @importFrom parallel parSapply
 ##' @export
-pbootVcov1<-function (cl,zlmfit, R = 999)
+pbootVcov1<-function (cl,zlmfit, R = 99)
 {
     sca <- zlmfit@sca
     N <- nrow(sca)
@@ -30,7 +30,6 @@ pbootVcov1<-function (cl,zlmfit, R = 999)
     manyvc
 }
 
-
 ##' Bootstrap a zlmfit
 ##'
 ##' Sample cells with replacement to find bootstrapped distribution of coefficients
@@ -39,7 +38,7 @@ pbootVcov1<-function (cl,zlmfit, R = 999)
 ##' @return array of bootstrapped coefficients
 ##' @importFrom plyr raply
 ##' @export
-bootVcov1 <- function(zlmfit, R=999){
+bootVcov1 <- function(zlmfit, R=99){
     sca <- zlmfit@sca
     N <- nrow(sca)
     LMlike <- zlmfit@LMlike
@@ -53,20 +52,4 @@ bootVcov1 <- function(zlmfit, R=999){
    manyvc
     
 }
-
-## use dfbetas? Incomplete...
-bootVcov2 <- function(zlmfit, R=999){
-    sca <- zlmfit@sca
-    N <- nrow(sca)
-    z <- zlm.SingleCellAssay(sca=newsca, LMlike=zlmfit@LMlike, hook=function(lml){
-        cont <- lml@fitC
-        disc <- lml@fitD
-        class(disc) <-class(cont) <- 'glm'
-        dfc <- lm.influence(cont)$coefficients
-        dfd <- lm.influence(disc)$coefficients
-        list(cont=dfc, disc=dfd)
-        })
-    ## do stuff to this
-}
-
 
