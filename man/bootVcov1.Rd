@@ -4,7 +4,7 @@
 \alias{bootVcov1}
 \title{Bootstrap a zlmfit}
 \usage{
-bootVcov1(zlmfit, R = 999)
+bootVcov1(zlmfit, R = 99)
 }
 \arguments{
 \item{zlmfit}{class \code{ZlmFit}}

@@ -95,6 +95,11 @@ genewiseMult <- function(rowvec, rowMajorMatrix){
     res
 }
 
+if(getRversion() >= "2.15.1") globalVariables(c(
+                  'primerid',
+                 'z', 
+                  'varLogFC')) #getLogFC
+
 ##' @import data.table
 ##' @importFrom reshape melt
 ##' @describeIn logFC Return results as a perhaps friendlier \code{data.table}

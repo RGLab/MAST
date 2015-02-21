@@ -73,6 +73,10 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
     stop("'cellvars' must be keyed by 'idvars'")
 }
 
+if(getRversion() >= "2.15.1") globalVariables(c(
+                  'primerid.orig',
+                 'wellKey')) #fixdf
+
 ## might have bad complexity, but could construct one at time, then glue cheaply
 ## Not too bad except for deduplication.. will use data.table
 ##' @import data.table
@@ -590,6 +594,11 @@ melt.data.table <- function(dt, id.var){
     ## Well...that's unfortunate
     dt[, list(variable = names(.SD), value = unlist(.SD, use.names = FALSE)), keyby =eval(bquote(.(id.var)))]
 }
+
+if(getRversion() >= "2.15.1") globalVariables(c(
+                  'wellKey',
+                 'primerid', 
+                  'variable')) #setAs('SingleCellAssay', 'data.table')
 
 setAs('SingleCellAssay', 'data.table', function(from){
     ex <- data.table(wellKey=getwellKey(from), exprs(from))

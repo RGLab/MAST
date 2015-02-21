@@ -2,6 +2,13 @@ methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglm
                          lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlikeWeight'),
                          implementsEbayes=c(TRUE, FALSE, FALSE, TRUE, TRUE))
 
+
+if(getRversion() >= "2.15.1") globalVariables(c(
+                  'keyword',
+                 'lmMethod', 
+                  'implementsEbayes')) #zlm, zlm.SingleCellAssay
+
+
 residualsHook <- function(fit){
     residuals(fit, which='Marginal')
 }
@@ -190,7 +197,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     if(!parallel || getOption('mc.cores', 1L)==1){
         listOfSummaries <- lapply(listEE, .fitGeneSet)
     } else{
-    listOfSummaries <- mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
+    listOfSummaries <- parallel::mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
 }
 
     if(onlyCoef){
@@ -200,7 +207,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         
     ## test for try-errors
     cls <- sapply(listOfSummaries, function(x) class(x))
-    complain <- if(force) warn else stop
+    complain <- if(force) warning else stop
     if(mean(cls=='try-error')>.5) complain('Lots of errors here..something is amiss.')
 
     ## gethooks

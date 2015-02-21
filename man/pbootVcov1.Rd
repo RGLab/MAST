@@ -4,7 +4,7 @@
 \alias{pbootVcov1}
 \title{Bootstrap a zlmfit}
 \usage{
-pbootVcov1(cl, zlmfit, R = 999)
+pbootVcov1(cl, zlmfit, R = 99)
 }
 \arguments{
 \item{cl}{a \code{cluster} object created by \code{makeCluster}}
