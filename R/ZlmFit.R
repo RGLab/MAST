@@ -206,6 +206,12 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
     dt
 })
 
+if(getRversion() >= "2.15.1") globalVariables(c(
+                  'contrast',
+                 'metric', 
+                  '.',
+                  'value'))
+
 ##' Print summary of a ZlmFit
 ##'
 ##' Shows the top `n` genes by z score on `by`

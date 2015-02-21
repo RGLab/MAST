@@ -41,9 +41,10 @@ test_that("Only return coef works", {
     expect_equal(dim(zzinit2)[1], ncol(fd2))
 })
 
+cl <- parallel::makeForkCluster(2)
 test_that("Bootstrap", {
     zf <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
-    boot <- hushWarning(bootVcov1(zf, R=3), fixed('never estimible'))
+    boot <- hushWarning(pbootVcov1(cl, zf, R=3),fixed('never estimible'))
     expect_is(boot, 'array')
     ## rep, genes, coef, comp
     expect_equal(dim(boot),c(3, dim(coef(zf, 'D')), 2))
@@ -81,7 +82,7 @@ test_that('Continuous group coefficient is close to expected', {
         )
 })
 
-boot <- bootVcov1(zfit, R=50)
+boot <- pbootVcov1(cl, zfit, R=50)
 bootmeans <- colMeans(boot, na.rm=TRUE, dims=1)
 ## m2 <- 4  #top 4 expressed genes in simulation
 ## end4 <- (m-m2+1):m

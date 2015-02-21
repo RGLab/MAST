@@ -95,6 +95,11 @@ genewiseMult <- function(rowvec, rowMajorMatrix){
     res
 }
 
+if(getRversion() >= "2.15.1") globalVariables(c(
+                  'primerid',
+                 'z', 
+                  'varLogFC')) #getLogFC
+
 ##' @import data.table
 ##' @importFrom reshape melt
 ##' @describeIn logFC Return results as a perhaps friendlier \code{data.table}
@@ -102,6 +107,9 @@ genewiseMult <- function(rowvec, rowMajorMatrix){
 getLogFC <- function(zlmfit, contrast0, contrast1){
     lfc <- logFC(zlmfit, contrast0, contrast1)
     logFC <- dcast.data.table(data.table(melt(lfc)), primerid + contrast ~ L1)
+    logFC[,primerid:=as.character(primerid)]
     logFC[,z:=logFC/sqrt(varLogFC)]
+    setkey(logFC,primerid)
+    logFC <- logFC[dimnames(lfc[[1]])$primerid,]
     logFC
 }
