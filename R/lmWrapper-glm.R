@@ -24,6 +24,19 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     vc
 })
 
+##
+.glmDOF <- function(object, pos){
+    npos <- sum(pos)
+    ## bayesglm doesn't correctly set the residual DOF, and this won't hurt for regular glm
+    object@fitC$df.residual <- npos - object@fitC$rank
+    ## conservative estimate of residual df
+    object@fitD$df.residual <- min(npos, length(pos)-npos) - object@fitD$rank
+    object@fitted <- c(C=object@fitC$converged &
+                           object@fitC$df.residual>0, #kill unconverged or empty
+                       D=object@fitD$converged)
+    object
+}
+
 ## dispersion calculations for glm-like fitters
 .dispersion <- function(object){
     object@fitC$dispersionMLE <- object@fitC$dispersion <- NA
@@ -66,9 +79,13 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
-    object@fitted <- c(C=object@fitC$converged & object@fitC$df.residual>0, D=object@fitD$converged & object@fitD$df.residual>0)
+
+    ## first test for positive continuous DOF
     ## cheap additional test for convergence
     ## object@fitted['D'] <- object@fitted['D'] & (object@fitD$null.deviance >= object@fitD$deviance)
+    object <- .glmDOF(object, pos)
+    ## don't return estimates that would be at the boundary
+    ## object@fitted <- object@fitted & c(C=TRUE, D=object@fitD$df.residual>0)
     ## update dispersion, possibly shrinking by prior
     object <- .dispersion(object)
     

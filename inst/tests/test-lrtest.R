@@ -18,8 +18,9 @@ test_that('LRT and zlm are equivalent', {
     lrout <- lrt(fd.spl[[1]], 'Subject.ID', returnall=FALSE)
     zlm2 <- zlm.SingleCellAssay(~ Subject.ID, fd.spl[[1]], silent=FALSE)
     lrout2 <- lrTest(zlm2, 'Subject.ID')
-    smallDOF <- freq(fd.spl[[1]])<=2/nrow(fd.spl[[1]])
+    smallDOF <- freq(fd.spl[[1]])<=3/nrow(fd.spl[[1]]) | (1-freq(fd.spl[[1]]))<(3/nrow(fd.spl[[1]]))
+    ##if(!isTRUE(all.equal(lrout$lrstat[!smallDOF], lrout2[!smallDOF,3,1], tolerance=1e-6, check.attributes=FALSE))) browser() 
     ## we are more conservative about returning low-DOF fits for dichotomous
-    expect_equivalent(lrout$lrstat[!smallDOF], lrout2[!smallDOF,3,1])
+    expect_equal(lrout$lrstat[!smallDOF], lrout2[!smallDOF,3,1], tol=1e-6, check.attributes=FALSE)
     expect_true(all(lrout$lrstat[smallDOF]>=lrout2[smallDOF,3,1]))
 })

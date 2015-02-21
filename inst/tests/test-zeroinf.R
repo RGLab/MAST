@@ -66,12 +66,12 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   exprs(fd3) <- ee
   zz <- zlm.SingleCellAssay( ~ Population, fd3)
   expect_that(zz, is_a('ZlmFit'))
-  expect_false(zz@converged[1,'D'])
+  expect_less_than(zz@df.resid[1,'D'], 1)
 
         if(suppressPackageStartupMessages(require(arm))){
             zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
             expect_that(zz3, is_a('ZlmFit'))
-            expect_false(zz3@converged[1,'D'])
+            expect_true(zz3@converged[1,'D'])
             detach('package:arm')
         } else{
             message('install arm')

@@ -26,7 +26,9 @@ test_that('Handle Singular Designs', {
 test_that('Handle 100% expression', {
     obj2 <- fit(obj, rnorm(nrow(fd))+20)
     expect_is(coef(obj2, 'C'), 'numeric')
-    expect_false(obj2@fitted['D'])
+    if(obj2@fitted['D']){
+        expect_less_than(obj2@fitD$df.residual, 1)
+    }
 })
 
 ## Not sure what the best way to handle this is...lmer just drops NAs, while glm.fit throws an ugly error
