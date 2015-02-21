@@ -102,6 +102,9 @@ genewiseMult <- function(rowvec, rowMajorMatrix){
 getLogFC <- function(zlmfit, contrast0, contrast1){
     lfc <- logFC(zlmfit, contrast0, contrast1)
     logFC <- dcast.data.table(data.table(melt(lfc)), primerid + contrast ~ L1)
+    logFC[,primerid:=as.character(primerid)]
     logFC[,z:=logFC/sqrt(varLogFC)]
+    setkey(logFC,primerid)
+    logFC=logFC[dimnames(lfc[[1]])$primerid,]
     logFC
 }
