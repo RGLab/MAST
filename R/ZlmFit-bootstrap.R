@@ -12,11 +12,11 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
     sca <- zlmfit@sca
     N <- nrow(sca)
     LMlike <- zlmfit@LMlike
-    clusterEvalQ(cl,require(SingleCellAssay))
-    clusterEvalQ(cl,require(abind))
-    clusterExport(cl,"N",envir=environment())
-    clusterExport(cl,"LMlike",envir=environment())
-    clusterExport(cl,"sca",envir=environment())
+    parallel::clusterEvalQ(cl,require(SingleCellAssay))
+    ## clusterEvalQ(cl,require(abind))
+    parallel::clusterExport(cl,"N",envir=environment())
+    parallel::clusterExport(cl,"LMlike",envir=environment())
+    parallel::clusterExport(cl,"sca",envir=environment())
     manyvc <- parSapply(cl,1:R, function(i,...){
         s <- sample(N, replace = TRUE)
         newsca <- sca[s, ]
