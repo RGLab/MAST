@@ -284,15 +284,34 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     structure(tests, bootR=dimb['rep'])
 }
 
+.approxt <- function(dof){
+    s <- ifelse(is.finite(dof), sqrt(dof/(dof-2)), 1) #scale of each t
+    kur <- 6/(dof-4) #kurtosis of each t
+    ## assume we weight the sum by inverse scale (so that we have unit variance in each var)
+    skur <- sum(kur)/length(dof)^2
+    ## match kurtosis of sum to dof of t approximiation
+    nu <- 6/skur+4
+    ## scale of sum
+    ss <- sum(s^2)
+    ## scale of approximation
+    scale <- sqrt( (nu-2)/(nu) / #expected variance of t approx
+                      ss) #variance of sum
+    list(W=1/s, nu=nu, scale=scale)
+}
+
 ##' Get Z or T statistics and P values after running gseaAfterBoot
-##'
+##' 
+##' The Z or T statistics may be reported by component (discrete/continuous) when \code{combined='no'} or combined by Fisher's or Stouffer's method (\code{combined='fisher'} or \code{combined='stouffer'}.
+##' Fisher's method uses the product of the p-values, while Stouffer's method uses the sum of the Z/T scores.
 ##' @param tests output from \code{gseaAfterBoot}
 ##' @param testType either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.
+##' @param combined \code{character} one of 'none', 'fisher' or 'stouffer'
 ##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|))
 ##' @export
 ##' @seealso gseaAfterBoot
-calcZ <- function(tests, testType='t'){
+calcZ <- function(tests, testType='t', combined='no'){
     testType <- match.arg(testType, c('t', 'normal'))
+    combined <- match.arg(combined, c('no', 'fisher', 'stouffer'))
     Z <- (tests[,,'stat','test']-tests[,,'stat','null'])/sqrt(tests[,,'var','test']+tests[,,'var','null'])
     
     if(testType=='t'){
@@ -305,5 +324,25 @@ calcZ <- function(tests, testType='t'){
     P <- pt(abs(Z), df=dof, lower.tail=FALSE)*2
     ab <- abind(Z=Z, P=P, rev.along=0)
     names(dimnames(ab)) <- c('set', 'comp', 'metric')
-    ab
+    if(combined=='no'){
+        return(ab)
+    }else if(combined =='fisher'){
+        maxsign <- sign(Z[,1]+Z[,2])
+        chival <- -2*(log(P[,1])+log(P[,2]))
+        return(cbind(sign=maxsign, P=pchisq(chival, df=4, lower.tail=FALSE)))
+    } else if(combined =='stouffer'){
+        if(testType=='normal'){
+            Wmat <- matrix(1, nrow=nrow(Z), ncol=ncol(Z))
+            scale <- 1/sqrt(2)
+            dofComb <- Inf
+        } else{
+            tapprox <- apply(dof, 1, .approxt) #find a t approximation for sum of t stats
+            Wmat <- t(sapply(tapprox, '[[', 'W'))
+            scale <- sapply(tapprox, '[[', 'scale')
+            dofComb <- sapply(tapprox, '[[', 'nu')
+        }
+        Zcomb <- rowSums(Wmat*Z)*scale
+        return(cbind(Z=Zcomb, P=pt(abs(Zcomb), dofComb, lower.tail=FALSE)*2))
+    }
+    
 }
