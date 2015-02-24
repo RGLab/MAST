@@ -4,18 +4,21 @@
 \alias{calcZ}
 \title{Get Z or T statistics and P values after running gseaAfterBoot}
 \usage{
-calcZ(tests, testType = "t")
+calcZ(tests, testType = "t", combined = "no")
 }
 \arguments{
 \item{tests}{output from \code{gseaAfterBoot}}
 
 \item{testType}{either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.}
+
+\item{combined}{\code{character} one of 'none', 'fisher' or 'stouffer'}
 }
 \value{
 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|))
 }
 \description{
-Get Z or T statistics and P values after running gseaAfterBoot
+The Z or T statistics may be reported by component (discrete/continuous) when \code{combined='no'} or combined by Fisher's or Stouffer's method (\code{combined='fisher'} or \code{combined='stouffer'}.
+Fisher's method uses the product of the p-values, while Stouffer's method uses the sum of the Z/T scores.
 }
 \seealso{
 gseaAfterBoot

@@ -43,6 +43,104 @@ combined_residuals_hook<- function(x){
     }
 }
 
+#bayesglm.influence called from influence.bayesglm
+bayesglm.influence <-  function(model, do.coef = do.coef, ...)
+{
+  wt.res <- weighted.residuals(model)
+  e <- na.omit(wt.res)
+  if (model$rank == 0) {
+    n <- length(wt.res)
+    sigma <- sqrt(deviance(model)/df.residual(model))
+    res <- list(hat = rep(0, n), coefficients = matrix(0, 
+                                                       n, 0), sigma = rep(sigma, n), wt.res = e)
+  }
+  else {
+    e[abs(e) < 100 * .Machine$double.eps * median(abs(e))] <- 0
+    mqr <- stats:::qr.lm(model)
+    mqr$qr<-mqr$qr[!rownames(mqr$qr)%in%"",]
+    n <- as.integer(nrow(mqr$qr))
+    if (is.na(n)) 
+      stop("invalid model QR matrix")
+    if (NROW(e) != n) 
+      stop("non-NA residual length does not match cases used in fitting")
+    do.coef <- as.logical(do.coef)
+    tol <- 10 * .Machine$double.eps
+    res <- .Call(stats:::C_influence, mqr, do.coef, e, tol)
+    if (!is.null(model$na.action)) {
+      hat <- naresid(model$na.action, res$hat)
+      hat[is.na(hat)] <- 0
+      res$hat <- hat
+      if (do.coef) {
+        coefficients <- naresid(model$na.action, res$coefficients)
+        coefficients[is.na(coefficients)] <- 0
+        res$coefficients <- coefficients
+      }
+      sigma <- naresid(model$na.action, res$sigma)
+      sigma[is.na(sigma)] <- sqrt(deviance(model)/df.residual(model))
+      res$sigma <- sigma
+    }
+  }
+  res$wt.res <- naresid(model$na.action, res$wt.res)
+  res$hat[res$hat > 1 - 10 * .Machine$double.eps] <- 1
+  names(res$hat) <- names(res$sigma) <- names(res$wt.res)
+  if (do.coef) {
+    rownames(res$coefficients) <- names(res$wt.res)
+    colnames(res$coefficients) <- names(coef(model))[!is.na(coef(model))]
+  }
+  res
+}
+
+#' influence bayesglm object S3 method
+#' @importFrom stats influence
+#' @name influence.bayesglm
+#' @title influence for bayesglm objects.
+#' @export
+R.methodsS3:::setMethodS3("influence","bayesglm",definition=function (model, do.coef = TRUE, ...) 
+{
+  res <- bayesglm.influence(model, do.coef = do.coef, ...)
+  pRes <- na.omit(residuals(model, type = "pearson"))[model$prior.weights != 
+                                                        0]
+  pRes <- naresid(model$na.action, pRes)
+  names(res)[names(res) == "wt.res"] <- "dev.res"
+  c(res, list(pear.res = pRes))
+})
+
+#' rstandard bayesglm object S3 method
+#' @importFrom stats rstandard
+#' @name rstandard.bayesglm
+#' @title rstandard for bayesglm objects.
+#' @export
+R.methodsS3:::setMethodS3("rstandard","bayesglm",definition=function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", 
+                                                                                                                                "pearson"), ...) 
+{
+  type <- match.arg(type)
+  res <- switch(type, pearson = infl$pear.res, infl$dev.res)
+  res <- res/sqrt(summary(model)$dispersion * (1 - infl$hat))
+  res[is.infinite(res)] <- NaN
+  res
+})
+
+#' Standardized deviance residuals hook
+#' 
+#' Computes the average of the standardized deviance residuals for the discrete and continuous models
+#' @param x the ZLMFit
+#' @export
+deviance_residuals_hook<-function (x) 
+{
+  if (all(x@fitted)) {
+    class(x@fitC) <- c("glm", "lm")
+    class(x@fitD) <- c("bayesglm", "glm", "lm")
+    cont.resid<-rstandard(x@fitC,type="deviance")
+    disc.resid<-rstandard(x@fitD,type="deviance")
+    cont.resid<-data.frame(id=names(cont.resid),cont.resid)
+    disc.resid<-data.frame(id=names(disc.resid),disc.resid)
+    resid<-merge(cont.resid,disc.resid,by="id",all=TRUE)
+    resid<-data.frame(data.table(melt(resid))[,list(resid=mean(value,na.rm=TRUE)),id])
+    rownames(resid)<-resid[,"id"]
+    resid<-resid[,-1,drop=FALSE]
+    resid
+  }
+}
 
 #' Used to compute module "scores"
 #'
