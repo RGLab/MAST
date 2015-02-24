@@ -138,6 +138,7 @@ deviance_residuals_hook<-function (x)
     resid<-data.frame(data.table(melt(resid))[,list(resid=mean(value,na.rm=TRUE)),id])
     rownames(resid)<-resid[,"id"]
     resid<-resid[,-1,drop=FALSE]
+    resid<-resid[rownames(x@modelMatrix),] #ensure consistent ordering
     resid
   }
 }
