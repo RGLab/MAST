@@ -43,6 +43,13 @@ combined_residuals_hook<- function(x){
     }
 }
 
+.getQRlm<-function (x, ...) 
+{
+  if (is.null(r <- x$qr)) 
+    stop("lm object does not have a proper 'qr' component.\n Rank zero or should not have used lm(.., qr=FALSE).")
+  r
+}
+
 #bayesglm.influence called from influence.bayesglm
 bayesglm.influence <-  function(model, do.coef = do.coef, ...)
 {
@@ -56,7 +63,7 @@ bayesglm.influence <-  function(model, do.coef = do.coef, ...)
   }
   else {
     e[abs(e) < 100 * .Machine$double.eps * median(abs(e))] <- 0
-    mqr <- stats:::qr.lm(model)
+    mqr <- .getQRlm(model)
     mqr$qr<-mqr$qr[!rownames(mqr$qr)%in%"",]
     n <- as.integer(nrow(mqr$qr))
     if (is.na(n)) 
@@ -65,7 +72,8 @@ bayesglm.influence <-  function(model, do.coef = do.coef, ...)
       stop("non-NA residual length does not match cases used in fitting")
     do.coef <- as.logical(do.coef)
     tol <- 10 * .Machine$double.eps
-    res <- .Call(stats:::C_influence, mqr, do.coef, e, tol)
+    C_infl<-get("C_influence",getNamespace("stats"))
+    res <- .Call(C_infl, mqr, do.coef, e, tol)
     if (!is.null(model$na.action)) {
       hat <- naresid(model$na.action, res$hat)
       hat[is.na(hat)] <- 0

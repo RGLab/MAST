@@ -153,7 +153,8 @@ ridge.fit<-function (x, y, weights = rep(1, nobs), start = NULL, etastart = NULL
       z <- (eta - offset)[good] + (y - mu)[good]/mu.eta.val[good]
       w <- sqrt((weights[good] * mu.eta.val[good]^2)/variance(mu)[good])
       ngoodobs <- as.integer(nobs - sum(!good))
-      fit <- .Call(stats:::C_Cdqrls, x[good, , drop = FALSE] * 
+      C_qr<-get("C_Cdqrls",getNamespace("stats"))
+      fit <- .Call(C_qr, x[good, , drop = FALSE] * 
                      w, z * w, min(1e-07, control$epsilon/1000), check = FALSE)
       if (any(!is.finite(fit$coefficients))) {
         conv <- FALSE
