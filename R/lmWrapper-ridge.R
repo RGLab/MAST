@@ -52,7 +52,12 @@ ridge.fit<-function (x, y, weights = rep(1, nobs), start = NULL, etastart = NULL
           control = list(), intercept = TRUE,lambda=0.1) 
 {
   control <- do.call("glm.control", control)
-  x<-rbind(x,diag(lambda,NCOL(x)))
+  G<-diag(lambda,NCOL(x))
+  G[1,1]<-0
+  #x[,-1]<-scale(x[,-1],center=FALSE,scale=TRUE)
+  yorig<-y
+  y<-scale(y,center=TRUE,scale=FALSE)
+  x<-rbind(x,G)
   y<-c(y,rep(0,NCOL(x)))
   x <- as.matrix(x)
   xnames <- dimnames(x)[[2L]]
@@ -126,7 +131,7 @@ ridge.fit<-function (x, y, weights = rep(1, nobs), start = NULL, etastart = NULL
     if (!(validmu(mu) && valideta(eta))) 
       stop("cannot find valid starting values: please specify some", 
            call. = FALSE)
-    devold <- sum(dev.resids(y, mu, weights))
+    devold <- sum(dev.resids(y[1:(nobs-NCOL(x))], mu[1:(nobs-NCOL(x))], weights[1:(nobs-NCOL(x))]))
     boundary <- conv <- FALSE
     for (iter in 1L:control$maxit) {
       good <- weights > 0
@@ -163,7 +168,7 @@ ridge.fit<-function (x, y, weights = rep(1, nobs), start = NULL, etastart = NULL
       start[fit$pivot] <- fit$coefficients
       eta <- drop(x %*% start)
       mu <- linkinv(eta <- eta + offset)
-      dev <- sum(dev.resids(y, mu, weights))
+      dev <- sum(dev.resids(y[1:(nobs-NCOL(x))], mu[1:(nobs-NCOL(x))], weights[1:(nobs-NCOL(x))]))
       if (control$trace) 
         cat("Deviance = ", dev, " Iterations - ", iter, 
             "\n", sep = "")
@@ -289,13 +294,15 @@ ridge.fit<-function (x, y, weights = rep(1, nobs), start = NULL, etastart = NULL
   else fit$rank
   resdf <- n.ok - rank
   aic.model <- aic(y, n, mu, weights, dev) + 2 * rank
+  #coefficients.. add de-center the data
+  coef[1]<-coef[1]+attr(scale(yorig),"scaled:center")
   list(coefficients = coef, residuals = residuals, fitted.values = mu, 
        effects = if (!EMPTY) fit$effects, R = if (!EMPTY) Rmat, 
        rank = rank, qr = if (!EMPTY) structure(fit[c("qr", "rank", 
                                                      "qraux", "pivot", "tol")], class = "qr"), family = family, 
        linear.predictors = eta, deviance = dev, aic = aic.model, 
        null.deviance = nulldev, iter = iter, weights = wt, prior.weights = weights, 
-       df.residual = resdf, df.null = nulldf, y = y, converged = conv, 
+       df.residual = resdf, df.null = nulldf, y = yorig, converged = conv, 
        boundary = boundary)
 }
 
