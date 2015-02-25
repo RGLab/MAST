@@ -22,6 +22,7 @@ setMethod('fit', signature=c(object='RidgeBGLMlike', response='missing'), functi
   }
   
   contFit <- if(object@useContinuousBayes) bayesglm.fit else ridge.fit
+  fitArgsC$lambda<-object@lambda
   object@fitC <- do.call(contFit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos],  weights=object@weightFun(object@response[pos])), fitArgsC))
   object@fitD <- do.call(bayesglm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
   
@@ -48,10 +49,9 @@ setReplaceMethod('model.matrix', 'RidgeBGLMlike', function(object, value){
 
 ridge.fit<-function (x, y, weights = rep(1, nobs), start = NULL, etastart = NULL, 
           mustart = NULL, offset = rep(0, nobs), family = gaussian(), 
-          control = list(), intercept = TRUE) 
+          control = list(), intercept = TRUE,lambda=0.1) 
 {
   control <- do.call("glm.control", control)
-  lambda<-0.01
   x<-rbind(x,diag(lambda,NCOL(x)))
   y<-c(y,rep(0,NCOL(x)))
   x <- as.matrix(x)
