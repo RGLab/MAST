@@ -51,6 +51,7 @@ ridge.fit<-function (x, y, weights = rep(1, nobs), start = NULL, etastart = NULL
           mustart = NULL, offset = rep(0, nobs), family = gaussian(), 
           control = list(), intercept = TRUE,lambda=0.1) 
 {
+  #browser()
   control <- do.call("glm.control", control)
   G<-diag(lambda,NCOL(x))
   G[1,1]<-0
@@ -297,6 +298,7 @@ ridge.fit<-function (x, y, weights = rep(1, nobs), start = NULL, etastart = NULL
   aic.model <- aic(y, n, mu, weights, dev) + 2 * rank
   #coefficients.. add de-center the data
   coef[1]<-coef[1]+attr(scale(yorig),"scaled:center")
+  mu<-mu+attr(scale(yorig),"scaled:center")
   list(coefficients = coef, residuals = residuals, fitted.values = mu, 
        effects = if (!EMPTY) fit$effects, R = if (!EMPTY) Rmat, 
        rank = rank, qr = if (!EMPTY) structure(fit[c("qr", "rank", 
