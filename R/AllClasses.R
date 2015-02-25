@@ -305,7 +305,7 @@ setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity
     })
 
 setClass('ConstrainedGLMlike', contains='LMlike')
-
+setClass('RidgeBGLMlike',contains="BayesGLMlike")
 
 ## Ways to specify hypothesis
 setClass('Hypothesis', contains='character', slots=list(transformed='matrix'))
