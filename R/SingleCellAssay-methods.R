@@ -280,23 +280,14 @@ setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 
 
 
-##' Get cellData data.frame
-##'
-##' @param sc SingleCellAssay
-##' @return data.frame
-##' @aliases cData,SingleCellAssay-method
+##' @describeIn cData
 ##' @export
 setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
 
 
-##' Replace cData
-##'
-##' @param sc SingleCellAssay
-##' @param value AnnotatedDataFrame or data.frame
-##' @aliases cData<-,SingleCellAssay-method
-##' @rdname cData-method
+
+##' @describeIn cData
 ##' @export
-##' @name cData
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
   if (is.data.frame(value)) {
     value <- as(value, "AnnotatedDataFrame")
@@ -406,7 +397,7 @@ setMethod("[", signature(x="SingleCellAssay"), .scaSubset)
 ##'
 ##' @param x SingleCellAssay
 ##' @param thesubset expression, which when evaluated in cellData environment which returns a logical
-##' @aliases subset,SingleCellAssay-method
+##' @rdname subset
 ##' @export
 ##' @examples
 ##' data(vbetaFA)
@@ -517,17 +508,7 @@ getMapping <- function(x, map){
   return(list(map))
 }
 
-
-##' @exportMethod copy
-##' @aliases copy,SingleCellAssay-method
-##' @rdname copy-methods
-setMethod('copy', 'SingleCellAssay',
-          function(object){
-            o2 <- object[[1:nrow(object)]]
-            o2
-          })
-
-
+##' @describeIn show
 setMethod('show', 'SingleCellAssay', function(object){
 callNextMethod()
 cat(' id: ', object@id, '\n')

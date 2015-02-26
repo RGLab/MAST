@@ -6,6 +6,7 @@
 \alias{coef,ZlmFit-method}
 \alias{lrTest,ZlmFit,CoefficientHypothesis-method}
 \alias{lrTest,ZlmFit,Hypothesis-method}
+\alias{lrTest,ZlmFit,matrix-method}
 \alias{se.coef,ZlmFit-method}
 \alias{summary,ZlmFit-method}
 \alias{vcov,ZlmFit-method}
@@ -16,6 +17,8 @@
 \S4method{lrTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis)
 
 \S4method{lrTest}{ZlmFit,Hypothesis}(object, hypothesis)
+
+\S4method{lrTest}{ZlmFit,matrix}(object, hypothesis)
 
 \S4method{waldTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis)
 
@@ -36,6 +39,8 @@
 
 \item{which}{character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned}
 
+\item{...}{ignored}
+
 \item{logFC}{If TRUE, calculate log-fold changes, or output from a call to \code{getLogFC}.}
 
 \item{doLRT}{if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.}
@@ -49,7 +54,9 @@ This holds output from a call to zlm.SingleCellAssay.  Many methods are defined 
 \itemize{
 \item \code{lrTest}: Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
 
-\item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which can be a call to \link{Hypothesis} or \link{CoefficientHypothesis} or a contrast matrix.
+\item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a \link{Hypothesis}.
+
+\item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a contrast \code{matrix}.
 
 \item \code{waldTest}: Returns an array with Wald Tests on contrasts defined using \code{CoefficientHypothesis()}.
 

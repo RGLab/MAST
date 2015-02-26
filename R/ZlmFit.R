@@ -62,7 +62,7 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothes
     .lrtZlmFit(object, newMM, hypothesis@.Data)
 })
 
-##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which can be a call to \link{Hypothesis} or \link{CoefficientHypothesis} or a contrast matrix.
+##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a \link{Hypothesis}.
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
     ## original fit
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
@@ -71,6 +71,7 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='Hypothesis'), funct
 })
 
 ## contrast matrices
+##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a contrast \code{matrix}.
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(object, hypothesis){
     ## original fit
     LMlike <- object@LMlike
@@ -122,11 +123,13 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), fu
     waldTest(object, h@transformed)
 })
 
+##' @describeIn show
 setMethod('show', signature=c(object='ZlmFit'), function(object){
     cat('Fitted zlm on', ncol(object@sca), 'genes and', nrow(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
 })
 
 ##' @describeIn ZlmFit Returns the matrix of coefficients for component \code{which}.
+##' @param ... ignored
 setMethod('coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     if(which=='C') object@coefC else object@coefD

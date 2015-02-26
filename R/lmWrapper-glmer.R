@@ -207,7 +207,10 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
 
 })
 
-
+#' @describeIn LMERlike return the variance/covariance of component \code{which}
+#' @param object \code{LMERlike}
+#' @param which \code{character}, one of 'C', 'D'.
+#' @param ... ignored
 setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov
@@ -226,6 +229,8 @@ setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     vc
 })
 
+#' @describeIn LMERlike return the coefficients.  The horrendous hack is attempted to be undone.
+#' @param singular \code{logical}. Should NA coefficients be returned?
 setMethod('coef', signature=c(object='LMERlike'), function(object, which, singular=TRUE, ...){
     stopifnot(which %in% c('C', 'D'))
     co <- setNames(rep(NA, ncol(model.matrix(object))), colnames(model.matrix(object)))
@@ -236,7 +241,7 @@ setMethod('coef', signature=c(object='LMERlike'), function(object, which, singul
     }
     if(!singular) co <- co[!is.na(co)]
     conm <- names(co)
-    ## because of backtick schenangans
+    ## because of backtick shenanigans
     names(co) <- str_replace_all(conm, fixed('`'), '')
     co
 })

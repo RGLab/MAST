@@ -2,7 +2,6 @@
 % Please edit documentation in R/AllGenerics.R
 \name{layer}
 \alias{layer}
-\alias{layer,DataLayer-method}
 \title{Which layer is active?}
 \usage{
 layer(x)
@@ -15,5 +14,8 @@ numeric, active layer
 }
 \description{
 Which layer is active?
+}
+\seealso{
+addlayer
 }
 

@@ -2,7 +2,6 @@
 % Please edit documentation in R/AllGenerics.R
 \name{layername<-}
 \alias{layername<-}
-\alias{layername<-,DataLayer,character-method}
 \title{Set name of active layer}
 \usage{
 layername(x) <- value
@@ -17,5 +16,8 @@ DataLayer
 }
 \description{
 Set name of active layer
+}
+\seealso{
+addlayer
 }
 

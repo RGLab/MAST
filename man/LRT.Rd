@@ -16,6 +16,8 @@ LRT(sca, comparison, ...)
 
 \item{comparison}{A \code{character} specifying the factor for comparison}
 
+\item{...}{ignored}
+
 \item{referent}{A \code{character} specifying the reference level of \code{comparison}.}
 
 \item{groups}{A optional \code{character} specifying a variable on which to stratify the test.  For each level of \code{groups}, there will be a separate likelihood ratio test.}
@@ -27,6 +29,10 @@ Tests for a change in ET binomial proportion or mean of positive ET
 Likelihood Ratio Test for SingleCellAssay objects
 }
 \details{
-Combined Likelihood ratio test (binomial and normal) for SingleCellAssay and derived objects
+Combined Likelihood ratio test (binomial and normal) for SingleCellAssay and derived objects.
+This function is deprecated, please use \link{lrTest} instead.
+}
+\seealso{
+zlm.SingleCellAssay, ZlmFit
 }
 

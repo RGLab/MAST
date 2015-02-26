@@ -81,6 +81,7 @@ setMethod('thresholdNanoString', signature='NanoStringAssay', function(nsa, incl
   else return(nsa)
 })
 
+#' @describeIn show
 setMethod("show","ThresholdedNanoString",function(object){
   cat(class(object), ' of ', nrow(object@nsa), ' rows and ', ncol(object@nsa), ' columns')
   invisible(NULL)

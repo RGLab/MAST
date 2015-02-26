@@ -1,4 +1,6 @@
 ## Methods for LMlike
+##' @describeIn show
+##' @export
 setMethod('show',  signature=c(object='LMlike'), function(object){
     if(all(object@fitted)){
         cat('Fitted Continuous and discrete')
@@ -51,7 +53,8 @@ setMethod('coef', signature=c(object='LMlike'), function(object, which, singular
 })
 
 
-
+#' @describeIn LMlike Print a summary of the coefficients in each component.
+#' @param object \code{LMlike}
 setMethod('summary', signature=c(object='LMlike'), function(object){
     print('===========Discrete============')
     print(coef(object, 'D'))
@@ -73,6 +76,7 @@ setMethod('update', signature=c(object='LMlike'), function(object, formula., des
     object
 })
 
+#' @describeIn model.matrix return the \code{model.matrix}
 setMethod('model.matrix', signature=c(object='LMlike'), function(object){
     object@modelMatrix
 })
@@ -165,12 +169,14 @@ uncomplexify <- function(x){
     t(cm)
 }
 
+#'@describeIn LMlike Wald test dropping single term specified by \code{CoefficientHypothesis} \code{hypothesis}
+#' @param hypothesis one of a \code{CoefficientHypothesis}, \code{Hypothesis} or contrast \code{matrix}.
 setMethod('waldTest', signature=c(object='LMlike', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
     cm <- .makeContrastMatrixFromCoefficientHypothesis(hypothesis,names(object@defaultCoef))
     waldTest(object, cm)
 })
 
-
+#'@describeIn LMlike Wald test of contrast specified by contrast matrix \code{hypothesis}
 setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), function(object, hypothesis){
     .waldTest(coef(object, 'C', singular=TRUE),
                 coef(object, 'D', singular=TRUE),
@@ -197,6 +203,7 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), functio
     makeChiSqTable(dl, df, drop.terms)
 }
 
+#'@describeIn LMlike Likelihood ratio test dropping entire term specified by \code{character} \code{hypothesis} naming a term in the symbolic formula.
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
     F <- update.formula(object@formula, formula(sprintf(' ~. - %s', hypothesis)))
     U <- update(object, F)
@@ -224,16 +231,18 @@ setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), functi
     structure(design, testIdx=testIdx)
 }
 
+#'@describeIn LMlike Likelihood ratio test dropping single term specified by \code{CoefficientHypothesis} \code{hypothesis}
 setMethod('lrTest', c(object='LMlike', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
     testIdx <- hypothesis@transformed
     .lrTest(object, model.matrix(object)[,-testIdx,drop=FALSE])
 })
 
-
+#'@describeIn LMlike Likelihood ratio test dropping single term specified by \code{Hypothesis} \code{hypothesis}
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='Hypothesis'), function(object, hypothesis){
     lrTest(object, hypothesis@transformed)
 })
 
+#'@describeIn LMlike Likelihood ratio test dropping single term specified by contrast matrix \code{hypothesis}
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='matrix'), function(object, hypothesis){
     MM <- .rotateMM(object,  hypothesis)
     testIdx <- attr(MM, 'testIdx')

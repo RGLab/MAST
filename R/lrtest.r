@@ -46,14 +46,13 @@ logProd <- function(prod, logand){
 }
 
 
-##' @rdname LRT-methods
-##' @aliases LRT,SingleCellAssay,character-method
+##' @rdname LRT
 ##' @param sca A \code{SingleCellAssay} class object
 ##' @param comparison A \code{character} specifying the factor for comparison
 ##' @param referent A \code{character} specifying the reference level of \code{comparison}.
 ##' @param groups A optional \code{character} specifying a variable on which to stratify the test.  For each level of \code{groups}, there will be a separate likelihood ratio test.
 ##' @param returnall A \code{logical} specifying if additional columns should be returned with information about the different components of the test.
-##' @docType methods
+##' @export
 setMethod("LRT",signature=c("SingleCellAssay","character"),function(sca,comparison,referent=NULL,groups=NULL,returnall=FALSE){
   if(missing(groups))
     groups<-NULL

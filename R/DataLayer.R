@@ -1,4 +1,5 @@
-
+##' @details \code{addlayer(x)}: add a new layer with name \code{name}.  Returns a modified object.
+##' @rdname addlayer
 ##' @export
 setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, name){
   newLayer <- array(NA, dim=c(nrow(x), ncol(x), 1), dimnames=c(dimnames(x)[-3], name))
@@ -6,12 +7,17 @@ setMethod('addlayer', signature(x='DataLayer', name='character'), function(x, na
   x
 })
 
+##' @rdname addlayer
+##' @details \code{layername(x)}: Return name of current layer, equivalent to \code{layer(x)}.
 ##' @export
 setMethod('layername', signature(x='DataLayer'), function(x){
   if(length(dimnames(x)[[3]])>0) return(dimnames(x)[[3]][layer(x)])
   return(NULL)
 })
 
+##' @rdname addlayer
+##' @details \code{layername(x)<-value}: Rename current layer to \code{character} \code{value}
+##' @param value replacement
 ##' @export
 setReplaceMethod('layername', signature(x='DataLayer', 'character'), function(x, value){
   dimnames(x)[[3]][layer(x)] <- value
@@ -20,15 +26,11 @@ setReplaceMethod('layername', signature(x='DataLayer', 'character'), function(x,
 
 ##' Get or set a matrix of measurement values in a \code{SingleCellAssay}
 ##'
-##' Return or set a matrix of the measurement: cells by primerids
-##' @title exprs
-##' @name exprs
-##' @param object DataLayer
-##' @return numeric matrix
-##' @docType methods
-##' @rdname exprs-methods
-##' @aliases exprs,DataLayer-method
+##' Return or set a matrix of the measurement: cells by primerids.  \strong{Note this is the transpose of ExpressionSets}.
+##' @param object \code{SingleCellAssay} or inheriting class
 ##' @return a \code{matrix} of measurement values with wells on the rows and features on the columns of the default layer
+##' @rdname exprs
+##' @aliases exprs,DataLayer-method
 ##' @export
 setMethod("exprs",signature(object="DataLayer"),function(object){
   o <- object@.Data[,,layer(object), drop=FALSE]
@@ -51,10 +53,8 @@ setMethod('initialize', 'DataLayer',
           })
 
 ##' @import Biobase
-##' @rdname exprs-methods
-##' @name exprs
+##' @describeIn exprs
 ##' @exportMethod "exprs<-"
-##' @docType methods
 ##' @aliases exprs<-,DataLayer,ANY-method
 setReplaceMethod('exprs', c('DataLayer', 'ANY'),
                  function(object, value){
@@ -84,7 +84,9 @@ try({setMethod('nrow', 'DataLayer',
             nrow(x@.Data[,,x@layer,drop=FALSE])
           })})                          #for some reason this errors out
 
-##' @export nlayer
+##' @rdname addlayer
+##' @details \code{nlayer(x)}: Return the number of layers.
+##' @export
 setMethod('nlayer', 'DataLayer',
           function(x){
             dim(x@.Data)[3]
@@ -171,10 +173,10 @@ setMethod('[[<-', 'DataLayer', function(x, i, j, ..., value){
 
 
 
-##' show methods
-##' @exportMethod show
-##' @aliases show,DataLayer-method
-##' @rdname show-methods
+##' Show methods
+##' @export
+##' @param object whose human-readable form is desired.
+##' @rdname show
 setMethod("show","DataLayer",function(object){
   cat(class(object), ' on layer ', layername(object), '\n', nlayer(object), " Layers; ", nrow(object), " wells; ", ncol(object), " features\n")
   invisible(NULL)
@@ -185,10 +187,15 @@ setMethod('get', c('DataLayer', 'ANY'), function(x, pos){
   as(x, 'array')[,,pos]
 })
 
+##' @rdname addlayer
+##' @details code{layer(x)}: Return the current layer.
+##' @export
 setMethod('layer', c('DataLayer'), function(x){
   x@layer
 })
 
+##' @rdname addlayer
+##' @details code{layer(x)<-value}: Change the current layer (by \code{integer} or \code{character} value)
 ##' @export
 setReplaceMethod('layer', c('DataLayer', 'numeric'), function(x, value){
   if(round(value)!=value) stop('Index must be integer')
@@ -197,6 +204,8 @@ setReplaceMethod('layer', c('DataLayer', 'numeric'), function(x, value){
   x
 })
 
+##' @rdname addlayer
+##' @export
 setReplaceMethod('layer', c('DataLayer', 'character'), function(x, value){
   if(length(intersect(value, dimnames(x)[[3]]))!=1) stop('Bad index ', value)
   x@layer <- match(value, dimnames(x)[[3]])

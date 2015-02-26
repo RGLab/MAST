@@ -2,7 +2,6 @@
 % Please edit documentation in R/AllGenerics.R
 \name{layer<-}
 \alias{layer<-}
-\alias{layer<-,DataLayer,numeric-method}
 \title{Set active layer}
 \usage{
 layer(x) <- value
@@ -17,5 +16,8 @@ DataLayer with new active layer
 }
 \description{
 Set active layer
+}
+\seealso{
+addlayer
 }
 

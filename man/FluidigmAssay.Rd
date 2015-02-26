@@ -41,8 +41,9 @@ Constructs a FluidigmAssay object. Differs little from the SingleCellAssay const
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
-vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene',
-measurement='Et', ncells='Number.of.Cells', geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
+vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
+primerid='Gene', measurement='Et', ncells='Number.of.Cells',
+geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
 phenovars=c('Stim.Condition','Time'), id='vbeta all')
 show(vbeta.fa)
 nrow(vbeta.fa)

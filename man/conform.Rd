@@ -22,7 +22,4 @@ Otherwise returns a bitmask, which is the sum of:
 2: objects have same number of columns
 4: objects have same number of layers
 }
-\author{
-andrew
-}
 

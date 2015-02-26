@@ -2,7 +2,6 @@
 % Please edit documentation in R/AllGenerics.R
 \name{layername}
 \alias{layername}
-\alias{layername,DataLayer-method}
 \title{Get name of active layer}
 \usage{
 layername(x)
@@ -15,5 +14,8 @@ character
 }
 \description{
 Get name of active layer
+}
+\seealso{
+addlayer
 }
 
