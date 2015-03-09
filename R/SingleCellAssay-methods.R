@@ -269,12 +269,6 @@ uniqueModNA <- function(df, exclude){
     u
 }
 
-setGeneric("melt",function(data,...){
-standardGeneric("melt")
-#  UseMethod(generic="melt",data)
- },useAsDefault=reshape::melt)
-
-
 
 setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 

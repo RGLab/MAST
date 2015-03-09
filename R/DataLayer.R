@@ -182,11 +182,6 @@ setMethod("show","DataLayer",function(object){
   invisible(NULL)
 })
 
-setMethod('get', c('DataLayer', 'ANY'), function(x, pos){
-  #if(length(x)==0) return(numeric(0))
-  as(x, 'array')[,,pos]
-})
-
 ##' @rdname addlayer
 ##' @details code{layer(x)}: Return the current layer.
 ##' @export
