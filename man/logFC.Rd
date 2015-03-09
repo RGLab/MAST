@@ -20,7 +20,15 @@ getLogFC(zlmfit, contrast0, contrast1)
 list of matrices `logFC` and `varLogFC`, giving the log-fold-changes for each contrast (columns) and genes (rows) and the estimated sampling variance thereof
 }
 \description{
-Using the delta method, estimate the log-fold change from a state given by a vector contrast0 and the state(s) given by contrast1
+Using the delta method, estimate the log-fold change from a state given by a vector contrast0 and the state(s) given by contrast1.
+}
+\details{
+The log-fold change is defined as follows.  For each gene, let \eqn{u(x)} be the expected value of the continuous component, given a covariate x and the estimated coefficients \code{coefC}, ie, \eqn{u(x)=} \code{crossprod(x, coefC)}.
+Likewise, Let \eqn{v(x)=} \code{1/(1+exp(-crossprod(coefD, x)))} be the expected value of the discrete component.
+ The log fold change from contrast0 to contrast1 is defined as
+\deqn{u(contrast1)v(contrast1)-u(contrast0)v(contrast0).}
+Note that for this to be a log-fold change, then the regression for u must have been fit on the log scale.  This is returned in the matrix \code{logFC}.
+An approximation of the variance of \code{logFC} (applying the delta method to  formula defined above) is provided in \code{varLogFC}.
 }
 \section{Functions}{
 \itemize{

@@ -10,7 +10,14 @@ safeContrastQF <- function(contrast, vc) uncomplexify(tcrossprod(contrast, compl
 
 ##' Calculate log-fold changes from hurdle model components
 ##'
-##' Using the delta method, estimate the log-fold change from a state given by a vector contrast0 and the state(s) given by contrast1
+##' Using the delta method, estimate the log-fold change from a state given by a vector contrast0 and the state(s) given by contrast1.
+##'
+##' The log-fold change is defined as follows.  For each gene, let \eqn{u(x)} be the expected value of the continuous component, given a covariate x and the estimated coefficients \code{coefC}, ie, \eqn{u(x)=} \code{crossprod(x, coefC)}.
+##' Likewise, Let \eqn{v(x)=} \code{1/(1+exp(-crossprod(coefD, x)))} be the expected value of the discrete component.
+##'  The log fold change from contrast0 to contrast1 is defined as
+##' \deqn{u(contrast1)v(contrast1)-u(contrast0)v(contrast0).}
+##' Note that for this to be a log-fold change, then the regression for u must have been fit on the log scale.  This is returned in the matrix \code{logFC}.
+##' An approximation of the variance of \code{logFC} (applying the delta method to  formula defined above) is provided in \code{varLogFC}.
 ##' @param zlmfit ZlmFit output
 ##' @param contrast0 vector of coefficients giving baseline contrast.  If missing, then the '(Intercept)' is used as baseline.
 ##' @param contrast1 matrix of coefficients giving comparison contrasts.  If missing, then all non-(Intercept) coefficients are compared.
