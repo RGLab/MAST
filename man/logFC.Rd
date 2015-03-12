@@ -12,9 +12,9 @@ getLogFC(zlmfit, contrast0, contrast1)
 \arguments{
 \item{zlmfit}{ZlmFit output}
 
-\item{contrast0}{vector of coefficients giving baseline contrast.  If missing, then the '(Intercept)' is used as baseline.}
+\item{contrast0}{vector of coefficients giving baseline contrast, or a \code{\link{Hypothesis}}.  If missing, then the '(Intercept)' is used as baseline.}
 
-\item{contrast1}{matrix of coefficients giving comparison contrasts.  If missing, then all non-(Intercept) coefficients are compared.}
+\item{contrast1}{matrix of coefficients giving comparison contrasts, or a \code{\link{Hypothesis}}.  If missing, then all non-(Intercept) coefficients are compared.}
 }
 \value{
 list of matrices `logFC` and `varLogFC`, giving the log-fold-changes for each contrast (columns) and genes (rows) and the estimated sampling variance thereof
@@ -34,4 +34,25 @@ An approximation of the variance of \code{logFC} (applying the delta method to  
 \itemize{
 \item \code{getLogFC}: Return results as a perhaps friendlier \code{data.table}
 }}
+\examples{
+data(vbetaFA)
+zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[,1:5])
+##log-fold changes in terms of intercept (which is Stim(SEB) and CD154+VbetaResponsive)
+lfcStim <- logFC(zz)
+##If we want to compare against unstim, we can try the following
+coefnames <- colnames(coef(zz, 'D'))
+contrast0 <- setNames(rep(0, length(coefnames)), coefnames)
+contrast0[c('(Intercept)', 'Stim.ConditionUnstim')] <- 1
+contrast1 <- diag(length(coefnames))
+rownames(contrast1)<-colnames(contrast1)<-coefnames
+contrast1['(Intercept)',]<-1
+lfcUnstim <- logFC(zz, contrast0, contrast1)
+##log-fold change with itself is 0
+stopifnot(all(lfcUnstim$logFC[,2]==0))
+##inverse of log-fold change with Stim as reference
+stopifnot(all(lfcStim$logFC[,1]==(-lfcUnstim$logFC[,1])))
+}
+\seealso{
+Hypothesis
+}
 
