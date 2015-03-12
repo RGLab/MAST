@@ -309,8 +309,8 @@ setClass('ConstrainedGLMlike', contains='LMlike')
 setClass('RidgeBGLMlike',contains="BayesGLMlike",slots=c(lambda='numeric'),prototype = list(lambda=0.1) )
 
 ## Ways to specify hypothesis
-setClass('Hypothesis', contains='character', slots=list(transformed='matrix'))
-setClass('CoefficientHypothesis', contains='character', slots=list(transformed='numeric'))
+setClass('Hypothesis', contains='character', slots=list(contrastMatrix='matrix'))
+setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numeric'))
 
 ##' An S4 class to hold the output of a call to zlm
 ##'

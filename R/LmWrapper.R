@@ -161,18 +161,10 @@ uncomplexify <- function(x){
     makeChiSqTable(c(C=lambdaC, D=lambdaD)*(fitted*1), dof,cm)
 }
 
-.makeContrastMatrixFromCoefficientHypothesis <- function(hypothesis, coefnames){
-    h <- generateHypothesis(hypothesis, coefnames)
-    testIdx <- h@transformed
-    cm <- matrix(0, nrow=length(testIdx), ncol=length(coefnames), dimnames=list(contrast=h, coefnames))
-    cm[cbind(seq_along(testIdx), testIdx)] <- 1
-    t(cm)
-}
-
 #'@describeIn LMlike Wald test dropping single term specified by \code{CoefficientHypothesis} \code{hypothesis}
 #' @param hypothesis one of a \code{CoefficientHypothesis}, \code{Hypothesis} or contrast \code{matrix}.
 setMethod('waldTest', signature=c(object='LMlike', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
-    cm <- .makeContrastMatrixFromCoefficientHypothesis(hypothesis,names(object@defaultCoef))
+    cm <- hypothesis@contrastMatrix
     waldTest(object, cm)
 })
 
@@ -233,13 +225,13 @@ setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), functi
 
 #'@describeIn LMlike Likelihood ratio test dropping single term specified by \code{CoefficientHypothesis} \code{hypothesis}
 setMethod('lrTest', c(object='LMlike', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
-    testIdx <- hypothesis@transformed
+    testIdx <- hypothesis@index
     .lrTest(object, model.matrix(object)[,-testIdx,drop=FALSE])
 })
 
 #'@describeIn LMlike Likelihood ratio test dropping single term specified by \code{Hypothesis} \code{hypothesis}
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='Hypothesis'), function(object, hypothesis){
-    lrTest(object, hypothesis@transformed)
+    lrTest(object, hypothesis@contrastMatrix)
 })
 
 #'@describeIn LMlike Likelihood ratio test dropping single term specified by contrast matrix \code{hypothesis}

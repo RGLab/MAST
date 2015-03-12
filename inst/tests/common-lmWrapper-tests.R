@@ -139,8 +139,9 @@ test_that('Contrast Hypothesis Work', {
 ## })
 
 test_that('Wald For Glm', {
- btest <- waldTest(obj, as.matrix(c(0, 1)))
- atest <- waldTest(obj, CoefficientHypothesis('Stim.ConditionUnstim'))
+    btest <- waldTest(obj, as.matrix(c(0, 1)))
+    hypo <- generateHypothesis(CoefficientHypothesis('Stim.ConditionUnstim'), colnames(model.matrix(obj)))
+ atest <- waldTest(obj, hypo)
  expect_is(btest, 'matrix')
  expect_equivalent(btest, atest)
  

@@ -122,7 +122,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     var_est <- match.arg(var_est, c('bootall', 'bootdiag', 'modelbased'))
     stopifnot(inherits(hypothesis, 'CoefficientHypothesis'))
     hypothesis <- generateHypothesis(hypothesis, colnames(zFit@coefD))
-    testIdx <- hypothesis@transformed
+    testIdx <- hypothesis@index
     
     ## put bootstrap replicates last
     boots <- aperm(boots, c(2,3,4,1))
