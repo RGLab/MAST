@@ -18,7 +18,7 @@ Imports:
     stringr,
     abind,
     methods,
-    arm,
+    arm (<= 1.7.7),
     parallel
 Suggests:
     flowClust(>= 2.99),
