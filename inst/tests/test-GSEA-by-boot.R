@@ -1,5 +1,6 @@
 context('GSEA')
 data(vbetaFA)
+library(plyr)
 vb1 = subset(vbetaFA, ncells==1)
 vb1 = vb1[,freq(vb1)>.1]
 zf = zlm.SingleCellAssay(~Stim.Condition, vb1)
@@ -71,3 +72,4 @@ test_that('combining coefficients works',{
     ## Fisher Z scores are reasonable
     expect_more_than(cor(abs(ZnF[,'Z']), -log(ZnF[,'P'])), .85)
 })
+
