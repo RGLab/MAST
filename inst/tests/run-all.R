@@ -1,2 +1,2 @@
-test_package("SingleCellAssay")
+test_package("MAST")
 

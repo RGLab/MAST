@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{SingleCellAssay-intro}
+%\VignetteIndexEntry{MAST-intro}
 %\VignetteEngine{knitr::knitr}
 \documentclass{article}
 \usepackage{url, graphicx}
@@ -13,10 +13,10 @@
 
 %\makeatother
 \newcommand{\future}[1]{TODO: {\color{gray} #1}}
-\newcommand{\sca}{\texttt{SingleCellAssay}}
+\newcommand{\sca}{\texttt{MAST}}
 \input{symbols.tex}
 \begin{document}
-\title{An Introduction to SingleCellAssay}
+\title{An Introduction to MAST}
 
 
 \author{Andrew McDavid and Greg Finak}
@@ -68,7 +68,7 @@ suppressPackageStartupMessages(library(Biobase))
 library(knitr)
 opts_chunk$set(error=FALSE)
 #load_all('..')
-library(SingleCellAssay)
+library(MAST)
 library(data.table)
 library(plyr)
 data(vbeta)

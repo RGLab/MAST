@@ -12,7 +12,7 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
     sca <- zlmfit@sca
     N <- nrow(sca)
     LMlike <- zlmfit@LMlike
-    parallel::clusterEvalQ(cl,require(SingleCellAssay))
+    parallel::clusterEvalQ(cl,require(MAST))
     ## clusterEvalQ(cl,require(abind))
     parallel::clusterExport(cl,"N",envir=environment())
     parallel::clusterExport(cl,"LMlike",envir=environment())
