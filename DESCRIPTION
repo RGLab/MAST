@@ -10,7 +10,6 @@ VignetteBuilder: knitr
 Imports:
     Biobase,
     data.table,
-    BiocGenerics,
     gdata,
     lattice,
     ggplot2,
@@ -30,7 +29,9 @@ Suggests:
     numDeriv,
     car
 Depends:
-    reshape
+    reshape,
+    BiocGenerics,
+    Matrix
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0
