@@ -19,7 +19,8 @@ Imports:
     methods,
     Matrix,
     arm (<= 1.7.7),
-    parallel
+    parallel,
+    R.methodsS3
 Suggests:
     knitr,
     testthat,

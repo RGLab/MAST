@@ -4,7 +4,7 @@
 \alias{print.summaryZlmFit}
 \title{Print summary of a ZlmFit}
 \usage{
-print.summaryZlmFit(x, n = 2, by = "logFC", ...)
+\method{print}{summaryZlmFit}(x, n = 2, by = "logFC", ...)
 }
 \arguments{
 \item{x}{output from summary(ZlmFit)}
