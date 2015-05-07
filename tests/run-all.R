@@ -1,3 +1,3 @@
 library(testthat)
-library(SingleCellAssay)
-test_package('SingleCellAssay')
+library(MAST)
+test_package('MAST')

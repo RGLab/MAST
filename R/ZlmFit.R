@@ -48,29 +48,30 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
 setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
     o1 <- object
     LMlike <- o1@LMlike
-    F <- update.formula(LMlike@formula, formula(sprintf(' ~. - %s', hypothesis)))
-    if(F==LMlike@formula) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
-    LMlike <- update(LMlike, F)
+    newF <- update.formula(LMlike@formula, formula(sprintf(' ~. - %s', hypothesis)))
+    if(newF==LMlike@formula) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
+    LMlike <- update(LMlike, newF)
     .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
 })
 
 ##'  @describeIn ZlmFit Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
-    testIdx <- h@transformed
+    testIdx <- h@index
     newMM <- model.matrix(object@LMlike)[,-testIdx, drop=FALSE]
     .lrtZlmFit(object, newMM, hypothesis@.Data)
 })
 
-##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which can be a call to \link{Hypothesis} or \link{CoefficientHypothesis} or a contrast matrix.
+##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a \link{Hypothesis}.
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
     ## original fit
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
     ## call using coefficient matrix
-    lrTest(object, h@transformed)
+    lrTest(object, h@contrastMatrix)
 })
 
 ## contrast matrices
+##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a contrast \code{matrix}.
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(object, hypothesis){
     ## original fit
     LMlike <- object@LMlike
@@ -111,22 +112,24 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='matrix'), functi
 
 ##' @describeIn ZlmFit Returns an array with Wald Tests on contrasts defined using \code{CoefficientHypothesis()}.
 setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
-    cm <- .makeContrastMatrixFromCoefficientHypothesis(hypothesis,colnames(object@coefC))
-    waldTest(object, cm)
+    h <- generateHypothesis(hypothesis,  colnames(object@coefD))
+    waldTest(object, h@contrastMatrix)
 })
 
 ##' @param hypothesis call to \link{Hypothesis} or \link{CoefficientHypothesis} or a matrix giving such contrasts.
 ##' @describeIn ZlmFit Returns an array with Wald Tests on contrasts defined in \code{Hypothesis()}
 setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
-    waldTest(object, h@transformed)
+    waldTest(object, h@contrastMatrix)
 })
 
+##' @describeIn show
 setMethod('show', signature=c(object='ZlmFit'), function(object){
     cat('Fitted zlm on', ncol(object@sca), 'genes and', nrow(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
 })
 
 ##' @describeIn ZlmFit Returns the matrix of coefficients for component \code{which}.
+##' @param ... ignored
 setMethod('coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     if(which=='C') object@coefC else object@coefD

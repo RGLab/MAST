@@ -11,18 +11,47 @@ getLogFC(zlmfit, contrast0, contrast1)
 \arguments{
 \item{zlmfit}{ZlmFit output}
 
-\item{contrast0}{vector of coefficients giving baseline contrast.  If missing, then the '(Intercept)' is used as baseline.}
+\item{contrast0}{vector of coefficients giving baseline contrast, or a \code{\link{Hypothesis}}.  If missing, then the '(Intercept)' is used as baseline.}
 
-\item{contrast1}{matrix of coefficients giving comparison contrasts.  If missing, then all non-(Intercept) coefficients are compared.}
+\item{contrast1}{matrix of coefficients giving comparison contrasts, or a \code{\link{Hypothesis}}.  If missing, then all non-(Intercept) coefficients are compared.}
 }
 \value{
 list of matrices `logFC` and `varLogFC`, giving the log-fold-changes for each contrast (columns) and genes (rows) and the estimated sampling variance thereof
 }
 \description{
-Using the delta method, estimate the log-fold change from a state given by a vector contrast0 and the state(s) given by contrast1
+Using the delta method, estimate the log-fold change from a state given by a vector contrast0 and the state(s) given by contrast1.
+}
+\details{
+The log-fold change is defined as follows.  For each gene, let \eqn{u(x)} be the expected value of the continuous component, given a covariate x and the estimated coefficients \code{coefC}, ie, \eqn{u(x)=} \code{crossprod(x, coefC)}.
+Likewise, Let \eqn{v(x)=} \code{1/(1+exp(-crossprod(coefD, x)))} be the expected value of the discrete component.
+ The log fold change from contrast0 to contrast1 is defined as
+\deqn{u(contrast1)v(contrast1)-u(contrast0)v(contrast0).}
+Note that for this to be a log-fold change, then the regression for u must have been fit on the log scale.  This is returned in the matrix \code{logFC}.
+An approximation of the variance of \code{logFC} (applying the delta method to  formula defined above) is provided in \code{varLogFC}.
 }
 \section{Functions}{
 \itemize{
 \item \code{}: Return results as a perhaps friendlier \code{data.table}
 }}
+\examples{
+data(vbetaFA)
+zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[,1:5])
+##log-fold changes in terms of intercept (which is Stim(SEB) and CD154+VbetaResponsive)
+lfcStim <- logFC(zz)
+##If we want to compare against unstim, we can try the following
+coefnames <- colnames(coef(zz, 'D'))
+contrast0 <- setNames(rep(0, length(coefnames)), coefnames)
+contrast0[c('(Intercept)', 'Stim.ConditionUnstim')] <- 1
+contrast1 <- diag(length(coefnames))
+rownames(contrast1)<-colnames(contrast1)<-coefnames
+contrast1['(Intercept)',]<-1
+lfcUnstim <- logFC(zz, contrast0, contrast1)
+##log-fold change with itself is 0
+stopifnot(all(lfcUnstim$logFC[,2]==0))
+##inverse of log-fold change with Stim as reference
+stopifnot(all(lfcStim$logFC[,1]==(-lfcUnstim$logFC[,1])))
+}
+\seealso{
+Hypothesis
+}
 

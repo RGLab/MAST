@@ -13,11 +13,15 @@ calcZ(tests, testType = "t", combined = "no")
 \item{combined}{\code{character} one of 'none', 'fisher' or 'stouffer'}
 }
 \value{
-3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|))
+3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|)) if \code{combined='no'}, otherwise just a matrix.
 }
 \description{
 The Z or T statistics may be reported by component (discrete/continuous) when \code{combined='no'} or combined by Fisher's or Stouffer's method (\code{combined='fisher'} or \code{combined='stouffer'}.
 Fisher's method uses the product of the p-values, while Stouffer's method uses the sum of the Z/T scores.
+The "Z" score returned by Fisher is the normal quantile that would yield the observed Fisher P-value, whose sign is derived from the sign of the maximum component Z score.
+The "Z" score returned by Stouffer when \code{testType='normal'} is the sum of the Z scores, over sqrt(2).
+When \code{testType='t'} it is a weighted combination of the Z scores, with weights correponding to the degrees of freedom in each of the t statistics.
+A t-approximation to this sum of t-variables is derived by matching moments.  It seems to be fairly accurate in practice.
 }
 \seealso{
 gseaAfterBoot

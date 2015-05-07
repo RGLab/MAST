@@ -7,8 +7,8 @@
 SingleCellAssay represents an arbitrary single cell assay
 It is meant to be flexible and is subclassed to represent specific assay
 types like Fluidigm and NanoString. It should be constructed using the \code{SingleCellAssay}, \code{SCASet} or subclass constructors.
-mapNames for the SingleCellAssay class are in the object \code{SingleCellAssay:::Mandatory_Cellvars}
-mapNames for the FluidigmAssay class are in the object \code{SingleCellAssay:::FluidigmMapNames}
+mapNames for the SingleCellAssay class are in the object \code{MAST:::Mandatory_Cellvars}
+mapNames for the FluidigmAssay class are in the object \code{MAST:::FluidigmMapNames}
 }
 \section{Slots}{
 SingleCellAssay extends class \code{\link{DataLayer}}, so inherits its slots and methods.  It also contains the following additional slots:

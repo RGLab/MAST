@@ -2,7 +2,7 @@
 \name{coef}
 \alias{coef}
 \alias{coef,LMlike-method}
-\title{Coefficients of zero-infated}
+\title{Coefficients of zero-inflated}
 \usage{
 coef(object, ...)
 }
@@ -10,13 +10,12 @@ coef(object, ...)
 \item{object}{LMlike}
 
 \item{...}{passed to methods}
-
-\item{which}{character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned}
 }
 \value{
 numeric vector
 }
 \description{
-Given a fitted LMlike, return the coefficients from discrete or continuous
+Given a fitted LMlike, return the coefficients from discrete or continuous.
+Methods expect an argument \code{which}, a \code{character} of length one, one of "C" (continuous) or "D" (discrete) specifying which component should be returned.
 }
 

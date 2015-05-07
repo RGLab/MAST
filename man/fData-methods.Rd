@@ -19,5 +19,4 @@ Accessor for featureData \code{data.frame}
 \details{
 Returns the \code{featureData} \code{data.frame}.
 }
-\keyword{accessor}
 

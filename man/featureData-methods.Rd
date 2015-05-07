@@ -16,5 +16,4 @@
 \description{
 Returns the \code{featureData}.
 }
-\keyword{accessor}
 

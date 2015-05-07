@@ -74,8 +74,7 @@ setMethod("sampleNames","SCASet",function(object){
   unlist(lapply(object@set,function(x)x@id),use.names=FALSE)
 })
 
-##' @rdname SCASet-class
-##' @aliases show,SCASet-method
+##' @describeIn show
 setMethod("show","SCASet",function(object){
   cat("SCASet of size ",length(object@set),"\n")
   cat("Samples ",paste(unlist(lapply(object,function(x)x@id),use.names=T),collapse=", "),"\n")

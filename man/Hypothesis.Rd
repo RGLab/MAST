@@ -4,10 +4,12 @@
 \alias{Hypothesis}
 \title{Describe a linear model hypothesis to be tested}
 \usage{
-Hypothesis(hypothesis)
+Hypothesis(hypothesis, terms)
 }
 \arguments{
 \item{hypothesis}{a character vector specifying a hypothesis, following makeContrasts, or a character vector naming coefficients to be dropped.}
+
+\item{terms}{an optional character vector giving the terms (column names from the \code{model.matrix}) out of which the contrasts will be contrasted.  If missing then most functions will attempt to fill this in for you at run time.}
 }
 \value{
 a Hypothesis with a "transformed" component
@@ -16,7 +18,11 @@ a Hypothesis with a "transformed" component
 A \code{Hypothesis} can be any linear combination of coefficients, compared to zero.  Specify it as a character vector that can be parsed to yield the desired equalities ala \code{makeContrasts}.
 A \code{CoefficientHypothesis} is a hypothesis for which terms are singly or jointly tested to be zero (generally the case in a t-test or F-test), by dropping coefficients from the model.
 }
+\examples{
+h <- Hypothesis('Stim.ConditionUnstim', c('(Intercept)', 'Stim.ConditionUnstim'))
+h@contrastMatrix
+}
 \seealso{
-zlm.SingleCellAssay waldTest lrTest linearHypothesis
+zlm.SingleCellAssay waldTest lrTest
 }
 

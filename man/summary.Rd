@@ -7,6 +7,8 @@ summary(object, ...)
 }
 \arguments{
 \item{object}{some object to be summarized}
+
+\item{...}{additional arguments passed to methods.}
 }
 \value{
 a summary, possibly printed

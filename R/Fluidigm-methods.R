@@ -356,7 +356,15 @@ list(mu=mu, pi=pi, num=num)
 })
 
 
+#' Average within duplicated genes/primers
+#'
+#' 
 #'@export
+#' @param fd \code{SingleCellAssay} or subclass 
+#' @param geneGroups \code{character} naming a column in the \code{featureData} that keys the duplicates
+#' @param fun.natural transformation to be used to collapse the duplicate expression values
+#' @param fun.cycle transformation to be used after collapsing
+#' @return collapsed version of \code{fd}.
 primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift){
   fVars <- fData(fd)[, geneGroups, drop=FALSE]
   geneset <- split(1:nrow(fVars), fVars)

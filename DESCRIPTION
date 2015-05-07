@@ -1,16 +1,15 @@
-Package: SingleCellAssay
+Package: MAST
 Type: Package
-Title: Core data structures for single-cell assays
-Version: 0.92
-Date: 2015-01-21
-Author: Andrew McDavid <amcdavid@fhcrc.org>, Greg Finak <gfinak@fhcrc.org>
-Maintainer: Greg Finak <gfinak@fhcrc.org>
+Title: Model-based Analysis of Single Cell Transcriptomics
+Version: 0.926
+Date: 2015-05-04
+Author: Andrew McDavid <amcdavid@fredhutch.org>, Greg Finak
+    <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
+Maintainer: Greg Finak <gfinak@fredhutch.org>
 VignetteBuilder: knitr
 Imports:
     Biobase,
     data.table,
-    BiocGenerics,
-    gdata,
     lattice,
     ggplot2,
     latticeExtra,
@@ -18,18 +17,21 @@ Imports:
     stringr,
     abind,
     methods,
-    arm,
-    parallel
+    Matrix,
+    arm (<= 1.7.7),
+    parallel,
+    R.methodsS3
 Suggests:
-    flowClust(>= 2.99),
     knitr,
     testthat,
     lme4(>= 1.0),
     roxygen2(> 4.0.0),
     numDeriv,
-    car
+    car,
+    gdata
 Depends:
-    reshape
+    reshape,
+    BiocGenerics
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0
@@ -42,8 +44,6 @@ Collate:
     'Hypothesis.R'
     'LmWrapper.R'
     'MultidimensionalScaling.R'
-    'Nanostring-methods.R'
-    'NanostringRCCReader.R'
     'RNASeqAssay-methods.R'
     'Readers.R'
     'SCASet-methods.R'
@@ -56,8 +56,6 @@ Collate:
     'filterEval.R'
     'helper-methods.R'
     'lmWrapper-bayesglm.R'
-    'lmWrapper-bayesglmWeight.R'
-    'lmWrapper-cglm.R'
     'lmWrapper-glm.R'
     'lmWrapper-glmer.R'
     'lmWrapper-ridge.R'

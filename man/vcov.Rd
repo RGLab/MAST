@@ -8,12 +8,13 @@ vcov(object, ...)
 \arguments{
 \item{object}{LMlike}
 
-\item{which}{character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned}
+\item{...}{Additional parameters, namely \code{which}}
 }
 \value{
-matrix
+\code{matrix}
 }
 \description{
-Given a fitted LMlike, return the variance-covariance from discrete or continuous
+Given a fitted LMlike, return the variance-covariance from discrete or continuous.
+\code{which}, a \code{character}, one of "C" (continuous) or "D" (discrete) must be specified, giving which component should be returned.
 }
 

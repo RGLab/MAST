@@ -9,6 +9,10 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 
 
 ## This is pinch point (up to 10% of computation time can be spent here)
+#' @describeIn GLMlike return the variance/covariance of component \code{which}
+#' @param object \code{GLMlike}
+#' @param which \code{character}, one of 'C', 'D'.
+#' @param ... ignored
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov
@@ -28,9 +32,9 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
 .glmDOF <- function(object, pos){
     npos <- sum(pos)
     ## bayesglm doesn't correctly set the residual DOF, and this won't hurt for regular glm
-    object@fitC$df.residual <- npos - object@fitC$rank
+    object@fitC$df.residual <- max(npos - object@fitC$rank, 0)
     ## conservative estimate of residual df
-    object@fitD$df.residual <- min(npos, length(pos)-npos) - object@fitD$rank
+    object@fitD$df.residual <- max(min(npos, length(pos)-npos) - object@fitD$rank, 0)
     object@fitted <- c(C=object@fitC$converged &
                            object@fitC$df.residual>0, #kill unconverged or empty
                        D=object@fitD$converged)

@@ -14,4 +14,7 @@ numeric, number of layers
 \description{
 How many layers does a DataLayer have?
 }
+\seealso{
+addlayer
+}
 
