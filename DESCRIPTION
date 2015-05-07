@@ -10,7 +10,6 @@ VignetteBuilder: knitr
 Imports:
     Biobase,
     data.table,
-    gdata,
     lattice,
     ggplot2,
     latticeExtra,
@@ -22,13 +21,13 @@ Imports:
     arm (<= 1.7.7),
     parallel
 Suggests:
-    flowClust(>= 2.99),
     knitr,
     testthat,
     lme4(>= 1.0),
     roxygen2(> 4.0.0),
     numDeriv,
-    car
+    car,
+    gdata
 Depends:
     reshape,
     BiocGenerics
@@ -44,8 +43,6 @@ Collate:
     'Hypothesis.R'
     'LmWrapper.R'
     'MultidimensionalScaling.R'
-    'Nanostring-methods.R'
-    'NanostringRCCReader.R'
     'RNASeqAssay-methods.R'
     'Readers.R'
     'SCASet-methods.R'
@@ -58,8 +55,6 @@ Collate:
     'filterEval.R'
     'helper-methods.R'
     'lmWrapper-bayesglm.R'
-    'lmWrapper-bayesglmWeight.R'
-    'lmWrapper-cglm.R'
     'lmWrapper-glm.R'
     'lmWrapper-glmer.R'
     'lmWrapper-ridge.R'
