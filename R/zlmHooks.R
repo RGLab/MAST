@@ -103,7 +103,7 @@ bayesglm.influence <-  function(model, do.coef = do.coef, ...)
 #' @name influence.bayesglm
 #' @title influence for bayesglm objects.
 #' @export
-R.methodsS3:::setMethodS3("influence","bayesglm",definition=function (model, do.coef = TRUE, ...) 
+R.methodsS3::setMethodS3("influence","bayesglm",definition=function (model, do.coef = TRUE, ...) 
 {
   res <- bayesglm.influence(model, do.coef = do.coef, ...)
   pRes <- na.omit(residuals(model, type = "pearson"))[model$prior.weights != 
@@ -118,7 +118,7 @@ R.methodsS3:::setMethodS3("influence","bayesglm",definition=function (model, do.
 #' @name rstandard.bayesglm
 #' @title rstandard for bayesglm objects.
 #' @export
-R.methodsS3:::setMethodS3("rstandard","bayesglm",definition=function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", 
+R.methodsS3::setMethodS3("rstandard","bayesglm",definition=function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", 
                                                                                                                                 "pearson"), ...) 
 {
   type <- match.arg(type)
