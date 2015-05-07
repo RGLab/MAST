@@ -163,7 +163,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
 setMethod('initialize', 'SingleCellAssay',
           function(.Object, dataframe, idvars, primerid, measurement, exprsMatrix, cellvars=NULL, featurevars=NULL, phenovars=NULL, sort=TRUE, ...){
             ##message(class(.Object), ' calling SingleCellAssay Initialize')  #DEBUG
-            .Object <- callNextMethod()
+            .Object <- callNextMethod(.Object, ...)
             if(sort) .Object <- sort(.Object)
             if(!missing(dataframe)){              #called using melted dataframe
               ##message('...with dataframe') #DEBUG

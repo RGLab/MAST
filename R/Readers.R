@@ -206,7 +206,6 @@ read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.thre
 }
 
 
-##' @importFrom gdata xls2csv
 
 ##Function to read fluidigm from xls file
 read.fluidigm.xls<-function(x,header.size=2,skip=8){
@@ -219,7 +218,7 @@ read.fluidigm.xls<-function(x,header.size=2,skip=8){
   }
   if(grepl("xls$",basename(x))){
     ##Read as xls file
-    tmp<-xls2csv(x)
+    tmp<-gdata::xls2csv(x)
   }else if(grepl("csv$",basename(x))){
     ##read as csv
     tmp<-file(x,open="r")

@@ -50,9 +50,9 @@ setClass('DataLayer', contains='array', representation=representation(layer='num
 
 setClass('Mapping', contains='list')
 setMethod('initialize', 'Mapping', function(.Object, keys=NULL, values=NULL, ...){
-  .Object <- callNextMethod()
+  .Object <- callNextMethod(.Object, ...)
   if(!is.null(keys)){
-    if(is.null(values)) values <- rep(NA, length(keys))
+    if(!is.null(values)) values <- rep(NA, length(keys))
     if(!is.character(keys)) stop('keys must be character')
     .Object@.Data <- vector(mode='list', length=length(keys))
     names(.Object@.Data) <- keys
