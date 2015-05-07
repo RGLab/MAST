@@ -12,12 +12,10 @@ Imports:
     data.table,
     lattice,
     ggplot2,
-    latticeExtra,
     plyr,
     stringr,
     abind,
     methods,
-    Matrix,
     arm (<= 1.7.7),
     parallel,
     R.methodsS3
@@ -60,7 +58,6 @@ Collate:
     'lmWrapper-glmer.R'
     'lmWrapper-ridge.R'
     'lrtest.r'
-    'piest.R'
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
