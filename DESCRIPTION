@@ -16,7 +16,7 @@ Imports:
     stringr,
     abind,
     methods,
-    arm (<= 1.7.7),
+    arm,
     parallel,
     R.methodsS3
 Suggests:
