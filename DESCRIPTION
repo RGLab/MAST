@@ -30,7 +30,7 @@ Suggests:
     gdata
 Description: Core data structures and methods for handling single cell assay
     data.
-License: Artistic-2.0
+License: GPL(>= 2)
 Collate:
     'AllGenerics.R'
     'AllClasses.R'
