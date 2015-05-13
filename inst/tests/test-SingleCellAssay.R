@@ -79,7 +79,7 @@ test_that("Can load complete data", {
 })
 
 test_that("Cellkey unique identifies a cell", {
-  tab <- table(MAST:::melt(sc)$wellKey, do.call(paste, MAST:::melt(sc)[, idvars]))
+  tab <- table(melt(sc)$wellKey, do.call(paste, melt(sc)[, idvars]))
   expect_true(all(tab %in% c(0,75)))
   
 })
@@ -103,7 +103,7 @@ test_that('uniqueModNA works on multiple columns', {
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
   expect_that(sci, is_a("SingleCellAssay"))
-  expect_equal(nrow(MAST:::melt(sci)), nrow(dat_complete))
+  expect_equal(nrow(melt(sci)), nrow(dat_complete))
 
   incomplete <- rbind(melt(fd[1:20,1:20]),
                       melt(fd[21:50, 11:30])) #equally sized primerid blocks

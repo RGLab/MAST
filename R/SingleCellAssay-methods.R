@@ -22,26 +22,10 @@ NULL
 ##' row and column attributes and the values from the rectangular array
 ##' 
 ##' 
-##' @rdname melt
-##' @title melt
 ##' @aliases melt
-##' @keywords transformation
 ##' @importFrom reshape melt
-##' @importFrom reshape melt.default
-##' @importFrom reshape melt.array
-##' @importFrom reshape melt.cast_df
-##' @importFrom reshape melt.list
-##' @importFrom reshape melt.matrix
-##' @importFrom reshape melt.cast_matrix
-##' @importFrom reshape melt.data.frame
-##' @importFrom reshape melt.table
 ##' @export
-## melt.SingleCellAssay<-function(data,...){
-##   m <- melt.data.frame(cbind(cData(data), exprs(data)), id.vars=names(cData(data)), variable_name='primerid')
-##   m <- merge(m, fData(data), by='primerid')
-##   if(data@keep.names) return(rename(m, c('value'=dimnames(data)[[3]][layer(data)])))
-##   return(m)
-## }
+##' @export melt
 melt.SingleCellAssay<-function(data,...){
   m <- cbind(
     cData(data)[rep(seq_len(nrow(data)), ncol(data)),,drop=FALSE],
@@ -314,12 +298,6 @@ setMethod('fData', 'SingleCellAssay', function(object) pData(object@featureData)
 ##' @aliases featureData,SingleCellAssay-method
 ##' @exportMethod featureData
 setMethod('featureData', 'SingleCellAssay', function(object)  object@featureData)
-
-##' @rdname melt
-##' @details \code{signature(data="SingleCellAssay")}: return a \code{data.frame}, which contains a melted version of \code{data}.
-##' @aliases melt,SingleCellAssay-method
-##' @exportMethod melt
-setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 .scaSubset <- function(x, i, j, ..., drop=FALSE){
   if(missing(i)){

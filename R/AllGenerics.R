@@ -277,8 +277,3 @@ setGeneric("LRT",function(sca,comparison,...) standardGeneric("LRT"))
 ##' @return modified nsa
 ##' @export
 setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
-
-setGeneric("melt",function(data,...){
-standardGeneric("melt")
-#  UseMethod(generic="melt",data)
- },useAsDefault=reshape::melt)
