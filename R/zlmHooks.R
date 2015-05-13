@@ -156,22 +156,24 @@ deviance_residuals_hook<-function (x)
 #' Hook to compute \eqn{ y_i-E(V_i)-\beta_{ngeneson} ng_i} for \eqn{y_i>0} and \eqn{E(U_i)(E(V_i)-\beta_{ngeneson} \times ng_i)} for \eqn{y_i=0}
 #' @param x the ZLMFit
 #' @export
-score_hook <- function(x){
-    if(all(x@fitted)){
-        class(x@fitC) <- c("glm","lm")
-        class(x@fitD) <- c("bayesglm","glm","lm")
-        fd <- fitted(x@fitD)
-        wh <- colnames(x@modelMatrix)%like%"cngeneson"
-        wh2 <- names(coef(x@fitC))%like%"cngeneson"
-        correction <- x@modelMatrix[,wh,drop=FALSE]%*%coef(x@fitC)[wh2,drop=FALSE]
-        fc <- x@modelMatrix%*%coef(x@fitC)-correction
-        score <- fd*fc
-        score[x@response>0] <- ((x@response-correction))[x@response>0]
-        score <- matrix(score,nrow=1)
-        colnames(score) <- names(fd)
-        score
-    }
+score_hook <- function(x) {
+  if (all(x@fitted)) {
+    class(x@fitC) <- c("glm","lm")
+    class(x@fitD) <- c("bayesglm","glm","lm")
+    wh <- !colnames(x@modelMatrix) %like% "cngeneson"
+    wh2 <- !names(coef(x@fitC)) %like% "cngeneson"
+    fc <-
+      x@modelMatrix[,!wh,drop = FALSE] %*% coef(x@fitC)[!wh2,drop = FALSE] #continuous CDR effect
+    fd <- invlogit(x@modelMatrix[,c("(Intercept)","cngeneson"),drop = FALSE] %*%
+                      coef(x@fitD)[c("(Intercept)","cngeneson"),drop = FALSE]) #discrete CDR effect
+    R <-
+      matrix((x@response - fc * fd),nrow = 1) #residuals corrected for ngeneson in the continuous part
+    colnames(R) <- names(residuals(x@fitD))
+    R[x@response == 0] <- 0 - fd
+    R
+  }
 }
+
 
 #' Hook to return p_hat from the model
 #'
