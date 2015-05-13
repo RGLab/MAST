@@ -144,7 +144,6 @@ setMethod('vcov', signature=c(object='ZlmFit'), function(object, which, ...){
 
 
 ##' @param which  character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned
-##' @importMethodsFrom arm se.coef
 ##' @describeIn ZlmFit Returns a matrix of standard error estimates for coefficients on component \code{which}.
 ##' @export
 setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){

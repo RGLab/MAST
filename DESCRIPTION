@@ -1,8 +1,8 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 0.926
-Date: 2015-05-04
+Version: 0.927
+Date: 2015-05-10
 Author: Andrew McDavid <amcdavid@fredhutch.org>, Greg Finak
     <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
 Maintainer: Greg Finak <gfinak@fredhutch.org>
@@ -16,9 +16,10 @@ Imports:
     stringr,
     abind,
     methods,
-    arm,
     parallel,
-    R.methodsS3
+    R.methodsS3,
+    BiocGenerics,
+    reshape
 Suggests:
     knitr,
     testthat,
@@ -27,9 +28,6 @@ Suggests:
     numDeriv,
     car,
     gdata
-Depends:
-    reshape,
-    BiocGenerics
 Description: Core data structures and methods for handling single cell assay
     data.
 License: Artistic-2.0
@@ -50,6 +48,7 @@ Collate:
     'ZlmFit-bootstrap.R'
     'ZlmFit-logFC.R'
     'ZlmFit.R'
+    'bayesglm.R'
     'ebayes-helpers.R'
     'filterEval.R'
     'helper-methods.R'

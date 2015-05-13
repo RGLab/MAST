@@ -1,6 +1,5 @@
 ##' @include AllClasses.R
 ##' @include AllGenerics.R
-##' @importFrom arm bayesglm.fit
 setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){
@@ -21,10 +20,10 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
              }
     }
     
-    contFit <- if(object@useContinuousBayes) bayesglm.fit else glm.fit
+    contFit <- if(object@useContinuousBayes) .bayesglm.fit else glm.fit
     
     object@fitC <- do.call(contFit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos],  weights=object@weightFun(object@response[pos])), fitArgsC))
-    object@fitD <- do.call(bayesglm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
+    object@fitD <- do.call(.bayesglm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
 
     object <- .glmDOF(object, pos)
     object <- .dispersion(object)

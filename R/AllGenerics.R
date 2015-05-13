@@ -162,6 +162,8 @@ NULL
 ##' @aliases fit,BayesGLMlike,missing-method
 setGeneric('fit', function(object, response, ...) standardGeneric('fit'))
 
+setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
+
 ##' Coefficients of zero-inflated
 ##'
 ##' Given a fitted LMlike, return the coefficients from discrete or continuous.
