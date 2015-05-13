@@ -12,7 +12,6 @@ setAs('list', 'SCASet', function(from){
 ##' @param X SCASet
 ##' @param FUN a function
 ##' @param ... passed to FUN
-##' @importMethodsFrom BiocGenerics lapply
 ##' @export lapply
 ##' @aliases lapply,SCASet-method
 setMethod("lapply",c("SCASet"),function(X,FUN,...){

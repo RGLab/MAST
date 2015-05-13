@@ -457,7 +457,6 @@ setMethod('split', signature(x='SingleCellAssay'),
 ##'
 ##' No error checking is currently done to insure that objects in the SCASet conform with each other,
 ##' so mysterious errors may result if they do not.
-##' @importMethodsFrom BiocGenerics combine
 ##' @export
 ##' @aliases combine,SCASet,missing-method
 setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
@@ -475,7 +474,6 @@ setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
 ##' Combines two Single Cell-like objects provided they have the same number of Features and Layers.
 ##' The union of columns from featureData will be taken
 ##' The union (padded if necessary with NA) will be taken from cellData.
-##' @importMethodsFrom BiocGenerics combine
 ##' @import abind
 ##' @export
 ##' @aliases combine,DataLayer,Datalayer-method

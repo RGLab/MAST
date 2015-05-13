@@ -144,7 +144,7 @@ NULL
 ##' @export
 setGeneric('subset')
 
-##' @importMethodsFrom BiocGenerics combine
+##' @import BiocGenerics
 NULL
 
 ###############################
