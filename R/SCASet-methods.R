@@ -12,7 +12,6 @@ setAs('list', 'SCASet', function(from){
 ##' @param X SCASet
 ##' @param FUN a function
 ##' @param ... passed to FUN
-##' @importMethodsFrom BiocGenerics lapply
 ##' @export lapply
 ##' @aliases lapply,SCASet-method
 setMethod("lapply",c("SCASet"),function(X,FUN,...){
@@ -74,8 +73,7 @@ setMethod("sampleNames","SCASet",function(object){
   unlist(lapply(object@set,function(x)x@id),use.names=FALSE)
 })
 
-##' @rdname SCASet-class
-##' @aliases show,SCASet-method
+##' @describeIn show
 setMethod("show","SCASet",function(object){
   cat("SCASet of size ",length(object@set),"\n")
   cat("Samples ",paste(unlist(lapply(object,function(x)x@id),use.names=T),collapse=", "),"\n")

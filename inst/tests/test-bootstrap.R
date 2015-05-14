@@ -81,7 +81,7 @@ test_that('Continuous group coefficient is close to expected', {
         3.5*Y$cov[2,2] #expected covariance of groupB
         )
 })
-
+clusterEvalQ(cl, set.seed(1234))
 boot <- pbootVcov1(cl, zfit, R=50)
 bootmeans <- colMeans(boot, na.rm=TRUE, dims=1)
 ## m2 <- 4  #top 4 expressed genes in simulation

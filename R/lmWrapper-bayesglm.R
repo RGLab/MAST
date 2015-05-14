@@ -1,6 +1,5 @@
 ##' @include AllClasses.R
 ##' @include AllGenerics.R
-##' @importFrom arm bayesglm.fit
 setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){
@@ -10,7 +9,6 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
 
     fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
-    ## set prior if specified
     if(length(object@coefPrior)>0){
         fitArgsD$prior.mean <- object@coefPrior['loc', 'D',]
         fitArgsD$prior.scale <- object@coefPrior['scale', 'D',]
@@ -22,20 +20,15 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
              }
     }
     
-    contFit <- if(object@useContinuousBayes) bayesglm.fit else glm.fit
+    contFit <- if(object@useContinuousBayes) .bayesglm.fit else glm.fit
     
     object@fitC <- do.call(contFit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos],  weights=object@weights[pos]), fitArgsC))
-    object@fitD <- hushWarning(do.call(bayesglm.fit, c(list(x=object@modelMatrix, y=object@weights, family=binomial()), fitArgsD)), fixed("non-integer #successes in a binomial glm"))
+    object@fitD <- hushWarning(
+        do.call(.bayesglm.fit, c(list(x=object@modelMatrix, y=object@weights, family=binomial()), fitArgsD)),
+        fixed("non-integer #successes in a binomial glm"))
+ 
 
-    ## bayesglm doesn't correctly set the residual DOF
-    object@fitC$df.residual <- sum(pos) - object@fitC$rank
-    object@fitD$df.residual <- sum(object@weights) - object@fitD$rank
-    
-    object@fitted <- c(C=object@fitC$converged &
-                           object@fitC$df.residual>0, #kill unconverged or empty
-                       D=object@fitD$converged &      #kill unconverged
-                           (object@fitD$df.residual>0) & #note that we technically get a fit here, but it's probably not worth using
-                               (min(sum(object@weights), sum(1-object@weights))-object@fitD$rank)>0)
+    object <- .glmDOF(object, pos)
     object <- .dispersion(object)
     
     if(!silent & !all(object@fitted)) warning('At least one component failed to converge')

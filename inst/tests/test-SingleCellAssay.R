@@ -79,7 +79,7 @@ test_that("Can load complete data", {
 })
 
 test_that("Cellkey unique identifies a cell", {
-  tab <- table(SingleCellAssay:::melt(sc)$wellKey, do.call(paste, SingleCellAssay:::melt(sc)[, idvars]))
+  tab <- table(melt(sc)$wellKey, do.call(paste, melt(sc)[, idvars]))
   expect_true(all(tab %in% c(0,75)))
   
 })
@@ -90,20 +90,20 @@ suppressPackageStartupMessages(library(data.table))
   naframe <- data.table(var=rep(c(1, 2), each=3), na=c(NA, -9, NA, -9, NA, -9))
 test_that("uniqueModNA doesn't include NA", {
     setkeyv(naframe, colnames(naframe))
-  expect_equal(nrow(SingleCellAssay:::uniqueModNA(naframe, exclude='var')), 2)
-  expect_equal(nrow(SingleCellAssay:::uniqueModNA(naframe[,-2, with=FALSE], exclude='var')), 2)
+  expect_equal(nrow(MAST:::uniqueModNA(naframe, exclude='var')), 2)
+  expect_equal(nrow(MAST:::uniqueModNA(naframe[,-2, with=FALSE], exclude='var')), 2)
 })
 
 test_that('uniqueModNA works on multiple columns', {
     ## Now should return every row, since every row is unique
     naframe$extra <- 1:nrow(naframe)
     setkeyv(naframe, colnames(naframe))
-    expect_equal(unique(naframe), SingleCellAssay:::uniqueModNA(naframe, exclude='var'))
+    expect_equal(unique(naframe), MAST:::uniqueModNA(naframe, exclude='var'))
 })
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
   expect_that(sci, is_a("SingleCellAssay"))
-  expect_equal(nrow(SingleCellAssay:::melt(sci)), nrow(dat_complete))
+  expect_equal(nrow(melt(sci)), nrow(dat_complete))
 
   incomplete <- rbind(melt(fd[1:20,1:20]),
                       melt(fd[21:50, 11:30])) #equally sized primerid blocks
@@ -119,7 +119,7 @@ test_that("Completes incomplete data", {
 ## No more mapping, hurray!
 ## context('testing cell and feature dictionaries')
 
-## complete<-(SingleCellAssay:::melt(sc))[,setdiff(colnames(SingleCellAssay:::melt(sc)),"__wellKey")]
+## complete<-(MAST:::melt(sc))[,setdiff(colnames(MAST:::melt(sc)),"__wellKey")]
 ## scd <- SingleCellAssay(complete, mapping=getMapping(sc))
 
 ## test_that('Cell data has correct number of row/columns', {
@@ -189,19 +189,19 @@ test_that("Throw error when indexing with factors", {
     expect_error(sc[factor('A'),])
 })
 
-test_that("loading Matrix package doesn't clobber generic table", {
-  ## Matrix dispatches [[ and [ on x, i, j, drop
-  ## The distinction between ANY and missing doesn't matter for
-  ## i and j until Matrix is loaded due to method caching
-  ## but then the dispatch occurs separately and things can break
-  library(Matrix)
-  sub <- sc[[boolind]]
-  sub2 <- sc[boolind]
-  expect_that(sub, is_a("SingleCellAssay"))
-  expect_equal(sub, sub2)
-  #This should pass if run from a fresh start of R
-  detach('package:Matrix') 
-})
+## test_that("loading Matrix package doesn't clobber generic table", {
+##   ## Matrix dispatches [[ and [ on x, i, j, drop
+##   ## The distinction between ANY and missing doesn't matter for
+##   ## i and j until Matrix is loaded due to method caching
+##   ## but then the dispatch occurs separately and things can break
+##   library(Matrix)
+##   sub <- sc[[boolind]]
+##   sub2 <- sc[boolind]
+##   expect_that(sub, is_a("SingleCellAssay"))
+##   expect_equal(sub, sub2)
+##   #This should pass if run from a fresh start of R
+##   detach('package:Matrix') 
+## })
 
 test_that('can subset by character', {
   sub <- sc[,'GAPDH']

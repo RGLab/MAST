@@ -22,26 +22,10 @@ NULL
 ##' row and column attributes and the values from the rectangular array
 ##' 
 ##' 
-##' @rdname melt
-##' @title melt
 ##' @aliases melt
-##' @keywords transformation
 ##' @importFrom reshape melt
-##' @importFrom reshape melt.default
-##' @importFrom reshape melt.array
-##' @importFrom reshape melt.cast_df
-##' @importFrom reshape melt.list
-##' @importFrom reshape melt.matrix
-##' @importFrom reshape melt.cast_matrix
-##' @importFrom reshape melt.data.frame
-##' @importFrom reshape melt.table
 ##' @export
-## melt.SingleCellAssay<-function(data,...){
-##   m <- melt.data.frame(cbind(cData(data), exprs(data)), id.vars=names(cData(data)), variable_name='primerid')
-##   m <- merge(m, fData(data), by='primerid')
-##   if(data@keep.names) return(rename(m, c('value'=dimnames(data)[[3]][layer(data)])))
-##   return(m)
-## }
+##' @export melt
 melt.SingleCellAssay<-function(data,...){
   m <- cbind(
     cData(data)[rep(seq_len(nrow(data)), ncol(data)),,drop=FALSE],
@@ -163,7 +147,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
 setMethod('initialize', 'SingleCellAssay',
           function(.Object, dataframe, idvars, primerid, measurement, exprsMatrix, cellvars=NULL, featurevars=NULL, phenovars=NULL, sort=TRUE, ...){
             ##message(class(.Object), ' calling SingleCellAssay Initialize')  #DEBUG
-            .Object <- callNextMethod()
+            .Object <- callNextMethod(.Object, ...)
             if(sort) .Object <- sort(.Object)
             if(!missing(dataframe)){              #called using melted dataframe
               ##message('...with dataframe') #DEBUG
@@ -269,34 +253,19 @@ uniqueModNA <- function(df, exclude){
     u
 }
 
-setGeneric("melt",function(data,...){
-standardGeneric("melt")
-#  UseMethod(generic="melt",data)
- },useAsDefault=reshape::melt)
-
-
 
 setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 
 
 
-##' Get cellData data.frame
-##'
-##' @param sc SingleCellAssay
-##' @return data.frame
-##' @aliases cData,SingleCellAssay-method
+##' @describeIn cData
 ##' @export
 setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
 
 
-##' Replace cData
-##'
-##' @param sc SingleCellAssay
-##' @param value AnnotatedDataFrame or data.frame
-##' @aliases cData<-,SingleCellAssay-method
-##' @rdname cData-method
+
+##' @describeIn cData
 ##' @export
-##' @name cData
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
   if (is.data.frame(value)) {
     value <- as(value, "AnnotatedDataFrame")
@@ -329,12 +298,6 @@ setMethod('fData', 'SingleCellAssay', function(object) pData(object@featureData)
 ##' @aliases featureData,SingleCellAssay-method
 ##' @exportMethod featureData
 setMethod('featureData', 'SingleCellAssay', function(object)  object@featureData)
-
-##' @rdname melt
-##' @details \code{signature(data="SingleCellAssay")}: return a \code{data.frame}, which contains a melted version of \code{data}.
-##' @aliases melt,SingleCellAssay-method
-##' @exportMethod melt
-setMethod("melt","SingleCellAssay",melt.SingleCellAssay )
 
 .scaSubset <- function(x, i, j, ..., drop=FALSE){
   if(missing(i)){
@@ -406,7 +369,7 @@ setMethod("[", signature(x="SingleCellAssay"), .scaSubset)
 ##'
 ##' @param x SingleCellAssay
 ##' @param thesubset expression, which when evaluated in cellData environment which returns a logical
-##' @aliases subset,SingleCellAssay-method
+##' @rdname subset
 ##' @export
 ##' @examples
 ##' data(vbetaFA)
@@ -472,7 +435,6 @@ setMethod('split', signature(x='SingleCellAssay'),
 ##'
 ##' No error checking is currently done to insure that objects in the SCASet conform with each other,
 ##' so mysterious errors may result if they do not.
-##' @importMethodsFrom BiocGenerics combine
 ##' @export
 ##' @aliases combine,SCASet,missing-method
 setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
@@ -490,7 +452,6 @@ setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
 ##' Combines two Single Cell-like objects provided they have the same number of Features and Layers.
 ##' The union of columns from featureData will be taken
 ##' The union (padded if necessary with NA) will be taken from cellData.
-##' @importMethodsFrom BiocGenerics combine
 ##' @import abind
 ##' @export
 ##' @aliases combine,DataLayer,Datalayer-method
@@ -517,17 +478,7 @@ getMapping <- function(x, map){
   return(list(map))
 }
 
-
-##' @exportMethod copy
-##' @aliases copy,SingleCellAssay-method
-##' @rdname copy-methods
-setMethod('copy', 'SingleCellAssay',
-          function(object){
-            o2 <- object[[1:nrow(object)]]
-            o2
-          })
-
-
+##' @describeIn show
 setMethod('show', 'SingleCellAssay', function(object){
 callNextMethod()
 cat(' id: ', object@id, '\n')

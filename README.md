@@ -1,24 +1,17 @@
-SingleCellAssay
+MAST
 ===============
 
-Infrastructure and Tools for Single Cell Assay Analysis
+Model-based Analysis of Single-cell Transcriptomics
 
 
 Installation Instructions
 ------------
      install.packages('devtools')
      library(devtools)
-     install_github('SingleCellAssay', 'RGLab')
+     install_github('MAST', 'RGLab')
      # *or* if you don't have a working latex setup
-     install_github('SingleCellAssay', 'RGLab', build_vignettes=FALSE)
-     vignette('SingleCellAssay-intro')
-
-**Needs roxygen2 4.0.0.99** or higher (available on github) if the documentation is regenerated--otherwise the NAMESPACE file will not be correct.
-
-Changes
-------------
-New interface for zlm.SingleCellAssay to specify hypothesis.  See ?Hypothesis
-API for zlm.SingleCellAssay has changed.  Now a ZlmFit object is returned. Testing is done by calling `waldTest` or `lrTest` after the initial fit.
+     install_github('MAST', 'RGLab', build_vignettes=FALSE)
+     vignette('MAST-intro')
 
 
 New Features 

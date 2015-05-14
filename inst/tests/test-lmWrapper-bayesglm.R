@@ -1,4 +1,3 @@
-if(!suppressPackageStartupMessages(require(arm))) skip('Please install arm.')
 
 context('test prior construction')
 test_that('default prior', {
@@ -43,13 +42,14 @@ test_that('Same result with fit args', {
 
 obj <- new('BayesGLMlike', design=cData(fd), formula=~Stim.Condition)
 obj <- fit(obj, response=exprs(fd)[,2])
-objD <- suppressWarnings(bayesglm(obj@response>0 ~ Stim.Condition, data=obj@design, family=binomial()))
-## bayesglm doesn't initialize this correctly, or consistently, in any case
-objD$aic <- deviance(objD)+2*objD$rank
 objC <- glm(obj@response ~ Stim.Condition, data=obj@design, subset=obj@response>0)
 
+## Not really applicable since we've diverged from the arm codebase
+## objD <- suppressWarnings(.bayesglm.fit(x=model.matrix(obj), y=obj@response>0, family=binomial()))
+## ## bayesglm doesn't initialize this correctly, or consistently, in any case
+## objD$aic <- deviance(objD)+2*objD$rank
+
+## source('common-lmWrapper-tests.R', local=TRUE)
 
 
-source('common-lmWrapper-tests.R', local=TRUE)
 source('common-lmWrapper-glm-tests.R', local=TRUE)
-try(detach('package:arm'), silent=TRUE)

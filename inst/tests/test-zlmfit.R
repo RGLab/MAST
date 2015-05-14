@@ -59,6 +59,19 @@ test_that('log fold changes match zero-inflated regression', {
     expect_more_than(cor(as.numeric(t(lfc$var)), vzlfcNoIntercept, use='pairwise'), .85)    
 })
 
+test_that('log fold change via contrasts', {
+    lfc <- logFC(zzinit, contrast1=Hypothesis('`(Intercept)`+PopulationVbetaResponsive + `PopulationVbetaResponsive:Stim.ConditionUnstim`'))
+
+    expect_equal(nrow(lfc$logFC), ncol(zzsimple@sca))
+    expect_true(all(lfc$varLogFC>0, na.rm=TRUE))
+    zlfc <- coef(lm(exprs(zzsimple@sca)~ .+0, data=as.data.frame(model.matrix(zzinit@LMlike))))
+    lfc.lm <- colSums(zlfc[c('PopulationVbetaResponsive', '`PopulationVbetaResponsive:Stim.ConditionUnstim`'),])
+    diff <- mean((lfc.lm   -lfc$logFC)^2/lfc.lm, na.rm=TRUE)
+    expect_less_than(diff, .04)
+})
+
+
+
 context('summary')
 test_that('summary works', {
     zzs <- summary(zzsimple, logFC=TRUE, doLRT=FALSE)

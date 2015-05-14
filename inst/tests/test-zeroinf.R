@@ -1,4 +1,5 @@
 fd@keep.names <- FALSE
+set.seed(1234)
 x <- matrix(runif(1000), 100)
 colnames(x) <- paste('X', 1:10, sep='')
 y <- x[, 1]*10 + rnorm(100)
@@ -66,12 +67,12 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   exprs(fd3) <- ee
   zz <- zlm.SingleCellAssay( ~ Population, fd3)
   expect_that(zz, is_a('ZlmFit'))
-  expect_false(zz@converged[1,'D'])
+  expect_less_than(zz@df.resid[1,'D'], 1)
 
         if(suppressPackageStartupMessages(require(arm))){
             zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
             expect_that(zz3, is_a('ZlmFit'))
-            expect_false(zz3@converged[1,'D'])
+            expect_true(zz3@converged[1,'D'])
             detach('package:arm')
         } else{
             message('install arm')
@@ -140,22 +141,16 @@ test_that('Residuals Hook', {
      expect_is(fd3, 'SingleCellAssay')
 })
 
-if(suppressPackageStartupMessages(require('arm'))){
 context('zlm and bayesglm')
-
 test_that('Can fit using bayesglm', {
     zzinit <<- zlm.SingleCellAssay(~Population, fd2, ebayes=FALSE, method='bayesglm', silent=FALSE)
     expect_is(zzinit, 'ZlmFit')
 })
-
 test_that('Can do ebayes shrinkage using bayesglm', {
     zzinitshrink <- zlm.SingleCellAssay(~Population, fd2,  ebayes=TRUE, method='bayesglm', silent=FALSE)
     expect_that(zzinit@dispersion, not(is_equivalent_to(zzinitshrink@dispersion)))
     expect_equal(zzinit@dispersion, zzinitshrink@dispersionNoshrink)
 })
-
-try(detach('package:arm'), silent=TRUE)
-}
 
 context('Test weights')
 test_that('weights can zero out positive observations', {

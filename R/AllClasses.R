@@ -50,9 +50,9 @@ setClass('DataLayer', contains='array', representation=representation(layer='num
 
 setClass('Mapping', contains='list')
 setMethod('initialize', 'Mapping', function(.Object, keys=NULL, values=NULL, ...){
-  .Object <- callNextMethod()
+  .Object <- callNextMethod(.Object, ...)
   if(!is.null(keys)){
-    if(is.null(values)) values <- rep(NA, length(keys))
+    if(!is.null(values)) values <- rep(NA, length(keys))
     if(!is.character(keys)) stop('keys must be character')
     .Object@.Data <- vector(mode='list', length=length(keys))
     names(.Object@.Data) <- keys
@@ -62,6 +62,7 @@ setMethod('initialize', 'Mapping', function(.Object, keys=NULL, values=NULL, ...
   .Object
 })
 
+##' @describeIn show
 setMethod('show', 'Mapping', function(object){
   cat(class(object), ' containing : ', names(object), '\n')
 })
@@ -128,8 +129,8 @@ SingleCellAssayValidity <- function(object){
 ##' SingleCellAssay represents an arbitrary single cell assay
 ##' It is meant to be flexible and is subclassed to represent specific assay
 ##' types like Fluidigm and NanoString. It should be constructed using the \code{SingleCellAssay}, \code{SCASet} or subclass constructors.
-##' mapNames for the SingleCellAssay class are in the object \code{SingleCellAssay:::Mandatory_Cellvars}
-##' mapNames for the FluidigmAssay class are in the object \code{SingleCellAssay:::FluidigmMapNames}
+##' mapNames for the SingleCellAssay class are in the object \code{MAST:::Mandatory_Cellvars}
+##' mapNames for the FluidigmAssay class are in the object \code{MAST:::FluidigmMapNames}
 ##' }
 ##' \section{Slots}{
 ##' SingleCellAssay extends class \code{\link{DataLayer}}, so inherits its slots and methods.  It also contains the following additional slots:
@@ -200,17 +201,8 @@ setClass('RNASeqAssay',contains='SingleCellAssay', prototype=prototype(cmap=new(
 
 ##'SCASet is a set of SingleCellAssay objects or objects of its subclasses (i.e. FluidigmAssay)
 ##'The constructor \code{SCASet} should be used to make objects of this class.
-##' }
-##' \section{Slots}{
-##' \describe{
-##' \item{set}{A \code{list} of \code{SingleCellAssays} or its subclasses}
-##' }
-##' 
-##' @rdname SCASet-class
-##' @docType class
-##' @name SCASet-class
-##' @exportClass SCASet
-##' @aliases SCASet-class
+##' @slot set: A \code{list} of \code{SingleCellAssays} or its subclasses
+##' @seealso SCASet
 setClass("SCASet",
          representation=list(set="list"),validity=function(object){
            if(all(names(object@set)!=unlist(lapply(object@set,function(x) x@id),use.names=FALSE))){
@@ -243,15 +235,11 @@ setClass("SCASet",
 ##' \item{defaultCoef}{}
 ##' \item{defaultVcov}{Used internally to speed calls to vcov/coef}
 ##' }
-##' @seealso fit
 ##' @seealso coef
 ##' @seealso lrTest
 ##' @seealso waldTest
 ##' @seealso vcov
-##' @seealso dof
 ##' @seealso logLik
-##' @name LMlike-class
-##' @docType class
 setClass('LMlike',
          slots=c(design='data.frame', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', weights='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
              ## this speeds construction of coef and vcov, which is a pinch point in zlm
@@ -266,7 +254,10 @@ setClass('LMlike',
              }
          })
 
+##' Wrapper for regular glm/lm
+##'
 setClass('GLMlike', contains='LMlike')
+
 ##' Initialize a prior to be used a prior for BayeGLMlike/BayesGLMlike2
 ##'
 ##' @param names character vector of coefficients.  The `(Intercept)` will be ignored.
@@ -289,6 +280,11 @@ defaultPrior <- function(names){
     ar
 }
 
+
+##' Wrapper for bayesian GLM
+##'
+##' @slot prior \code{numeric} optional 3d array used to specify prior for coefficients
+##' @slot useContinuousBayes \code{logical} should \code{bayesglm} be used to fit the continuous component as well?
 setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array', useContinuousBayes='logical'),
          prototype=list(prior=defaultPrior(character(0)), useContinuousBayes=FALSE),
          validity=function(object){
@@ -299,6 +295,11 @@ setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array', useConti
 setClass('BayesGLMlikeWeight', contains='BayesGLMlike')
                                                                                       
 
+##' Wrapper for lmer/glmer
+##'
+##' A horrendous hack is employed in order to do arbitrary likelihood ratio tests: the model matrix is built, the names possibly mangled, then fed in as a symbolic formula to glmer/lmer.
+##' This is necessary because there is no (easy) way to specify an arbitrary fixed-effect model matrix in glmer.
+##' @slot pseudoMM part of this horrendous hack.
 setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity=function(object){
     if(length(object@response)>0 & nrow(object@pseudoMM)>0){
         stopifnot(nrow(object@pseudoMM)==length(object@response))
@@ -307,11 +308,11 @@ setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity
     })
 
 setClass('ConstrainedGLMlike', contains='LMlike')
-
+setClass('RidgeBGLMlike',contains="BayesGLMlike",slots=c(lambda='numeric'),prototype = list(lambda=0.1) )
 
 ## Ways to specify hypothesis
-setClass('Hypothesis', contains='character', slots=list(transformed='matrix'))
-setClass('CoefficientHypothesis', contains='character', slots=list(transformed='numeric'))
+setClass('Hypothesis', contains='character', slots=list(contrastMatrix='matrix'))
+setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numeric'))
 
 ##' An S4 class to hold the output of a call to zlm
 ##'
@@ -455,8 +456,9 @@ FromMatrix <- function(class, exprsArray, cData, fData){
 ##' data(vbeta)
 ##' colnames(vbeta)
 ##' vbeta <- computeEtFromCt(vbeta)
-##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene',
-##' measurement='Et', ncells='Number.of.Cells', geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
+##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
+##' primerid='Gene', measurement='Et', ncells='Number.of.Cells',
+##' geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
 ##' phenovars=c('Stim.Condition','Time'), id='vbeta all')
 ##' show(vbeta.fa)
 ##' nrow(vbeta.fa)
@@ -474,8 +476,6 @@ FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, gene
 ##' Constructs a SCASet
 ##'
 ##' An SCASet is a list of SingleCellAssays or objects inheriting from SingleCellAssay. The type of constructor called is determined by the value of contentClass, which should be the class of the SCA inheriting object contained in this SCASet. Both the class and the constructor should exist and have the same name. The code dynamically looks to see if the a function with the same name exists, and ASSUMES it is the constructor for the class.
-##' ##' ##' TODO SCASet constructor should perhaps take a SingleCellAssay class or FluidigmClass rather than a dataframe. Then we can learn the class type for construction.
-##' @title SCASet constructor
 ##' @param dataframe flat data.frame ala SingleCellAssay
 ##' @param splitby either a character vector naming columns or a factor or a list of factors used to split dataframe into SingleCellAssays
 ##' @param idvars character vector naming columns that uniquely identify a cell
@@ -485,8 +485,6 @@ FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, gene
 ##' @param ... passed up to SingleCellAssay or other dynamically called constructor.
 ##' @return SCASet
 ##' @note The dynamic lookup of the constructor could be made more robust. 
-##' @aliases SCASet
-##' @rdname SCAset-methods
 ##' @export 
 SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,contentClass="SingleCellAssay",...){
   if(is.character(splitby) && all(splitby %in% names(dataframe))){

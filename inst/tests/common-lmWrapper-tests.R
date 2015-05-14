@@ -26,7 +26,9 @@ test_that('Handle Singular Designs', {
 test_that('Handle 100% expression', {
     obj2 <- hushWarning(fit(obj, rnorm(nrow(fd))+20), fixed('algorithm did not converge'))
     expect_is(coef(obj2, 'C'), 'numeric')
-    expect_false(obj2@fitted['D'])
+    if(obj2@fitted['D']){
+        expect_less_than(obj2@fitD$df.residual, 1)
+    }
 })
 
 ## Not sure what the best way to handle this is...lmer just drops NAs, while glm.fit throws an ugly error
@@ -137,8 +139,9 @@ test_that('Contrast Hypothesis Work', {
 ## })
 
 test_that('Wald For Glm', {
- btest <- waldTest(obj, as.matrix(c(0, 1)))
- atest <- waldTest(obj, CoefficientHypothesis('Stim.ConditionUnstim'))
+    btest <- waldTest(obj, as.matrix(c(0, 1)))
+    hypo <- generateHypothesis(CoefficientHypothesis('Stim.ConditionUnstim'), colnames(model.matrix(obj)))
+ atest <- waldTest(obj, hypo)
  expect_is(btest, 'matrix')
  expect_equivalent(btest, atest)
  
@@ -148,12 +151,6 @@ test_that('Wald For Glm', {
          expect_equal(btest['cont', 'lambda'], chic)
          expect_equal(btest['disc', 'lambda'], chid)
      }
-})
-
-
-test_that('Residuals', {
-    expect_equivalent(as.numeric(residuals(obj, which='C', type='response')), residuals(objC))
-    expect_equivalent(as.numeric(residuals(obj, which='D', type='response')), residuals(objD, type='response'))
 })
 
 

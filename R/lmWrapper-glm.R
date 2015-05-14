@@ -9,6 +9,10 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 
 
 ## This is pinch point (up to 10% of computation time can be spent here)
+#' @describeIn GLMlike return the variance/covariance of component \code{which}
+#' @param object \code{GLMlike}
+#' @param which \code{character}, one of 'C', 'D'.
+#' @param ... ignored
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov
@@ -23,6 +27,19 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     vc[ok,ok] <- vc2
     vc
 })
+
+##
+.glmDOF <- function(object, pos){
+    npos <- sum(object@weights)
+    ## bayesglm doesn't correctly set the residual DOF, and this won't hurt for regular glm
+    object@fitC$df.residual <- max(npos - object@fitC$rank, 0)
+    ## conservative estimate of residual df
+    object@fitD$df.residual <- max(min(npos, length(pos)-npos) - object@fitD$rank, 0)
+    object@fitted <- c(C=object@fitC$converged &
+                           object@fitC$df.residual>0, #kill unconverged or empty
+                       D=object@fitD$converged)
+    object
+}
 
 ## dispersion calculations for glm-like fitters
 .dispersion <- function(object){
@@ -62,18 +79,21 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
 
     fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
-    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos], weights=object@weights[pos]), fitArgsC))
-    object@fitD <- hushWarning(do.call(glm.fit, c(list(x=object@modelMatrix, y=object@weights, family=binomial()), fitArgsD)), fixed("non-integer #successes in a binomial glm"))
+
+
+    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos],  weights=object@weights[pos]), fitArgsC))
+    object@fitD <- hushWarning(
+        do.call(glm.fit, c(list(x=object@modelMatrix, y=object@weights, family=binomial()), fitArgsD)),
+        fixed("non-integer #successes in a binomial glm"))    
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
 
-     object@fitted <- c(C=object@fitC$converged &
-                           object@fitC$df.residual>0, #kill unconverged or empty
-                       D=object@fitD$converged &      #kill unconverged
-                           (object@fitD$df.residual>0) & #note that we technically get a fit here, but it's probably not worth using
-                               (min(sum(object@weights), sum(1-object@weights))-object@fitD$rank)>0)
+    ## first test for positive continuous DOF
     ## cheap additional test for convergence
     ## object@fitted['D'] <- object@fitted['D'] & (object@fitD$null.deviance >= object@fitD$deviance)
+    object <- .glmDOF(object, pos)
+    ## don't return estimates that would be at the boundary
+    ## object@fitted <- object@fitted & c(C=TRUE, D=object@fitD$df.residual>0)
     ## update dispersion, possibly shrinking by prior
     object <- .dispersion(object)
     

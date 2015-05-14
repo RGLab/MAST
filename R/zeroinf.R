@@ -1,5 +1,5 @@
-methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm', 'bayesglmW'),
-                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike', 'BayesGLMlikeWeight'),
+methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm','ridge'),
+                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike','RidgeBGLMlike'),
                          implementsEbayes=c(TRUE, FALSE, FALSE, TRUE, TRUE))
 
 

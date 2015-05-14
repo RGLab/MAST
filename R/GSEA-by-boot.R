@@ -122,7 +122,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     var_est <- match.arg(var_est, c('bootall', 'bootdiag', 'modelbased'))
     stopifnot(inherits(hypothesis, 'CoefficientHypothesis'))
     hypothesis <- generateHypothesis(hypothesis, colnames(zFit@coefD))
-    testIdx <- hypothesis@transformed
+    testIdx <- hypothesis@index
     
     ## put bootstrap replicates last
     boots <- aperm(boots, c(2,3,4,1))
@@ -284,15 +284,39 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     structure(tests, bootR=dimb['rep'])
 }
 
+##match moments to get approximation of t statistic
+.approxt <- function(dof){
+    s <- ifelse(is.finite(dof), sqrt(dof/(dof-2)), 1) #scale of each t
+    kur <- 6/(dof-4) #kurtosis of each t
+    ## assume we weight the sum by inverse scale (so that we have unit variance in each var)
+    skur <- sum(kur)/length(dof)^2
+    ## match kurtosis of sum to dof of t approximiation
+    nu <- 6/skur+4
+    ## scale of sum
+    ss <- sum(s^2)
+    ## scale of approximation
+    scale <- sqrt( (nu-2)/(nu) / #expected variance of t approx
+                      ss) #variance of sum
+    list(W=1/s, nu=nu, scale=scale)
+}
+
 ##' Get Z or T statistics and P values after running gseaAfterBoot
-##'
+##' 
+##' The Z or T statistics may be reported by component (discrete/continuous) when \code{combined='no'} or combined by Fisher's or Stouffer's method (\code{combined='fisher'} or \code{combined='stouffer'}.
+##' Fisher's method uses the product of the p-values, while Stouffer's method uses the sum of the Z/T scores.
+##' The "Z" score returned by Fisher is the normal quantile that would yield the observed Fisher P-value, whose sign is derived from the sign of the maximum component Z score.
+##' The "Z" score returned by Stouffer when \code{testType='normal'} is the sum of the Z scores, over sqrt(2).
+##' When \code{testType='t'} it is a weighted combination of the Z scores, with weights correponding to the degrees of freedom in each of the t statistics.
+##' A t-approximation to this sum of t-variables is derived by matching moments.  It seems to be fairly accurate in practice.
 ##' @param tests output from \code{gseaAfterBoot}
 ##' @param testType either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.
-##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|))
+##' @param combined \code{character} one of 'none', 'fisher' or 'stouffer'
+##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|)) if \code{combined='no'}, otherwise just a matrix.
 ##' @export
 ##' @seealso gseaAfterBoot
-calcZ <- function(tests, testType='t'){
+calcZ <- function(tests, testType='t', combined='no'){
     testType <- match.arg(testType, c('t', 'normal'))
+    combined <- match.arg(combined, c('no', 'fisher', 'stouffer'))
     Z <- (tests[,,'stat','test']-tests[,,'stat','null'])/sqrt(tests[,,'var','test']+tests[,,'var','null'])
     
     if(testType=='t'){
@@ -303,7 +327,29 @@ calcZ <- function(tests, testType='t'){
         dof <- Inf
     }
     P <- pt(abs(Z), df=dof, lower.tail=FALSE)*2
-    ab <- abind(Z=Z, P=P, rev.along=0)
-    names(dimnames(ab)) <- c('set', 'comp', 'metric')
-    ab
+    out3d <- abind(Z=Z, P=P, rev.along=0)
+    names(dimnames(out3d)) <- c('set', 'comp', 'metric')
+    if(combined=='no'){
+        return(out3d)
+    }else if(combined =='fisher'){
+        maxsign <- sign(Z[,1]+Z[,2])
+        chival <- -2*(log(P[,1])+log(P[,2]))
+        Pval <- pchisq(chival, df=4, lower.tail=FALSE)
+        out2d <- cbind(Z=-maxsign*qnorm(Pval/2), P=Pval)
+    } else if(combined =='stouffer'){
+        if(testType=='normal'){
+            Wmat <- matrix(1, nrow=nrow(Z), ncol=ncol(Z))
+            scale <- 1/sqrt(2)
+            dofComb <- Inf
+        } else{
+            tapprox <- apply(dof, 1, .approxt) #find a t approximation for sum of t stats
+            Wmat <- t(sapply(tapprox, '[[', 'W'))
+            scale <- sapply(tapprox, '[[', 'scale')
+            dofComb <- sapply(tapprox, '[[', 'nu')
+        }
+        Zcomb <- rowSums(Wmat*Z)*scale
+        out2d <- cbind(Z=Zcomb, P=pt(abs(Zcomb), dofComb, lower.tail=FALSE)*2)
+    }
+    names(dimnames(out2d)) <- c('set', 'metric')
+    return(out2d)
 }

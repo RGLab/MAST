@@ -172,29 +172,8 @@ with(concord, {foo<-na.omit(cbind(et.ref=et.ref,et.comp=et.comp));2*cov(foo[,"et
 #    with(concord,{foo<-na.omit(2^cbind(et.ref,et.comp)-1);2*cov(foo[,"et.ref"],foo[,"et.comp"])/(var(foo[,"et.ref"])+var(foo[,"et.comp"])+(mean(foo[,"et.ref"])-mean(foo[,"et.comp"]))^2)})
 }
 
-## This might have been made obsolete by plotSCAConcordance
-## This is a panel function that draws lines between (x, y) pairs and comparison
-## comparison is a data.frame output from getConcordance
-panel.shifts <- function(x, y, groups, subscripts, comparison, ...){
-  #vargs = list(...)
-  #comparison = vargs$comparison
-  #print(str(subscripts))
- panel.xyplot(x, y, subscripts=subscripts, ...)
- panel.segments(x, y, comparison[subscripts,1], comparison[subscripts,2], ..., alpha=.5)
- panel.abline(a=0, b=1, col='gray')
-}
 
 
-
-concordPlot <- function(concord0, concord1){
-  #preconditions concord0, concord1 have row-correspondence
-  #concord0 is plotted reference
-  p<-xyplot(et.ref ~ et.comp, concord0)
-}
-
-
-###TODO: remove multiple cells,
-###make this S3 generic so we don't clobber filter in R
 ##' Filter a SingleCellAssay
 ##'
 ##' Remove, or flag wells that are outliers in discrete or continuous space.
@@ -307,28 +286,6 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   }
 }
 
-##' Estimate Gene Frequency from experiments with pools with varying number-of-cells
-##'
-##' We use maximum likelihood estimation of a censored binomial distribution
-##' We return the standard error, as determined from the observed Fisher Information
-##' @title Pooled Gene Frequency Estimation
-##' @param fd FluidigmAssay object with ncells set appropriately
-##' @return Matrix with point estimates of frequency and standard deviation of estimate
-##' @author andrew
-freqFromPools <- function(fd){
-  stopifnot(is(fd, 'FluidigmAssay'))
-ncellID <- 'ncells'
-geneID <- 'primerid'
-genes <- fData(fd)[,geneID]
-ee <- exprs(fd)
-ncells <- cData(fd)[,ncellID]
-est.and.se <- apply(ee, 2, function(col){
-    est <- optimize(pooledModel, c(0, 1), maximum=TRUE, observed=col, ncells=ncells)$max
-    se <- 1/sqrt(pooledModel(est, col, ncells, info=TRUE, loglik=FALSE))
-    c(estimate=est, standard.err=se)
-})
-est.and.se
-}
 
 ##' Summarize expression parameters
 ##'
@@ -356,7 +313,15 @@ list(mu=mu, pi=pi, num=num)
 })
 
 
+#' Average within duplicated genes/primers
+#'
+#' 
 #'@export
+#' @param fd \code{SingleCellAssay} or subclass 
+#' @param geneGroups \code{character} naming a column in the \code{featureData} that keys the duplicates
+#' @param fun.natural transformation to be used to collapse the duplicate expression values
+#' @param fun.cycle transformation to be used after collapsing
+#' @return collapsed version of \code{fd}.
 primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift){
   fVars <- fData(fd)[, geneGroups, drop=FALSE]
   geneset <- split(1:nrow(fVars), fVars)
