@@ -51,6 +51,8 @@ lfcUnstim <- logFC(zz, contrast0, contrast1)
 stopifnot(all(lfcUnstim$logFC[,2]==0))
 ##inverse of log-fold change with Stim as reference
 stopifnot(all(lfcStim$logFC[,1]==(-lfcUnstim$logFC[,1])))
+##As a data.table:
+getLogFC(zz)
 }
 \seealso{
 Hypothesis

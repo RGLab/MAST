@@ -1,7 +1,7 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 0.927
+Version: 0.928
 Date: 2015-05-10
 Author: Andrew McDavid <amcdavid@fredhutch.org>, Greg Finak
     <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
@@ -18,7 +18,8 @@ Imports:
     methods,
     parallel,
     R.methodsS3,
-    BiocGenerics,
+    BiocGenerics
+Depends:
     reshape
 Suggests:
     knitr,

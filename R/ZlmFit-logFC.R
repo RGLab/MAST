@@ -40,6 +40,8 @@ safeContrastQF <- function(contrast, vc) uncomplexify(tcrossprod(contrast, compl
 ##' stopifnot(all(lfcUnstim$logFC[,2]==0))
 ##' ##inverse of log-fold change with Stim as reference
 ##' stopifnot(all(lfcStim$logFC[,1]==(-lfcUnstim$logFC[,1])))
+##' ##As a data.table:
+##' getLogFC(zz)
 ##' @export
 logFC <- function(zlmfit, contrast0, contrast1){
     coname <- colnames(coef(zlmfit, 'D'))
@@ -126,7 +128,6 @@ if(getRversion() >= "2.15.1") globalVariables(c(
                   'varLogFC')) #getLogFC
 
 ##' @import data.table
-##' @importFrom reshape melt
 ##' @describeIn logFC Return results as a perhaps friendlier \code{data.table}
 ##' @export
 getLogFC <- function(zlmfit, contrast0, contrast1){

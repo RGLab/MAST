@@ -96,8 +96,6 @@ apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 ##' @author Andrew McDavid
 ##' @export getConcordance
 ##' @importFrom plyr is.formula
-##' @importFrom reshape cast
-##' @importFrom reshape melt.data.frame
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   if(!(is(singleCellRef, 'FluidigmAssay') && is(singleCellcomp, 'FluidigmAssay'))){

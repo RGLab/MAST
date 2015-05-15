@@ -21,11 +21,8 @@ NULL
 ##' @return A \code{data.frame} typically, with the cartesian product of the
 ##' row and column attributes and the values from the rectangular array
 ##' 
-##' 
-##' @aliases melt
-##' @importFrom reshape melt
+##' @import reshape
 ##' @export
-##' @export melt
 melt.SingleCellAssay<-function(data,...){
   m <- cbind(
     cData(data)[rep(seq_len(nrow(data)), ncol(data)),,drop=FALSE],
@@ -140,8 +137,6 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap, keep.names){
 }
 
 ##' @importFrom plyr ddply
-##' @importFrom reshape expand.grid.df
-##' @importFrom reshape rename
 ## unnamed arguments get passed along to callNextMethod
 ## which eventually just sets the slots
 setMethod('initialize', 'SingleCellAssay',
