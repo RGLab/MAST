@@ -1,8 +1,8 @@
 context('GSEA')
 data(vbetaFA)
 library(plyr)
-vb1 = subset(vbetaFA, ncells==1)
-vb1 = vb1[,freq(vb1)>.1]
+vb1 = subset(vbetaFA[,1:24], ncells==1)
+#vb1 = vb1[,freq(vb1)>.1]
 zf = zlm.SingleCellAssay(~Stim.Condition, vb1)
 set.seed(1234)
 boots = bootVcov1(zf, 36)
@@ -19,9 +19,8 @@ bootsUncor <- aaply(bootsUncor, 3:4, function(mat){
 })
 bootsUncor <- aperm(bootsUncor, c(3,4,1,2))
 sets=list(A=1:5, B=3:10, C=15, D=1:5, E=12:14, F=15:24, G=12, H=13, I=14)
+sets[['notE']] <- setdiff(1:ncol(vb1), sets[['E']])
 gsea <- gseaAfterBoot(zf, bootsUncor, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))
-Zn <- calcZ(gsea, testType='normal')
-Zt <- calcZ(gsea, testType='t')
 test_that('equal sets yield equal results', {
     expect_equal(gsea['A',,,],gsea['D',,,])
 })
@@ -48,28 +47,42 @@ test_that('model-based singletons agree with model', {
     expect_equal(gsea['C','disc','var','test'], vcov(zf, 'D')['Stim.ConditionUnstim', 'Stim.ConditionUnstim', 15])
 })
 
+
 test_that('Order is invariant', {
     setsRev <- sets[rev(seq_along(sets))]
     gseaRev <- gseaAfterBoot(zf, bootsUncor, setsRev, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))
     expect_equivalent(gsea, gseaRev[names(sets),,,])
 })
 
-test_that('combining coefficients works',{
-    ZnF <- calcZ(gsea, testType='normal', combined='fisher')
-    ZtF <- calcZ(gsea, testType='t', combined='fisher')
-    ZnS <- calcZ(gsea, testType='normal', combined='sto')
-    ZtS <- calcZ(gsea, testType='t', combined='sto')
-    ## Stouffer is just scale sum of Z's under normality
-    expect_equal(ZnS[,'Z'], rowSums(Zn[,,'Z'])/sqrt(2))
-    ## Fisher is just chi-square sum of log-pvalues
-    expect_equal(ZnF[,'P'], pchisq(rowSums(-2*log(Zn[,,'P'])), df=4, lower.tail=FALSE))
-    expect_equal(ZtF[,'P'], pchisq(rowSums(-2*log(Zt[,,'P'])), df=4, lower.tail=FALSE))
-    ## t is strictly smaller than normal
-    expect_true(all(ZnS[,'P']<ZtS[,'P']))
-    expect_true(all(ZnF[,'P']<ZtF[,'P']))
-    ## Stouffer T is extremely similar to normal
-    expect_more_than(cor(ZnS[,'Z'], ZtS[,'Z']), .99)
-    ## Fisher Z scores are reasonable
-    expect_more_than(cor(abs(ZnF[,'Z']), -log(ZnF[,'P'])), .85)
+gsea1 <-  gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))
+test_that('Null and test statistic are complements in complementary modules',{
+    expect_true(all.equal(gsea1['E',,c('stat', 'var', 'dof'),'null'],     gsea1['notE',,c('stat', 'var', 'dof'),'test']))
 })
+
+
+test_that('Variances are positive', {
+     expect_true(all(gsea1[,,'var',]>0, na.rm=TRUE))
+})
+
+test_that('combining coefficients works',{
+              Zn <- calcZ(gsea, testType='normal')
+              Zt <- calcZ(gsea, testType='t')
+              ntest <- rowSums(!is.na(Zn[,,'Z']))
+              ZnF <- calcZ(gsea, testType='normal', combined='fisher')
+              ZtF <- calcZ(gsea, testType='t', combined='fisher')
+              ZnS <- calcZ(gsea, testType='normal', combined='sto')
+              ZtS <- calcZ(gsea, testType='t', combined='sto')
+              ## Stouffer is just scale sum of Z's under normality
+              expect_equal(ZnS[,'Z'], rowSums(Zn[,,'Z'],na.rm=TRUE)/sqrt(ntest))
+              ## Fisher is just chi-square sum of log-pvalues
+              expect_equal(ZnF[,'P'], pchisq(rowSums(-2*log(Zn[,,'P']),na.rm=TRUE), df=2*ntest, lower.tail=FALSE))
+              expect_equal(ZtF[,'P'], pchisq(rowSums(-2*log(Zt[,,'P']),na.rm=TRUE), df=2*ntest, lower.tail=FALSE))
+              ## t is strictly smaller than normal
+              expect_true(all(ZnS[,'P']<ZtS[,'P']))
+              expect_true(all(ZnF[,'P']<ZtF[,'P']))
+              ## Stouffer T is extremely similar to normal
+              expect_more_than(cor(ZnS[,'Z'], ZtS[,'Z']), .99)
+              ## Fisher Z scores are reasonable
+              expect_more_than(cor(abs(ZnF[,'Z']), -log(ZnF[,'P'])), .85)
+          })
 

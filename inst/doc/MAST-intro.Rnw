@@ -23,8 +23,8 @@
 
 \maketitle
 \section{Philosophy}
- \sca is an R/Bioconductor package for managing and analyzing Fluidigm single--cell gene expression
- data as well as data from other types of single--cell assays. 
+ \sca is an R/Bioconductor package for managing and analyzing qPCR and sequencing-based single--cell gene expression
+ data, as well as data from other types of single--cell assays. 
 Our goal is to support assays that have multiple \emph{features} (genes,
 markers, etc) per \emph{well} (cell, etc) in a flexible manner.
 Assays are assumed to be  mostly \emph{complete} in the sense that most \emph{wells}

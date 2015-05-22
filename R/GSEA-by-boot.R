@@ -216,7 +216,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
 
             if(returnCor && length(idx)>1){ # so we don't emit warnings or die on empty or singleton idx
                 ccp <- hushWarning(cov2cor(tcp), fixed("diag(.) had 0 or NA entries"))
-                vstat['avgCor', comp] <- mean(ccp[upper.tri(ccp)], na.rm=TRUE)
+                vstat['avgCor', comp] <- sum(ccp[upper.tri(ccp)], na.rm=TRUE)
             }
         }   
         if(returnCor){
@@ -276,7 +276,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
         OO <- getStats(Oidx)
         ## off-diagonal block for T (covariance between T and O)
         ## multiply be 2 because we want to kill TO as well as OT blocks
-        OT <- 2*getVstat(Oidx, nullgenes)
+        OT <- 2*getVstat(Oidx, setdiff(nullgenes, Oidx))
         OO$stat[,,'v'] <- OO$stat[,,'v']+OT
         TT <- getStats(Tidx)
         tests[sidx,,,] <- scaleStats(TT, OO, NN)
@@ -322,32 +322,35 @@ calcZ <- function(tests, testType='t', combined='no'){
     if(testType=='t'){
         bootR <- attr(tests, 'bootR')
         ## satterthwaite approximation to degrees of freedom
-        dof <- (bootR-1)*(tests[,,'var','test']+tests[,,'var','null'])^2/(tests[,,'var','test']^2+tests[,,'var','null']^2) 
+        dof <- (bootR-1)*(tests[,,'var','test']+tests[,,'var','null'])^2/(tests[,,'var','test']^2+tests[,,'var','null']^2)
+        dof[is.na(dof)] <- 0 #component we couldn't test
     } else if(testType=='normal'){
         dof <- Inf
     }
     P <- pt(abs(Z), df=dof, lower.tail=FALSE)*2
     out3d <- abind(Z=Z, P=P, rev.along=0)
     names(dimnames(out3d)) <- c('set', 'comp', 'metric')
+    ntest <- rowSums(!is.na(Z))
     if(combined=='no'){
         return(out3d)
     }else if(combined =='fisher'){
-        maxsign <- sign(Z[,1]+Z[,2])
-        chival <- -2*(log(P[,1])+log(P[,2]))
-        Pval <- pchisq(chival, df=4, lower.tail=FALSE)
+        maxsign <- sign(rowSums(Z, na.rm=TRUE))
+        chival <- -2*(rowSums(log(P), na.rm=TRUE))
+        Pval <- pchisq(chival, df=2*ntest, lower.tail=FALSE)
         out2d <- cbind(Z=-maxsign*qnorm(Pval/2), P=Pval)
     } else if(combined =='stouffer'){
         if(testType=='normal'){
             Wmat <- matrix(1, nrow=nrow(Z), ncol=ncol(Z))
-            scale <- 1/sqrt(2)
+            scale <- 1/sqrt(ntest)
             dofComb <- Inf
         } else{
             tapprox <- apply(dof, 1, .approxt) #find a t approximation for sum of t stats
             Wmat <- t(sapply(tapprox, '[[', 'W'))
             scale <- sapply(tapprox, '[[', 'scale')
             dofComb <- sapply(tapprox, '[[', 'nu')
+            dofComb[ntest==1] <- apply(dof[ntest==1,,drop=FALSE], 1, max)
         }
-        Zcomb <- rowSums(Wmat*Z)*scale
+        Zcomb <- rowSums(Wmat*Z, na.rm=TRUE)*scale
         out2d <- cbind(Z=Zcomb, P=pt(abs(Zcomb), dofComb, lower.tail=FALSE)*2)
     }
     names(dimnames(out2d)) <- c('set', 'metric')
