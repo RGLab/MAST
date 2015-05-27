@@ -3,7 +3,7 @@ fd2 <- fd[, 1:20]
 
 context("ZlmFit")
 test_that('zlm.SingleCellAssay works', {
-  zzinit <<- zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, parallel=FALSE)
+  zzinit <<- hushWarning(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, parallel=FALSE), 'never estimible')
   expect_that(zzinit, is_a('ZlmFit'))
 })
 
@@ -32,10 +32,10 @@ test_that('Three flavors of wald on ZlmFit', {
     CM <- matrix(0, nrow=ncol(zzinit@coefD), ncol=1, dimnames=list(colnames(zzinit@coefD), NULL))
     CM['PopulationVbetaResponsive:Stim.ConditionUnstim',] <- 1
     zz3 <- waldTest(zzinit, CM)
-    zz <- waldTest(zzinit, CoefficientHypothesis('PopulationVbetaResponsive:Stim.ConditionUnstim'))
+    zz <- hushWarning(waldTest(zzinit, CoefficientHypothesis('PopulationVbetaResponsive:Stim.ConditionUnstim')), 'Some levels contain symbols')
     expect_equal(dim(zz)[1], 20)
  
-    zz2 <- waldTest(zzinit, Hypothesis('`PopulationVbetaResponsive:Stim.ConditionUnstim`'))
+    zz2 <- hushWarning(waldTest(zzinit, Hypothesis('`PopulationVbetaResponsive:Stim.ConditionUnstim`')), 'Some levels contain symbols')
     expect_equivalent(zz, zz2)
     expect_true(all.equal(zz, zz3, check.attributes=FALSE, tol=1e-5))
 
@@ -60,7 +60,7 @@ test_that('log fold changes match zero-inflated regression', {
 })
 
 test_that('log fold change via contrasts', {
-    lfc <- logFC(zzinit, contrast1=Hypothesis('`(Intercept)`+PopulationVbetaResponsive + `PopulationVbetaResponsive:Stim.ConditionUnstim`'))
+    lfc <- hushWarning(logFC(zzinit, contrast1=Hypothesis('`(Intercept)`+PopulationVbetaResponsive + `PopulationVbetaResponsive:Stim.ConditionUnstim`')), 'Some levels contain symbols')
 
     expect_equal(nrow(lfc$logFC), ncol(zzsimple@sca))
     expect_true(all(lfc$varLogFC>0, na.rm=TRUE))
@@ -77,8 +77,8 @@ test_that('summary works', {
     zzs <- summary(zzsimple, logFC=TRUE, doLRT=FALSE)
     expect_is(zzs, 'data.table')
     expect_equivalent(unique(as.character(zzs$contrast)), c('(Intercept)', 'Stim.ConditionUnstim'))
-    expect_equivalent(unique(as.character(zzs$component)), c('D', 'C', 'logFC'))
-    expect_equal(nrow(zzs), ncol(fd2)*(2*3-1)) #primerid, contrast (no intercept for logFC), component
+    expect_equivalent(sort(unique(as.character(zzs$component))), c('C', 'D', 'logFC', 'S'))
+    expect_equal(nrow(zzs), ncol(fd2)*(2*4-1)) #primerid, contrast (no intercept for logFC), component
     expect_output(print(zzs, n=2), c("Fitted zlm with top 2 genes per contrast:
 ( log fold change Z-score )
  primerid Stim.ConditionUnstim

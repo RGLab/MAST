@@ -331,7 +331,7 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @slot priorVar
 ##' @slot converged output that may optionally be set by the underlying modeling function
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
-##' @seealso zlm.SingleCellAssay
+##' @seealso zlm.SingleCellAssay summary,ZlmFit-method
 setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellAssay', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
 ##' SingleCellAssay: A constructor for an object of type SingleCellAssay.

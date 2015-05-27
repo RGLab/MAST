@@ -154,27 +154,60 @@ setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     se
 })
 
-##' @param object ZlmFit
+normalci <- function(center, se, level){
+    zstar <- qnorm(1-(1-level)/2)
+    list(coef=center, ci.lo=center-se*zstar, ci.hi=center+se*zstar)
+}
+
+##' Summarize model features from a \code{ZlmFit} object
+##'
+##' Returns a \code{data.table} with a special print method that shows the top 2 most significant genes by contrast.
+##' This \code{data.table} contains columns: 
+##' \describe{
+#'   \item{primerid}{the gene}
+#'   \item{component}{C=continuous, D=discrete, logFC=log fold change, S=combined using Stouffer's method, H=combined using hurdle method}
+#' \item{contrast}{the coefficient/contrast of interest}
+#' \item{ci.hi}{upper bound of confidence interval}
+#' \item{ci.lo}{lower bound of confidence interval}
+#' \item{coef}{point estimate}
+#' \item{z}{z score (coefficient divided by standard error of coefficient)}
+#' \item{Pr(>Chisq)}{likelihood ratio test p-value (only if \code{doLRT=TRUE})}
+#' }
+#' Some of these columns will contain NAs if they are not applicable for a particular component or contrast.
+##' @param object A \code{ZlmFit} object
 ##' @param logFC If TRUE, calculate log-fold changes, or output from a call to \code{getLogFC}.
 ##' @param doLRT if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.
+##' @param level what level of confidence coefficient to return.  Defaults to 95 percent. 
+##' @param ... ignored
+##' @seealso print.summaryZlmFit
+##' @examples
+##' data(vbetaFA)
+##' z <- zlm(~Stim.Condition, vbetaFA[,1:5])
+##' zs <- summary(z)
+##' names(zs)
+##' print(zs)
+##' ##remove summaryZlmFit class to get normal print method (or call data.table:::print.data.table) 
+##' data.table::setattr(zs, 'class', class(zs)[-1])
 ##' @export
-##' @describeIn ZlmFit  Returns a \code{data.table} summary of fit (invisibly).
-setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE, ...){
+setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE, level=.95, ...){
     message('Combining coefficients and standard errors')
+
+    
     coefAndCI <- aaply( c(C='C', D='D'), 1, function(component){
         ## coefficients for each gene
         coefs <- coef(object, which=component)
         ## standard errors for each gene
-        se2 <- se.coef(object, which=component)*2
-        names(dimnames(se2)) <- names(dimnames(coefs)) <- c('primerid', 'Coefficient')
-        ci.lo <- coefs-se2
-        ci.hi <- coefs+se2
-        z <- coefs/(se2/2)
-        abind(coef=coefs, z=z, ci.lo=ci.lo, ci.hi=ci.hi, rev.along=0, hier.names=TRUE)
+        se <- se.coef(object, which=component)
+        names(dimnames(se)) <- names(dimnames(coefs)) <- c('primerid', 'Coefficient')
+        ci <- normalci(coefs, se, level)
+        z <- coefs/se
+        abind(coef=coefs, z=z, ci.lo=ci[['ci.lo']], ci.hi=ci[['ci.hi']], rev.along=0, hier.names=TRUE)
     })
     names(dimnames(coefAndCI)) <- c('component', 'primerid', 'contrast', 'metric')
     dt <- dcast.data.table(data.table(melt(coefAndCI, as.is=TRUE)), primerid + component + contrast ~ metric)
     setkey(dt, primerid, contrast)
+    stouffer <- dt[,list(z=sum(z)/sqrt(sum(!is.na(z))), component='S'), keyby=list(primerid, contrast)]
+    dt <- rbind(dt, stouffer, fill=TRUE)
  
     if(is.logical(logFC) && logFC){
         message("Calculating log-fold changes")
@@ -183,9 +216,9 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
     
     if(!is.logical(logFC)){
         lfc <- logFC
-        lfc[,se2:=2*sqrt(varLogFC)]
+        ci <- normalci(lfc$logFC, sqrt(lfc$varLogFC), level=level)
         setnames(lfc, 'logFC', 'coef')
-        lfc <- lfc[,c('component', 'ci.lo', 'ci.hi', 'varLogFC', 'se2'):=list('logFC', coef-se2, coef+se2, NULL, NULL)]
+        lfc <- lfc[,c('component', 'ci.lo', 'ci.hi', 'varLogFC'):=list('logFC', ci$ci.lo, ci$ci.hi, NULL)]
         dt <- rbind(dt, lfc, fill=TRUE)
     }
     setkey(dt, contrast, z)
@@ -221,7 +254,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ##' @param x output from summary(ZlmFit)
 ##' @param n number of genes to show
 ##' @param by one of 'C' , 'D' or 'logFC' for continuous, discrete and log fold change z-scores for each contrast
-##' @return data.frame of z scores, invisibly
+##' @seealso summary,ZlmFit-method
 ##' @export
 print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
     class(x) <- class(x)[-1]

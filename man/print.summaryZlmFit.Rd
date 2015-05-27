@@ -13,10 +13,10 @@
 
 \item{by}{one of 'C' , 'D' or 'logFC' for continuous, discrete and log fold change z-scores for each contrast}
 }
-\value{
-data.frame of z scores, invisibly
-}
 \description{
 Shows the top `n` genes by z score on `by`
+}
+\seealso{
+summary,ZlmFit-method
 }
 

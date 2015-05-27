@@ -8,7 +8,6 @@
 \alias{lrTest,ZlmFit,Hypothesis-method}
 \alias{lrTest,ZlmFit,matrix-method}
 \alias{se.coef,ZlmFit-method}
-\alias{summary,ZlmFit-method}
 \alias{vcov,ZlmFit-method}
 \alias{waldTest,ZlmFit,CoefficientHypothesis-method}
 \alias{waldTest,ZlmFit,Hypothesis-method}
@@ -29,21 +28,13 @@
 \S4method{vcov}{ZlmFit}(object, which, ...)
 
 \S4method{se.coef}{ZlmFit}(object, which, ...)
-
-\S4method{summary}{ZlmFit}(object, logFC = TRUE, doLRT = FALSE, ...)
 }
 \arguments{
-\item{object}{ZlmFit}
-
 \item{hypothesis}{call to \link{Hypothesis} or \link{CoefficientHypothesis} or a matrix giving such contrasts.}
 
 \item{which}{character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned}
 
 \item{...}{ignored}
-
-\item{logFC}{If TRUE, calculate log-fold changes, or output from a call to \code{getLogFC}.}
-
-\item{doLRT}{if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.}
 }
 \description{
 This holds output from a call to zlm.SingleCellAssay.  Many methods are defined to operate on it.  See below.
@@ -67,8 +58,6 @@ This holds output from a call to zlm.SingleCellAssay.  Many methods are defined 
 \item \code{vcov}: Returns an array of variance/covariance matrices for component \code{which}.
 
 \item \code{se.coef}: Returns a matrix of standard error estimates for coefficients on component \code{which}.
-
-\item \code{summary}: Returns a \code{data.table} summary of fit (invisibly).
 }}
 \section{Slots}{
 
@@ -106,6 +95,6 @@ This holds output from a call to zlm.SingleCellAssay.  Many methods are defined 
 \item{\code{hookOut}}{a list of length ngenes containing output from a hook function, if \code{zlm} was called with one}
 }}
 \seealso{
-zlm.SingleCellAssay
+zlm.SingleCellAssay summary,ZlmFit-method
 }
 
