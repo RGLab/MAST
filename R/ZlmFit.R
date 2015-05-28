@@ -232,7 +232,8 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
         names(llrt) <-  doLRT
         llrt <- data.table(melt(llrt))
         setnames(llrt, c('test.type', 'L1', 'value'), c('component', 'contrast', 'Pr(>Chisq)'))
-        llrt[,component := c(disc='D', cont='C', hurdle='H')[component]]
+        llrt[,':='(component=c(disc='D', cont='C', hurdle='H')[component],
+                   primerid=as.character(primerid))]
         setkey(llrt, primerid, component, contrast)
         setkey(dt, primerid, component, contrast)
         dt <- merge(llrt, dt, all.x=TRUE, all.y=TRUE)
