@@ -198,13 +198,13 @@ setMethod('initialize', 'SingleCellAssay',
             .Object
           })
 
-sort.SingleCellAssay <- function(x, decreasing=FALSE, ...){
-  if(nrow(cData(x))>0){
+sort.SingleCellAssay <- function(x, decreasing=FALSE,rows=TRUE,cols=TRUE, ...){
+  if(nrow(cData(x))>0&rows){
     rowOrd <- order(cData(x)$wellKey)
     x@.Data <- as(x, 'DataLayer')[rowOrd,]
     x@cellData <- x@cellData[rowOrd,]
   }
-  if(nrow(fData(x))>0){
+  if(nrow(fData(x))>0&cols){
      colOrd <- order(fData(x)$primerid)
     x@.Data <- as(x, 'DataLayer')[,colOrd]
     x@featureData <- x@featureData[colOrd,]
