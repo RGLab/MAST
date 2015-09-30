@@ -117,7 +117,8 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       qt          = 0.975,
                                       min_per_bin = 50      ,
                                       absolute_min= 0.0     ,
-                                      return_log  = TRUE
+                                      return_log  = TRUE,
+                                      adj = 1
                                     )
 {
 
@@ -197,9 +198,9 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     #dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
     #peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
     #valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 1 ) )
-    dens   <- lapply( log_data_list, function( x )  { if(length(x)>2){ density( x, adjust = 1 ) } else{ NULL } })
-    peaks  <- lapply(          dens, function( dd ) { if( is.null(dd) ){ data.frame( x=0, y=0 ) }else{ find_peaks( dd$x,dd$y, adjust = 1 )}} ) 
-    valleys<- lapply(          dens, function( dd ) { if( is.null(dd) ){ list(0)} else{find_valleys( dd$x,dd$y, adjust = 1 ) } })
+    dens   <- lapply( log_data_list, function( x )  { if(length(x)>2){ density( x, adjust = adj ) } else{ NULL } })
+    peaks  <- lapply(          dens, function( dd ) { if( is.null(dd) ){ data.frame( x=0, y=0 ) }else{ find_peaks( dd$x,dd$y, adjust = adj )}} ) 
+    valleys<- lapply(          dens, function( dd ) { if( is.null(dd) ){ list(0)} else{find_valleys( dd$x,dd$y, adjust = adj ) } })
 
     single_modes<-do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,1]))))<1|(lapply(list(do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,2]))))),function(x)(x-median(na.omit(x)))/mad(na.omit(x)))[[1]]>2)
     #Check for single peaks found
