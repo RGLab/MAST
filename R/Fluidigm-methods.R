@@ -339,5 +339,5 @@ primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift
   exprs.new <- do.call(cbind, exprs.new)
   exprs(skeleton) <- exprs.new
   skeleton@featureData$primerid <- fData(skeleton)[,geneGroups]
-  skeleton <- sort(skeleton)
+  skeleton <- sort(skeleton,rows=FALSE)
 }
