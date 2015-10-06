@@ -1,16 +1,18 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 0.931
-Date: 2015-05-28
+Version: 1.001
+Date: 2015-10-04
 Author: Andrew McDavid <amcdavid@fredhutch.org>, Greg Finak
     <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
 Maintainer: Greg Finak <gfinak@fredhutch.org>
 VignetteBuilder: knitr
 Imports:
     Biobase,
+    BiocGenerics,
+    S4Vectors,
+    SummarizedExperiment,
     data.table,
-    lattice,
     ggplot2,
     plyr,
     stringr,
@@ -18,7 +20,6 @@ Imports:
     methods,
     parallel,
     R.methodsS3,
-    BiocGenerics
 Depends:
     reshape
 Suggests:
@@ -35,7 +36,6 @@ License: GPL(>= 2)
 Collate:
     'AllGenerics.R'
     'AllClasses.R'
-    'DataLayer.R'
     'Fluidigm-methods.R'
     'GSEA-by-boot.R'
     'Hypothesis.R'

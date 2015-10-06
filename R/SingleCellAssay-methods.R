@@ -2,14 +2,94 @@
 ##'
 ##' This packages provides data structures and functions for statistical analysis of single-cell assay data such as Fluidigm single cell gene expression assays.
 ##'
-##' @name SingleCellAssay-package
-##' @aliases SingleCellAssay-package
+##' @name MAST-package
+##' @aliases MAST-package
 ##' @docType package
 ##' @title "Tools for Single Cell Assay Analysis"
 ##' @keywords package
-##' @rdname SingleCellAssay-package
-##' @seealso \code{\link{SCASet}}
+##' @rdname MAST-package
 NULL
+
+
+##' Construct a SummarizedExperiment from a matrix or array of expression
+##'
+##' If the gene expression measurements are already in a rectangular form,
+##' then this function allows an easy way to construct a SummarizedExperiment object while
+##' still doing some sanity checking of inputs.
+##' @param exprsArray matrix or array, columns are cells, rows are genes
+##' @param cData cellData data.frame, AnnotatedDataFrame or DataFrame
+##' @param fData featureData data.frame, AnnotatedDataFrame or DataFrame
+##' @return an object of class \code{class}
+##' @export
+##' @examples
+##' ncells <- 10
+##' ngenes <- 5
+##' fData <- data.frame(primerid=LETTERS[1:ngenes])
+##' cData <- data.frame(wellKey=seq_len(ncells))
+##' mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
+##' sca <- FromMatrix(mat, cData, fData)
+##' stopifnot(inherits(sca, 'SummarizedExperiment0'))
+##' ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
+##' cData$ncells <- 1
+##' fd <- FromMatrix('FluidigmAssay', mat, cData, fData)
+##' stopifnot(inherits(fd, 'FluidigmAssay'))
+FromMatrix <- function(exprsArray, cData, fData){
+    can <- checkArrayNames(exprsArray, cData, fData)
+    obj <- SummarizedExperiment(assays=can$exprsArray, colData=can$cData)
+    mcols(obj) <- can$fData
+    obj
+}
+
+checkArrayNames <- function(exprsArray, cData, fData){
+    if(!is.numeric(exprsArray)) stop('`exprsArray` must be numeric')
+    if(length(dim(exprsArray))!=2) stop('`exprsArray` must be matrix or 2-d array')
+    dn <- dimnames(exprsArray)
+    noDimnames <- is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])
+
+    pidDefault <- if(is.null(dn[[1]])) sprintf('p%0*d', ceiling(log10(nrow(exprsArray)+1)), seq_len(nrow(exprsArray))) else dn[[1]]
+    wkDefault <- if(is.null(dn[[2]])) sprintf('wk%0*d', ceiling(log10(ncol(exprsArray)+1)), seq_len(ncol(exprsArray))) else dn[[2]]
+    
+    if(missing(fData)) fData <- S4Vectors::DataFrame(primerid=pidDefault)
+    if(missing(cData)) cData <- S4Vectors::DataFrame(wellKey=wkDefault)
+    
+    
+    if(ncol(exprsArray) != nrow(cData)) stop('`cData` must contain as many rows as `exprsArray`')
+    if(nrow(exprsArray) != nrow(fData)) stop('`fData` must contain as many columns as `exprsArray`')
+
+    if(!('primerid' %in% names(fData))){
+        warning("`fData` has no primerid.  I'll make something up.")
+        fData[['primerid']] <- pidDefault
+    } else{
+        fData[['primerid']] <- as.character(fData$primerid)
+    }
+    row.names(fData) <- fData$primerid
+
+    if(!('wellKey' %in% names(cData))){
+        warning("`cData` has no wellKey.  I'll make something up.")
+        cData[['wellKey']] <- wkDefault
+    } else{
+        cData[['wellKey']] <- as.character(cData$wellKey)
+    }
+    row.names(cData) <- cData$wellKey
+    
+
+    if(noDimnames){
+        message('No dimnames in `exprsArray`, assuming `fData` and `cData` are sorted according to `exprsArray`')
+        dn <- list(primerid=row.names(fData), wellkey=row.names(cData))  
+    }
+    
+    if(!isTRUE(all.equal(dn[[2]], cData$wellKey))) stop('Order of `exprsArray` and `cData` doesn\'t match')
+    if(!isTRUE(all.equal(dn[[1]], fData$primerid))) stop('Order of `exprsArray` and `fData` doesn\'t match')
+    dimnames(exprsArray) <- dn
+    list(exprsArray=exprsArray, cData=cData, fData=fData)
+}
+
+setMethod('fData', 'SummarizedExperiment0', function(object){
+    warning('Deprecated: use mcols')
+    mcols(object)
+})
+
+
 
 ##' Melt a rectangular array
 ##'
@@ -198,22 +278,6 @@ setMethod('initialize', 'SingleCellAssay',
             .Object
           })
 
-sort.SingleCellAssay <- function(x, decreasing=FALSE,rows=TRUE,cols=TRUE, ...){
-  if(nrow(cData(x))>0&rows){
-    rowOrd <- order(cData(x)$wellKey)
-    x@.Data <- as(x, 'DataLayer')[rowOrd,]
-    x@cellData <- x@cellData[rowOrd,]
-  }
-  if(nrow(fData(x))>0&cols){
-     colOrd <- order(fData(x)$primerid)
-    x@.Data <- as(x, 'DataLayer')[,colOrd]
-    x@featureData <- x@featureData[colOrd,]
-  }
-  stopifnot(validObject(x))
-  x
-}
-
-setMethod('sort', signature=c(x='SingleCellAssay'), sort.SingleCellAssay)
 
 uniqueModNA.old <- function(df, exclude){
   #browser()
@@ -255,136 +319,20 @@ setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 
 ##' @describeIn cData
 ##' @export
-setMethod('cData', 'SingleCellAssay', function(sc)  pData(sc@cellData))
+setMethod('cData', 'SummarizedExperiment0', function(sc){
+    warning('Deprecated: use colData')
+    colData(sc)
+})
 
 
 
 ##' @describeIn cData
 ##' @export
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
-  if (is.data.frame(value)) {
-    value <- as(value, "AnnotatedDataFrame")
-  }
-  if (!is(value, "AnnotatedDataFrame")) {
-    stop("'value' must be either a data.frame or an AnnotatedDataFrame")
-  }
-  mandatory <- c('wellKey', names(sc@cmap)) #Must contain the expected fields for the class
-  missing <- setdiff(mandatory, varLabels(value)) 
-  if(length(missing)>0) stop('cellData is missing mandatory field ', paste(missing, collapse=','))
-  inputOrder <- match(getwellKey(sc), value$wellKey)
-  if(any(is.na(inputOrder))) stop('cellData is missing some wellkeys')
-  if(any(inputOrder != seq_along(value$wellKey))) warning("sorting cellData by wellKey")
-  value <- value[inputOrder,] #sort
-  sc@cellData <- value
-  return(sc)
+    warning('Deprecated: use colData<-')
+  colData(sc) <- value
 })
 
-
-##' @export cellData
-setMethod('cellData', 'SingleCellAssay', function(sc) sc@cellData)
-
-
-##' @rdname fData-methods
-##' @aliases fData,SingleCellAssay-method
-##' @export fData
-setMethod('fData', 'SingleCellAssay', function(object) pData(object@featureData))
-
-##' @rdname featureData-methods
-##' @aliases featureData,SingleCellAssay-method
-##' @exportMethod featureData
-setMethod('featureData', 'SingleCellAssay', function(object)  object@featureData)
-
-.scaSubset <- function(x, i, j, ..., drop=FALSE){
-  if(missing(i)){
-    i<-1:nrow(x)
-  }
-  if(any(is.na(i))) stop("NAs not permitted in 'i' index")
-  if(is.factor(i)) stop("Factors not permitted in 'i' index")
-  
-  if(is(i,"character")){
-    wk<-getwellKey(x)
-    if(length(setdiff(i, wk))>0) stop('wellKeys \n', paste(setdiff(i, wk), sep=','), '\n not found!')
-    i <- match(i, wk)
-  }
-  
-  if(!missing(j)){
-    if(any(is.na(j))) stop("NAs not permitted in 'j' index")
-    if(is.factor(j)) stop("Factors not permitted in 'j' index")
-    pk<-fData(x)$primerid
-    
-    if(is(j,"character")){
-      J <- match(j, pk)
-      if(!(all(j%in%pk))){
-        stop("feature names \n",paste(j[!j%in%as.matrix(pk)],collapse=" "), "\n not found!");
-      }
-      j<-J
-    }
-    newfdf <- featureData(x)[j,] 
-  }else {                               #j missing
-    j <- TRUE
-  }
-
-  
-  newcdf <- cellData(x)[i,]
-  if(!exists("newfdf")){
-    newfdf<-x@featureData
-  }
-  ## Not callNextMethod, because we want to dispatch [ not [[
-  ## And we don't want to wrap this method 
-  .Data <- selectMethod('[', signature='DataLayer')(x, i, j, ..., drop=drop)
-  x@featureData <- newfdf
-  x@cellData <- newcdf
-  x@.Data <- .Data
-  x
-}
-
-
-setMethod('[[', signature(x="SingleCellAssay"), .scaSubset)
-
-##' Subset a SingleCellAssay
-##' @details \code{signature(x="SingleCellAssay", i="ANY")}: \code{x[i]}, where \code{i} is a logical, integer, or character vector, recycled as necessary to match \code{nrow(x)}. Optional \code{x[[i,j]]} where j is a logical, integer or character vector selecting the features based on ``primerid'' which is unique, while ``geneid'' or gene name is not necessarily unique.
-##'
-##' @note
-##' x[[i,j]] functions similarly, but this behavior may change in future releases.
-##' @param x SingleCellAssay
-##' @param i logical, integer or character (naming wellKeys)
-##' @param j logical, integer or character (naming primerid)
-##' @param ... ignored
-##' @param drop ignored
-##' @return SingleCellAssay, suitably subsetted
-##' @aliases [,SingleCellAssay,ANY-method
-##' @aliases [,SingleCellAssay-method
-##' @aliases [[,SingleCellAssay-method
-##' @exportMethod [
-setMethod("[", signature(x="SingleCellAssay"), .scaSubset)
-  
-
-
-##' Subset a SingleCellAssay by data in cellData
-##'
-##' @param x SingleCellAssay
-##' @param thesubset expression, which when evaluated in cellData environment which returns a logical
-##' @rdname subset
-##' @export
-##' @examples
-##' data(vbetaFA)
-##' subset(vbetaFA, ncells==1)
-#\code{signature(x='SingleCellAssay', thesubset='ANY')}: Return a new SingleCellAssay consisting of cells in which thesubset is TRUE
-setMethod('subset', 'SingleCellAssay', function(x, thesubset, ...){
-  e <- substitute(thesubset)
-  asBool <- try(eval(e, cData(x), parent.frame(n=2)), silent=TRUE)
-  if(is(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
-  #this is a special case of "subset", not of the "[[" method, so..
-  if(length(asBool)==1){
-    if(asBool==TRUE){
-      x 
-    }else{
-      x[[asBool]]
-    }
-  }else{
-    x[[asBool]]
-  }
-})
 
 ##' Split into SCASet
 ##'
@@ -426,50 +374,10 @@ setMethod('split', signature(x='SingleCellAssay'),
   new('SCASet', set=out)
 })
 
-##'Combines a SCASet into a unified SingleCellAssay
-##'
-##' No error checking is currently done to insure that objects in the SCASet conform with each other,
-##' so mysterious errors may result if they do not.
-##' @export
-##' @aliases combine,SCASet,missing-method
-setMethod('combine', signature=c(x='SCASet', y='missing'), function(x, y, ...){
-    
-    skeleton <- x[[1]]
-    if(length(x) == 1) return(skeleton)
-    for(i in seq(from=2, to=length(x))){
-        skeleton <- combine(skeleton, x[[i]])
-    }
-    return(skeleton)
-})
-
-##'Combine two SingleCellAssay or derived classes
-##'
-##' Combines two Single Cell-like objects provided they have the same number of Features and Layers.
-##' The union of columns from featureData will be taken
-##' The union (padded if necessary with NA) will be taken from cellData.
-##' @import abind
-##' @export
-##' @aliases combine,DataLayer,Datalayer-method
-##' @note
-##' We might also wish to combine features along each cell/row but a use case for this
-##' hasn't arrived yet.
-##' @aliases combine,SingleCellAssay,SingleCellAssay-method
-setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y, ...) {
-  proto <- callNextMethod()
-  cellData <- combine(cellData(x), cellData(y))
-  ## Combine wants to do a rbind-like operation with ADFs
-  ## But we want a Cbind
-  nx <- names(fData(x))
-  ny <- names(fData(y))
-  featureData <- featureData(x)
-  pData(featureData) <- cbind(fData(x), fData(y)[,setdiff(ny, nx)])
-  proto@cellData <- cellData
-  proto@featureData <- featureData
-  proto
-})
 
 ## obsolete
 getMapping <- function(x, map){
+  warning('Obsolete')
   return(list(map))
 }
 
@@ -479,74 +387,15 @@ callNextMethod()
 cat(' id: ', object@id, '\n')
 })
 
-##' Combine a SingleCellAssay and a vector, data.frame or AnnotatedDataFrame
-##'
-##' When \code{x} is a SingleCellAssay and \code{y} is a  vector, data.frame or AnnotatedDataFrame,
-##' an attempt is made bind it to the columns of the cellData or featureData.
-##' The behavior depends on the number of rows/length of \code{y}.
-##'If \code{nrow(y) == nrow(x)}, then the cellData is used.
-##' If \code{nrow(y) == ncol(x)}, then the cellData is used.
-##' It is an error if neither mathces.
-##' @param x SingleCellAssay
-##' @param y vector, data.frame or AnnotatedDataFrame
-##' @param ... ignored
-##' @aliases combine,SingleCellAssay,ANY-method
-##' @aliases combine,SingleCellAssay,data.frame-method
-##' @aliases combine,SingleCellAssay,AnnotatedDataFrame-method
-##' @return SingleCellAssay
-setMethod('combine', signature=c(x='SingleCellAssay', y='ANY'), function(x, y, ...){
-  adf <- new('AnnotatedDataFrame')
-  df <- data.frame(y)
-  names(df) <- deparse(substitute(y))
-  pData(adf) <- df
-  selectMethod('combine', c(x=class(x), y='AnnotatedDataFrame'))(x, adf)
-})
 
-setMethod('combine', signature=c(x='SingleCellAssay', y='data.frame'), function(x, y, ...){
-  adf <- new('AnnotatedDataFrame')
-  pData(adf) <- y
-  selectMethod('combine', c(x=class(x), y='AnnotatedDataFrame'))(x, adf)
-})
 
-setMethod('combine', signature=c(x='SingleCellAssay', y='AnnotatedDataFrame'), function(x, y, ...){
-    if(nrow(x) == ncol(x)) stop("x has same number of rows and columns, must explicitly specify 'along'")
-    if(nrow(y) == nrow(x)) along <- 'cellData'
-    else if(nrow(y) == ncol(x)) along <- 'featureData'
-    else stop('Dimension mismatch between y and x')
-    
-  if(length(intersect(along , c('cellData', 'featureData')))!=1) stop("If specified, along must be either 'cellData', or 'featureData'")
-  newdata <- slot(x, along)
-  pData(newdata) <- cbind(pData(newdata), pData(y))
-  slot(x, along) <- newdata
-  x
-})
-
-setAs('ExpressionSet', 'SingleCellAssay', function(from){
-    ## just a transposed version
-    ex <- t(exprs(from))
-    dn <- dimnames(ex)
-    names(dn) <- c('wellKey', 'primerid')
-    dim(ex) <- c(dim(ex), 1)
-    pd <- phenoData(from)
-    pData(pd)[,'wellKey'] <- sampleNames(pd)
-    fd <- featureData(from)
-    fd$primerid <- sampleNames(fd)
-    dimnames(ex) <- c(dn, layer='ExpressionSet')
-    DL <- new('DataLayer', .Data=ex)
-    new('SingleCellAssay', .Data=DL, featureData=fd, cellData=pd, sort=FALSE)
-})
-
-melt.data.table <- function(dt, id.var){
-    ## Well...that's unfortunate
-    dt[, list(variable = names(.SD), value = unlist(.SD, use.names = FALSE)), keyby =eval(bquote(.(id.var)))]
-}
 
 if(getRversion() >= "2.15.1") globalVariables(c(
                   'wellKey',
                  'primerid', 
                   'variable')) #setAs('SingleCellAssay', 'data.table')
 
-setAs('SingleCellAssay', 'data.table', function(from){
+setAs('SummarizedExperiment0', 'data.table', function(from){
     ex <- data.table(wellKey=getwellKey(from), exprs(from))
     fd <- setkey(data.table(fData(from)), primerid)
     cd <- setkey(data.table(cData(from)), wellKey)

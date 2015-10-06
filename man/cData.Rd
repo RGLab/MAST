@@ -3,7 +3,7 @@
 \docType{methods}
 \name{cData}
 \alias{cData}
-\alias{cData,SingleCellAssay-method}
+\alias{cData,SummarizedExperiment0-method}
 \alias{cData<-}
 \alias{cData<-,SingleCellAssay-method}
 \title{Accessor for cellData \code{data.frame}}
@@ -12,7 +12,7 @@ cData(sc)
 
 cData(sc) <- value
 
-\S4method{cData}{SingleCellAssay}(sc)
+\S4method{cData}{SummarizedExperiment0}(sc)
 
 \S4method{cData}{SingleCellAssay}(sc) <- value
 }
@@ -34,7 +34,7 @@ Accessor for cellData \code{data.frame}
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{SingleCellAssay}: 
+\item \code{SummarizedExperiment0}: 
 
 \item \code{SingleCellAssay}: 
 }}

@@ -29,11 +29,3 @@ makeMM <- function(FD, type, rescale=TRUE){
    stop('bad type') 
   }
 }
-
-## doPCA <- function(FD, type){
-##     mm <- makeMM(FD, type)
-##     fet0 <- MAST::filter(FD, apply_filter=FALSE, filt_control=list(filter=FALSE))$fet0
-##     prcomp(mm
-    
-    
-## }

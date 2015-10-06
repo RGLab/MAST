@@ -30,28 +30,3 @@ test_that('duplicate primers doesn\'t throw error', {
   expect_true('primerid.orig' %in% names(fData(sc)))
 })
 
-context('Construction from matrix')
-test_that('Can recreate', {
-    tmp2 <- suppressMessages( FromMatrix('SingleCellAssay', exprs(tmp), cData(tmp), fData(tmp)))
-    expect_is(tmp2, 'SingleCellAssay')
-    expect_equivalent(tmp, tmp2)
-    cd <- cData(tmp)
-    cd$ncells <- 1
-    expect_that(tmp3 <- FromMatrix('FluidigmAssay', exprs(tmp), cd), not(shows_message('dimnames')))
-    expect_is(tmp3, 'FluidigmAssay')
-})
-
-test_that('Preserve dimnames in exprsArray', {
-    expect_that(tmp2 <- FromMatrix('SingleCellAssay', exprs(tmp)), not(shows_message()))
-    etmp <- exprs(tmp)
-    rownames(etmp) <- NULL
-    tmp3 <- FromMatrix('SingleCellAssay', etmp)
-    expect_equal(getwellKey(tmp3), c('wk1', 'wk2', 'wk3'))
-    expect_equal(fData(tmp3)$primerid, 'A')
-})
-
-test_that('Integer primerids cast to character', {
-    tmp2 <- suppressMessages( FromMatrix('SingleCellAssay', exprs(intprimer), cData(intprimer), fData(intprimer)))              
-    expect_that(tmp2, is_a('SingleCellAssay'))
-    expect_is(fData(tmp2)$primerid, 'character')
-})

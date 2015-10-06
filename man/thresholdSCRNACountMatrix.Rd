@@ -6,7 +6,7 @@
 \usage{
 thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
   nbins = 10, bin_by = "median", qt = 0.975, min_per_bin = 50,
-  absolute_min = 0, return_log = TRUE)
+  absolute_min = 0, return_log = TRUE, adj = 1)
 }
 \arguments{
 \item{data_all}{\code{matrix} of counts.  Rows are cells and columns are genes.}
