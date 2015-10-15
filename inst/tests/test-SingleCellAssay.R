@@ -15,12 +15,6 @@
 ##   expect_that(vbeta,is_a("data.frame"))
 ## })
 
-context('Can construct')
-cdat <- as(data.frame(wellKey=c('A', 'B'), ncells=c(1, 1)), 'AnnotatedDataFrame')
-fdat <- as(data.frame(primerid=LETTERS[1:4], meta=TRUE), 'AnnotatedDataFrame')
-val <- new('DataLayer', array(1:8, c(2, 4, 1), dimnames=list(wellKey=cdat$wellKey, primerid=fdat$primerid, measurement='et')))
-sc <- new('SingleCellAssay', .Data=val, cellData=cdat, featureData=fdat)
-fd <- new('FluidigmAssay', .Data=val, cellData=cdat, featureData=fdat)
 
 
 context("Generating a complete and incomplete subset")
@@ -32,29 +26,29 @@ counts <- table(do.call(paste, dat_incomplete[,idvars]))
 expect_that(all(counts == counts[1]), is_false())
 
 blank <- dat_complete[1,]
-blankinst <- new('SingleCellAssay', dataframe=blank, idvars=idvars, primerid=geneid, measurement=measurement)
-blankinst.fd <- FluidigmAssay(dataframe=blank, idvars=idvars, primerid=geneid, measurement=measurement, ncells=ncells)
-test_that("Can create empty instance with pre-existing wellKey",{
-  expect_that(blankinst, is_a("SingleCellAssay"))
-})
+## blankinst <- new('SingleCellAssay', dataframe=blank, idvars=idvars, primerid=geneid, measurement=measurement)
+## blankinst.fd <- FluidigmAssay(dataframe=blank, idvars=idvars, primerid=geneid, measurement=measurement, ncells=ncells)
+## test_that("Can create empty instance with pre-existing wellKey",{
+##   expect_that(blankinst, is_a("SingleCellAssay"))
+## })
 
 ## test_that("Can get wellKey",{
 ##   expect_that(getwellKey(blankinst)[[1]], equals(digest(paste(blankinst@env$data[,getMapping(blankinst@mapping)$idvars],collapse=" "))))
 ## })
 
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
-fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid, keep.names=TRUE, sort=TRUE)
-test_that('could create FluidigmAssay', {
-  expect_that(fd, is_a('SingleCellAssay'))
-    expect_that(fd, is_a('FluidigmAssay'))
+fd <- FromFlatDF(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid, sort=TRUE)
+test_that('could construct from flattened data.frame', {
+  expect_that(fd, is_a('SummarizedExperiment0'))
 })
 
 
 context('Testing legacy behavior')
 test_that('sort unsorted SingleCellAssay', {
+    browser()
   ss <- fd[,c(5, 1, 4, 10, 15)]         #or should we return a sorted object here?
-  sorted <- new('SingleCellAssay', .Data=as(ss, 'DataLayer'), cellData=cellData(ss), featureData=featureData(ss), sort=TRUE)
-  expect_equal(sort(fData(sorted)$primerid), fData(sorted)$primerid)
+  ## sorted <- new('SingleCellAssay', .Data=as(ss, 'DataLayer'), cellData=cellData(ss), featureData=featureData(ss), sort=TRUE)
+  ## expect_equal(sort(fData(sorted)$primerid), fData(sorted)$primerid)
 })
 test_that('keep field names',{
   m <- melt(fd)
@@ -188,20 +182,6 @@ test_that("Throw error when indexing with factors", {
     expect_error(sc[, factor(c('B3GAT1'))])
     expect_error(sc[factor('A'),])
 })
-
-## test_that("loading Matrix package doesn't clobber generic table", {
-##   ## Matrix dispatches [[ and [ on x, i, j, drop
-##   ## The distinction between ANY and missing doesn't matter for
-##   ## i and j until Matrix is loaded due to method caching
-##   ## but then the dispatch occurs separately and things can break
-##   library(Matrix)
-##   sub <- sc[[boolind]]
-##   sub2 <- sc[boolind]
-##   expect_that(sub, is_a("SingleCellAssay"))
-##   expect_equal(sub, sub2)
-##   #This should pass if run from a fresh start of R
-##   detach('package:Matrix') 
-## })
 
 test_that('can subset by character', {
   sub <- sc[,'GAPDH']

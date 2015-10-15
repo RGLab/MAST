@@ -185,60 +185,9 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @seealso zlm.SingleCellAssay summary,ZlmFit-method
 setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SummarizedExperiment0', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
-##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
-##'
-##' This is the constructor for the class. This class intends to ease the analysis of single cell assays, in which multiple, exchangeable, cells from an experimental unit (patient, or organism) are assayed along several (or many) dimensions, such as genes. A few examples of this might be Fluidigm gene expression chips, or single cell sequencing experiments.  The chief functionality is to make it easy to keep cellular-level metadata linked to the measurements through \code{cellData} and \code{phenoData}.  There are also subsetting and splitting measures to coerce between a SingleCellAssay, and a \link{SCASet}.
-##' @param dataframe A 'flattened' \code{data.frame} or \code{data.table} containing columns giving cell and feature identifiers and  a measurement column
-##' @param idvars character vector naming columns that uniquely identify a cell
-##' @param primerid character vector of length 1 that names the column that identifies what feature (i.e. gene) was measured
-##' @param measurement character vector of length 1 that names the column containing the measurement 
-##' @param id An identifier (eg, experiment name) for the resulting object
-##' @param cellvars Character vector naming columns containing additional cellular metadata
-##' @param featurevars Character vector naming columns containing additional feature metadata
-##' @param phenovars Character vector naming columns containing additional phenotype metadata
-##' @param ... additional arguments are ignored
-##' @export
-##' @aliases SingleCellAssay
-##' @name SingleCellAssay
-##' @seealso \code{\link{FluidigmAssay}}
-##' @docType methods
-##' @examples
-##' ## See FluidigmAssay for examples
-##' \dontrun{example(FluidigmAssay)}
-##' @return SingleCellAssay object
-SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  new('SingleCellAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars)
-}
-
 
 ##' Constructor for a FluidigmAssay
-##'
-##' Constructs a FluidigmAssay object. Differs little from the SingleCellAssay constructor. Only the \code{ncells} parameter is additionally required.
-##' @inheritParams SingleCellAssay
-##' @param ncells A \code{character} specifying the column which gives the number of cells per well
-##' @param geneid An optional \code{character} alternate id for primers.
-##' @return A FluidigmAssay object
-##' @author Andrew McDavid and Greg Finak
-##' @examples
-##' data(vbeta)
-##' colnames(vbeta)
-##' vbeta <- computeEtFromCt(vbeta)
-##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
-##' primerid='Gene', measurement='Et', ncells='Number.of.Cells',
-##' geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
-##' phenovars=c('Stim.Condition','Time'), id='vbeta all')
-##' show(vbeta.fa)
-##' nrow(vbeta.fa)
-##' ncol(vbeta.fa)
-##' head(fData(vbeta.fa)$primerid)
-##' table(cData(vbeta.fa)$Subject.ID)
-##' vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
-##' show(vbeta.sub)
-##' @export
-FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, geneid=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  cmap <- new('Mapping', .Data=list('ncells'=ncells))
-    new('FluidigmAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars, cmap=cmap)
-}
+
 
 ##' Constructs a SCASet
 ##'
