@@ -43,3 +43,16 @@ hushWarning <- function(expr, regexp){
         if(str_detect(conditionMessage(w), regexp)) invokeRestart("muffleWarning")
     })
 }
+
+##' Remove the left hand side (response) from a formula
+##'
+##' The order of terms will be rearrange to suit R's liking for hierarchy but otherwise the function should be idempotent for
+##' @param Formula formula
+##' @param warn Issue a warning if a response variable is found?
+##' @return formula
+##' @author Andrew
+removeResponse <- function(Formula, warn=TRUE){
+    trm <- terms(Formula)
+    if(attr(trm, 'response')==1 && warn) warning("Ignoring LHS variable from formula", Formula)
+    reformulate(labels(trm), intercept=attr(trm, 'intercept'))
+}

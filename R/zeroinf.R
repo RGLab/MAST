@@ -66,11 +66,9 @@ zlm <- function(formula, data, method='glm',silent=TRUE, ...){
 
     ## get response
     resp <- eval(formula[[2]], data)
-    fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
-    ## get RHS
-    Formula <- as.formula(paste0('~', fsplit[1,2]))
-
-    obj <- new(methodDict[keyword==method, lmMethod], formula=Formula, design=data, response=resp)
+    RHS <- removeResponse(formula, warn=FALSE)
+    
+    obj <- new(methodDict[keyword==method, lmMethod], formula=RHS, design=data, response=resp)
     obj <- fit(obj)
     list(cont=obj@fitC, disc=obj@fitD)
 }
@@ -128,9 +126,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         
         if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
         if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
-        fsplit <- str_split_fixed(deparse(formula), fixed('~'), 2)
-        if(nchar(fsplit[1,1])>0) message("Ignoring LHS of formula (", fsplit[1,1], ') and using exprs(sca)')
-        Formula <- as.formula(paste0('~', fsplit[1,2]))
+        formula <- removeResponse(formula)
 
         ## Empirical bayes method
         priorVar <- 1
