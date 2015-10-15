@@ -126,7 +126,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         
         if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
         if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
-        formula <- removeResponse(formula)
+        Formula <- removeResponse(formula)
 
         ## Empirical bayes method
         priorVar <- 1

@@ -52,7 +52,14 @@ hushWarning <- function(expr, regexp){
 ##' @return formula
 ##' @author Andrew
 removeResponse <- function(Formula, warn=TRUE){
-    trm <- terms(Formula)
-    if(attr(trm, 'response')==1 && warn) warning("Ignoring LHS variable from formula", Formula)
-    reformulate(labels(trm), intercept=attr(trm, 'intercept'))
+    charForm <- paste0(deparse(Formula, width.cutoff=500), collapse='')
+    fsplit <- str_split_fixed(charForm, fixed('~'), 2)
+    if(nchar(fsplit[1,1])>0 && warn) message("Ignoring LHS of formula (", fsplit[1,1], ') and using exprs(sca)')
+    as.formula(paste0('~', fsplit[1,2])) 
 }
+
+## removeResponse <- function(Formula, warn=TRUE){
+##     trm <- terms(Formula)
+##     if(attr(trm, 'response')==1 && warn) warning("Ignoring LHS variable from formula", Formula)
+##     reformulate(labels(trm), intercept=attr(trm, 'intercept'))
+## }
