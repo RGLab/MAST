@@ -38,7 +38,9 @@ FromMatrix <- function(exprsArray, cData, fData){
     nslice <- dim(can$exprsArray)[3]
     assays <- vector('list', length=nslice)
     for(i in seq_len(nslice)){
-        assays[[i]] <- can$exprsArray[,,i]
+        assays[[i]] <- can$exprsArray[,,i,drop=FALSE]
+        dim(assays[[i]]) <- dim(assays[[i]])[-3] # only drop last index
+        dimnames(assays[[i]]) <- dimnames(can$exprsArray)[-3]
     }
     obj <- SummarizedExperiment(assays=assays, colData=can$cData)
     mcols(obj) <- can$fData
@@ -117,18 +119,20 @@ setMethod('fData', 'SummarizedExperiment0', function(object){
 ##' @return A \code{data.frame} typically, with the cartesian product of the
 ##' row and column attributes and the values from the rectangular array
 ##' 
-##' @import reshape
 ##' @export
-melt.SingleCellAssay<-function(data,...){
-  m <- cbind(
-    cData(data)[rep(seq_len(nrow(data)), ncol(data)),,drop=FALSE],
-    fData(data)[rep(seq_len(ncol(data)), each=nrow(data)),,drop=FALSE],
-    value=as.vector(exprs(data)))
-  rn <-  c('value'=dimnames(data)[[3]][layer(data)])
-  if(data@keep.names) return(rename(m,rn))
+melt.SummarizedExperiment0<-function(data,...,na.rm=FALSE, value.name='value'){
+    featdata <- as.data.table(mcols(data))
+    celldata <- as.data.table(colData(data))
+    m <- cbind( featdata[rep(seq_len(nrow(featdata)), nrow(celldata)),,drop=FALSE],
+          celldata[rep(seq_len(nrow(celldata)), each=nrow(featdata)),,drop=FALSE],
+          value=as.vector(assay(data)))      
+    
+  setnames(m, 'value', value.name) 
   return(m)
 }
 
+##'@export
+melt.SingleCellAssay <- melt.SummarizedExperiment0
 
 mkunique<-function(x,G){
     cbind(x,primerid.unk=make.unique(as.character(get(G,x))))
@@ -156,6 +160,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 
 ## might have bad complexity, but could construct one at time, then glue cheaply
 ## Not too bad except for deduplication.. will use data.table
+## Output is sorted by primerid then wellKey
 ##' @import data.table
 fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
   df<-data.table(df)
@@ -310,26 +315,28 @@ uniqueModNA.old <- function(df, exclude){
   u[!allNa,,drop=FALSE]
 }
 
-## Get unique rows in data.frame, not counting NAs as distinct for
-## columns named in exclude
+## Get unique rows in data.frame, only counting NAs as distinct for
+## columns named in `include`
 ## Precondition: keyed data.table
-uniqueModNA <- function(df, exclude){
+## Result will be sorted by exclude
+uniqueModNA <- function(df, include){
     if(!is(df, 'data.table')){
         stop('df should be data.table')
     }
     k <- key(df)
     setkey(df,NULL)                     # so that unique operates on all columns
     setorderv(df, k)
-    w.include <- names(df)
+    w.exclude <- names(df)
     if(ncol(df)>1){
-        w.include <- setdiff(w.include, exclude)
+        w.exclude <- setdiff(w.exclude, include)
 }
     ##u <- unique(df)
     ##anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
     ##u[!anyNa,,drop=FALSE]
     u<-unique(df)
-    allNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+    allNa <- apply(is.na(u)[,w.exclude, drop=FALSE], 1, all)
     u<-u[!allNa,] #either we spend time above or here..
+    setorderv(u, include)
     u
 }
 
@@ -345,6 +352,17 @@ setMethod('cData', 'SummarizedExperiment0', function(sc){
     colData(sc)
 })
 
+setMethod('subset', 'SummarizedExperiment0', function(x, ...){
+    e <- substitute(...)
+    asBool <- try(eval(e, colData(x), parent.frame(n=2)), silent=TRUE)
+    if(is(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
+  #this is a special case of "subset", not of the "[[" method, so..
+  if(isTRUE(asBool)){
+          x 
+      }else{
+          x[,asBool]
+      }
+})
 
 
 ##' @describeIn cData
@@ -412,12 +430,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
                   'variable')) #setAs('SingleCellAssay', 'data.table')
 
 setAs('SummarizedExperiment0', 'data.table', function(from){
-    ex <- data.table(wellKey=getwellKey(from), exprs(from))
-    fd <- setkey(data.table(fData(from)), primerid)
-    cd <- setkey(data.table(cData(from)), wellKey)
-    M <- melt.data.table(ex, 'wellKey')[,primerid:=variable][,variable:=NULL]
-    setkey(M, primerid, wellKey)
-    M <- merge(merge(M, cd), fd, by='primerid')
-    stopifnot(nrow(M) == ncol(from)*nrow(from))
-    M
+    melt.SummarizedExperiment0(from)
 })
+
+setMethod('exprs', 'SummarizedExperiment0', function(object) assay(object))
