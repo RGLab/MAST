@@ -1,4 +1,4 @@
-MAST
+MAST (GPL >= 2.0)
 ===============
 
 Model-based Analysis of Single-cell Transcriptomics
