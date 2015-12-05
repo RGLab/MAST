@@ -18,6 +18,7 @@ revealHook <- function(zlm){
 }
 
 ##' @importFrom plyr laply
+#'@ export collectResiduals
 collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
     if(newLayerName %in% dimnames(sca)[[3]]) warning('Overwriting layer', newLayerName) else     sca <- addlayer(sca, newLayerName)
     layer(sca) <- newLayerName
