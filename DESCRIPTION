@@ -61,3 +61,4 @@ Collate:
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
+RoxygenNote: 5.0.1

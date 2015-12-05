@@ -43,3 +43,24 @@ hushWarning <- function(expr, regexp){
         if(str_detect(conditionMessage(w), regexp)) invokeRestart("muffleWarning")
     })
 }
+
+##' Return a dependency-free version of a SingleCellAssay Object
+##'
+##' Breaks \code{sca} into a list of components `exprs` (expression matrix, cell X genes),
+##' `cdata` (\code{data.frame} of cell annotations)
+##' `fdata` (\code{data.frame} of feature annotations).
+##' Optionally writes this list to an RDS file.
+##' 
+##' @param sca \code{SingleCellAssay} object
+##' @param file optional \code{character} naming a file to which a .RDS will be written
+##' @return a list (invisibly if \code{file} is set)
+##' @export
+jailBreak <- function(sca, file){
+    components = list(exprs=exprs(sca), cdata=cData(sca), fdata=fData(sca))
+    if(!missing(file)){
+        saveRDS(components, file)
+        invisible(components)
+    } else{
+        components
+    }
+}
