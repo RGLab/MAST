@@ -6,11 +6,12 @@ Model-based Analysis of Single-cell Transcriptomics
 
 Installation Instructions
 ------------
-If you have previously installed the package `SingleCellAssay` you will want to remove it as `MAST` superscedes `SingleCellAssay`.  (If both `MAST` and `SingleCellAssay` are attached, opaque S4 dispatch errors will result.)  Remove it with:
+If you have previously installed the package `SingleCellAssay` you will want to remove it as `MAST` supercedes `SingleCellAssay`.  (If both `MAST` and `SingleCellAssay` are attached, opaque S4 dispatch errors will result.)  Remove it with:
 
      remove.packages('SingleCellAssay')
 
 Then you may install or update `MAST` with:
+
      install.packages('devtools')
      library(devtools)
      install_github('RGLab/MAST')
