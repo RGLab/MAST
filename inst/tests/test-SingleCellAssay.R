@@ -120,7 +120,7 @@ test_that('uniqueModNA works on multiple columns', {
     ## Now should return every row, since every row is unique
     naframe$extra <- 1:nrow(naframe)
     setkeyv(naframe, colnames(naframe))
-    expect_equal(unique(naframe), MAST:::uniqueModNA(naframe, include='var'))
+    expect_equivalent(unique(naframe), MAST:::uniqueModNA(naframe, include='var'))
 })
 
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
@@ -133,9 +133,9 @@ test_that("Completes incomplete data", {
   expect_message(FromFlatDF(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid, keep.names=TRUE), 'incomplete')
   expect_equal(nrow(fd.incomplete), 50)
   expect_equal(ncol(fd.incomplete), 30)
-  expect_true(any(is.na(exprs(fd.incomplete))))
-  expect_equal(exprs(fd.incomplete[21:50, 11:30]),exprs(fd[21:50, 11:30]))
-  expect_equal(exprs(fd.incomplete[1:20, 1:20]),exprs(fd[1:20, 1:20]))
+  expect_true(any(is.na(assay(fd.incomplete))))
+  expect_equal(assay(fd.incomplete[21:50, 11:30]),assay(fd[21:50, 11:30]))
+  expect_equal(assay(fd.incomplete[1:20, 1:20]),assay(fd[1:20, 1:20]))
 })
 
 ## No more mapping, hurray!
@@ -199,9 +199,9 @@ test_that('Subset with FALSE returns empty set', {
 
 
 test_that('Subset with names from SingleCellAssay works', {
-  stim <- table(colData(sc)$Stim.Condition)[1]
+    stim <- table(colData(sc)$Stim.Condition)[1]
   sub1 <- subset(sc, Stim.Condition == names(stim))
-  expect_equivalent(nrow(sub1), stim)
+  expect_equivalent(ncol(sub1), stim)
 })
 
 test_that('Subset throws an intelligent error if thesubset cannot be evaluated', {
@@ -214,11 +214,11 @@ context("SCASet works")
 ## })
 
 test_that('Can split',{
+        browser()
     splat <- split(sc, cData(sc)$Subject.ID)
   expect_that(splat, is_a('SimpleList'))
-  splat.byfieldname <- split(scd, 'Subject.ID')
-    expect_that(splat.byfieldname, is_a('SimpleList'))
-    browser()
+  splat.byfieldname <- split(sc, 'Subject.ID')
+    expect_equal(splat.byfieldname, splat)
   ##   splat <- split(scd, c('Subject.ID', 'Population'))
   ## expect_that(splat, is_a('SimpleList'))
   ##   splat <- split(scd, list(factor(cData(scd)$Subject.ID), factor(cData(scd)$Population)))
@@ -226,24 +226,17 @@ test_that('Can split',{
   
 })
 
-test_that('Can coerce to/from list', {
-    splat <- split(scd, cData(scd)$Subject.ID)
-    tolist <- as(splat, 'list')
-    browser()
-  expect_that(tolist, is_a('list'))
-})
-
-context('Copy and replace')
 test_that('Replace works', {
- exprs(scd) <- -111
- expect_true(all(exprs(scd)==(-111)))
+    assay(sc, 1) <- matrix(-111, nrow=nrow(sc), ncol=ncol(sc))
+    expect_true(all(assay(sc)==(-111)))
 })
 
-test_that('Copy works', {
- sc2 <- copy(scd)
- expect_that(scd, equals(sc2))
- exprs(sc2) <- -999
- expect_false(any(exprs(scd) == -999))
+context("Backwards compatibility")
+
+test_that('Exprs', {
+    expect_equal(assay(sc), t(exprs(sc)))
+    exprs(sc)[1, 10] <- -5
+    expect_equal(assay(sc)[10, 1], -5)
 })
 
 
@@ -252,7 +245,7 @@ doubleid <- data.frame(id1=1:3, id2=1:3, et=rep(3, 3), f1=rep('A', 3))
 smallsc <- SingleCellAssay(doubleid, idvars='id1', primerid='f1', measurement='et', id='1')
 
 test_that('combine works', {
-spl <- split(smallsc, 'id1')
+    spl <- split(smallsc, 'id1')
 c1 <- combine(spl[[1]], spl[[2]])
 expect_that(c1, is_a('SingleCellAssay'))
 expect_equal(nrow(c1), 2)

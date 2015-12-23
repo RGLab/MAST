@@ -354,7 +354,7 @@ setMethod('cData', 'SummarizedExperiment0', function(sc){
 
 setMethod('subset', 'SummarizedExperiment0', function(x, ...){
     e <- substitute(...)
-    asBool <- try(eval(e, colData(x), parent.frame(n=2)), silent=TRUE)
+    asBool <- try(eval(e, colData(x), parent.frame(n=1)), silent=TRUE)
     if(is(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
   #this is a special case of "subset", not of the "[[" method, so..
   if(isTRUE(asBool)){
@@ -374,44 +374,28 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
 })
 
 
-##' Split into SCASet
+##' Split into SimpleList
 ##'
-##' Splits a \code{SingleCellAssay} into a \code{SCASet} by a factor (or something coercible into a factor) or a character giving a column of the melted SingleCellAssay
+##' Splits a \code{SummarizedExperiment0} into a \code{SimpleList} by a factor (or something coercible into a factor) or a character giving a column of \code{colData(x)}
 ##' @param x SingleCellAssay
 ##' @param f length-1 character or factor of length nrow(x)
-##' @return SCASet
-##' @aliases split,SingleCellAssay,ANY-method
-##' @aliases split,DataLayer,ANY-method
+##' @return SimpleList
 ##' @examples
 ##' data(vbetaFA)
 ##' split(vbetaFA, 'ncells')
-##' fa <- as.factor(cData(vbetaFA)$ncells)
+##' fa <- as.factor(colData(vbetaFA)$ncells)
 ##' split(vbetaFA, fa)
 ##' @export
-setMethod('split', signature(x='SingleCellAssay'), 
+setMethod('split', signature(x='SummarizedExperiment0', f='character'), 
           function(x, f, drop=FALSE, ...){
-  ## Split a SingleCellAssay by criteria
-  ###f must be a character naming a cData variable
-  if(is(f, 'character')){
-    if(length(f) != nrow(x)){
-      f <- lapply(cData(x)[,f, drop=FALSE], as.factor)
-    } else{
-      f <- list(as.factor(f))
-    }
-  } else if(is(f, 'factor')){
-    f <- list(f)
-  }
-     all.factor <- all(sapply(f, is.factor))
-     if(!all.factor) stop('f must be character vector naming columns of x; or factor; or list of factors')
-     all.length <- all(sapply(f, length)==nrow(x))
-     if(!all.length) stop('each element in f must be length nrow(x)')
-  out <- callNextMethod()
-  cD <- split.data.frame(x@cellData, f)
-  for(i in seq_along(out)){
-    out[[i]]@cellData <- cD[[i]]
-    out[[i]]@id <- names(out)[i]
-  }
-  new('SCASet', set=out)
+              ## Split a SingleCellAssay by criteria
+###f must be a character naming a cData variable
+              if(length(f) != ncol(x)){
+                  f <- lapply(colData(x)[,f, drop=FALSE], as.factor)
+              } else{
+                  f <- as.factor(f)
+              }
+              callNextMethod(x, f, drop, ...)
 })
 
 
@@ -433,4 +417,9 @@ setAs('SummarizedExperiment0', 'data.table', function(from){
     melt.SummarizedExperiment0(from)
 })
 
-setMethod('exprs', 'SummarizedExperiment0', function(object) assay(object))
+setMethod('exprs', 'SummarizedExperiment0', function(object) t(assay(object)))
+
+setReplaceMethod('exprs', 'SummarizedExperiment0', function(object, value){
+    assay(object, 1) <- t(value)
+    object
+})

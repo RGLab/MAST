@@ -1,0 +1,2 @@
+** split(`sca`, `character`) used to evaluate character to a column in cData when it was a length(1) character.  Now it is always treated literally.
+
