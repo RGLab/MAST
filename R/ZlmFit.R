@@ -49,8 +49,17 @@ setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), funct
     o1 <- object
     LMlike <- o1@LMlike
     newF <- update.formula(LMlike@formula, formula(sprintf(' ~. - %s', hypothesis)))
-    if(newF==LMlike@formula) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
     LMlike <- update(LMlike, newF)
+    newMM <- model.matrix(newMM)
+    q1 <- qr.Q(qr(o1@LMlike@modelMatrix))
+
+    ##test if design matrix has different column space
+    ## Same if Q * Q^T X = X
+    ## (X lies in the projection onto the old MM)
+    ## There must be a better way to do this??
+    diff <- any(abs(q1 %*% crossprod(q1, newMM) - newMM)>1e-6)
+    
+    if(!diff) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
     .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
 })
 
