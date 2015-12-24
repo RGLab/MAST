@@ -48,9 +48,18 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
 setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
     o1 <- object
     LMlike <- o1@LMlike
+    oldMM <- model.matrix(LMlike)
     newF <- update.formula(LMlike@formula, formula(sprintf(' ~. - %s', hypothesis)))
-    if(newF==LMlike@formula) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
     LMlike <- update(LMlike, newF)
+    newMM <- model.matrix(LMlike)
+
+    ##test if design matrix has different column space
+    ## Same if Q * Q^T X = X
+    ## (old MM lies in the projection onto the new MM)
+    ## There must be a better way to do this??
+    newq <- qr.Q(qr(newMM))
+    diff <- any(abs(newq %*% crossprod(newq, oldMM) - oldMM)>1e-6)
+    if(!diff) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
     .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
 })
 
