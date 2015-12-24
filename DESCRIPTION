@@ -41,6 +41,7 @@ Collate:
     'Hypothesis.R'
     'LmWrapper.R'
     'MultidimensionalScaling.R'
+    'Power.R'
     'RNASeqAssay-methods.R'
     'Readers.R'
     'SCASet-methods.R'
