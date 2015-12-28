@@ -4,14 +4,17 @@
 \alias{getLambda}
 \title{Simulate tests on a single cell gene expression data set using hurdle model}
 \usage{
-getLambda(nsim, thetafun, Xfun, Formula, contrasts, zlmargs = NULL)
+getLambda(nsim, thetafun, Xframe, XFormula, Formula, contrasts,
+  zlmargs = NULL)
 }
 \arguments{
 \item{nsim}{number of simulations to run}
 
 \item{thetafun}{function returning a realization of the parameters (return a constant if parameters are fixed)}
 
-\item{Xfun}{function returning a realization of the design matrix.  Must explicitly include an intercept.}
+\item{Xframe}{function returning a `design matrix`, (if the design is random), or a fixed design matrix.}
+
+\item{XFormula}{formula used to translate the design into a model matrix. See details.}
 
 \item{Formula}{formula used to model the design}
 
@@ -26,6 +29,13 @@ matrix containing likelihood ratio stats, p values and dof
 Simulate tests on a single cell gene expression data set using hurdle model
 }
 \examples{
-getLambda(100, thetafun, Xfun=simulateX(.7, 3, 96), ~hiv+(1|ind), 'hiv', zlmargs=list(method='glmer'))
+Pclass <- .5
+Nind <- 3
+Ncell <- 96
+Xframe <- data.frame(ind=factor(rep(seq_len(Nind), each=Ncell)), hiv=rbinom(Nind*Ncell, 1, Pclass))
+betaD <- betaC <- c('(Intercept)'=10, ind2=-.5, ind3=.5, hiv=.5)
+betaD['(Intercept)'] <- 0
+theta <-  list(C=betaC, D=betaD, sigmaC=1)
+getLambda(10, theta, Xframe, XFormula=~hiv+ind, ~hiv, 'hiv', zlmargs=list(method='bayesglm'))
 }
 
