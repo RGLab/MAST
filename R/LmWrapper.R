@@ -85,7 +85,7 @@ setReplaceMethod('model.matrix', signature=c(object='LMlike'), function(object, 
     qrm <- qr(value)
     est <- qrm$pivot[seq_len(qrm$rank)]
     if(length(est)<ncol(value)) warning('Coefficients ', paste(colnames(value)[setdiff(qrm$pivot, est)], collapse=', '), ' are never estimible and will be dropped.')
-    MM <- value[,est, drop=FALSE]
+    MM <- structure(value[,est, drop=FALSE], assign=attr(value, 'assign')[est]) 
     object@modelMatrix <- MM
     object@defaultCoef <- setNames(as.numeric(rep(NA, ncol(MM))), colnames(MM))
     object@defaultVcov <- object@defaultCoef %o% object@defaultCoef
