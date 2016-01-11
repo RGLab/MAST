@@ -34,7 +34,7 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     ## bayesglm doesn't correctly set the residual DOF, and this won't hurt for regular glm
     object@fitC$df.residual <- max(npos - object@fitC$rank, 0)
     ## conservative estimate of residual df
-    object@fitD$df.residual <- max(min(npos, length(pos)-npos) - object@fitD$rank, 0)
+    object@fitD$df.residual <- object@fitD$df.null
     object@fitted <- c(C=object@fitC$converged &
                            object@fitC$df.residual>0, #kill unconverged or empty
                        D=object@fitD$converged)
