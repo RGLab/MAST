@@ -26,7 +26,8 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
     message('Refitting on reduced model...')
     o0 <- zlm.SingleCellAssay(sca=o1@sca, LMlike=LMlike)
     lambda <- -2*(o0@loglik-o1@loglik)
-    testable <- o0@df.resid > 1 & o1@df.resid > 1 & o0@converged & o1@converged
+    testable <- o0@converged & o1@converged
+    testable[,'C'] <-  testable[,'C'] & (o0@df.resid > 1 & o1@df.resid > 1)[,'C']
     lambda <- ifelse(testable, lambda, 0)
     df <- o0@df.resid-o1@df.resid
     df <- ifelse(testable, df, 0)
