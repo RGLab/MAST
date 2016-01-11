@@ -90,15 +90,15 @@ suppressPackageStartupMessages(library(data.table))
   naframe <- data.table(var=rep(c(1, 2), each=3), na=c(NA, -9, NA, -9, NA, -9))
 test_that("uniqueModNA doesn't include NA", {
     setkeyv(naframe, colnames(naframe))
-  expect_equivalent(nrow(MAST:::uniqueModNA(naframe, exclude='var')), 2)
-  expect_equivalent(nrow(MAST:::uniqueModNA(naframe[,-2, with=FALSE], exclude='var')), 2)
+  expect_equal(nrow(MAST:::uniqueModNA(naframe, exclude='var')), 2)
+  expect_equal(nrow(MAST:::uniqueModNA(naframe[,-2, with=FALSE], exclude='var')), 2)
 })
 
 test_that('uniqueModNA works on multiple columns', {
     ## Now should return every row, since every row is unique
     naframe$extra <- 1:nrow(naframe)
     setkeyv(naframe, colnames(naframe))
-    expect_equivalent(unique(naframe), MAST:::uniqueModNA(naframe, exclude='var'))
+    expect_equal(unique(naframe), MAST:::uniqueModNA(naframe, exclude='var'))
 })
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {

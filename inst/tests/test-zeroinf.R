@@ -66,9 +66,8 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   ee[,1] <- rnorm(nrow(fd3))+20
   exprs(fd3) <- ee
   zz <- zlm.SingleCellAssay( ~ Population, fd3)
-    expect_that(zz, is_a('ZlmFit'))
-  ## Really should be testing for linear separation or fitted values = 0 or 1 I guess..
-  ##expect_less_than(zz@df.resid[1,'D'], 1)
+  expect_that(zz, is_a('ZlmFit'))
+  expect_less_than(zz@df.resid[1,'D'], 1)
 
         if(suppressPackageStartupMessages(require(arm))){
             zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
