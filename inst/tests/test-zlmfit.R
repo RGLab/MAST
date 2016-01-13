@@ -4,6 +4,7 @@ fd2 <- fd[, 1:20]
 context("ZlmFit")
 test_that('zlm.SingleCellAssay works', {
   zzinit <<- hushWarning(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, parallel=FALSE), 'never estimible')
+
   expect_that(zzinit, is_a('ZlmFit'))
 })
 
@@ -36,6 +37,7 @@ test_that('Three flavors of wald on ZlmFit', {
     expect_equal(dim(zz)[1], 20)
  
     zz2 <- hushWarning(waldTest(zzinit, Hypothesis('`PopulationVbetaResponsive:Stim.ConditionUnstim`')), 'Some levels contain symbols')
+
     expect_equivalent(zz, zz2)
     expect_true(all.equal(zz, zz3, check.attributes=FALSE, tol=1e-5))
 

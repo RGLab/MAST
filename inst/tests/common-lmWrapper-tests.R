@@ -24,7 +24,7 @@ test_that('Handle Singular Designs', {
 })
 
 test_that('Handle 100% expression', {
-    obj2 <- fit(obj, rnorm(nrow(fd))+20)
+    obj2 <- hushWarning(fit(obj, rnorm(nrow(fd))+20), fixed('algorithm did not converge'))
     expect_is(coef(obj2, 'C'), 'numeric')
     if(obj2@fitted['D']){
         expect_less_than(obj2@fitD$df.residual, 1)
@@ -99,7 +99,7 @@ test_that('LRT For Glm', {
  atest <- lrTest(obj, 'Stim.Condition')
  expect_is(atest, 'matrix')
 
- btest <- lrTest(obj2, 'Stim.Condition')
+ btest <- hushWarning(lrTest(obj2, 'Stim.Condition'), fixed('never estimible'))
  expect_true(all(btest[,'df']==0))
  btest <- lrTest(obj2, 'Stim.Condition:Population')
  expect_equal(btest['cont','df'],1)
@@ -109,11 +109,11 @@ test_that('LRT For Glm', {
     atest <- lrTest(obj, 'Stim.Condition')
 context('LRT Contrasts')
 test_that('Contrast Hypothesis Work', {
-    coefh <- generateHypothesis(Hypothesis('Stim.ConditionUnstim'), names(coef(obj, 'D')))
-    btest <- lrTest(obj, coefh)
+    coefh <- hushWarning(generateHypothesis(Hypothesis('Stim.ConditionUnstim'), names(coef(obj, 'D'))), fixed('Some levels contain symbols'))
+    btest <- hushWarning(lrTest(obj, coefh), fixed('Some predictor variables are on very different scales'))
     expect_equivalent(atest,btest)
     expect_warning(coefh <- generateHypothesis(Hypothesis('`Stim.ConditionUnstim:PopulationVbetaResponsive`'), names(coef(obj2, 'D'))), 'backticks')
-    btest <- lrTest(obj2, coefh)
+    btest <- hushWarning(lrTest(obj2, coefh), fixed('Some predictor variables are on very different scales'))
     ctest <- lrTest(obj2, 'Stim.Condition:Population')
     ## prior, hence results changes slightly due to bayesglm magic scaling...
     err <- if(inherits(obj2, 'BayesGLMlike')) .01 else 1e-7

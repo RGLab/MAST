@@ -56,9 +56,10 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##'
 ##' @seealso GLMlike, LMERlike
 ##' @import stringr
-zlm <- function(formula, data, method='glm',silent=TRUE, ...){
+zlm <- function(formula, data, weights, method='glm',silent=TRUE, ...){
     ## perhaps we should be generic, but since we are dispatching on second argument, which might be an S3 class, let's just do this instead.
     if(inherits(data, 'SingleCellAssay')){
+        if(!missing(weights)) stop("Specify `weights` as a layer in your `SingleCellAssay` object.")
         return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, ...))
     }
     
@@ -67,8 +68,9 @@ zlm <- function(formula, data, method='glm',silent=TRUE, ...){
 
     ## get response
     resp <- eval(formula[[2]], data)
+
     RHS <- removeResponse(formula, warn=FALSE)
-    
+    #if(missing(weights)) weights <- (resp>0)*1    
     obj <- new(methodDict[keyword==method, lmMethod], formula=RHS, design=data, response=resp)
     obj <- fit(obj)
     list(cont=obj@fitC, disc=obj@fitD)
@@ -154,6 +156,18 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     ## avoiding repeated calls to the S4 object speeds calls on large sca
     ## due to overzealous copying semantics on R's part
     ee <- exprs(sca)
+    ## get weights
+    if('weights' %in% dimnames(sca)[[3]]){
+        ww <- exprsLayer(sca, 'weights')
+    } else {
+        ww <- (ee>0)*1
+    }
+    if(any(is.na(ww))){
+        warning("NA weights found. Setting to zero.")
+        ww[is.na(ww)] <- 0
+    }
+    if(any(ww<0) || any(ww>1)) stop("Some weights were NA, less than 0 or greater than 1!")
+    
     genes <- colnames(ee)
     ng <- length(genes)
     MM <- model.matrix(obj)
@@ -162,7 +176,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     listEE <- setNames(seq_len(ng), genes)
     ## in hopes of finding a typical gene
     upperQgene <- which(rank(freq(sca), ties.method='random')==floor(.75*ng))
-    obj <- fit(obj, ee[,upperQgene], silent=silent)
+    obj <- fit(obj, response=ee[,upperQgene], weights=ww[,upperQgene], silent=silent)
 
     ## called internally to do fitting, but want to get local variables in scope of function
     nerror <- 0
@@ -170,7 +184,7 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         ## initialize outputs
         hookOut <- NULL
         tt <- try({
-            obj <- fit(obj, response=ee[,idx], silent=silent, quick=TRUE)
+            obj <- fit(obj, response=ee[,idx], weights=ww[,idx], silent=silent, quick=TRUE)
             if(!is.null(hook)) hookOut <- hook(obj)
             nerror <- 0
             if((idx %% 20)==0) message('.', appendLF=FALSE)
