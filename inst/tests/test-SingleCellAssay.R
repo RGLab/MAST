@@ -39,7 +39,7 @@ blank <- dat_complete[1,]
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
 fd <- FromFlatDF(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid, sort=TRUE)
 test_that('could construct from flattened data.frame', {
-    expect_that(fd, is_a('SummarizedExperiment0'))
+    expect_that(fd, is_a('SingleCellAssay'))
 })
 
 test_that('Has dimnames', {
@@ -90,7 +90,7 @@ test_that('Cell data and feature data are correctly assigned on construction', {
         et[Stim.Condition!='Stim(SEB)' & Gene=='TGFB1'] <- 0
     })
     vb.manip <- vb.manip[sample(nrow(vb.manip)),]
-    fd.manip <- FluidigmAssay(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+    fd.manip <- FromFlatDF(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
     expect_true(all(assay(subset(fd.manip, Stim.Condition=='Stim(SEB)'))==2000))
 })
 
@@ -214,15 +214,16 @@ context("SCASet works")
 ## })
 
 test_that('Can split',{
-        browser()
-    splat <- split(sc, cData(sc)$Subject.ID)
-  expect_that(splat, is_a('SimpleList'))
-  splat.byfieldname <- split(sc, 'Subject.ID')
-    expect_equal(splat.byfieldname, splat)
-  ##   splat <- split(scd, c('Subject.ID', 'Population'))
-  ## expect_that(splat, is_a('SimpleList'))
-  ##   splat <- split(scd, list(factor(cData(scd)$Subject.ID), factor(cData(scd)$Population)))
-  ## expect_that(splat, is_a('SimpleList'))
+        splat <- split(sc, cData(sc)$Subject.ID)
+        expect_that(splat, is_a('list'))
+        expect_equal(nrow(sc), nrow(splat[[1]]))
+        expect_equal(ncol(sc), sum(sapply(splat, ncol)))
+        splat.byfieldname <- split(sc, 'Subject.ID')
+        expect_equal(splat.byfieldname, splat)
+        splat <- split(sc, c('Subject.ID', 'Population'))
+        expect_that(splat, is_a('list'))
+        splat <- split(sc, list(factor(cData(sc)$Subject.ID), factor(cData(sc)$Population)))
+        expect_that(splat, is_a('list'))
   
 })
 
@@ -241,45 +242,38 @@ test_that('Exprs', {
 
 
 context('Combine works')
-doubleid <- data.frame(id1=1:3, id2=1:3, et=rep(3, 3), f1=rep('A', 3))
-smallsc <- SingleCellAssay(doubleid, idvars='id1', primerid='f1', measurement='et', id='1')
+doubleid <- data.frame(id1=c(1, 1, 2), id2=c(1, 2, 3), et=rep(3, 3), f1=rep('A', 3))
+smallsc <- FromFlatDF(doubleid, idvars=c('id1', 'id2'), primerid='f1', measurement='et', id='1')
 
 test_that('combine works', {
     spl <- split(smallsc, 'id1')
-c1 <- combine(spl[[1]], spl[[2]])
-expect_that(c1, is_a('SingleCellAssay'))
-expect_equal(nrow(c1), 2)
-c2 <- combine(spl[[1]], spl[[2]], spl[[3]])
-expect_that(c2, is_a('SingleCellAssay'))
-expect_that(combine(spl), is_a('SingleCellAssay'))
+    c1 <- combine(spl[[1]], spl[[2]])
+    expect_that(c1, is_a('SingleCellAssay'))
+    expect_equal(ncol(c1), 3)
+    c2 <- combine(spl[[1]], spl[[1]], spl[[2]])
+    expect_that(c2, is_a('SingleCellAssay'))
 })
 
 test_that('combine throws error for non-conforming',{
   expect_error(combine(fd, spl[[1]]))
 })
 
-
-test_that('Can split FluidigmAssays', {
- splat.byfieldname <- split(fd, 'Subject.ID')
-    expect_that(splat.byfieldname, is_a('SCASet'))
-})
-
 context('Test replace methods')
 
 
 test_that('Can replace cData', {
-    cDat <- cData(fd)
+    cDat <- colData(fd)
     cDat$foo <- "bar"
-    cData(fd) <- cDat
-    expect_true('foo' %in% names(cData(fd)))
+    colData(fd) <- cDat
+    expect_true('foo' %in% names(colData(fd)))
 
     empty <- data.frame()
-    expect_error(cData(fd) <- empty, 'wellKey')
+    expect_error(colData(fd) <- empty, 'DataFrame')
 
     scramble <- cDat[sample(nrow(cDat)),]
-    expect_warning(cData(fd) <- scramble, 'sorting')
+    expect_error(colData(fd) <- scramble, 'wellKey')
 
-    expect_error(cData(fd) <- scramble[-1:-10,], 'missing some wellkeys')
+    expect_error(colData(fd) <- scramble[-1:-10,])
 })
 
 context('Testing data.table method')
@@ -287,13 +281,7 @@ context('Testing data.table method')
 test_that('Can cast to data.table', {
     dt <- as(fd, 'data.table')
     expect_is(dt, 'data.table')
-    M <- melt(fd)
-    df <- as.data.frame(dt)
-    M <- M[, match(names(df), names(M))]
-    expect_equivalent(df, M)
-
-#sad <- M[order(M$primerid, M$wellKey),]   
-    #expect_true(all.equal(df, M, check.attributes=FALSE))
+    expect_equal(dt$value, as.vector(assay(fd)))
 })
 
 context('Play nicely with reshape/reshape2/data.table')

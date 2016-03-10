@@ -11,7 +11,7 @@
 NULL
 
 
-##' Construct a SummarizedExperiment from a matrix or array of expression
+##' Construct a SingleCellAssay from a matrix or array of expression
 ##'
 ##' If the gene expression measurements are already in a rectangular form,
 ##' then this function allows an easy way to construct a SummarizedExperiment object while
@@ -28,6 +28,7 @@ NULL
 ##' cData <- data.frame(wellKey=seq_len(ncells))
 ##' mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
 ##' sca <- FromMatrix(mat, cData, fData)
+##' stopifnot(inherits(sca, 'SingleCellAssay'))
 ##' stopifnot(inherits(sca, 'SummarizedExperiment0'))
 ##' ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
 ##' cData$ncells <- 1
@@ -44,7 +45,7 @@ FromMatrix <- function(exprsArray, cData, fData){
     }
     obj <- SummarizedExperiment(assays=assays, colData=can$cData)
     mcols(obj) <- can$fData
-    obj
+    as(obj, 'SingleCellAssay')
 }
 
 as3dArray <- function(matOrArray){
@@ -102,7 +103,7 @@ checkArrayNames <- function(exprsArray, cData, fData){
     list(exprsArray=exprsArray, cData=cData, fData=fData)
 }
 
-setMethod('fData', 'SummarizedExperiment0', function(object){
+setMethod('fData', 'SingleCellAssay', function(object){
     warning('Deprecated: use mcols')
     mcols(object)
 })
@@ -120,7 +121,7 @@ setMethod('fData', 'SummarizedExperiment0', function(object){
 ##' row and column attributes and the values from the rectangular array
 ##' 
 ##' @export
-melt.SummarizedExperiment0<-function(data,...,na.rm=FALSE, value.name='value'){
+melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     featdata <- as.data.table(mcols(data))
     celldata <- as.data.table(colData(data))
     m <- cbind( featdata[rep(seq_len(nrow(featdata)), nrow(celldata)),,drop=FALSE],
@@ -131,8 +132,6 @@ melt.SummarizedExperiment0<-function(data,...,na.rm=FALSE, value.name='value'){
   return(m)
 }
 
-##'@export
-melt.SingleCellAssay <- melt.SummarizedExperiment0
 
 mkunique<-function(x,G){
     cbind(x,primerid.unk=make.unique(as.character(get(G,x))))
@@ -347,12 +346,12 @@ setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 
 ##' @describeIn cData
 ##' @export
-setMethod('cData', 'SummarizedExperiment0', function(sc){
+setMethod('cData', 'SingleCellAssay', function(sc){
     warning('Deprecated: use colData')
     colData(sc)
 })
 
-setMethod('subset', 'SummarizedExperiment0', function(x, ...){
+setMethod('subset', 'SingleCellAssay', function(x, ...){
     e <- substitute(...)
     asBool <- try(eval(e, colData(x), parent.frame(n=1)), silent=TRUE)
     if(is(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
@@ -373,20 +372,32 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
     sc
 })
 
+##' @describeIn cData
+##' @export
+setReplaceMethod("colData", "SingleCellAssay", function(x, value) {
+    if(!inherits(value, 'DataFrame')) stop('Replacement must inherit from `DataFrame`')
+    browser()
+    if(!('wellKey' %in% names(value))) stop('Replacement value must contain a "wellKey" column') #I guess??
+    if(any(row.names(value) != colnames(x))) stop('`row.names` in value mismatch colnames in `x`')
+    colData(sc) <- value
+    sc
+})
+
+
 
 ##' Split into SimpleList
 ##'
-##' Splits a \code{SummarizedExperiment0} into a \code{SimpleList} by a factor (or something coercible into a factor) or a character giving a column of \code{colData(x)}
+##' Splits a \code{SingleCellAssay} into a \code{SimpleList} by a factor (or something coercible into a factor) or a character giving a column of \code{colData(x)}
 ##' @param x SingleCellAssay
-##' @param f length-1 character or factor of length nrow(x)
-##' @return SimpleList
+##' @param f length-1 character, or atomic of length ncol(x)
+##' @return List
 ##' @examples
 ##' data(vbetaFA)
 ##' split(vbetaFA, 'ncells')
 ##' fa <- as.factor(colData(vbetaFA)$ncells)
 ##' split(vbetaFA, fa)
 ##' @export
-setMethod('split', signature(x='SummarizedExperiment0', f='character'), 
+setMethod('split', signature(x='SingleCellAssay', f='character'), 
           function(x, f, drop=FALSE, ...){
               ## Split a SingleCellAssay by criteria
 ###f must be a character naming a cData variable
@@ -395,7 +406,40 @@ setMethod('split', signature(x='SummarizedExperiment0', f='character'),
               } else{
                   f <- as.factor(f)
               }
-              callNextMethod(x, f, drop, ...)
+              split(x, f)
+})
+
+setMethod('split', signature(x='SingleCellAssay', f='factor'), function(x, f, drop=FALSE, ...) split(x, list(f)))
+
+setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop=FALSE, ...){
+    fi <- do.call(interaction, f)[,drop=drop]
+    fidx <- split(seq_len(ncol(x)), f)
+    ## TODO: could use a CompressedList here, might be more efficient.
+    setNames(lapply(seq_along(fidx), function(i) x[,fidx[[i]]]), levels(fi))
+})
+
+setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y,  ...){
+    warning('Obsolete: use rbind/cbind')
+    if(ncol(x) == ncol(y) ){
+        do.call(rbind, list(x, y, ...))
+    } else if(nrow(x) == nrow(y)){
+        do.call(cbind, list(x, y, ...))
+    } else{
+        stop("Neither row nor column dimensions match")
+    }
+})
+
+setMethod('combine', signature(x='SingleCellAssay', y='ANY'), function(x, y,  ...){
+    if(ncol(x) == nrow(y) || ncol(x) == length(y)){
+        cd <- cbind(colData(x), y)
+        colData(x) <- cd
+    } else if(nrow(x) == nrow(y)){
+        mc <- cbind(mcols(x), y)
+        mcols(x) <- mc
+    } else{
+        stop("Neither row nor column dimensions match")
+    }
+    mc
 })
 
 
@@ -413,13 +457,13 @@ if(getRversion() >= "2.15.1") globalVariables(c(
                  'primerid', 
                   'variable')) #setAs('SingleCellAssay', 'data.table')
 
-setAs('SummarizedExperiment0', 'data.table', function(from){
-    melt.SummarizedExperiment0(from)
+setAs('SingleCellAssay', 'data.table', function(from){
+    melt.SingleCellAssay(from)
 })
 
-setMethod('exprs', 'SummarizedExperiment0', function(object) t(assay(object)))
+setMethod('exprs', 'SingleCellAssay', function(object) t(assay(object)))
 
-setReplaceMethod('exprs', 'SummarizedExperiment0', function(object, value){
+setReplaceMethod('exprs', 'SingleCellAssay', function(object, value){
     assay(object, 1) <- t(value)
     object
 })
