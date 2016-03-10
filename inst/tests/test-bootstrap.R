@@ -31,14 +31,13 @@ simYs <- function(m, X, beta, rho, sigma, p){
     list(Y=Y*expr, X=X, cov=kronecker(covErr, covX))
 }
 
-fd@keep.names <- FALSE
-fd2 <- fd[, 1:20]
+fd2 <- fd[1:20,]
 
 context("Bootstrap")
 test_that("Only return coef works", {
     zzinit2 <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, onlyCoef=TRUE))
     expect_that(zzinit2, is_a('array'))
-    expect_equal(dim(zzinit2)[1], ncol(fd2))
+    expect_equal(dim(zzinit2)[1], nrow(fd2))
 })
 
 cl <- parallel::makeForkCluster(2)
@@ -61,8 +60,9 @@ X <- getX(p, 40, N)
 beta <- t(cbind(15, rep(3, m)))
 pvec <- seq(.05, .95, length.out=m)
 Y <- simYs(m, X, beta, rho=1, sigma=1, p=pvec)
+
 cData <- data.frame(group=attr(X, 'group'))
-sca <- suppressMessages(suppressWarnings(FromMatrix('SingleCellAssay', Y$Y, cData=cData)))
+sca <- suppressMessages(suppressWarnings(FromMatrix(t(Y$Y), cData=cData)))
 zfit <- suppressWarnings(zlm.SingleCellAssay(~group, sca=sca))
 test_that('Expression frequencies are close to expectation', {
     expect_less_than(mean((freq(sca)-pvec)^2), 1/(sqrt(N)*m))
