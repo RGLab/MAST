@@ -1,7 +1,7 @@
 context('GSEA')
 data(vbetaFA)
 library(plyr)
-vb1 = subset(vbetaFA[,1:24], ncells==1)
+vb1 = subset(vbetaFA[1:24,], ncells==1)
 #vb1 = vb1[,freq(vb1)>.1]
 zf = zlm.SingleCellAssay(~Stim.Condition, vb1)
 set.seed(1234)
