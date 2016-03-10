@@ -4,3 +4,4 @@ inst/extdata
 .DS_Store
 *~
 \#*\#
+.emacs.desktop*
