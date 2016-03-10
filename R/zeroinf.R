@@ -92,7 +92,7 @@ summary.zlm <- function(out){
 ##' method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
 ##' H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 ##'
-##' @param formula a formula with the measurement variable on the LHS and predictors present in cData on the RHS
+##' @param formula a formula with the measurement variable on the LHS and predictors present in colData on the RHS
 ##' @param sca SingleCellAssay object
 ##' @param method character vector, either 'glm', 'glmer' or 'bayesglm'
 ##' @param silent Silence common problems with fitting some genes
@@ -139,14 +139,14 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
             stopifnot(all(!is.na(ebparm)))
         }
         ## initial value of priorVar, priorDOF default to no shrinkage
-        obj <- new(method, design=cData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
+        obj <- new(method, design=colData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
         ## End Default Call
     } else{
         ## Refitting
         if(!missing(formula)) warning("Ignoring formula and using model defined in 'objLMLike'")
         if(!inherits(LMlike, 'LMlike')) stop("'LMlike' must inherit from class 'LMlike'")
-        ## update design matrix with possibly new/permuted cData
-                                        ##obj <- update(LMlike, design=cData(sca))
+        ## update design matrix with possibly new/permuted colData
+                                        ##obj <- update(LMlike, design=colData(sca))
         obj <- LMlike
        }
     

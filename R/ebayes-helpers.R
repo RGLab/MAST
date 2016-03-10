@@ -63,7 +63,7 @@ getSSg_rNg <- function(sca, mm){
 ##' H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 ##' @param sca \code{SingleCellAssay}
 ##' @param ebayesControl list with (optional) components 'method', 'model'.  See details.
-##' @param Formula a formula (using variables in \code{cData(sca)} used when \code{model='H1'}.
+##' @param Formula a formula (using variables in \code{colData(sca)} used when \code{model='H1'}.
 ##' @param truncate Genes with sample precisions exceeding this value are discarded when estimating the hyper parameters
 ##' @return \code{numeric} of length two, giving the hyperparameters in terms of a variance (\code{v}) and prior observations (\code{df}), inside a \code{structure}, with component \code{hess}, giving the Fisher Information of the hyperparameters.
 ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
@@ -92,7 +92,7 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
         rNg <- rNg[valid]
         SSg <- SSg[valid]
     } else if(model == 'H1'){
-        mm <- model.matrix(Formula, cData(sca))
+        mm <- model.matrix(Formula, colData(sca))
 
         allfits <- getSSg_rNg(sca, mm)
         valid <- apply(!is.na(allfits), 1, all) & allfits[, 'rNg']/allfits[, 'SSg']<truncate
