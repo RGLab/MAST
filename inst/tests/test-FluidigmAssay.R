@@ -1,6 +1,5 @@
-source('common-fixtures.R')
 
-fd.small <- fd[[seq(from=1, to=nrow(fd), by=11)]]
+fd.small <- fd[,seq(from=1, to=nrow(fd), by=11)]
 context('Testing filtering')
 test_that('Can filter',{
 ff <- filter(fd.small, groups='ncells')

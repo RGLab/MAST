@@ -9,7 +9,7 @@ test_that('default prior', {
 })
 
 
-source('common-fixtures.R')
+## source('common-fixtures.R')
  obj <- new('BayesGLMlike', design=cData(fd), formula=~Stim.Condition + Population)
 coefPrior <- defaultPrior(colnames(model.matrix(obj)))
 obj@coefPrior <- coefPrior

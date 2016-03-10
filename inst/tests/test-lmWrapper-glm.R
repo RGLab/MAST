@@ -1,4 +1,3 @@
-source('common-fixtures.R')
 obj <- new('GLMlike', design=cData(fd), formula=~Stim.Condition)
 obj <- fit(obj, response=exprs(fd)[,2])
 objD <- glm(obj@response>0 ~ Stim.Condition, data=obj@design, family='binomial')

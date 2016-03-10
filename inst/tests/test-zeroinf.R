@@ -1,4 +1,3 @@
-fd@keep.names <- FALSE
 set.seed(1234)
 x <- matrix(runif(1000), 100)
 colnames(x) <- paste('X', 1:10, sep='')

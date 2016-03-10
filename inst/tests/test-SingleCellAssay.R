@@ -1,6 +1,3 @@
-## source('common-fixtures.R')
-
-
 ## geneid="Gene"
 ## primerid='Gene'
 ## measurement='et'
