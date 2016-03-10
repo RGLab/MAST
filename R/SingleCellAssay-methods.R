@@ -17,8 +17,8 @@ NULL
 ##' then this function allows an easy way to construct a SummarizedExperiment object while
 ##' still doing some sanity checking of inputs.
 ##' @param exprsArray matrix or array, columns are cells, rows are genes
-##' @param cData cellData data.frame, AnnotatedDataFrame or DataFrame
-##' @param fData featureData data.frame, AnnotatedDataFrame or DataFrame
+##' @param cData cellData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{ncol(exprsArray)}
+##' @param fData featureData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{nrow(exprsArray)}.
 ##' @return an object of class \code{class}
 ##' @export
 ##' @examples
@@ -32,8 +32,8 @@ NULL
 ##' stopifnot(inherits(sca, 'SummarizedExperiment0'))
 ##' ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
 ##' cData$ncells <- 1
-##' fd <- FromMatrix('FluidigmAssay', mat, cData, fData)
-##' stopifnot(inherits(fd, 'FluidigmAssay'))
+##' fd <- FromMatrix(mat, cData, fData)
+##' stopifnot(inherits(fd, 'SingleCellAssay'))
 FromMatrix <- function(exprsArray, cData, fData){
     can <- checkArrayNames(exprsArray, cData, fData)
     nslice <- dim(can$exprsArray)[3]
@@ -43,8 +43,8 @@ FromMatrix <- function(exprsArray, cData, fData){
         dim(assays[[i]]) <- dim(assays[[i]])[-3] # only drop last index
         dimnames(assays[[i]]) <- dimnames(can$exprsArray)[-3]
     }
-    obj <- SummarizedExperiment(assays=assays, colData=can$cData)
-    mcols(obj) <- can$fData
+    obj <- SummarizedExperiment(assays=assays, colData=as(can$cData, 'DataFrame'))
+    mcols(obj) <- as(can$fData, 'DataFrame')
     as(obj, 'SingleCellAssay')
 }
 

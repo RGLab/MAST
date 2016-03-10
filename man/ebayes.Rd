@@ -11,7 +11,7 @@ ebayes(sca, ebayesControl, Formula, truncate = Inf)
 
 \item{ebayesControl}{list with (optional) components 'method', 'model'.  See details.}
 
-\item{Formula}{a formula (using variables in \code{cData(sca)} used when \code{model='H1'}.}
+\item{Formula}{a formula (using variables in \code{colData(sca)} used when \code{model='H1'}.}
 
 \item{truncate}{Genes with sample precisions exceeding this value are discarded when estimating the hyper parameters}
 }

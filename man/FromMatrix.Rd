@@ -2,16 +2,16 @@
 % Please edit documentation in R/SingleCellAssay-methods.R
 \name{FromMatrix}
 \alias{FromMatrix}
-\title{Construct a SummarizedExperiment from a matrix or array of expression}
+\title{Construct a SingleCellAssay from a matrix or array of expression}
 \usage{
 FromMatrix(exprsArray, cData, fData)
 }
 \arguments{
 \item{exprsArray}{matrix or array, columns are cells, rows are genes}
 
-\item{cData}{cellData data.frame, AnnotatedDataFrame or DataFrame}
+\item{cData}{cellData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{ncol(exprsArray)}}
 
-\item{fData}{featureData data.frame, AnnotatedDataFrame or DataFrame}
+\item{fData}{featureData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{nrow(exprsArray)}.}
 }
 \value{
 an object of class \code{class}
@@ -28,10 +28,11 @@ fData <- data.frame(primerid=LETTERS[1:ngenes])
 cData <- data.frame(wellKey=seq_len(ncells))
 mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
 sca <- FromMatrix(mat, cData, fData)
+stopifnot(inherits(sca, 'SingleCellAssay'))
 stopifnot(inherits(sca, 'SummarizedExperiment0'))
 ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
 cData$ncells <- 1
-fd <- FromMatrix('FluidigmAssay', mat, cData, fData)
-stopifnot(inherits(fd, 'FluidigmAssay'))
+fd <- FromMatrix(mat, cData, fData)
+stopifnot(inherits(fd, 'SingleCellAssay'))
 }
 

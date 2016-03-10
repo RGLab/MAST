@@ -9,7 +9,7 @@ zlm.SingleCellAssay(formula, sca, method = "glm", silent = TRUE,
   parallel = TRUE, LMlike, onlyCoef = FALSE, ...)
 }
 \arguments{
-\item{formula}{a formula with the measurement variable on the LHS and predictors present in cData on the RHS}
+\item{formula}{a formula with the measurement variable on the LHS and predictors present in colData on the RHS}
 
 \item{sca}{SingleCellAssay object}
 
