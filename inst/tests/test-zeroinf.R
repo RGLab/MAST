@@ -29,8 +29,7 @@ test_that('zlm accepts expressions in formulae', {
     out <- zlm(y ~ cut(x2, 3) + x1, dat)
 })
 
-  fd@keep.names <- FALSE
-  fd2 <- fd[, 1:20]
+  fd2 <- fd[1:20,]
 
 if(require('lme4')){
     skip_on_cran()

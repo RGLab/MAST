@@ -19,7 +19,7 @@ bootsUncor <- aaply(bootsUncor, 3:4, function(mat){
 })
 bootsUncor <- aperm(bootsUncor, c(3,4,1,2))
 sets=list(A=1:5, B=3:10, C=15, D=1:5, E=12:14, F=15:24, G=12, H=13, I=14)
-sets[['notE']] <- setdiff(1:ncol(vb1), sets[['E']])
+sets[['notE']] <- setdiff(1:nrow(vb1), sets[['E']])
 gsea <- gseaAfterBoot(zf, bootsUncor, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))
 test_that('equal sets yield equal results', {
     expect_equal(gsea['A',,,],gsea['D',,,])

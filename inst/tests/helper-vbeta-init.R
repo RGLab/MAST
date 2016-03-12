@@ -3,8 +3,7 @@ library(testthat)
 geneid="Gene"
 primerid='Gene'
 measurement='et'
-idvars=c('Subject.ID', 'Chip.Number', 'Stim.Condition', 'Population', 'Well')
-ncells <- 'Number.of.Cells'
+idvars=c('Subject.ID', 'Chip.Number', 'Stim.Condition', 'Population', 'Well', 'Number.of.Cells')
 phenovars=NULL
 cellvars='Experiment.Number'
 featurevars=NULL
@@ -18,7 +17,7 @@ test_that("vbeta can be loaded",{
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
 
 
-fd <- FromFlatDF(vbeta, idvars=idvars, primerid=primerid, measurement=measurement,cellvars=cellvars,  ncells=ncells, geneid=geneid)
+fd <- FromFlatDF(vbeta, idvars=idvars, primerid=primerid, measurement=measurement,cellvars=cellvars, geneid=geneid)
 test_that('could create SingleCellAssay', {
     expect_that(fd, is_a('SingleCellAssay'))
 })

@@ -12,9 +12,9 @@ x <- rnorm(n, 10)
 y <- integer(0)
 MAST:::lrtest(w.x, w.y, x, y)
 
-fd.spl <- split(fd, 'Number.of.Cells')
 context('testing for equality between glm lrtest and two-sample')
 test_that('LRT and zlm are equivalent', {
+    fd.spl <- split(fd, 'Number.of.Cells')
     lrout <- lrt(fd.spl[[1]], 'Subject.ID', returnall=FALSE)
     zlm2 <- zlm.SingleCellAssay(~ Subject.ID, fd.spl[[1]], silent=FALSE)
     lrout2 <- lrTest(zlm2, 'Subject.ID')

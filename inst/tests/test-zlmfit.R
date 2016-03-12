@@ -1,5 +1,4 @@
-fd@keep.names <- FALSE
-fd2 <- fd[, 1:20]
+fd2 <- fd[1:20,]
 
 context("ZlmFit")
 test_that('zlm.SingleCellAssay works', {

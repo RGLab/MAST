@@ -65,7 +65,6 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
   if (missing(comparison) || !checkGroups(sca, comparison))
     stop("'comparison' missing or incorrect")
   ## what happens if comparision has length >1?
-  sca@keep.names <- FALSE
 
   if(!is.null(groups)){
     checkGroups(sca, groups)
