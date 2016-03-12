@@ -402,6 +402,7 @@ setMethod('split', signature(x='SingleCellAssay', f='character'),
               ## Split a SingleCellAssay by criteria
 ###f must be a character naming a cData variable
               if(length(f) != ncol(x)){
+                  if(any(notin <- !(f %in% names(colData(x))))) stop('Variable ', f[notin], ' not found in `colData(x)`')
                   f <- lapply(colData(x)[,f, drop=FALSE], as.factor)
               } else{
                   f <- as.factor(f)

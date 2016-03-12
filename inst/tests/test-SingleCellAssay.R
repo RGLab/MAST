@@ -219,6 +219,7 @@ test_that('Can split',{
         expect_equal(splat.byfieldname, splat)
         splat <- split(sc, c('Subject.ID', 'Population'))
         expect_that(splat, is_a('list'))
+        expect_error(split(sc, c('boogabooga', 'Population')), 'colData')
         splat <- split(sc, list(factor(cData(sc)$Subject.ID), factor(cData(sc)$Population)))
         expect_that(splat, is_a('list'))
   
