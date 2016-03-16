@@ -46,7 +46,7 @@ context('Log fold change calcs')
 test_that('log fold changes match zero-inflated regression', {
     zzsimple <<- zlm.SingleCellAssay( ~ Stim.Condition, fd2)
     lfc <- logFC(zzsimple)
-    expect_equal(nrow(lfc$logFC), ncol(zzsimple@sca))
+    expect_equal(nrow(lfc$logFC), nrow(zzsimple@sca))
     expect_true(all(lfc$varLogFC>0, na.rm=TRUE))
     zlfc <- lm(exprs(zzsimple@sca)~ .+0, data=as.data.frame(model.matrix(zzsimple@LMlike)))
     diff <- sum((coef(zlfc)[-1,]-t(lfc$logFC))^2, na.rm=TRUE)
@@ -61,7 +61,7 @@ test_that('log fold changes match zero-inflated regression', {
 test_that('log fold change via contrasts', {
     lfc <- hushWarning(logFC(zzinit, contrast1=Hypothesis('`(Intercept)`+PopulationVbetaResponsive + `PopulationVbetaResponsive:Stim.ConditionUnstim`')), 'Some levels contain symbols')
 
-    expect_equal(nrow(lfc$logFC), ncol(zzsimple@sca))
+    expect_equal(nrow(lfc$logFC), nrow(zzsimple@sca))
     expect_true(all(lfc$varLogFC>0, na.rm=TRUE))
     zlfc <- coef(lm(exprs(zzsimple@sca)~ .+0, data=as.data.frame(model.matrix(zzinit@LMlike))))
     lfc.lm <- colSums(zlfc[c('PopulationVbetaResponsive', '`PopulationVbetaResponsive:Stim.ConditionUnstim`'),])
@@ -77,7 +77,7 @@ test_that('summary works', {
     expect_is(zzs, 'data.table')
     expect_equivalent(unique(as.character(zzs$contrast)), c('(Intercept)', 'Stim.ConditionUnstim'))
     expect_equivalent(sort(unique(as.character(zzs$component))), c('C', 'D', 'logFC', 'S'))
-    expect_equal(nrow(zzs), ncol(fd2)*(2*4-1)) #primerid, contrast (no intercept for logFC), component
+    expect_equal(nrow(zzs), nrow(fd2)*(2*4-1)) #primerid, contrast (no intercept for logFC), component
     expect_output(print(zzs, n=2), c("Fitted zlm with top 2 genes per contrast:
 ( log fold change Z-score )
  primerid Stim.ConditionUnstim
