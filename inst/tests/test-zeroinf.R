@@ -119,11 +119,11 @@ test_that('No holes in output', {
     ee[1,2] <- NA
     exprs(fd2) <- ee
     zze <- zlm.SingleCellAssay(~Stim.Condition, fd2)
-    expect_equal(nrow(zze@coefD), ncol(fd2))
+    expect_equal(nrow(zze@coefD), nrow(fd2))
     expect_true(all(is.na(zze@coefD[2,])))
-    expect_equal(dim(zze@vcovD)[3], ncol(fd2))
+    expect_equal(dim(zze@vcovD)[3], nrow(fd2))
     expect_true(all(is.na(zze@vcovC[,,2])))
-    expect_equal(nrow(zze@dispersion), ncol(fd2))
+    expect_equal(nrow(zze@dispersion), nrow(fd2))
     expect_true(all(is.na(zze@dispersion[2,])))
 })
 
