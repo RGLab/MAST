@@ -44,6 +44,23 @@ test_that('Has dimnames', {
     expect_is(dimnames(fd)[[2]], 'character')
 })
 
+test_that('Has assay names', {
+    expect_equal(assayNames(fd), measurement)
+})
+
+
+test_that('Replace assay names', {
+    assayNames(fd) <- 'newet'
+    expect_equal(assayNames(fd), 'newet')
+})
+
+test_that("Add assay and replace assay names", {
+    assay(fd, 2) <- sign(assay(fd))
+    assayNames(fd, 2) <- 'new'
+    expect_equal(assayNames(fd), c(measurement, 'new'))
+})
+
+
 context('Test subsetting')
 test_that('Subset columns by index, name, boolean', {
     asubset <- c(5, 1, 4, 10, 15)
@@ -51,7 +68,7 @@ test_that('Subset columns by index, name, boolean', {
     expect_equal(mcols(ss), mcols(fd))
     expect_equal(colData(ss), colData(fd)[asubset,])
 
-    asubset <- c('Sub01 1 Stim(SEB) CD154+VbetaResponsive A07', 'Sub01 1 Stim(SEB) CD154+VbetaResponsive A01')
+    asubset <- c('Sub01 1 Stim(SEB) CD154+VbetaResponsive A07 1', 'Sub01 1 Stim(SEB) CD154+VbetaResponsive A01 1')
     ss <- fd[,asubset]
     expect_equal(mcols(ss), mcols(fd))
     expect_equal(colData(ss), colData(fd)[asubset,])
@@ -265,12 +282,11 @@ test_that('Can replace cData', {
     colData(fd) <- cDat
     expect_true('foo' %in% names(colData(fd)))
 
-    empty <- data.frame()
-    expect_error(colData(fd) <- empty, 'DataFrame')
+    empty <- DataFrame()
+    expect_error(colData(fd) <- empty, 'row.names')
 
     scramble <- cDat[sample(nrow(cDat)),]
-    expect_error(colData(fd) <- scramble, 'wellKey')
-
+    expect_error(colData(fd) <- scramble, 'row.names')
     expect_error(colData(fd) <- scramble[-1:-10,])
 })
 

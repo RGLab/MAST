@@ -43,6 +43,7 @@ FromMatrix <- function(exprsArray, cData, fData){
         dim(assays[[i]]) <- dim(assays[[i]])[-3] # only drop last index
         dimnames(assays[[i]]) <- dimnames(can$exprsArray)[-3]
     }
+    names(assays) <- dimnames(can$exprsArray)[3]
     obj <- SummarizedExperiment(assays=assays, colData=as(can$cData, 'DataFrame'))
     mcols(obj) <- as(can$fData, 'DataFrame')
     as(obj, 'SingleCellAssay')
@@ -364,6 +365,19 @@ setMethod('subset', 'SingleCellAssay', function(x, ...){
 })
 
 
+
+setReplaceMethod('assayNames', c('SingleCellAssay', 'character'), function(x, i, ..., value){
+    an <- assayNames(x)
+    if(is.null(an)) an <- rep(NA_character_, length(assays(x)))
+    if(missing(i)) i <- seq_along(assays(x))
+    if(any(i != floor(i))) stop("`i` must be an integer")
+    if(any(i<1 | i>length(assays(x)))) stop("`i` out of bounds")
+    an[i] <- value
+    names(assays(x, withDimnames=FALSE)) <- an
+    x
+})
+
+
 ##' @describeIn cData
 ##' @export
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
@@ -374,13 +388,14 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
 
 ##' @describeIn cData
 ##' @export
-setReplaceMethod("colData", "SingleCellAssay", function(x, value) {
-    if(!inherits(value, 'DataFrame')) stop('Replacement must inherit from `DataFrame`')
-    browser()
-    if(!('wellKey' %in% names(value))) stop('Replacement value must contain a "wellKey" column') #I guess??
-    if(any(row.names(value) != colnames(x))) stop('`row.names` in value mismatch colnames in `x`')
-    colData(sc) <- value
-    sc
+setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value) {
+    ## Only reason we over-ride
+    ## Parent doesn't make this test
+    if( (nrow(value) != ncol(x)) || any(row.names(value) != colnames(x))) stop('`row.names` in replacement value mismatch colnames in `x`')
+    ##I guess?? Do we want/need a wellKey column anymore?
+    if(!('wellKey' %in% names(value))) stop('Replacement value must contain a "wellKey" column')
+    
+    callNextMethod()
 })
 
 
