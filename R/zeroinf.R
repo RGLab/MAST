@@ -19,10 +19,15 @@ revealHook <- function(zlm){
 
 ##' @importFrom plyr laply
 collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
-    if(newLayerName %in% dimnames(sca)[[3]]) warning('Overwriting layer', newLayerName) else     sca <- addlayer(sca, newLayerName)
-    layer(sca) <- newLayerName
-    mat <- t(laply(revealHook(zlm), function(x) x))
-    exprs(sca) <- mat
+    if(any(newLayerBool <- assayNames(sca) %in% newLayerName)){
+        warning('Overwriting layer', newLayerName)
+        i <- which(newLayerBool)
+    } else{
+        i <- length(assays(sca))+1
+    }
+    mat <- laply(revealHook(zlm), function(x) x)
+    assay(sca, i) <- mat
+    assayNames(sca, i) <- newLayerName
     sca
 }
 
