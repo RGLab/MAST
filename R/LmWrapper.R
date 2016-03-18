@@ -37,6 +37,12 @@ setMethod('fit', signature=c(object='LMlike', response='vector'), function(objec
     fit(object, silent=silent, start=start, ...)
 })
 
+setMethod('initialize', 'LMlike', function(.Object, ..., design=data.frame()){
+    .Object@design <- as(design, 'data.frame')
+    .Object <- callNextMethod()
+    .Object
+})
+
 
 setMethod('coef', signature=c(object='LMlike'), function(object, which, singular=TRUE, ...){
     stopifnot(which %in% c('C', 'D'))
@@ -68,7 +74,7 @@ setMethod('update', signature=c(object='LMlike'), function(object, formula., des
         object@formula <- update.formula(object@formula, formula.)
     }
     if(!missing(design)){
-        object@design <- design
+        object@design <- as(design, 'data.frame')
     }
     model.matrix(object) <- model.matrix(object@formula, object@design, ...)
     object@fitC <- object@fitD <- numeric(0)

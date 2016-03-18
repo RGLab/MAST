@@ -87,7 +87,7 @@ setClass("SCASet",
 ##' @seealso vcov
 ##' @seealso logLik
 setClass('LMlike',
-         slots=c(design='DataFrame', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
+         slots=c(design='ANY', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
              ## this speeds construction of coef and vcov, which is a pinch point in zlm
              defaultCoef='numeric',
              defaultVcov='matrix'),
