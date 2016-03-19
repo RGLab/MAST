@@ -123,7 +123,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       min_per_bin = 50      ,
                                       absolute_min= 0.0     ,
                                       return_log  = TRUE,
-                                      adj = 1
+                                      adj = 1,
                                       G=2,                                                                            
 )
 {
