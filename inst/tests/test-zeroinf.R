@@ -59,22 +59,17 @@ test_that('zlm.SingleCellAssay works', {
 })
 
 test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
-    fd3 <- fd2[,1:5]
+    fd3 <- fd2[1:5,]
   ee <- exprs(fd3)
-  ee[,1] <- rnorm(nrow(fd3))+20
+  ee[,1] <- rnorm(ncol(fd3))+20
   exprs(fd3) <- ee
   zz <- zlm.SingleCellAssay( ~ Population, fd3)
   expect_that(zz, is_a('ZlmFit'))
   expect_less_than(zz@df.resid[1,'D'], 1)
 
-        if(suppressPackageStartupMessages(require(arm))){
-            zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
-            expect_that(zz3, is_a('ZlmFit'))
-            expect_true(zz3@converged[1,'D'])
-            detach('package:arm')
-        } else{
-            message('install arm')
-        }
+    zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
+    expect_that(zz3, is_a('ZlmFit'))
+    expect_true(zz3@converged[1,'D'])
 
     w.resp <- which(cData(fd3)$Population=='VbetaResponsive')
     ee[,1] <- 0

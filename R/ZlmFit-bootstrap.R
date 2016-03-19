@@ -19,7 +19,7 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
     manyvc <- parallel::parSapply(cl,1:R, function(i,...){
         s <- sample(N, replace = TRUE)
         newsca <- sca[s, ]
-        LMlike <- update(LMlike, design=cData(newsca))
+        LMlike <- update(LMlike, design=colData(newsca))
         zlm.SingleCellAssay(sca = newsca, LMlike = LMlike, onlyCoef=TRUE)
     })
   
@@ -44,7 +44,7 @@ bootVcov1 <- function(zlmfit, R=99){
     manyvc <- raply(R, {
         s <- sample(N, replace=TRUE)
         newsca <- sca[s,]
-        LMlike <- update(LMlike, design=cData(newsca))
+        LMlike <- update(LMlike, design=colData(newsca))
         zlm.SingleCellAssay(sca=newsca, LMlike=LMlike, onlyCoef=TRUE)
     })
 
