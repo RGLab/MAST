@@ -298,8 +298,10 @@ FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellva
     FromMatrix(dl, cell.adf, f.adf)
 }
 
+#'@export
+#'@rdname FromFlatDF
 FluidigmAssay <- SingleCellAssay <- function(...){
-    warning("Deprecated: Use FromFlatDF")
+    .Deprecated("FromFlatDF")
     FromFlatDF(...)
 }
 

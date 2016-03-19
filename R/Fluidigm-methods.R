@@ -98,14 +98,14 @@ apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 ##' @importFrom plyr is.formula
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
-  if(!(is(singleCellRef, 'FluidigmAssay') && is(singleCellcomp, 'FluidigmAssay'))){
+  if(!(is(singleCellRef, 'SingleCellAssay') && is(singleCellcomp, 'SingleCellAssay'))){
     stop("singleCellRef and singleCellComp should be SingleCellAssay objects")
   }
   scL <- list(singleCellRef, singleCellcomp)
   castL <- list()
 
   for(i in seq_along(scL)){
-    scL[[i]]@keep.names <- FALSE
+  #  scL[[i]]@keep.names <- FALSE
     checkGroups(scL[[i]], groups)
     terms1 <- union(groups, "ncells")
     lhs1 <- paste(c(terms1, "primerid"), collapse="+")
@@ -232,7 +232,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   filtered <- do.call(internalfilter, c(list(exprs), filt_control))
   if(apply_filter && filt_control$filter){
     anyfilter <- apply(filtered, 1, any)
-    scout <- sc[[!anyfilter]]
+    scout <- sc[,anyfilter]
   } else{
    scout <- filtered
   }

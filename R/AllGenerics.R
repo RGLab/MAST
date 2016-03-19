@@ -141,6 +141,8 @@ NULL
 NULL
 
 ##' @rdname subset
+##' @title subset
+##' @aliases subset
 ##' @export
 setGeneric('subset')
 

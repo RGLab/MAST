@@ -127,8 +127,8 @@ sub2 <- subset(vbeta.fa, Well=='A01')
 show(sub2)
 sub3 <- vbeta.fa[1:10,6:10]
 show(sub3)
-cellData(sub3)
-featureData(sub3)
+colData(sub3)
+mcols(sub3)
 @
 The cellData and featureData \texttt{AnnotatedDataFrames} are subset
 accordingly as well.
@@ -143,20 +143,11 @@ show(sp1)
 @
 The splitting variable can either be a character vector naming column(s) of the \sca, or may be a \texttt{factor} or \texttt{list} of \texttt{factor}s.
 
-It's possible to combine \sca objects or an \texttt{SCASet} with the \texttt{combine} method.
+It's possible to combine \sca objects or an \texttt{SCASet} with the \texttt{cbind} method.
 <<combine,warning=FALSE, echo=-1>>=
-##unloadNamespace("gplots")
-combine(x=sp1[[1]],y=sp1[[2]])
-combine(sp1)
+cbind(sp1[[1]],sp1[[2]])
 @ 
 
-\subsubsection{Modifying the cellData or featureData}
-Combine also can take a \texttt{vector} or \texttt{data.frame} or \texttt{AnnotatedDataFrame} and append it to the cellData or featureData.  The number of rows must match the number of wells or number of features, and determines to which component the argument will be appended.
-<<combineDF>>=
-newData <- data.frame(otherVariable=rnorm(nrow(vbeta.fa)))
-vbetaWithNewData <- combine(vbeta.fa, newData)
-head(cData(vbetaWithNewData))
-@
 
 \subsection{Filtering}
 We can filter and perform some significance tests on the \sca.
