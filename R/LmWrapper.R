@@ -15,19 +15,18 @@ setMethod('show',  signature=c(object='LMlike'), function(object){
     cat(class(object), ':', nrow(object@design), ' cases\n', sep='')
 })
 
-.fit <- function(object, EPS=.01){
+.fit <- function(object){
     frame <- sys.frame(-1)
+    positive <- object@response>0
     object@fitted <- c(C=FALSE, D=FALSE)
-    positive <- (object@response>EPS)
     assign('pos', positive, pos=frame)
     assign('object', object, pos=frame)
+
     return(any(positive))
 }
 
-setMethod('fit', signature=c(object='LMlike', response='numeric'), function(object, response, weights=NULL, silent=TRUE, quick=FALSE, ...){
+setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, quick=FALSE, ...){
     object@response <- response
-    if(is.null(weights)) weights <- (response>0)*1
-    object@weights <- weights
     dargs <- list(...)
     if('fitArgsC' %in% names(dargs)) object@fitArgsC <- fitArgsC
     if('fitArgsD' %in% names(dargs)) object@fitArgsD <- fitArgsD
@@ -35,7 +34,7 @@ setMethod('fit', signature=c(object='LMlike', response='numeric'), function(obje
     object@fitC <- NULL
     object@fitD <- NULL
     if(!quick) validObject(object)      #save time in inner loop in zlm.SingleCellAssay
-    fit(object, silent=silent, ...)
+    fit(object, silent=silent, start=start, ...)
 })
 
 

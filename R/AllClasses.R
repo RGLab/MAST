@@ -225,15 +225,10 @@ setClass("SCASet",
 ##' \item{fitC}{The continuous fit}
 ##' \item{fitD}{The discrete fit}
 ##' \item{response}{The left hand side of the regression}
-##' \item{weights}{(Optional) weights giving the probability that an observation comes from the Normal (continuous) component.}
 ##' \item{fitted}{A \code{logical} with components "C" and "D", TRUE if the respective component has converge}
 ##' \item{formula}{A \code{formula} for the regression}
 ##' \item{fitArgsC}{}
 ##' \item{fitArgsD}{Both \code{list}s giving arguments that will be passed to the fitter (such as convergence criteria or case weights)}
-##' \item{priorVar}{}
-##' \item{priorDOF}{shrinkage weights for the variance of the continuous component}
-##' \item{defaultCoef}{}
-##' \item{defaultVcov}{Used internally to speed calls to vcov/coef}
 ##' }
 ##' @seealso coef
 ##' @seealso lrTest
@@ -241,7 +236,7 @@ setClass("SCASet",
 ##' @seealso vcov
 ##' @seealso logLik
 setClass('LMlike',
-         slots=c(design='data.frame', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', weights='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
+         slots=c(design='data.frame', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
              ## this speeds construction of coef and vcov, which is a pinch point in zlm
              defaultCoef='numeric',
              defaultVcov='matrix'),
@@ -256,7 +251,10 @@ setClass('LMlike',
 
 ##' Wrapper for regular glm/lm
 ##'
-setClass('GLMlike', contains='LMlike')
+##' @slot weightFun function to map expression values to probabilities of expression
+setClass('GLMlike', contains='LMlike', slots=c(weightFun='function'), prototype=list(weightFun=function(x){
+    ifelse(x>0, 1, 0)
+}))
 
 ##' Initialize a prior to be used a prior for BayeGLMlike/BayesGLMlike2
 ##'

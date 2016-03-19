@@ -30,7 +30,7 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
 
 ##
 .glmDOF <- function(object, pos){
-    npos <- sum(object@weights)
+    npos <- sum(pos)
     ## bayesglm doesn't correctly set the residual DOF, and this won't hurt for regular glm
     object@fitC$df.residual <- max(npos - object@fitC$rank, 0)
     ## conservative estimate of residual df
@@ -79,12 +79,8 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
 
     fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
-
-
-    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos],  weights=object@weights[pos]), fitArgsC))
-    object@fitD <- hushWarning(
-        do.call(glm.fit, c(list(x=object@modelMatrix, y=object@weights, family=binomial()), fitArgsD)),
-        fixed("non-integer #successes in a binomial glm"))    
+    object@fitC <- do.call(glm.fit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos], weights=object@weightFun(object@response[pos])), fitArgsC))
+    object@fitD <- do.call(glm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
     ## needed so that residuals dispatches more correctly
     class(object@fitD) <- c('glm', class(object@fitD))
 
