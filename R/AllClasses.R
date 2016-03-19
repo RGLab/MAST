@@ -27,7 +27,9 @@ Mandatory_Featurevars <- NULL#c('primerid')
 Mandatory_Cellvars <- NULL#c('wellKey')
 
 ##' @import SummarizedExperiment
+##' @importFrom GenomicRanges colData
 ##' @import S4Vectors
+##' @importFrom S4Vectors mcols
 setClass('SingleCellAssay', contains='SummarizedExperiment0')
 
 setClass('Mapping', contains='list')
