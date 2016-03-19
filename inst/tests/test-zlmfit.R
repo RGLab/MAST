@@ -77,7 +77,7 @@ test_that('summary works', {
     zzs <- summary(zzsimple, logFC=TRUE, doLRT=FALSE)
     expect_is(zzs, 'data.table')
     expect_equivalent(unique(as.character(zzs$contrast)), c('(Intercept)', 'Stim.ConditionUnstim'))
-    expect_equivalent(sort(unique(as.character(zzs$component))), c('C', 'D', 'logFC', 'S'))
+    expect_true(all(c('C', 'D', 'S', 'logFC') %in% as.character(zzs$component)))
     expect_equal(nrow(zzs), ncol(fd2)*(2*4-1)) #primerid, contrast (no intercept for logFC), component
     expect_output(print(zzs, n=2), c("Fitted zlm with top 2 genes per contrast:
 ( log fold change Z-score )

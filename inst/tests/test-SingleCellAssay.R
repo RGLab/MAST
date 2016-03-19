@@ -98,7 +98,7 @@ test_that('uniqueModNA works on multiple columns', {
     ## Now should return every row, since every row is unique
     naframe$extra <- 1:nrow(naframe)
     setkeyv(naframe, colnames(naframe))
-    expect_equal(unique(naframe), MAST:::uniqueModNA(naframe, exclude='var'))
+    expect_equivalent(unique(naframe), MAST:::uniqueModNA(naframe, exclude='var'))
 })
 sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
