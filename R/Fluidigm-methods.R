@@ -209,18 +209,15 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 
   if (!is.null(groups)) {
     checkGroups(sc, groups)
-      scL <- split(sc, groups)
-      lapp <- lapply(scL, filter, groups=NULL, filt_control=filt_control, apply_filter=apply_filter)
+    scL <- split(sc, groups)
+    lapp <- lapply(scL, filter, groups=NULL, filt_control=filt_control, apply_filter=apply_filter)
       ## Do various things with lapp:
       if(apply_filter && filt_control$filter){
         ## list of SingleCellAssays
-        out <- combine(as(lapp, 'SCASet'))
-        #don't need to do this anymore since data.tables preserve order and have nice names
+        out <- do.call(cbind, lapp)
       } else if(filt_control$filter){
         out <- do.call(rbind, lapp)     #Fix order, argh
-        scKey <- split(getwellKey(sc), cData(sc)[,groups])
-        scKeybound <- do.call(c, scKey)
-        out <- out[match(getwellKey(sc), scKeybound),] #test this
+        out <- out[match(getwellKey(sc), row.names(out)),] #test this
       } else{                           #I'd reckon it's an unapplied filterset, we'll just keep it as a list
         out <- lapp
       }
@@ -232,7 +229,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
   filtered <- do.call(internalfilter, c(list(exprs), filt_control))
   if(apply_filter && filt_control$filter){
     anyfilter <- apply(filtered, 1, any)
-    scout <- sc[[!anyfilter]]
+    scout <- sc[,!anyfilter]
   } else{
    scout <- filtered
   }
