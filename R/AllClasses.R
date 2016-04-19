@@ -23,31 +23,19 @@ NULL
 ##' @seealso \code{\link{vbeta}}, \code{\link{FluidigmAssay}}
 NULL
 
-Mandatory_Featurevars <- NULL#c('primerid')
-Mandatory_Cellvars <- NULL#c('wellKey')
+Mandatory_Featurevars <- character()
+Mandatory_Cellvars <- character()
 
 ##' @import SummarizedExperiment
 ##' @import S4Vectors
-setClass('SingleCellAssay', contains='SummarizedExperiment0')
+setClass('SingleCellAssay', contains='SummarizedExperiment0',
+         slots=list(cmap='character', fmap='character'),
+         prototype=list(cmap=Mandatory_Cellvars,
+                        fmap=Mandatory_Featurevars))
 
-setClass('Mapping', contains='list')
-setMethod('initialize', 'Mapping', function(.Object, keys=NULL, values=NULL, ...){
-  .Object <- callNextMethod(.Object, ...)
-  if(!is.null(keys)){
-    if(!is.null(values)) values <- rep(NA, length(keys))
-    if(!is.character(keys)) stop('keys must be character')
-    .Object@.Data <- vector(mode='list', length=length(keys))
-    names(.Object@.Data) <- keys
-    for(i in seq_along(.Object@.Data)) .Object@.Data[[i]] <- values[[i]]
-  }
-  
-  .Object
-})
+Fluidigm_Cellvars <- c(Mandatory_Cellvars, ncells='ncells')
+setClass('FluidigmAssay', contains='SingleCellAssay', prototype=list(cmap=Fluidigm_Cellvars))
 
-##' @describeIn show
-setMethod('show', 'Mapping', function(object){
-  cat(class(object), ' containing : ', names(object), '\n')
-})
 
 
 ##'SCASet is a set of SingleCellAssay objects or objects of its subclasses (i.e. FluidigmAssay)

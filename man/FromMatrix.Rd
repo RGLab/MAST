@@ -4,7 +4,7 @@
 \alias{FromMatrix}
 \title{Construct a SingleCellAssay from a matrix or array of expression}
 \usage{
-FromMatrix(exprsArray, cData, fData)
+FromMatrix(exprsArray, cData, fData, class = "SingleCellAssay")
 }
 \arguments{
 \item{exprsArray}{matrix or array, columns are cells, rows are genes}
@@ -12,13 +12,15 @@ FromMatrix(exprsArray, cData, fData)
 \item{cData}{cellData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{ncol(exprsArray)}}
 
 \item{fData}{featureData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{nrow(exprsArray)}.}
+
+\item{class}{desired subclass of object.  Default \code{SingleCellAssay}.}
 }
 \value{
 an object of class \code{class}
 }
 \description{
 If the gene expression measurements are already in a rectangular form,
-then this function allows an easy way to construct a SummarizedExperiment object while
+then this function allows an easy way to construct a SingleCellAssay object while
 still doing some sanity checking of inputs.
 }
 \examples{

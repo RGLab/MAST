@@ -3,10 +3,11 @@
 \name{FromFlatDF}
 \alias{FromFlatDF}
 \alias{SingleCellAssay}
-\title{Construct a SummarizedExperiment from a `flat` (melted) data.frame/data.table}
+\title{Construct a SingleCellAssay (or derived subclass) from a `flat` (melted) data.frame/data.table}
 \usage{
 FromFlatDF(dataframe, idvars, primerid, measurement, id = numeric(0),
-  cellvars = NULL, featurevars = NULL, phenovars = NULL, ...)
+  cellvars = NULL, featurevars = NULL, phenovars = NULL,
+  class = "SingleCellAssay", ...)
 }
 \arguments{
 \item{dataframe}{A 'flattened' \code{data.frame} or \code{data.table} containing columns giving cell and feature identifiers and  a measurement column}
@@ -25,16 +26,15 @@ FromFlatDF(dataframe, idvars, primerid, measurement, id = numeric(0),
 
 \item{phenovars}{Character vector naming columns containing additional phenotype metadata}
 
+\item{class}{character providing desired subclass to construct.}
+
 \item{...}{additional arguments are ignored}
 }
 \value{
-SummarizedExperiment object
-}
-\description{
-Construct a SummarizedExperiment from a `flat` (melted) data.frame/data.table
+SingleCellAssay, or derived, object
 }
 \examples{
-## See FluidigmAssay for examples
+## See FluidigmAssay for more examples
 ##' @examples
 data(vbeta)
 colnames(vbeta)

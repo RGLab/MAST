@@ -14,8 +14,9 @@ NULL
 ##' Construct a SingleCellAssay from a matrix or array of expression
 ##'
 ##' If the gene expression measurements are already in a rectangular form,
-##' then this function allows an easy way to construct a SummarizedExperiment object while
+##' then this function allows an easy way to construct a SingleCellAssay object while
 ##' still doing some sanity checking of inputs.
+##' @param class desired subclass of object.  Default \code{SingleCellAssay}.
 ##' @param exprsArray matrix or array, columns are cells, rows are genes
 ##' @param cData cellData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{ncol(exprsArray)}
 ##' @param fData featureData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{nrow(exprsArray)}.
@@ -34,7 +35,7 @@ NULL
 ##' cData$ncells <- 1
 ##' fd <- FromMatrix(mat, cData, fData)
 ##' stopifnot(inherits(fd, 'SingleCellAssay'))
-FromMatrix <- function(exprsArray, cData, fData){
+FromMatrix <- function(exprsArray, cData, fData, class='SingleCellAssay'){
     can <- checkArrayNames(exprsArray, cData, fData)
     nslice <- dim(can$exprsArray)[3]
     assays <- vector('list', length=nslice)
@@ -46,7 +47,7 @@ FromMatrix <- function(exprsArray, cData, fData){
     names(assays) <- dimnames(can$exprsArray)[3]
     obj <- SummarizedExperiment(assays=assays, colData=as(can$cData, 'DataFrame'))
     mcols(obj) <- as(can$fData, 'DataFrame')
-    as(obj, 'SingleCellAssay')
+    as(obj, class)
 }
 
 as3dArray <- function(matOrArray){
@@ -182,17 +183,14 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
   bothMap <- c(cmap, fmap)
   for(nm in names(bothMap)){
     if(nm %in% cn_df && bothMap[[nm]] != nm){
+        warning("renaming column ", nm)
       setnames(df,cn_df,make.unique(c(nm, colnames(df)))[-1])
-    warning("renaming column ", nm)
     }
       if(!all(bothMap[[nm]] %in% names(df))){
         stop('could not find column named ', bothMap[[nm]], ' in dataframe')
       }
-    rn <- nm
-    names(rn) <- as.character(bothMap[[nm]])
-    if(keep.names){
-        df[,eval(rn):=get(names(rn))]
-    } else{ setnames(df, names(rn),nm)}
+    set(df, j=nm, value=df[,bothMap[[nm]], with=FALSE])
+    #setnames(df, bothMap[[nm]],nm)
   }
 
   wk <- do.call(paste, df[,idvars,with=FALSE])
@@ -237,8 +235,10 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
   list(df=(df), rn=unique(df$wellKey), cn=unique(df$primerid), fmap=fmap, cmap=cmap)
 }
 
-##' Construct a SummarizedExperiment from a `flat` (melted) data.frame/data.table
+##' Construct a SingleCellAssay (or derived subclass) from a `flat` (melted) data.frame/data.table
 ##'
+##' SingleCellAssay are a generic container for such data and are simple wrappers around SummarizedExperiment objects.
+##' Subclasses exist that embue the container with additional attributes, eg \link{\codeFluidigmAssay}}.
 ##' @param dataframe A 'flattened' \code{data.frame} or \code{data.table} containing columns giving cell and feature identifiers and  a measurement column
 ##' @param idvars character vector naming columns that uniquely identify a cell
 ##' @param primerid character vector of length 1 that names the column that identifies what feature (i.e. gene) was measured
@@ -247,11 +247,12 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ##' @param cellvars Character vector naming columns containing additional cellular metadata
 ##' @param featurevars Character vector naming columns containing additional feature metadata
 ##' @param phenovars Character vector naming columns containing additional phenotype metadata
+##' @param class character providing desired subclass to construct.
 ##' @param ... additional arguments are ignored
 ##' @export
 ##' @aliases SingleCellAssay
 ##' @examples
-##' ## See FluidigmAssay for examples
+##' ## See FluidigmAssay for more examples
 ##' ##' @examples
 ##' data(vbeta)
 ##' colnames(vbeta)
@@ -267,8 +268,8 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ##' table(cData(vbeta.fa)$Subject.ID)
 ##' vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
 ##' show(vbeta.sub)
-##' @return SummarizedExperiment object
-FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
+##' @return SingleCellAssay, or derived, object
+FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, class='SingleCellAssay', ...){
     if(missing(dataframe) || missing(idvars) || missing(primerid) || missing(measurement)){
         stop("Must supply all of 'idvars', 'primerid', 'measurement'  and 'dataframe'")
     }
@@ -278,16 +279,28 @@ FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellva
     setkeyv(dataframe, colnames(dataframe))
     ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
     ## keeping support for "mappings" in case we change our mind
-    fmap <- 'primerid'
-    cmap <- 'wellKey'
+
+    defaultcls <- new(class)
+    fmap <- defaultcls@fmap
+    cmap <- defaultcls@cmap
+    dots <- list(...)
+    for(a in names(dots)){
+        if(a %in% names(fmap)){
+            fmap[a] <- dots[[a]]
+        }
+        if(a %in% names(cmap)){
+            cmap[a] <- dots[[a]]
+        }
+    }
+    
     fixed <- fixdf(dataframe, idvars, primerid, measurement,
                    cmap=cmap, fmap=fmap)
     dl <- array(as.matrix(fixed$df[,measurement, with=FALSE]),
                 dim=c(length(fixed$rn), length(fixed$cn), length(measurement)),
                 dimnames=list(wellKey=fixed$rn, primerid=fixed$cn, layer=measurement))
     dl <- aperm(dl, c(2, 1, 3))
-    cellvars <- unique(c(cellvars, cmap, idvars, phenovars))
-    featurevars <- unique(c(fmap, primerid, featurevars))
+    cellvars <- unique(c(cellvars, names(fixed$cmap), idvars, phenovars, 'wellKey'))
+    featurevars <- unique(c(names(fixed$fmap), primerid, featurevars, 'primerid'))
     check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
     cell.adf<-DataFrame(uniqueModNA(fixed$df[,cellvars,with=FALSE], 'wellKey') )
     row.names(cell.adf) <- unique(fixed$df$wellKey)
@@ -295,7 +308,7 @@ FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellva
     ##need a phenokey into the melted data frame for this to make sense
     f.adf <- DataFrame(uniqueModNA(fixed$df[,featurevars, with=FALSE], 'primerid'))
     row.names(f.adf) <- unique(fixed$df$primerid)
-    FromMatrix(dl, cell.adf, f.adf)
+    FromMatrix(dl, cell.adf, f.adf, class)
 }
 
 FluidigmAssay <- SingleCellAssay <- function(...){
