@@ -1,5 +1,5 @@
 ## Methods for LMlike
-##' @describeIn show
+##' @describeIn show print info on LMlike objects
 ##' @export
 setMethod('show',  signature=c(object='LMlike'), function(object){
     if(all(object@fitted)){

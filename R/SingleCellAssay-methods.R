@@ -1,14 +1,11 @@
-##' Methods for analysing single cell assay data
+##' MAST: Model-based Analysis of Single- cell Transcriptomics
+##'
+##' Methods for analysing single cell assay data using hurdle models.
 ##'
 ##' This packages provides data structures and functions for statistical analysis of single-cell assay data such as Fluidigm single cell gene expression assays.
-##'
-##' @name MAST-package
-##' @aliases MAST-package
-##' @docType package
-##' @title "Tools for Single Cell Assay Analysis"
-##' @keywords package
-##' @rdname MAST-package
-NULL
+##' @references Finak, et al.  MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data.  Genome Biology (2015).
+"_PACKAGE"
+
 
 
 ##' Construct a SingleCellAssay from a matrix or array of expression
@@ -357,8 +354,6 @@ uniqueModNA <- function(df, include){
 setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
 
 
-
-##' @describeIn cData
 ##' @export
 setMethod('cData', 'SingleCellAssay', function(sc){
     warning('Deprecated: use colData')
@@ -390,8 +385,6 @@ setReplaceMethod('assayNames', c('SingleCellAssay', 'character'), function(x, i,
     x
 })
 
-
-##' @describeIn cData
 ##' @export
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
     warning('Deprecated: use colData<-')
@@ -399,7 +392,6 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
     sc
 })
 
-##' @describeIn cData
 ##' @export
 setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value) {
     ## Only reason we over-ride

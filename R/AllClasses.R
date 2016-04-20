@@ -154,20 +154,20 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' An S4 class to hold the output of a call to zlm
 ##'
 ##' This holds output from a call to zlm.SingleCellAssay.  Many methods are defined to operate on it.  See below.
-##' @slot coefC
-##' @slot coefD matrices of coefficients
-##' @slot vcovC
+##' @slot coefC matrix of continuous coefficients
+##' @slot coefD matrix of discrete coefficients
+##' @slot vcovC array of variance/covariance matrices for coefficients
 ##' @slot vcovD array of variance/covariance matrices for coefficients
 ##' @slot LMlike the LmWrapper object used
 ##' @slot sca the \code{SingleCellAssay} object used
-##' @slot deviance
-##' @slot loglik
-##' @slot df.null
-##' @slot df.resid
-##' @slot dispersion
-##' @slot dispersionNoShrink
-##' @slot priorDOF
-##' @slot priorVar
+##' @slot deviance matrix of deviances
+##' @slot loglik matrix of loglikelihoods
+##' @slot df.null matrix of null (intercept only) degrees of freedom
+##' @slot df.resid matrix of residual DOF
+##' @slot dispersion matrix of dispersions (after shrinkage)
+##' @slot dispersionNoShrink matrix of dispersion (before shrinkage)
+##' @slot priorDOF shrinkage weight in terms of number of psuedo-obs
+##' @slot priorVar shrinkage target
 ##' @slot converged output that may optionally be set by the underlying modeling function
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
 ##' @seealso zlm.SingleCellAssay summary,ZlmFit-method

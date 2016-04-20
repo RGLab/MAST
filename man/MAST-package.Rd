@@ -2,13 +2,16 @@
 % Please edit documentation in R/SingleCellAssay-methods.R
 \docType{package}
 \name{MAST-package}
+\alias{MAST}
 \alias{MAST-package}
-\title{"Tools for Single Cell Assay Analysis"}
+\title{MAST: Model-based Analysis of Single- cell Transcriptomics}
 \description{
-Methods for analysing single cell assay data
+Methods for analysing single cell assay data using hurdle models.
 }
 \details{
 This packages provides data structures and functions for statistical analysis of single-cell assay data such as Fluidigm single cell gene expression assays.
 }
-\keyword{package}
+\references{
+Finak, et al.  MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data.  Genome Biology (2015).
+}
 

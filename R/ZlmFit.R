@@ -123,7 +123,7 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), fu
     waldTest(object, h@contrastMatrix)
 })
 
-##' @describeIn show
+##' @describeIn show print info on ZlmFit
 setMethod('show', signature=c(object='ZlmFit'), function(object){
     cat('Fitted zlm on', ncol(object@sca), 'genes and', nrow(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
 })
