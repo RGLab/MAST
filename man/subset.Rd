@@ -2,6 +2,7 @@
 % Please edit documentation in R/AllGenerics.R
 \name{subset}
 \alias{subset}
+\title{subset}
 \usage{
 subset(x, ...)
 }
