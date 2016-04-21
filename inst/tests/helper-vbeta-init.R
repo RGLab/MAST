@@ -9,8 +9,12 @@ cellvars='Experiment.Number'
 featurevars=NULL
 ncells <- 'Number.of.Cells'
 
-##Tests depending on vbeta
+## Currently needed because devtools 1.11.0 has broken data()
+## See https://github.com/mlr-org/mlr/pull/835
+load(system.file('data/vbeta.RData', package='MAST'))
 data(vbeta)
+
+##Tests depending on vbeta
 test_that("vbeta can be loaded",{
   expect_that(vbeta,is_a("data.frame"))
 })
