@@ -143,8 +143,8 @@ test_that("Completes incomplete data", {
 
   incomplete <- rbind(melt(fd[1:20,1:20], value.name=measurement),
                       melt(fd[21:50, 11:30], value.name=measurement)) #equally sized primerid blocks
-  fd.incomplete <- FromFlatDF(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid, keep.names=TRUE)
-  expect_message(FromFlatDF(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid, keep.names=TRUE), 'incomplete')
+  fd.incomplete <- FromFlatDF(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid)
+  expect_message(FromFlatDF(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid), 'incomplete')
   expect_equal(nrow(fd.incomplete), 50)
   expect_equal(ncol(fd.incomplete), 30)
   expect_true(any(is.na(assay(fd.incomplete))))
