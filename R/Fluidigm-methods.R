@@ -105,28 +105,27 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
   castL <- list()
 
   for(i in seq_along(scL)){
-    scL[[i]]@keep.names <- FALSE
     checkGroups(scL[[i]], groups)
     terms1 <- union(groups, "ncells")
     lhs1 <- paste(c(terms1, "primerid"), collapse="+")
     firstForm <- formula(sprintf("%s ~.", lhs1))
     ##should look like Patient.ID + ... + n.cells ~ PrimerID
-    m <- melt(scL[[i]])
-    tmp <- cast(m, firstForm, fun.aggregate=fun.natural, value=getMapping(scL[[i]],"value")[[1]])
+    m <- as(scL[[i]], 'data.table')
+    tmp <- cast(m, firstForm, fun.aggregate=fun.natural)
     ##exponential average per gene, scaled by number of cells
     if(class(m[['ncells']]) == 'factor'){
-      warning("ncells is a factor rather than numeric.\n I'll continue, but this may cause problems down the line")
+        warning("ncells is a factor rather than numeric.\n I'll continue, but this may cause problems down the line")
+        tmp[['ncells']] <- as.numeric(as.character(tmp[["ncells"]]))
     }
-    tmp["(all)"] <- tmp["(all)"]/as.numeric(as.character(tmp[["ncells"]]))
+    tmp[["(all)"]] <- tmp[["(all)"]]/tmp[['ncells']]
     rhs2 <- union(groups, "primerid")
     terms2 <- sprintf("%s ~ .", paste(rhs2, collapse="+"))
     secondForm <- formula(terms2)
     nexp = cast(m, secondForm, fun.aggregate=function(x){sum(x>0)}, value="value")
     #put back on Et scale. fun.cycle adds 1 so -Inf becomes 0 on natural scale
     castL[[i]] <- cast(melt(tmp), secondForm, fun.aggregate=fun.cycle)
-    renamestr <- c('primerid', 'et')
-    names(renamestr) <- c("primerid", '(all)')
-    castL[[i]] <- rename(castL[[i]], renamestr)
+    renamestr <- c('(all)'='et')
+    castL[[i]] <- plyr::rename(castL[[i]], renamestr)
     castL[[i]] <- cbind(castL[[i]], nexp=nexp$`(all)`)
   }
   concord <- merge(castL[[1]], castL[[2]], by=c(groups, 'primerid'), suffixes=c(".ref", ".comp"), all=T)
