@@ -1,47 +1,41 @@
-## ----long-example,warning=FALSE, echo=-c(1,2,3, 4)-----------------------
+## ----long-example,warning=FALSE, echo=-c(1,2,3, 4, 5)--------------------
 suppressPackageStartupMessages(library(Biobase))
 library(knitr)
+library(SummarizedExperiment)
 opts_chunk$set(error=FALSE)
-#load_all('..')
 library(MAST)
+#load_all('..')
 library(data.table)
 library(plyr)
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
-vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
+vbeta.fa <- FromFlatDF(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
                           primerid='Gene', measurement='Et', ncells='Number.of.Cells',
                           geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'),
-                          phenovars=c('Stim.Condition','Time'), id='vbeta all')
+                          phenovars=c('Stim.Condition','Time'), id='vbeta all', class='FluidigmAssay')
 show(vbeta.fa)
 
 ## ----examineMeta---------------------------------------------------------
-head(fData(vbeta.fa),3)
-head(cData(vbeta.fa),3)
+head(mcols(vbeta.fa),3)
+head(colData(vbeta.fa),3)
 
 ## ----subsets,warning=FALSE-----------------------------------------------
-sub1 <- vbeta.fa[1:10,]
+sub1 <- vbeta.fa[,1:10]
 show(sub1)
 sub2 <- subset(vbeta.fa, Well=='A01')
 show(sub2)
-sub3 <- vbeta.fa[1:10,6:10]
+sub3 <- vbeta.fa[6:10, 1:10]
 show(sub3)
-cellData(sub3)
-featureData(sub3)
+colData(sub3)
+mcols(sub3)
 
 ## ----split,warning=FALSE-------------------------------------------------
 sp1 <- split(vbeta.fa, 'Subject.ID')
 show(sp1)
 
 ## ----combine,warning=FALSE, echo=-1--------------------------------------
-##unloadNamespace("gplots")
-combine(x=sp1[[1]],y=sp1[[2]])
-combine(sp1)
-
-## ----combineDF-----------------------------------------------------------
-newData <- data.frame(otherVariable=rnorm(nrow(vbeta.fa)))
-vbetaWithNewData <- combine(vbeta.fa, newData)
-head(cData(vbetaWithNewData))
+cbind(sp1[[1]],sp1[[2]])
 
 ## ----splitbyncells,warning=FALSE, fig.height=4, fig.width=4--------------
 vbeta.split<-split(vbeta.fa,"Number.of.Cells")
@@ -65,9 +59,8 @@ burdenOfFiltering(vbeta.fa, 'ncells', byGroup=TRUE)
 ## ----zlmArgs-------------------------------------------------------------
 vbeta.1 <- subset(vbeta.fa, ncells==1)
 ## Consider the first 20 genes
-vbeta.1 <- vbeta.1[,1:20] 
-layername(vbeta.1)
-head(cData(vbeta.1))
+vbeta.1 <- vbeta.1[1:20,] 
+head(colData(vbeta.1))
 
 ## ----zlmExample, warning=FALSE, message=FALSE, fig.width=6, fig.height=6----
 library(ggplot2)
