@@ -1,14 +1,13 @@
-#' Filter an RNASeqAssay
-#'
-#' Use the percentage of library per gene CDF type plots
-#' to pick out outliers using the 1.5*IQR
-#' threshold
-#' @rdname RNASeqAssay-methods
-#' @param assay a \code{RNASeqAssay}
-#' @param plot a \code{logical} indicating whether plots should be generated
-#' @return a filtered RNASeqAssay
-#' @export
-outlierDetection<-function(assay,plot=TRUE){
+##' Filter an RNASeqAssay
+##'
+##' Use the percentage of library per gene CDF type plots
+##' to pick out outliers using the \code{1.5*IQR}
+##' threshold
+##' @param assay a \code{RNASeqAssay}
+##' @param plot a \code{logical} indicating whether plots should be generated
+##' @export
+##' @return a filtered RNASeqAssay
+outlierDetection <- function(assay,plot=TRUE){
   if(!is(assay,"RNASeqAssay")){
     stop(sprintf("assay must be an RNASeqAssay, but found %s",class(assay)[1]))
   }

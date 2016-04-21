@@ -4,7 +4,13 @@
 ##' @include AllGenerics.R
 NULL
 
-
+##' MAST: Model-based Analysis of Single- cell Transcriptomics
+##'
+##' Methods for analysing single cell assay data using hurdle models.
+##'
+##' This packages provides data structures and functions for statistical analysis of single-cell assay data such as Fluidigm single cell gene expression assays.
+##' @references Finak, et al.  MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data.  Genome Biology (2015).
+"_PACKAGE"
 
 ##' Vbeta Data Set
 ##' @docType data
@@ -28,6 +34,8 @@ Mandatory_Cellvars <- character()
 
 ##' @import SummarizedExperiment
 ##' @import S4Vectors
+##' @importMethodsFrom S4Vectors mcols
+##' @importMethodsFrom GenomicRanges colData assays assay
 setClass('SingleCellAssay', contains='SummarizedExperiment0',
          slots=list(cmap='character', fmap='character'),
          prototype=list(cmap=Mandatory_Cellvars,

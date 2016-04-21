@@ -13,10 +13,11 @@ outlierDetection(assay, plot = TRUE)
 }
 \value{
 a filtered RNASeqAssay
+plot the outliers
 }
 \description{
 Use the percentage of library per gene CDF type plots
-to pick out outliers using the 1.5*IQR
+to pick out outliers using the \code{1.5*IQR}
 threshold
 }
 

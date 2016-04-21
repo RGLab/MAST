@@ -18,6 +18,6 @@ A \code{data.frame} typically, with the cartesian product of the
 row and column attributes and the values from the rectangular array
 }
 \description{
-Return a 'molten' (flat) representation of a rectangular array
+Return a molten (flat) representation of a rectangular array
 }
 

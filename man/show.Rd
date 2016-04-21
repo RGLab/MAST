@@ -5,6 +5,7 @@
 \alias{show,LMlike-method}
 \alias{show,SCASet-method}
 \alias{show,ZlmFit-method}
+\title{show}
 \usage{
 \S4method{show}{LMlike}(object)
 
@@ -12,10 +13,20 @@
 
 \S4method{show}{ZlmFit}(object)
 }
+\arguments{
+\item{object}{an object of some type}
+}
+\value{
+side effect of printing to console
+}
+\description{
+Display info
+}
+\details{
+Prints information on a LMlike object
+}
 \section{Methods (by class)}{
 \itemize{
-\item \code{LMlike}: print info on LMlike objects
-
 \item \code{SCASet}: print info on SCASet
 
 \item \code{ZlmFit}: print info on ZlmFit

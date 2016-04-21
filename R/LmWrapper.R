@@ -1,6 +1,12 @@
 ## Methods for LMlike
-##' @describeIn show print info on LMlike objects
+##' Display info
+##'
+##' Prints information on a LMlike object
 ##' @export
+##' @param object an object of some type
+##' @rdname show
+##' @title show
+##' @return side effect of printing to console
 setMethod('show',  signature=c(object='LMlike'), function(object){
     if(all(object@fitted)){
         cat('Fitted Continuous and discrete')

@@ -1,13 +1,3 @@
-##' MAST: Model-based Analysis of Single- cell Transcriptomics
-##'
-##' Methods for analysing single cell assay data using hurdle models.
-##'
-##' This packages provides data structures and functions for statistical analysis of single-cell assay data such as Fluidigm single cell gene expression assays.
-##' @references Finak, et al.  MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data.  Genome Biology (2015).
-"_PACKAGE"
-
-
-
 ##' Construct a SingleCellAssay from a matrix or array of expression
 ##'
 ##' If the gene expression measurements are already in a rectangular form,
@@ -111,7 +101,7 @@ setMethod('fData', 'SingleCellAssay', function(object){
 
 ##' Melt a rectangular array
 ##'
-##' Return a 'molten' (flat) representation of a rectangular array
+##' Return a molten (flat) representation of a rectangular array
 ##'
 ##' @param data A rectangular array, with attributes attached to its rows and
 ##' columns
@@ -235,7 +225,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ##' Construct a SingleCellAssay (or derived subclass) from a `flat` (melted) data.frame/data.table
 ##'
 ##' SingleCellAssay are a generic container for such data and are simple wrappers around SummarizedExperiment objects.
-##' Subclasses exist that embue the container with additional attributes, eg \link{\codeFluidigmAssay}}.
+##' Subclasses exist that embue the container with additional attributes, eg \link{\code{FluidigmAssay}}.
 ##' @param dataframe A 'flattened' \code{data.frame} or \code{data.table} containing columns giving cell and feature identifiers and  a measurement column
 ##' @param idvars character vector naming columns that uniquely identify a cell
 ##' @param primerid character vector of length 1 that names the column that identifies what feature (i.e. gene) was measured

@@ -8,9 +8,9 @@ plotSCAConcordance(SCellAssay, NCellAssay, filterCriteria = list(nOutlier = 2,
   sigmaContinuous = 9, sigmaProportion = 9), groups = NULL)
 }
 \arguments{
-\item{SCellAssay}{is a SingleCellAssay for the 1-cell per well assay}
+\item{SCellAssay}{is a FluidigmAssay for the 1-cell per well assay}
 
-\item{NCellAssay}{is a SingleCellAssay for the n-cell per well assay}
+\item{NCellAssay}{is a FluidigmAssay for the n-cell per well assay}
 
 \item{filterCriteria}{is a list of filtering criteria to apply to the SCellAssay and NCellAssay}
 
