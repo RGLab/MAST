@@ -1,4 +1,4 @@
-obj <- new('LMERlike', design=cData(fd), formula=~Stim.Condition + (1|Subject.ID))
+obj <- new('LMERlike', design=colData(fd), formula=~Stim.Condition + (1|Subject.ID))
 
 context('LMERlike')
 if(require(lme4)){

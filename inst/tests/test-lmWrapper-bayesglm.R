@@ -10,7 +10,7 @@ test_that('default prior', {
 
 
 ## source('common-fixtures.R')
- obj <- new('BayesGLMlike', design=cData(fd), formula=~Stim.Condition + Population)
+ obj <- new('BayesGLMlike', design=colData(fd), formula=~Stim.Condition + Population)
 coefPrior <- defaultPrior(colnames(model.matrix(obj)))
 obj@coefPrior <- coefPrior
 test_that('update prior with model', {
@@ -34,13 +34,13 @@ test_that('Strong prior changes estimates', {
 
 context('Fit args')
 test_that('Same result with fit args', {
-    obj3 <- new('BayesGLMlike', design=cData(fd), formula=~Stim.Condition + Population, fitArgsD=list(prior.mean=strongPrior['loc',1,], prior.scale=strongPrior['scale',1,], prior.df=strongPrior['df',1,]))
+    obj3 <- new('BayesGLMlike', design=colData(fd), formula=~Stim.Condition + Population, fitArgsD=list(prior.mean=strongPrior['loc',1,], prior.scale=strongPrior['scale',1,], prior.df=strongPrior['df',1,]))
     obj4 <- fit(obj3, response=exprs(fd)[,2])
     expect_equal(obj3@fitArgsD, obj4@fitArgsD)
     expect_equal(coef(obj4, 'D'), coef(obj2, 'D'))
 })
 
-obj <- new('BayesGLMlike', design=cData(fd), formula=~Stim.Condition)
+obj <- new('BayesGLMlike', design=colData(fd), formula=~Stim.Condition)
 obj <- fit(obj, response=exprs(fd)[,2])
 objC <- glm(obj@response ~ Stim.Condition, data=obj@design, subset=obj@response>0)
 

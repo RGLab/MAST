@@ -55,7 +55,7 @@ if(require('lme4')){
 test_that('zlm.SingleCellAssay works', {
   zzinit <<- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
   expect_that(zzinit, is_a('ZlmFit'))
-  expect_equal(rownames(zzinit@coefC), fData(fd2)$primerid)
+  expect_equal(rownames(zzinit@coefC), mcols(fd2)$primerid)
 })
 
 test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
@@ -71,7 +71,7 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
     expect_that(zz3, is_a('ZlmFit'))
     expect_true(zz3@converged[1,'D'])
 
-    w.resp <- which(cData(fd3)$Population=='VbetaResponsive')
+    w.resp <- which(colData(fd3)$Population=='VbetaResponsive')
     ee[,1] <- 0
     ee[,1][w.resp] <- rbinom(length(w.resp), 1, .2)
     exprs(fd3) <- ee

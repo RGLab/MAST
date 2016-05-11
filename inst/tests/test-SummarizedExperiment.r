@@ -27,5 +27,5 @@ test_that('Throw error for mismatching names', {
 test_that('Integer primerids cast to character', {
     rData[['primerid']] <- 1:NF
     se <- FromMatrix(assay, colData, rData)
-    expect_is(fData(se)$primerid, 'character')
+    expect_is(mcols(se)$primerid, 'character')
 })

@@ -228,7 +228,7 @@ context("SCASet works")
 ## })
 
 test_that('Can split',{
-        splat <- split(sc, cData(sc)$Subject.ID)
+        splat <- split(sc, colData(sc)$Subject.ID)
         expect_that(splat, is_a('list'))
         expect_equal(nrow(sc), nrow(splat[[1]]))
         expect_equal(ncol(sc), sum(sapply(splat, ncol)))
@@ -237,7 +237,7 @@ test_that('Can split',{
         splat <- split(sc, c('Subject.ID', 'Population'))
         expect_that(splat, is_a('list'))
         expect_error(split(sc, c('boogabooga', 'Population')), 'colData')
-        splat <- split(sc, list(factor(cData(sc)$Subject.ID), factor(cData(sc)$Population)))
+        splat <- split(sc, list(factor(colData(sc)$Subject.ID), factor(colData(sc)$Population)))
         expect_that(splat, is_a('list'))
   
 })

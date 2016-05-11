@@ -343,7 +343,7 @@ uniqueModNA <- function(df, include){
 }
 
 
-setMethod('getwellKey', 'SingleCellAssay', function(sc) {cData(sc)$wellKey})
+setMethod('getwellKey', 'SingleCellAssay', function(sc) {colData(sc)$wellKey})
 
 
 ##' @export

@@ -25,7 +25,7 @@ checkGroups <- function(sc, groups){
 if(!missing(groups) && !is.null(groups)){
   if(!is.character(groups) || is.factor(groups))
     stop("'groups' must be character or factor")
-  sd <- setdiff(groups, names(cData(sc)))
+  sd <- setdiff(groups, names(colData(sc)))
   if(length(sd)>0) stop(sprintf('%s not found in %s object', paste(sd, collapse=', '), class(sc)))
  }
   invisible(TRUE)
@@ -317,7 +317,7 @@ list(mu=mu, pi=pi, num=num)
 #' @param fun.cycle transformation to be used after collapsing
 #' @return collapsed version of \code{fd}.
 primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift){
-  fVars <- fData(fd)[, geneGroups, drop=FALSE]
+  fVars <- mcols(fd)[, geneGroups, drop=FALSE]
   geneset <- split(1:nrow(fVars), fVars)
   fdOrder <- order(unlist(lapply(geneset, min)))
   geneset <- geneset[fdOrder]           #maintain order of genes from original
@@ -334,6 +334,6 @@ primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift
   })
   exprs.new <- do.call(cbind, exprs.new)
   exprs(skeleton) <- exprs.new
-  skeleton@featureData$primerid <- fData(skeleton)[,geneGroups]
+  skeleton@featureData$primerid <- mcols(skeleton)[,geneGroups]
   skeleton <- sort(skeleton,rows=FALSE)
 }
