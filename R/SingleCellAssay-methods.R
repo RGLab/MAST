@@ -93,7 +93,7 @@ checkArrayNames <- function(exprsArray, cData, fData){
 }
 
 setMethod('fData', 'SingleCellAssay', function(object){
-    warning('Deprecated: use mcols')
+    .Deprecated('mcols')
     mcols(object)
 })
 
@@ -348,7 +348,7 @@ setMethod('getwellKey', 'SingleCellAssay', function(sc) {colData(sc)$wellKey})
 
 ##' @export
 setMethod('cData', 'SingleCellAssay', function(sc){
-    warning('Deprecated: use colData')
+    .Deprecated('use colData')
     colData(sc)
 })
 
@@ -379,7 +379,7 @@ setReplaceMethod('assayNames', c('SingleCellAssay', 'character'), function(x, i,
 
 ##' @export
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
-    warning('Deprecated: use colData<-')
+    .Deprecated('colData<-')
     colData(sc) <- value
     sc
 })
@@ -432,7 +432,7 @@ setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop
 })
 
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y,  ...){
-    warning('Obsolete: use rbind/cbind')
+    .Deprecated('rbind/cbind')
     if(ncol(x) == ncol(y) ){
         do.call(rbind, list(x, y, ...))
     } else if(nrow(x) == nrow(y)){
