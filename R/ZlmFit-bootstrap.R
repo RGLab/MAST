@@ -9,7 +9,7 @@
 pbootVcov1<-function (cl,zlmfit, R = 99)
 {
     sca <- zlmfit@sca
-    N <- nrow(sca)
+    N <- ncol(sca)
     LMlike <- zlmfit@LMlike
     parallel::clusterEvalQ(cl,require(MAST))
     ## clusterEvalQ(cl,require(abind))
@@ -18,7 +18,7 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
     parallel::clusterExport(cl,"sca",envir=environment())
     manyvc <- parallel::parSapply(cl,1:R, function(i,...){
         s <- sample(N, replace = TRUE)
-        newsca <- sca[s, ]
+        newsca <- sca[, s]
         LMlike <- update(LMlike, design=colData(newsca))
         zlm.SingleCellAssay(sca = newsca, LMlike = LMlike, onlyCoef=TRUE)
     })
@@ -39,11 +39,11 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
 ##' @export
 bootVcov1 <- function(zlmfit, R=99){
     sca <- zlmfit@sca
-    N <- nrow(sca)
+    N <- ncol(sca)
     LMlike <- zlmfit@LMlike
     manyvc <- raply(R, {
         s <- sample(N, replace=TRUE)
-        newsca <- sca[s,]
+        newsca <- sca[,s]
         LMlike <- update(LMlike, design=colData(newsca))
         zlm.SingleCellAssay(sca=newsca, LMlike=LMlike, onlyCoef=TRUE)
     })

@@ -49,7 +49,7 @@ test_that("Bootstrap", {
     expect_equal(dim(boot),c(3, dim(coef(zf, 'D')), 2))
 })
 
-context("Bootstrap consistency")
+context("Bootstrap consistency as exp. freq. varies")
 set.seed(1234)
 N <- 200
 m <- 20
@@ -59,39 +59,34 @@ p <- 2
 X <- getX(p, 40, N)
 beta <- t(cbind(15, rep(3, m)))
 pvec <- seq(.05, .95, length.out=m)
-Y <- simYs(m, X, beta, rho=1, sigma=1, p=pvec)
+Y <- simYs(m, X, beta, rho=2, sigma=1, p=pvec)
 
 cData <- data.frame(group=attr(X, 'group'))
 sca <- suppressMessages(suppressWarnings(FromMatrix(t(Y$Y), cData=cData)))
 zfit <- suppressWarnings(zlm.SingleCellAssay(~group, sca=sca))
 test_that('Expression frequencies are close to expectation', {
-    expect_less_than(mean((freq(sca)-pvec)^2), 1/(sqrt(N)*m))
+    expect_lt(mean((freq(sca)-pvec)^2), 1/(sqrt(N)*m))
 })
 
-test_that('Discrete group coefficient is close to zero', {
-    expect_less_than(
+test_that('Discrete group coefficient is close to zero for middle-expression genes', {
+    expect_lt(
         abs(mean(coef(zfit, 'D')[middle,'groupB'], na.rm=TRUE)),
         10/(sqrt(N))
         )
 })
 
-test_that('Continuous group coefficient is close to expected', {
-    expect_less_than(
+test_that('Continuous group coefficient is close to expected for high expression', {
+    expect_lt(
         mean((coef(zfit, 'C')[end,'groupB']-beta[2,end])^2, na.rm=TRUE),
         3.5*Y$cov[2,2] #expected covariance of groupB
         )
 })
-clusterEvalQ(cl, set.seed(1234))
+clusterEvalQ(cl, set.seed(12345))
 boot <- pbootVcov1(cl, zfit, R=50)
 bootmeans <- colMeans(boot, na.rm=TRUE, dims=1)
-## m2 <- 4  #top 4 expressed genes in simulation
-## end4 <- (m-m2+1):m
-## sca4 <- sca[,end4]
-## sca4 <- subset(sca4, rowMeans(exprs(sca4)==0)==0)
-## mlm <- lm(exprs(sca4) ~ group, cData(sca4))
 
 test_that('Bootstrap is unbiased', {
-    expect_less_than(mean((bootmeans[,,'C']-coef(zfit, 'C'))^2), 3*sum(abs(Y$cov[2,2])))
+    expect_lt(mean((bootmeans[,,'C']-coef(zfit, 'C'))^2), 3*sum(abs(Y$cov[2,2])))
 })
 
 covInterceptC <- cov(boot[,,'(Intercept)','C'], use='pairwise')
@@ -102,7 +97,7 @@ test_that('Bootstrap recovers covariance', {
     sub <- covInterceptC[end,end]
     esub <- expectedCovInterceptC[end,end]
     ## approximately 40% tolerance
-    expect_less_than(abs(log(mean(sub[upper.tri(sub)])/mean(esub[upper.tri(esub)]))), .4)
+    expect_lt(abs(log(mean(sub[upper.tri(sub)])/mean(esub[upper.tri(esub)]))), .4)
 })
 
     
