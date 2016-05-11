@@ -137,7 +137,7 @@ test_that('uniqueModNA works on multiple columns', {
     expect_equivalent(unique(naframe), MAST:::uniqueModNA(naframe, include='var'))
 })
 
-sci<- SingleCellAssay(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
+sci<- FromFlatDF(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
   expect_equal(nrow(melt(sci)), nrow(dat_complete))
 
@@ -262,6 +262,7 @@ smallsc <- FromFlatDF(doubleid, idvars=c('id1', 'id2'), primerid='f1', measureme
 
 test_that('combine works', {
     spl <- split(smallsc, 'id1')
+    ## we'll keep the warnings here to remind us to remove combine in a later version
     c1 <- combine(spl[[1]], spl[[2]])
     expect_that(c1, is_a('SingleCellAssay'))
     expect_equal(ncol(c1), 3)
