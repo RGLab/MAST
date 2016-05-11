@@ -139,8 +139,8 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         if(ebayes){
             if(!methodDict[lmMethod==method,implementsEbayes]) stop('Method', method, ' does not implement empirical bayes variance shrinkage.')
             ebparm <- ebayes(sca, ebayesControl, Formula)
-            priorVar <- ebparm['v']
-            priorDOF <- ebparm['df']
+            priorVar <- ebparm[['v']]
+            priorDOF <- ebparm[['df']]
             stopifnot(all(!is.na(ebparm)))
         }
         ## initial value of priorVar, priorDOF default to no shrinkage

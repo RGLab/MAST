@@ -42,7 +42,7 @@ if(require('lme4')){
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
     test_that('zlm.SingleCellAssay can run lmer', {
-        z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer')
+        hushWarning(z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer'), 'gradient|singular|multiple')
         expect_is(z, 'ZlmFit')
         expect_equal(nrow(z@df.null), 20)
         expect_equal(dim(z@vcovC)[[3]], 20)
@@ -63,9 +63,9 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   ee <- exprs(fd3)
   ee[,1] <- rnorm(ncol(fd3))+20
   exprs(fd3) <- ee
-  zz <- zlm.SingleCellAssay( ~ Population, fd3)
+  hushWarning(zz <- zlm.SingleCellAssay( ~ Population, fd3), 'glm.fit')
   expect_that(zz, is_a('ZlmFit'))
-  expect_less_than(zz@df.resid[1,'D'], 1)
+  expect_lt(zz@df.resid[1,'D'], 1)
 
     zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
     expect_that(zz3, is_a('ZlmFit'))
@@ -100,8 +100,9 @@ test_that('Gradients match analytic', {
 }
 
 test_that('Empirical Bayes works', {
-     zz <- zlm.SingleCellAssay( ~ Population, fd2,ebayes=TRUE)
-     expect_that(zz@dispersion, not(is_equivalent_to(zz@dispersionNoshrink)))
+    zz <- zlm.SingleCellAssay( ~ Population, fd2,ebayes=TRUE)
+    expect_false(any(zz@dispersion[,'C']==zz@dispersionNoshrink[, 'C'], na.rm=TRUE))
+     #expect_that(zz@dispersion, not(is_equivalent_to(zz@dispersionNoshrink)))
 })
 
 context('Test error handling')
@@ -134,9 +135,7 @@ test_that('Residuals Hook', {
      expect_is(fd3, 'SingleCellAssay')
 })
 
-if(suppressPackageStartupMessages(require('arm'))){
 context('zlm and bayesglm')
-
 test_that('Can fit using bayesglm', {
     zzinit <<- zlm.SingleCellAssay(~Population, fd2, ebayes=FALSE, method='bayesglm', silent=FALSE)
     expect_is(zzinit, 'ZlmFit')
@@ -144,10 +143,8 @@ test_that('Can fit using bayesglm', {
 
 test_that('Can do ebayes shrinkage using bayesglm', {
     zzinitshrink <- zlm.SingleCellAssay(~Population, fd2,  ebayes=TRUE, method='bayesglm', silent=FALSE)
-    expect_that(zzinit@dispersion, not(is_equivalent_to(zzinitshrink@dispersion)))
+    expect_false(any(zzinit@dispersion[, 'C']==zzinitshrink@dispersion[, 'C']))
+    #expect_that(zzinit@dispersion, not(is_equivalent_to(zzinitshrink@dispersion)))
     expect_equal(zzinit@dispersion, zzinitshrink@dispersionNoshrink)
 })
-
-try(detach('package:arm'), silent=TRUE)
-}
 
