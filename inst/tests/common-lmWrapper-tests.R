@@ -27,7 +27,7 @@ test_that('Handle 100% expression', {
     obj2 <- fit(obj, rnorm(ncol(fd))+20)
     expect_is(coef(obj2, 'C'), 'numeric')
     if(obj2@fitted['D']){
-        expect_less_than(obj2@fitD$df.residual, 1)
+        expect_lt(obj2@fitD$df.residual, 1)
     }
 })
 

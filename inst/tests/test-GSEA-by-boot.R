@@ -81,8 +81,8 @@ test_that('combining coefficients works',{
               expect_true(all(ZnS[,'P']<ZtS[,'P']))
               expect_true(all(ZnF[,'P']<ZtF[,'P']))
               ## Stouffer T is extremely similar to normal
-              expect_more_than(cor(ZnS[,'Z'], ZtS[,'Z']), .99)
+              expect_gt(cor(ZnS[,'Z'], ZtS[,'Z']), .99)
               ## Fisher Z scores are reasonable
-              expect_more_than(cor(abs(ZnF[,'Z']), -log(ZnF[,'P'])), .85)
+              expect_gt(cor(abs(ZnF[,'Z']), -log(ZnF[,'P'])), .85)
           })
 
