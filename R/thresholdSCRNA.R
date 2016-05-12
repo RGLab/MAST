@@ -201,16 +201,19 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     dens   <- lapply( log_data_list, function( x )  { if(length(x)>2){ density( x, adjust = adj ) } else{ NULL } })
     peaks  <- lapply(          dens, function( dd ) { if( is.null(dd) ){ data.frame( x=0, y=0 ) }else{ find_peaks( dd$x,dd$y, adjust = adj )}} ) 
     valleys<- lapply(          dens, function( dd ) { if( is.null(dd) ){ list(0)} else{find_valleys( dd$x,dd$y, adjust = adj ) } })
-
+ #peaks is a data.frame containing x-coordinate of a putative peak and density at peak
+    #examine first two peaks
     single_modes<-do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,1]))))<1|(lapply(list(do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,2]))))),function(x)(x-median(na.omit(x)))/mad(na.omit(x)))[[1]]>2)
     #Check for single peaks found
     singles <- ldply( lapply( peaks,nrow ),function( x ) x == 1 )[,2]
     single_modes[singles] <- TRUE
 
+#which valleys lie between first two peaks
     cutpoints<-lapply( seq_along(peaks), function( j ){
         valleys[[j]][which( findInterval( valleys[[j]], sort( peaks[[j]][1:2,1]) ) == 1 )]
     })
     cutpoints[single_modes]<-NA
+    #take rightmost valley that lies between first two peaks
     cutpoints       <- lapply( cutpoints, function(x) ifelse( length( x )==0, NA, max( x ) ) )
     names(cutpoints)<- names( peaks )
 
@@ -221,9 +224,11 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         }
     } else {
         #impute cutpoints if NA
+        #replace with min cutpoint if interior, max if exterior
         for(i in 1:length( cutpoints ) ){
             if( is.na( cutpoints[[i]] ) ){
                 if( i != length( cutpoints ) ){
+                    #interior bin
                     cutpoints[[i]]<-do.call(c,cutpoints)[min(which(!is.na(do.call(c,cutpoints))))]
                 }else{
                     cutpoints[[i]]<-do.call(c,cutpoints)[max(which(!is.na(do.call(c,cutpoints))))]
@@ -234,6 +239,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     # ensure cutpoints are increasing and decreasing from the 75% of bins with 2 modes.
     # could be improved. 
     vals2    <- unlist(valleys[which(unlist(lapply(peaks,nrow))==2)])
+    #index of valley closest to 75% of double-peaked valleys
     midindex <- which(names(peaks)==names(which.min(abs(vals2-quantile(vals2,c(0.75),na.rm=TRUE)))))
     if( length(midindex) > 0 ){
         for( i in midindex:2 ){
