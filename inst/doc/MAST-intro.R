@@ -92,8 +92,7 @@ library(lme4)
 lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1,
                                    method='glmer')
 
-## ----LRTexample, echo=-1-------------------------------------------------
-library(car)
+## ----LRTexample, eval=TRUE, error=TRUE-----------------------------------
 two.sample <- LRT(vbeta.1, 'Population', referent='CD154+VbetaResponsive')
-car::some(two.sample)
+head(two.sample) 
 

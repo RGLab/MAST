@@ -5,6 +5,7 @@
 \usepackage{color}
 \usepackage[cm]{fullpage}
 \usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{comment}
 %\usepackage[authoryear]{natbib}
 
 %\makeatletter
@@ -108,7 +109,7 @@ id, the stimulation it was subjected to, and the timepoint for the experiment
 this cell was part of). The wellKey are concatenated idvars columns, helping to
 ensure consistency when splitting and merging \sca objects. 
 \subsection{Importing Matrix Data}
-TBD
+Data can also be imported in matrix format.  
 
 \subsection{Subsetting, splitting, combining, melting}
 It's possible to subset \sca objects by wells and features.
@@ -233,48 +234,67 @@ lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1,
 @
 
 \subsection{Two-sample Likelihood Ratio Test}
-Another way to test for differential expression is available through the \texttt{LRT} function, which is analogous to two-sample T tests.
-<<LRTexample, echo=-1>>=
-library(car)
+  Another way to test for differential expression is available through
+  the \texttt{LRT} function, which is analogous to two-sample T tests.
+<<LRTexample, eval=TRUE, error=TRUE>>=
 two.sample <- LRT(vbeta.1, 'Population', referent='CD154+VbetaResponsive')
-car::some(two.sample)
+head(two.sample) 
 @
-Here we compare each population (\Sexpr{unique(colData(vbeta.1)$Population)[-1]}) to \Sexpr{unique(colData(vbeta.1)$Population)[1]}.  
-The \texttt{Population} column shows which population is being compared, while \texttt{test.type} is \texttt{comb} for the combined normal theory/binomial test.  Column \texttt{primerid} gives the gene being tested, \texttt{direction} shows if the comparison group mean is greater (1) or less (-1) than the referent group, and \texttt{lrtstat} and \texttt{p.value} give the test statistic and $\chi^2$ p-value (two degrees of freedom).
 
-Other options are whether additional information about the tests are returned (\texttt{returnall=TRUE}) and if the testing should be stratified by a character vector naming columns in \texttt{colData} containing grouping variables (\texttt{groups}).
+Here we compare each population (\texttt{CD154-VbetaResponsive, CD154-VbetaUnresponsive CD154+VbetaUnresponsive, VbetaResponsive, VbetaUnresponsive}) to the \texttt{CD154+VbetaResponsive} population.
+  The \texttt{Population} column shows which population is being
+  compared, while \texttt{test.type} is \texttt{comb} for the combined
+  normal theory/binomial test.  Column \texttt{primerid} gives the
+  gene being tested, \texttt{direction} shows if the comparison group
+  mean is greater (1) or less (-1) than the referent group, and
+  \texttt{lrtstat} and \texttt{p.value} give the test statistic and
+  $\chi^2$ p-value (two degrees of freedom).
+Other options are whether additional information about the tests are
+returned (\texttt{returnall=TRUE}) and if the testing should be
+stratified by a character vector naming columns in \texttt{colData}
+containing grouping variables (\texttt{groups}).
 
-These tests have been subsumed by \texttt{zlm.SingleCellAssay} but remain in the package for user convenience.
+These tests have been subsumed by \texttt{zlm.SingleCellAssay} but
+remain in the package for user convenience.
 
 \section{Use with single cell RNA-sequencing data}
 In RNA-sequencing data is essentially no different than qPCR-based single cell gene expression, once it has been aligned and mapped, if one is willing to reduce the experiment to counts or count-like data for a fixed set of genes/features.  
 We assume that suitable tools (eg, SAMseq or TopHat) have been applied to do this.
 
 **More details on convenience functions for RNAseq data**
+\begin{comment}
+  \section{Implementation Details}
+  Here we provide some background on the implementation of the
+  package.
 
-\section{Implementation Details}
-Here we provide some background on the implementation of the package. 
+  There are several fundamental new object types provided by the
+  package.  \texttt{SummarizedExperiment} is the base class, which is
+  provides an array-like object to store tabular data that might have
+  multiple derived representations.  A \texttt{SingleCellAssay} object
+  contains a \texttt{DataLayer}, plus cell and feature data.  New
+  types of single cell assays can be incorportated by extending
+  \texttt{SingleCellAssay}.
 
-There are several fundamental new object types provided by the package.
-\texttt{SummarizedExperiment} is the base class, which is provides an array-like object to store tabular data that might have multiple derived representations.
-A \texttt{SingleCellAssay} object contains a \texttt{DataLayer}, plus cell and feature data.
-New types of single cell assays can be incorportated by extending
-\texttt{SingleCellAssay}.
+  Different derived classes of \sca require different fields to be
+  present in the \texttt{cellData} and \texttt{featureData} These
+  requirements are set for each class by the slots \texttt{cmap} and
+  \texttt{fmap}, giving required columns in cell and feature data,
+  respectively.
 
-Different derived classes of \sca require different fields to be present in the \texttt{cellData} and \texttt{featureData}
-These requirements are set for each class by the slots \texttt{cmap} and \texttt{fmap}, giving required columns in cell and feature data, respectively.
+  We have found it useful to enforce naming conventions to reduce
+  confusion when combining data across projects, so the constructor
+  will rename the fields the user provides to match the values
+  specifed in \texttt{cmap} and \texttt{fmap}.
 
-We have found it useful to enforce naming conventions to reduce confusion when combining data across projects, so the constructor will rename the fields the user provides to match the values specifed in \texttt{cmap} and \texttt{fmap}.
+  Sets of single cell assays are stored in the \texttt{SCASet}
+  class. A constructor for SCASet is provided to construct an SCASet
+  directly from a data frame.  Alternatively, a SingleCellAssay or
+  derived class can be \texttt{split} on an arbitray variable to
+  produce an SCASet.
 
-Sets of single cell assays are stored in the \texttt{SCASet} class. A
-constructor for SCASet is provided to construct an SCASet directly from a data
-frame. 
-Alternatively, a SingleCellAssay or derived class can be \texttt{split}
-on an arbitray variable 
-to produce an SCASet.
-
-On construction of a \texttt{SingleCellAssay} object, the package tests for
-completeness, and will fill in the missing data (with NA) if it is not, so
-assays with lots of missing data can make reading marginally slower. 
-
+  On construction of a \texttt{SingleCellAssay} object, the package
+  tests for completeness, and will fill in the missing data (with NA)
+  if it is not, so assays with lots of missing data can make reading
+  marginally slower.
+\end{comment}
 \end{document}
