@@ -385,6 +385,7 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
 })
 
 ##' @export
+##' @importMethodsFrom GenomicRanges colData<-
 setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value) {
     ## Only reason we over-ride
     ## Parent doesn't make this test

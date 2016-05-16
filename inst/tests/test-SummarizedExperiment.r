@@ -15,7 +15,7 @@ test_that('Can create', {
 })
 
 test_that('Preserve dimnames in exprsArray', {
-    expect_that(se2 <- FromMatrix(assayDn), not(shows_message()))
+    expect_silent(se2 <- FromMatrix(assayDn))
     expect_equal(dimnames(se2), dimnames(assayDn))
 })
 

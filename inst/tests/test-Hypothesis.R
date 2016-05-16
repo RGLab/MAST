@@ -12,7 +12,7 @@ test_that('can construct', {
     expect_equivalent(fun@contrastMatrix, diag(2))
     
     fun2 <- generateHypothesis(fun, trms)
-    expect_false(all.equal(fun, fun2, check.attributes=FALSE, all.names=FALSE))    
+    expect_equal(rownames(fun2@contrastMatrix), trms)
 })
 
 test_that('Coefficient Hypothesis Behaves',{

@@ -11,7 +11,6 @@ Imports:
     Biobase,
     BiocGenerics,
     S4Vectors,
-    SummarizedExperiment,
     data.table,
     ggplot2,
     plyr,
@@ -21,7 +20,8 @@ Imports:
     parallel,
     R.methodsS3,
 Depends:
-    reshape
+    reshape,
+    SummarizedExperiment
 Suggests:
     knitr,
     testthat,

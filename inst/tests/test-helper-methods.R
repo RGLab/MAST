@@ -6,7 +6,7 @@ wfunction <- function(x, warn=TRUE){
 context("Warning/Error Handlers behave")
 test_that('hushWarning hushes',{
     expect_that(wfunction(warn=TRUE), gives_warning('you'))
-    expect_that(hushWarning(wfunction(warn=TRUE),'warned'),  not(gives_warning('you')))
+    expect_silent(hushWarning(wfunction(warn=TRUE),'warned'))
 })
 
 test_that("hushWarning doesn't hush", {
