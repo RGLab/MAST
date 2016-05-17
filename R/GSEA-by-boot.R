@@ -32,11 +32,11 @@
 ##' @return array, order K equal to FUN(x,y)
 ##' @examples
 ##' ##Dumb example, could be done with scale(...,scale=FALSE)
-##' x0 = matrix(1:10, ncol=2)
-##' y0 = colMeans(x0)
-##' dim(y0) = c(2,1)
-##' x1 = applyFlat(x0,y0)
-##' stopifnot(colMeans(x1)==0)
+##' x0 = matrix(1:10, nrow=2)
+##' y0 = rowMeans(x0)
+##' dim(y0) = c(1, 2)
+##' x1 = MAST:::applyFlat(x0,y0)
+##' stopifnot(rowMeans(x1)==0)
 applyFlat <- function(x, y, FUN="-"){
     dx <- dim(x)
     dn <- dimnames(x)
@@ -62,7 +62,7 @@ applyFlat <- function(x, y, FUN="-"){
 ##' @return array x
 ##' @examples
 ##' x = array(1:4, dim=c(1, 2, 1, 2))
-##' dx = Drop(x, 1)
+##' dx = MAST:::Drop(x, 1)
 ##' stopifnot(all(dim(dx)==c(2,1,2)))
 ##' 
 Drop <- function(x, d){

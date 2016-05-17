@@ -19,6 +19,7 @@ Imports:
     methods,
     parallel,
     R.methodsS3,
+    GenomicRanges
 Depends:
     reshape,
     SummarizedExperiment

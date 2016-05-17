@@ -33,7 +33,7 @@ test_that('zlm accepts expressions in formulae', {
 
 if(require('lme4')){
     skip_on_cran()
-  m <- melt(fd2)
+  m <- melt.SingleCellAssay(fd2)
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
   test_that('zlm can run lmer', {

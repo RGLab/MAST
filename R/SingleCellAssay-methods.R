@@ -409,7 +409,6 @@ setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value
 ##' @export
 setMethod('split', signature(x='SingleCellAssay', f='character'), 
           function(x, f, drop=FALSE, ...){
-              browser()
               ## Split a SingleCellAssay by criteria
 ###f must be a character naming a cData variable
               if(length(f) != ncol(x)){
@@ -423,7 +422,6 @@ setMethod('split', signature(x='SingleCellAssay', f='character'),
 
 setMethod('split', signature(x='SingleCellAssay', f='factor'), function(x, f, drop=FALSE, ...){
     print("!!!!")
-    browser()
     split(x, list(f))
 })
 
@@ -435,7 +433,8 @@ setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop
 })
 
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y,  ...){
-    .Deprecated('rbind/cbind')
+    ## Not using .Deprecated because I want to maintain test coverage for this function.
+    warning('Deprecated: use rbind/cbind')
     if(ncol(x) == ncol(y) ){
         do.call(rbind, list(x, y, ...))
     } else if(nrow(x) == nrow(y)){

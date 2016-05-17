@@ -20,7 +20,7 @@ There is no testing that the specified dimensions are actually singletons.
 }
 \examples{
 x = array(1:4, dim=c(1, 2, 1, 2))
-dx = Drop(x, 1)
+dx = MAST:::Drop(x, 1)
 stopifnot(all(dim(dx)==c(2,1,2)))
 
 }

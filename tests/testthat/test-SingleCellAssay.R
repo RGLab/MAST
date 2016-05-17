@@ -115,7 +115,7 @@ test_that("Can load complete data", {
 })
 
 test_that("Cellkey unique identifies a cell", {
-  tab <- table(melt(sc)$wellKey, do.call(paste, melt(sc)[, idvars, with=FALSE]))
+  tab <- table(melt.SingleCellAssay(sc)$wellKey, do.call(paste, melt.SingleCellAssay(sc)[, idvars, with=FALSE]))
   expect_true(all(tab %in% c(0,75)))
   
 })
@@ -139,10 +139,10 @@ test_that('uniqueModNA works on multiple columns', {
 
 sci<- FromFlatDF(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
-  expect_equal(nrow(melt(sci)), nrow(dat_complete))
+  expect_equal(nrow(melt.SingleCellAssay(sci)), nrow(dat_complete))
 
-  incomplete <- rbind(melt(fd[1:20,1:20], value.name=measurement),
-                      melt(fd[21:50, 11:30], value.name=measurement)) #equally sized primerid blocks
+  incomplete <- rbind(melt.SingleCellAssay(fd[1:20,1:20], value.name=measurement),
+                      melt.SingleCellAssay(fd[21:50, 11:30], value.name=measurement)) #equally sized primerid blocks
   fd.incomplete <- FromFlatDF(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid)
   expect_message(FromFlatDF(incomplete, idvars=idvars, primerid=primerid, measurement=measurement, ncells='ncells', geneid=geneid), 'incomplete')
   expect_equal(nrow(fd.incomplete), 50)
@@ -232,7 +232,6 @@ test_that('Can split',{
         splat <- split(sc, colData(sc)$Subject.ID)
         expect_that(splat, is_a('list'))
         expect_equal(nrow(sc), nrow(splat[[1]]))
-        browser()
         expect_equal(ncol(sc), sum(sapply(splat, ncol)))
         splat.byfieldname <- split(sc, 'Subject.ID')
         expect_equal(splat.byfieldname, splat)
