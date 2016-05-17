@@ -237,22 +237,20 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ##' @param class character providing desired subclass to construct.
 ##' @param ... additional arguments are ignored
 ##' @export
-##' @aliases SingleCellAssay
+##' @aliases SingleCellAssay, FluidigmAssay
 ##' @examples
-##' ## See FluidigmAssay for more examples
-##' ##' @examples
 ##' data(vbeta)
 ##' colnames(vbeta)
 ##' vbeta <- computeEtFromCt(vbeta)
-##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
+##' vbeta.fa <- FromFlatDF(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
 ##' primerid='Gene', measurement='Et', ncells='Number.of.Cells',
 ##' geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
-##' phenovars=c('Stim.Condition','Time'), id='vbeta all')
+##' phenovars=c('Stim.Condition','Time'), id='vbeta all', class='FluidigmAssay')
 ##' show(vbeta.fa)
 ##' nrow(vbeta.fa)
 ##' ncol(vbeta.fa)
-##' head(fData(vbeta.fa)$primerid)
-##' table(cData(vbeta.fa)$Subject.ID)
+##' head(mcols(vbeta.fa)$primerid)
+##' table(colData(vbeta.fa)$Subject.ID)
 ##' vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
 ##' show(vbeta.sub)
 ##' @return SingleCellAssay, or derived, object
@@ -385,7 +383,6 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
 })
 
 ##' @export
-##' @importMethodsFrom GenomicRanges colData<-
 setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value) {
     ## Only reason we over-ride
     ## Parent doesn't make this test
@@ -412,6 +409,7 @@ setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value
 ##' @export
 setMethod('split', signature(x='SingleCellAssay', f='character'), 
           function(x, f, drop=FALSE, ...){
+              browser()
               ## Split a SingleCellAssay by criteria
 ###f must be a character naming a cData variable
               if(length(f) != ncol(x)){
@@ -423,7 +421,11 @@ setMethod('split', signature(x='SingleCellAssay', f='character'),
               split(x, f)
 })
 
-setMethod('split', signature(x='SingleCellAssay', f='factor'), function(x, f, drop=FALSE, ...) split(x, list(f)))
+setMethod('split', signature(x='SingleCellAssay', f='factor'), function(x, f, drop=FALSE, ...){
+    print("!!!!")
+    browser()
+    split(x, list(f))
+})
 
 setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop=FALSE, ...){
     fi <- do.call(interaction, f)[,drop=drop]

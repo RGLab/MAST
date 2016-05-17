@@ -194,9 +194,10 @@ test_that("Exprs works", {
   expect_is(exprComplete, "matrix")
   expect_equal(nrow(exprComplete), nrow(sc))
   ind <- seq(1, nrow(dat_complete), by=1042)
-  expect_equal(melt(sc)[ind,value], as.vector(exprComplete)[ind])
-  geneandrow <- melt(sc)[1054,c(geneid, "wellKey"), with=FALSE]  
-  thect <- melt(sc)[1054, value]
+  scdt <- as(sc, 'data.table')
+  expect_equal(scdt[ind,value], as.vector(exprComplete)[ind])
+  geneandrow <- scdt[1054,c(geneid, "wellKey"), with=FALSE]  
+  thect <- scdt[1054, value]
   expect_equivalent(exprComplete[ geneandrow[[1]], geneandrow[[2]]], thect)
 })
 
@@ -231,6 +232,7 @@ test_that('Can split',{
         splat <- split(sc, colData(sc)$Subject.ID)
         expect_that(splat, is_a('list'))
         expect_equal(nrow(sc), nrow(splat[[1]]))
+        browser()
         expect_equal(ncol(sc), sum(sapply(splat, ncol)))
         splat.byfieldname <- split(sc, 'Subject.ID')
         expect_equal(splat.byfieldname, splat)

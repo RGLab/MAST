@@ -25,7 +25,7 @@ safeContrastQF <- function(contrast, vc) uncomplexify(tcrossprod(contrast, compl
 ##' @return list of matrices `logFC` and `varLogFC`, giving the log-fold-changes for each contrast (columns) and genes (rows) and the estimated sampling variance thereof
 ##' @examples
 ##' data(vbetaFA)
-##' zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[,1:5])
+##' zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[1:5,])
 ##' ##log-fold changes in terms of intercept (which is Stim(SEB) and CD154+VbetaResponsive)
 ##' lfcStim <- logFC(zz)
 ##' ##If we want to compare against unstim, we can try the following

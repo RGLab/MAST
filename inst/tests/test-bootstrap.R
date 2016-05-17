@@ -100,7 +100,7 @@ test_that('Bootstrap recovers covariance', {
     expect_lt(abs(log(mean(sub[upper.tri(sub)])/mean(esub[upper.tri(esub)]))), .4)
 })
 
-    
+stopCluster(cl)
 
 ## M <- melt(boot[,,'groupB','C'])
 ## ggplot(M, aes(x=value))+geom_density() + facet_wrap(~X2)

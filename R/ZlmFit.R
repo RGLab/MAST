@@ -182,7 +182,7 @@ normalci <- function(center, se, level){
 ##' @seealso print.summaryZlmFit
 ##' @examples
 ##' data(vbetaFA)
-##' z <- zlm(~Stim.Condition, vbetaFA[,1:5])
+##' z <- zlm(~Stim.Condition, vbetaFA[1:5,])
 ##' zs <- summary(z)
 ##' names(zs)
 ##' print(zs)

@@ -3,7 +3,7 @@
 \name{FromFlatDF}
 \alias{FluidigmAssay}
 \alias{FromFlatDF}
-\alias{SingleCellAssay}
+\alias{SingleCellAssay,}
 \title{Construct a SingleCellAssay (or derived subclass) from a `flat` (melted) data.frame/data.table}
 \usage{
 FromFlatDF(dataframe, idvars, primerid, measurement, id = numeric(0),
@@ -41,20 +41,18 @@ SingleCellAssay are a generic container for such data and are simple wrappers ar
 Subclasses exist that embue the container with additional attributes, eg \link{\code{FluidigmAssay}}.
 }
 \examples{
-## See FluidigmAssay for more examples
-##' @examples
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
-vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
+vbeta.fa <- FromFlatDF(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
 primerid='Gene', measurement='Et', ncells='Number.of.Cells',
 geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
-phenovars=c('Stim.Condition','Time'), id='vbeta all')
+phenovars=c('Stim.Condition','Time'), id='vbeta all', class='FluidigmAssay')
 show(vbeta.fa)
 nrow(vbeta.fa)
 ncol(vbeta.fa)
-head(fData(vbeta.fa)$primerid)
-table(cData(vbeta.fa)$Subject.ID)
+head(mcols(vbeta.fa)$primerid)
+table(colData(vbeta.fa)$Subject.ID)
 vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
 show(vbeta.sub)
 }
