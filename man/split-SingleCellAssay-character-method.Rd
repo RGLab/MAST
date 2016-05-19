@@ -13,6 +13,10 @@
 \item{x}{SingleCellAssay}
 
 \item{f}{length-1 character, or atomic of length ncol(x)}
+
+\item{drop}{drop unused factor levels}
+
+\item{...}{ignored}
 }
 \value{
 List

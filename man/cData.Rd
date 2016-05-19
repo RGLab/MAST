@@ -23,6 +23,12 @@ cData(sc) <- value
 \item{sc}{An object with \code{cellData}}
 
 \item{value}{Replacement, one of \code{AnnotatedDataFrame} or \code{data.frame}}
+
+\item{x}{\code{SingleCellAssay}}
+
+\item{y}{\code{SingleCellAssay}}
+
+\item{...}{\code{SingleCellAssay}}
 }
 \value{
 \code{data.frame}

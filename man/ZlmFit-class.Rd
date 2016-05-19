@@ -27,6 +27,8 @@
 \S4method{se.coef}{ZlmFit}(object, which, ...)
 }
 \arguments{
+\item{object}{\code{ZlmFit}}
+
 \item{hypothesis}{call to \link{Hypothesis} or \link{CoefficientHypothesis} or a matrix giving such contrasts.}
 
 \item{which}{character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned}

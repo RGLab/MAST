@@ -3,6 +3,19 @@
 \name{rstandard.bayesglm}
 \alias{rstandard.bayesglm}
 \title{rstandard for bayesglm objects.}
+\usage{
+\method{rstandard}{bayesglm}(model, infl = influence(model, do.coef = FALSE),
+  type = c("deviance", "pearson"), ...)
+}
+\arguments{
+\item{model}{\code{bayesglm}}
+
+\item{infl}{see \link{rstandard}}
+
+\item{type}{see \link{rstandard}}
+
+\item{...}{ignored}
+}
 \description{
 rstandard bayesglm object S3 method
 }

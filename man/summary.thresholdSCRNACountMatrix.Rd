@@ -5,7 +5,7 @@
 \alias{summary.thresholdSCRNACountMatrix}
 \title{Summarize the effect of thresholding}
 \usage{
-summary.thresholdSCRNACountMatrix(object, ...)
+\method{summary}{thresholdSCRNACountMatrix}(object, ...)
 
 \method{print}{summaryThresholdSCRNA}(x, ...)
 }

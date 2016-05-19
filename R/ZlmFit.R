@@ -130,6 +130,7 @@ setMethod('show', signature=c(object='ZlmFit'), function(object){
 
 ##' @describeIn ZlmFit Returns the matrix of coefficients for component \code{which}.
 ##' @param ... ignored
+##' @param object \code{ZlmFit}
 setMethod('coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     if(which=='C') object@coefC else object@coefD

@@ -149,7 +149,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ## might have bad complexity, but could construct one at time, then glue cheaply
 ## Not too bad except for deduplication.. will use data.table
 ## Output is sorted by primerid then wellKey
-##' @importFrom data.table melt  :=  setkey  setkeyv  set %like%  dcast  data.table  rbindlist  setDT  CJ  .SD  melt  like  setorder  setnames  .N  setDF key setorderv dcast.data.table melt.data.table setattr
+##' @importFrom data.table melt  :=  setkey  setkeyv  set %like%  dcast  data.table  rbindlist  setDT  CJ  .SD  melt  like  setorder  setnames  .N  setDF key setorderv dcast.data.table melt.data.table setattr as.data.table
 fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
   df<-data.table(df)
   cn_df<-colnames(df)
@@ -432,6 +432,8 @@ setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value
 ##' Splits a \code{SingleCellAssay} into a \code{list} by a factor (or something coercible into a factor) or a character giving a column of \code{colData(x)}
 ##' @param x SingleCellAssay
 ##' @param f length-1 character, or atomic of length ncol(x)
+##' @param drop drop unused factor levels
+##' @param ... ignored
 ##' @return List
 ##' @examples
 ##' data(vbetaFA)
@@ -451,7 +453,7 @@ setMethod('split', signature(x='SingleCellAssay', f='character'),
               } else{
                   f <- as.factor(f)
               }
-              split(x, f)
+              split(x, f, drop=drop)
 })
 
 setMethod('split', signature(x='SingleCellAssay', f='factor'), function(x, f, drop=FALSE, ...){
@@ -469,6 +471,9 @@ setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop
 
 ##' @export
 ##' @describeIn cData combine two experiments along rows/columns
+##' @param x \code{SingleCellAssay}
+##' @param y \code{SingleCellAssay}
+##' @param ... \code{SingleCellAssay}
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y,  ...){
     ## Not using .Deprecated because I want to maintain test coverage for this function.
     warning('Deprecated: use rbind/cbind')
