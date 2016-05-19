@@ -79,7 +79,7 @@ read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.thre
     message("\nReading ",nfiles," files.")
     if(any(grepl("parallel",loadedNamespaces()))){
       file<-as.list(files)
-      datas<-mclapply(files,read.fluidigm.xls)
+      datas<-parallel::mclapply(files,read.fluidigm.xls)
     }else{
       datas<-lapply(files,read.fluidigm.xls)
     }
@@ -91,7 +91,7 @@ read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.thre
     }
     files<-as.list(files)
     if(any(grepl("parallel",loadedNamespaces()))){
-      datas<-mclapply(files,read.csv)
+      datas<-parallel::mclapply(files,read.csv)
     }else{
       datas<-lapply(files,read.csv)						
     }

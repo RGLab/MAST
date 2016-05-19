@@ -160,7 +160,7 @@ posgene <- suppressMessages(reshape2::dcast(lr[, c('gene', 'adj')], gene ~ ., fu
 posgene <- posgene[posgene[,2],]
 pvalue <- with(lr, pmin(p.value, trunc))
 if(length(posgene)>0){
-dotplot(gene ~ -log10(pvalue)*direction, lr, auto.key=T, subset=gene %in% posgene$gene)
+lattice::dotplot(gene ~ -log10(pvalue)*direction, lr, auto.key=T, subset=gene %in% posgene$gene)
 } else{
   warning("No significant genes")
 }
