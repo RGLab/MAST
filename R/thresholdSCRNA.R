@@ -299,6 +299,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 ##' @param ... further arguments passed to \code{plot}
 ##' @return displays plots
 ##' @export
+##' @importFrom graphics plot
 plot.thresholdSCRNACountMatrix<-function(x, ask=FALSE, wait.time=0, type='bin', indices=NULL, ...)
 {
     type <- match.arg(type, c('bin', 'gene'), several.ok=TRUE)
@@ -345,19 +346,8 @@ plot.thresholdSCRNACountMatrix<-function(x, ask=FALSE, wait.time=0, type='bin', 
 ##' @param ... currently ignored
 ##' @return a list of statistics on the original data, and thresholded data
 ##' @export
-summary.thresholdSCRNACountMatrix <- function(object, ...){
-    ## original <- with(object, data.table:::melt.data.table(data.table(conditions=conditions, type='original_data', original_data), id.vars=c('conditions', 'type')))
-    ## threshold <- with(object, data.table:::melt.data.table(data.table(conditions=conditions, type='counts_threshold', counts_threshold), id.vars=c('conditions', 'type')))
-    ## both <- rbind(original, threshold)
-    ## summaries <- both[,list(zeroes=mean(value>0),
-    ##            vars=var(value[value>0]),
-    ##                         shapiro={
-    ##                             pos <- value[value>0]
-    ##                             if(length(pos)>3 & length(pos) < 5000)            -log10(shapiro.test(pos)$p.value) else NA_real_
-    ##                         })
-    ##                  ,keyby=list(conditions, type, variable)]
-    
-                 
+##' @method  summary thresholdSCRNACountMatrix
+summary.thresholdSCRNACountMatrix <- function(object, ...){                 
     zeros <- lapply(object[c('original_data', 'counts_threshold')], function(o){
         apply(o>0, 2, mean)
     })
@@ -375,8 +365,8 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
     out
 }
 
-##' @export
 ##' @describeIn summary.thresholdSCRNACountMatrix prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
+##' @export
 print.summaryThresholdSCRNA <- function(x, ...){
     class(x) <- class(x)[-length(class(x))]
     m <- as.data.table(reshape2::melt(x, na.rm=TRUE))
