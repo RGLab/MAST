@@ -1,4 +1,4 @@
-#' hHook to get the continuous residuals
+#' Hook to get the continuous residuals
 #'
 #' @param x the ZLMFit
 #' @export
@@ -98,12 +98,16 @@ bayesglm.influence <-  function(model, do.coef = do.coef, ...)
   res
 }
 
-#' influence bayesglm object S3 method
+#' Influence bayesglm object
+#'
+#' The influence function
 #' @importFrom stats influence
-#' @name influence.bayesglm
-#' @title influence for bayesglm objects.
 #' @export
-R.methodsS3::setMethodS3("influence","bayesglm",definition=function (model, do.coef = TRUE, ...) 
+#' @param model \code{bayesglm}
+#' @param do.coef see \link{influence.glm}
+#' @param ... ignored
+#' @return see \link{influence.glm}
+influence.bayesglm <- function (model, do.coef = TRUE, ...) 
 {
   res <- bayesglm.influence(model, do.coef = do.coef, ...)
   pRes <- na.omit(residuals(model, type = "pearson"))[model$prior.weights != 
@@ -111,22 +115,25 @@ R.methodsS3::setMethodS3("influence","bayesglm",definition=function (model, do.c
   pRes <- naresid(model$na.action, pRes)
   names(res)[names(res) == "wt.res"] <- "dev.res"
   c(res, list(pear.res = pRes))
-})
+}
 
+#' rstandard for bayesglm objects.
+#'
 #' rstandard bayesglm object S3 method
 #' @importFrom stats rstandard
-#' @name rstandard.bayesglm
-#' @title rstandard for bayesglm objects.
+#' @param model \code{bayesglm}
+#' @param infl see \link{rstandard}
+#' @param type see \link{rstandard}
+#' @param ... ignored
 #' @export
-R.methodsS3::setMethodS3("rstandard","bayesglm",definition=function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", 
-                                                                                                                                "pearson"), ...) 
+rstandard.bayesglm <- function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", "pearson"), ...)
 {
   type <- match.arg(type)
   res <- switch(type, pearson = infl$pear.res, infl$dev.res)
   res <- res/sqrt(summary(model)$dispersion * (1 - infl$hat))
   res[is.infinite(res)] <- NaN
   res
-})
+}
 
 #' Standardized deviance residuals hook
 #' 

@@ -18,7 +18,6 @@ Imports:
     abind,
     methods,
     parallel,
-    R.methodsS3,
     GenomicRanges,
     reshape2
 Depends:
