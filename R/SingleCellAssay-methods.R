@@ -344,13 +344,34 @@ uniqueModNA <- function(df, include){
 
 setMethod('getwellKey', 'SingleCellAssay', function(sc) {colData(sc)$wellKey})
 
-
+##' Deprecated cell/feature data accessors/mutators
+##'
+##' These functions are now all deprecated and will be removed in a future release.
+##'
+##' @section Replacements:
+##'
+##' \describe{
+##'   \item{\code{cData}}{\link{colData}}
+##'   \item{\code{fData}}{\link{mcols}}
+##'   \item{\code{exprs}}{\link{assay}}
+##'   \item{\code{combine}}{\link{cbind2} or \link{rbind2}}
+##' }
+##' @param sc SingleCellAssay
+##' @param value replacement value
+##' @return a \code{DataFrame} or modifies the \code{SingleCellAssay} object in place
 ##' @export
 setMethod('cData', 'SingleCellAssay', function(sc){
     .Deprecated('use colData')
     colData(sc)
 })
 
+##' Subset a \code{SingleCellAssay} by cells (columns)
+##'
+##' Evaluates the expression in \code{...} in the context of \code{colData(x)} and returns a subsetted version of \code{x}
+##' @param x \code{SingleCellAssay}
+##' @param ... expression
+##' @return \code{SingleCellAssay}
+##' @export
 setMethod('subset', 'SingleCellAssay', function(x, ...){
     e <- substitute(...)
     asBool <- try(eval(e, colData(x), parent.frame(n=1)), silent=TRUE)
@@ -376,13 +397,23 @@ setReplaceMethod('assayNames', c('SingleCellAssay', 'character'), function(x, i,
     x
 })
 
+
 ##' @export
+##' @describeIn cData replace the \code{colData}
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
     .Deprecated('colData<-')
     colData(sc) <- value
     sc
 })
 
+##' Replace \code{colData}
+##'
+##' Replace \code{colData} with a \code{DataFrame}.
+##' Checks to make sure that \code{row.names(value)} match \code{colnames{x}}, in contrast to the parent method
+##'  Checks for a wellKey column, as well.
+##' @param x \code{SingleCellAssay}
+##' @param value \code{DataFrame}
+##' @return modified \code{SingleCellAssay}
 ##' @export
 setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value) {
     ## Only reason we over-ride
@@ -396,9 +427,9 @@ setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value
 
 
 
-##' Split into SimpleList
+##' Split into \code{list}
 ##'
-##' Splits a \code{SingleCellAssay} into a \code{SimpleList} by a factor (or something coercible into a factor) or a character giving a column of \code{colData(x)}
+##' Splits a \code{SingleCellAssay} into a \code{list} by a factor (or something coercible into a factor) or a character giving a column of \code{colData(x)}
 ##' @param x SingleCellAssay
 ##' @param f length-1 character, or atomic of length ncol(x)
 ##' @return List
@@ -407,6 +438,8 @@ setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value
 ##' split(vbetaFA, 'ncells')
 ##' fa <- as.factor(colData(vbetaFA)$ncells)
 ##' split(vbetaFA, fa)
+##' 
+##' @aliases split,SingleCellAssay,factor-method split,SingleCellAssay,list-method
 ##' @export
 setMethod('split', signature(x='SingleCellAssay', f='character'), 
           function(x, f, drop=FALSE, ...){
@@ -422,9 +455,9 @@ setMethod('split', signature(x='SingleCellAssay', f='character'),
 })
 
 setMethod('split', signature(x='SingleCellAssay', f='factor'), function(x, f, drop=FALSE, ...){
-    print("!!!!")
     split(x, list(f))
 })
+
 
 setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop=FALSE, ...){
     fi <- do.call(interaction, f)[,drop=drop]
@@ -433,6 +466,9 @@ setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop
     setNames(lapply(seq_along(fidx), function(i) x[,fidx[[i]]]), levels(fi))
 })
 
+
+##' @export
+##' @describeIn cData combine two experiments along rows/columns
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y,  ...){
     ## Not using .Deprecated because I want to maintain test coverage for this function.
     warning('Deprecated: use rbind/cbind')
@@ -445,6 +481,8 @@ setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), functi
     }
 })
 
+##' @export
+##' @describeIn cData combine two experiments along rows/columns
 setMethod('combine', signature(x='SingleCellAssay', y='ANY'), function(x, y,  ...){
     if(ncol(x) == nrow(y) || ncol(x) == length(y)){
         cd <- cbind(colData(x), y)

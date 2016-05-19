@@ -131,11 +131,10 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
   concord
 }
 
-##' @title getwss
-##' @param concord output from \code{getConcordance}
+
+##' @describeIn getrc the sum of squares, weighted by nexp
 ##' @param nexp number of expressed cells per row in \code{concord}
-##' @return weighted sum of squares
-##' @export getwss
+##' @export
 getwss <- function(concord, nexp){
   mean((concord$et.ref - concord$et.comp)^2*nexp, na.rm=TRUE)
 #    log2(mean(((2^concord$et.ref-1)-(2^concord$et.comp-1))^2*nexp,na.rm=TRUE))
@@ -143,11 +142,8 @@ getwss <- function(concord, nexp){
     #mean(with(concord,{a<-(et.ref>0);b<-(et.comp>0);a*b*(et.ref-et.comp)^2+a*(1-b)+b*(1-a)}),na.rm=TRUE)
 }
 
-##' @title getss
-##' @param concord output from \code{getConcordance}
-##' @return sum of squares
-##' @export getss
-##' @note Ditto.. compute on the natural scale
+##' @describeIn getrc the sum of squares
+##' @export
 getss <- function(concord){
   mean((concord$et.ref - concord$et.comp)^2, na.rm=TRUE)
   #  log2(mean(((2^concord$et.ref-1)-(2^concord$et.comp-1))^2,na.rm=TRUE))
@@ -158,10 +154,9 @@ getss <- function(concord){
 ##' Concordance correlation coefficient lin 1989
 ##'
 ##' Return's Lin's intraclass correlation coefficient for concordance
-##' @title getrc
 ##' @param concord data.frame returned by getConcordance
 ##' @return numeric
-##' @export getrc
+##' @export
 getrc <- function(concord){
 with(concord, {foo<-na.omit(cbind(et.ref=et.ref,et.comp=et.comp));2*cov(foo[,"et.ref"], foo[,"et.comp"])/(var(foo[,"et.ref"])+var(foo[,"et.comp"])+(mean(foo[,"et.ref"])-mean(foo[,"et.comp"]))^2)})
     #concordance on log scale but treating NAs

@@ -2,8 +2,11 @@
 % Please edit documentation in R/AllGenerics.R
 \name{subset}
 \alias{subset}
-\title{subset}
+\title{Subsetting Vectors, Matrices and Data Frames}
 \usage{
 subset(x, ...)
+}
+\description{
+Return subsets of vectors, matrices or data frames which meet conditions.
 }
 

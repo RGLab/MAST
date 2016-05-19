@@ -3,7 +3,9 @@
 \docType{methods}
 \name{split,SingleCellAssay,character-method}
 \alias{split,SingleCellAssay,character-method}
-\title{Split into SimpleList}
+\alias{split,SingleCellAssay,factor-method}
+\alias{split,SingleCellAssay,list-method}
+\title{Split into \code{list}}
 \usage{
 \S4method{split}{SingleCellAssay,character}(x, f, drop = FALSE, ...)
 }
@@ -16,12 +18,13 @@
 List
 }
 \description{
-Splits a \code{SingleCellAssay} into a \code{SimpleList} by a factor (or something coercible into a factor) or a character giving a column of \code{colData(x)}
+Splits a \code{SingleCellAssay} into a \code{list} by a factor (or something coercible into a factor) or a character giving a column of \code{colData(x)}
 }
 \examples{
 data(vbetaFA)
 split(vbetaFA, 'ncells')
 fa <- as.factor(colData(vbetaFA)$ncells)
 split(vbetaFA, fa)
+
 }
 

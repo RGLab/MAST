@@ -52,11 +52,11 @@ NULL
 #setGeneric('featureData', function(object) standardGeneric('featureData'))
 NULL
 
-##' @rdname subset
-##' @title subset
-##' @aliases subset
+##' Subsetting Vectors, Matrices and Data Frames
+##'
+##' Return subsets of vectors, matrices or data frames which meet conditions.
 ##' @export
-setGeneric('subset')
+setGeneric('subset', function(x, ...) standardGeneric('subset'))
 
 ##' @import BiocGenerics
 NULL
@@ -76,6 +76,11 @@ NULL
 ##' @aliases fit,BayesGLMlike,missing-method
 setGeneric('fit', function(object, response, ...) standardGeneric('fit'))
 
+##' Return coefficient standard errors
+##'
+##' Given a fitted model, return the standard errors of the coefficient
+##' @param ... currently ignored
+##' @return vector or matrix
 setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
 
 ##' Coefficients of zero-inflated
