@@ -127,7 +127,6 @@ if(getRversion() >= "2.15.1") globalVariables(c(
                  'z', 
                   'varLogFC')) #getLogFC
 
-##' @import data.table
 ##' @describeIn logFC Return results as a perhaps friendlier \code{data.table}
 ##' @export
 getLogFC <- function(zlmfit, contrast0, contrast1){

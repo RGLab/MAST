@@ -149,7 +149,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ## might have bad complexity, but could construct one at time, then glue cheaply
 ## Not too bad except for deduplication.. will use data.table
 ## Output is sorted by primerid then wellKey
-##' @import data.table
+##' @importFrom data.table melt  :=  setkey  setkeyv  set %like%  dcast  data.table  rbindlist  setDT  CJ  .SD  melt  like  setorder  setnames  .N  setDF key setorderv dcast.data.table melt.data.table setattr
 fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
   df<-data.table(df)
   cn_df<-colnames(df)
