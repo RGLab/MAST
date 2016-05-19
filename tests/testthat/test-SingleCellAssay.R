@@ -12,6 +12,14 @@
 ##   expect_that(vbeta,is_a("data.frame"))
 ## })
 
+##Tests depending on vbeta
+test_that("vbeta can be loaded",{
+  expect_that(vbeta,is_a("data.frame"))
+})
+
+test_that('could create SingleCellAssay', {
+    expect_that(fd, is_a('SingleCellAssay'))
+})
 
 
 context("Generating a complete and incomplete subset")

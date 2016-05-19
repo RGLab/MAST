@@ -58,7 +58,7 @@ Collate:
     'lmWrapper-glm.R'
     'lmWrapper-glmer.R'
     'lmWrapper-ridge.R'
-    'lrtest.r'
+    'lrtest.R'
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'

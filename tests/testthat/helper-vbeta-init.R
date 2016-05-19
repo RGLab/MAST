@@ -12,15 +12,7 @@ ncells <- 'Number.of.Cells'
 load(system.file('data/vbeta.RData', package='MAST'))
 data(vbeta)
 
-##Tests depending on vbeta
-test_that("vbeta can be loaded",{
-  expect_that(vbeta,is_a("data.frame"))
-})
-
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
 
 
 fd <- FromFlatDF(vbeta, idvars=idvars, primerid=primerid, measurement=measurement,cellvars=cellvars, geneid=geneid, ncells='Number.of.Cells', class='FluidigmAssay')
-test_that('could create SingleCellAssay', {
-    expect_that(fd, is_a('SingleCellAssay'))
-})
