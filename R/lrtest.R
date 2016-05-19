@@ -132,13 +132,13 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
     res
   })
 
-  m <- melt(lrout)
-  m <- rename(m, c('X1'=comparison, 'X2'='metric', 'X3'='test.type', 'X4'=probeid))
+  m <- reshape2::melt(lrout)
+  m <- rename(m, c('Var1'=comparison, 'Var2'='metric', 'Var3'='test.type', 'Var4'=probeid))
   if(returnall){
     return(m)
   }
   retme<-subset(m, test.type=='comb')
-  return(dcast(rename(retme,c(metric="variable"))))
+  return(dcast(rename(retme,c(metric="variable")), formula=...~variable))
                 }
 
 
