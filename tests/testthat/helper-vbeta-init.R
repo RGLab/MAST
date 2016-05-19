@@ -1,5 +1,3 @@
-library(testthat)
-
 geneid="Gene"
 primerid='Gene'
 measurement='et'
