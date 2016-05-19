@@ -196,7 +196,7 @@ In each gene, we'll fit a Hurdle model with a separate intercept for each popula
 A an S4 object of class ``ZlmFit'' is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
 <<zlmExample, warning=FALSE, message=FALSE, fig.width=6, fig.height=6>>=
 library(ggplot2)
-library(reshape)
+library(reshape2)
 library(abind)
 zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1, method='glm',
                                   ebayes=TRUE)
