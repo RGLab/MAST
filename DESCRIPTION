@@ -19,9 +19,9 @@ Imports:
     methods,
     parallel,
     R.methodsS3,
-    GenomicRanges
+    GenomicRanges,
+    reshape2
 Depends:
-    reshape,
     SummarizedExperiment
 Suggests:
     knitr,
@@ -30,7 +30,8 @@ Suggests:
     roxygen2(> 4.0.0),
     numDeriv,
     car,
-    gdata
+    gdata,
+    lattice
 Description: Core data structures and methods for handling single cell assay
     data.
 License: GPL(>= 2)

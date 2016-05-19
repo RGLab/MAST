@@ -3,7 +3,7 @@
 \name{FromFlatDF}
 \alias{FluidigmAssay}
 \alias{FromFlatDF}
-\alias{SingleCellAssay,}
+\alias{SingleCellAssay}
 \title{Construct a SingleCellAssay (or derived subclass) from a `flat` (melted) data.frame/data.table}
 \usage{
 FromFlatDF(dataframe, idvars, primerid, measurement, id = numeric(0),
@@ -38,7 +38,7 @@ SingleCellAssay, or derived, object
 }
 \description{
 SingleCellAssay are a generic container for such data and are simple wrappers around SummarizedExperiment objects.
-Subclasses exist that embue the container with additional attributes, eg \link{\code{FluidigmAssay}}.
+Subclasses exist that embue the container with additional attributes, eg \link{FluidigmAssay}.
 }
 \examples{
 data(vbeta)

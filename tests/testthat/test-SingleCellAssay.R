@@ -313,13 +313,13 @@ test_that('Can melt with reshape2', {
     detach('package:reshape2')
 })
 
-test_that('Can melt with reshape', {
-    library(reshape, pos=length(search()))
-    M <- reshape::melt(datArray)
-    expect_equal(M, melt(datArray))
-    M2 <- reshape::melt(datList, value.name='foo')
-    expect_equal(M2, melt(datList, value.name='foo'))
-})
+## test_that('Can melt with reshape', {
+##     library(reshape, pos=length(search()))
+##     M <- reshape::melt(datArray)
+##     expect_equal(M, melt(datArray))
+##     M2 <- reshape::melt(datList, value.name='foo')
+##     expect_equal(M2, melt(datList, value.name='foo'))
+## })
 
 test_that('Can melt with data.table', {
     #library(data.table, pos=length(search()))

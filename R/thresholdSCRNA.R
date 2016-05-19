@@ -379,7 +379,7 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
 ##' @describeIn summary.thresholdSCRNACountMatrix prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
 print.summaryThresholdSCRNA <- function(x, ...){
     class(x) <- class(x)[-length(class(x))]
-    m <- as.data.table(reshape::melt.list(x, na.rm=TRUE))
+    m <- as.data.table(reshape2::melt(x, na.rm=TRUE))
     m <- m[!is.na(value),]
     setnames(m, 'L1', 'metric')
     summ <- m[,list(stat=names(summary(value)), value=summary(value)),keyby=list(L2, metric)]

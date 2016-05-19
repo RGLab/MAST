@@ -109,7 +109,7 @@ setMethod('fData', 'SingleCellAssay', function(object){
 ##' @return A \code{data.frame} typically, with the cartesian product of the
 ##' row and column attributes and the values from the rectangular array
 ##' 
-##' @export
+##' @export melt.SingleCellAssay
 melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     featdata <- as.data.table(mcols(data))
     celldata <- as.data.table(colData(data))
@@ -225,7 +225,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ##' Construct a SingleCellAssay (or derived subclass) from a `flat` (melted) data.frame/data.table
 ##'
 ##' SingleCellAssay are a generic container for such data and are simple wrappers around SummarizedExperiment objects.
-##' Subclasses exist that embue the container with additional attributes, eg \link{\code{FluidigmAssay}}.
+##' Subclasses exist that embue the container with additional attributes, eg \link{FluidigmAssay}.
 ##' @param dataframe A 'flattened' \code{data.frame} or \code{data.table} containing columns giving cell and feature identifiers and  a measurement column
 ##' @param idvars character vector naming columns that uniquely identify a cell
 ##' @param primerid character vector of length 1 that names the column that identifies what feature (i.e. gene) was measured
@@ -237,7 +237,8 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ##' @param class character providing desired subclass to construct.
 ##' @param ... additional arguments are ignored
 ##' @export
-##' @aliases SingleCellAssay, FluidigmAssay
+##' @aliases SingleCellAssay
+##' @aliases FluidigmAssay
 ##' @examples
 ##' data(vbeta)
 ##' colnames(vbeta)

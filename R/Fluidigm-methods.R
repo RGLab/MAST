@@ -95,7 +95,6 @@ apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 ##' @return concordance between two assays
 ##' @author Andrew McDavid
 ##' @export getConcordance
-##' @importFrom plyr is.formula
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
   ## vector of groups over which we should aggregate
   if(!(is(singleCellRef, 'FluidigmAssay') && is(singleCellcomp, 'FluidigmAssay'))){
@@ -111,22 +110,22 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
     firstForm <- formula(sprintf("%s ~.", lhs1))
     ##should look like Patient.ID + ... + n.cells ~ PrimerID
     m <- as(scL[[i]], 'data.table')
-    tmp <- cast(m, firstForm, fun.aggregate=fun.natural)
+    tmp <- reshape2::dcast(m, firstForm, fun.aggregate=fun.natural)
     ##exponential average per gene, scaled by number of cells
     if(class(m[['ncells']]) == 'factor'){
         warning("ncells is a factor rather than numeric.\n I'll continue, but this may cause problems down the line")
         tmp[['ncells']] <- as.numeric(as.character(tmp[["ncells"]]))
     }
-    tmp[["(all)"]] <- tmp[["(all)"]]/tmp[['ncells']]
+    tmp[["."]] <- tmp[["."]]/tmp[['ncells']]
     rhs2 <- union(groups, "primerid")
     terms2 <- sprintf("%s ~ .", paste(rhs2, collapse="+"))
     secondForm <- formula(terms2)
-    nexp = cast(m, secondForm, fun.aggregate=function(x){sum(x>0)}, value="value")
+    nexp = reshape2::dcast(m, secondForm, fun.aggregate=function(x){sum(x>0)}, value.var="value")
     #put back on Et scale. fun.cycle adds 1 so -Inf becomes 0 on natural scale
-    castL[[i]] <- cast(melt(tmp), secondForm, fun.aggregate=fun.cycle)
-    renamestr <- c('(all)'='et')
+    castL[[i]] <- reshape2::dcast(melt(tmp), secondForm, fun.aggregate=fun.cycle)
+    renamestr <- c('.'='et')
     castL[[i]] <- plyr::rename(castL[[i]], renamestr)
-    castL[[i]] <- cbind(castL[[i]], nexp=nexp$`(all)`)
+    castL[[i]] <- cbind(castL[[i]], nexp=nexp[['.']])
   }
   concord <- merge(castL[[1]], castL[[2]], by=c(groups, 'primerid'), suffixes=c(".ref", ".comp"), all=T)
   concord

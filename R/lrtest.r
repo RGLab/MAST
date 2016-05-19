@@ -138,7 +138,7 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
     return(m)
   }
   retme<-subset(m, test.type=='comb')
-  return(cast(rename(retme,c(metric="variable"))))
+  return(dcast(rename(retme,c(metric="variable"))))
                 }
 
 
@@ -156,7 +156,7 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
 ##' @export
 plotlrt <- function(lr, adjust='fdr', thres=.1, trunc=1e-6, groups=NULL){
 lr$adj <- p.adjust(lr$p.value, method=adjust)
-posgene <- suppressMessages(cast(lr[, c('gene', 'adj')], gene ~ ., fun.aggregate=function(x) any(x<thres)))
+posgene <- suppressMessages(reshape2::dcast(lr[, c('gene', 'adj')], gene ~ ., fun.aggregate=function(x) any(x<thres)))
 posgene <- posgene[posgene[,2],]
 pvalue <- with(lr, pmin(p.value, trunc))
 if(length(posgene)>0){
