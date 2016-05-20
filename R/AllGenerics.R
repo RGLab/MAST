@@ -2,11 +2,23 @@
 ## Base
 ###############################
 
-##' Accessor for cellData \code{data.frame}
+##' Deprecated cell/feature data accessors/mutators
 ##'
+##' These functions are now all deprecated and will be removed in a future release.
+##'
+##' @section Replacements Functions:
+##' You should transition to use the following replacements:
+##' \describe{
+##'   \item{\code{cData}}{\link{colData}}
+##'   \item{\code{fData}}{\link{mcols}}
+##'   \item{\code{exprs}}{\link{assay}}
+##'   \item{\code{combine}}{\link{cbind2} or \link{rbind2}}
+##' }
 ##' @param sc An object with \code{cellData}
-##' @return \code{data.frame}
+##' @return \code{DataFrame} or modifies the \code{SingleCellAssay} object in place
 ##' @details \code{cData(sc)}: Return the \code{cellData} \code{data.frame}.
+##' @seealso exprs
+##' @rdname cData
 ##' @export
 setGeneric('cData', function(sc) standardGeneric('cData'))
 
@@ -21,8 +33,8 @@ setGeneric('getwellKey', function(sc) standardGeneric('getwellKey'))
 
 ##' @export
 ##' @rdname cData
-##' @param value Replacement, one of \code{AnnotatedDataFrame} or \code{data.frame}
 ##' @details \code{cData(sc)<-value}: Replace the cellData with \code{value}, which can be either an \code{AnnotatedDataFrame} or \code{data.frame}.  The replacement is checked that it has mandatory fields defined by its class.
+##' @param value replacement value
 setGeneric("cData<-", function(sc, value) standardGeneric("cData<-"))
 
 ##' Accessor for featureData \code{data.frame}
@@ -187,12 +199,3 @@ setGeneric('summary', function(object, ...) standardGeneric('summary'))
 ##' @export
 setGeneric("LRT",function(sca,comparison,...) standardGeneric("LRT"))
 
-###############################
-## Nanostring
-###############################
-##' thresholds for positive expression
-##'
-##' @param nsa NanostringAssay object
-##' @return modified nsa
-##' @export
-setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))
