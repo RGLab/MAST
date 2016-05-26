@@ -275,31 +275,6 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 }
 
 
-##' Summarize expression parameters
-##'
-##' The mean of positive cells, mu, proportion of gene expression pi,
-##' and number of expressing cells per \code{groups} per gene is returned as a list
-##' @param fd object inheriting from SingleCellAssay
-##' @param groups character vector of grouping variables
-##' @return list of mu, pi and num.
-setMethod('summary', 'SingleCellAssay', function(object, groups){
-  if(!missing(groups) && !is.null(groups)){
-checkGroups(object, groups)
-sp <- split(object, groups)
-mu <- lapply(sp, condmean)
-pi <- lapply(sp, freq)
-num <- lapply(sp, numexp)
-mu <- t(do.call(rbind, mu))
-pi <- t(do.call(rbind, pi))
-num <- t(do.call(rbind, num))
-} else{
-  mu <- data.frame(condmean(object))
-pi <- data.frame(freq(object))
-num <- data.frame(numexp(object))
-}
-list(mu=mu, pi=pi, num=num)
-})
-
 
 #' Average within duplicated genes/primers
 #'
