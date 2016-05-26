@@ -3,15 +3,18 @@
 \docType{methods}
 \name{cData}
 \alias{cData}
+\alias{cData,SingleCellAssay-method}
 \alias{cData<-}
 \alias{cData<-,SingleCellAssay-method}
 \alias{combine,SingleCellAssay,ANY-method}
 \alias{combine,SingleCellAssay,SingleCellAssay-method}
-\title{Accessor for cellData \code{data.frame}}
+\title{Deprecated cell/feature data accessors/mutators}
 \usage{
 cData(sc)
 
 cData(sc) <- value
+
+\S4method{cData}{SingleCellAssay}(sc)
 
 \S4method{cData}{SingleCellAssay}(sc) <- value
 
@@ -22,7 +25,7 @@ cData(sc) <- value
 \arguments{
 \item{sc}{An object with \code{cellData}}
 
-\item{value}{Replacement, one of \code{AnnotatedDataFrame} or \code{data.frame}}
+\item{value}{replacement value}
 
 \item{x}{\code{SingleCellAssay}}
 
@@ -31,22 +34,29 @@ cData(sc) <- value
 \item{...}{\code{SingleCellAssay}}
 }
 \value{
-\code{data.frame}
+\code{DataFrame} or modifies the \code{SingleCellAssay} object in place
 }
 \description{
-Accessor for cellData \code{data.frame}
+These functions are now all deprecated and will be removed in a future release.
 }
 \details{
 \code{cData(sc)}: Return the \code{cellData} \code{data.frame}.
 
 \code{cData(sc)<-value}: Replace the cellData with \code{value}, which can be either an \code{AnnotatedDataFrame} or \code{data.frame}.  The replacement is checked that it has mandatory fields defined by its class.
+
+\code{combine(x, y, ...)}: Concatenate two experiments along rows/columns
 }
-\section{Methods (by class)}{
-\itemize{
-\item \code{SingleCellAssay}: replace the \code{colData}
+\section{Replacements Functions}{
 
-\item \code{x = SingleCellAssay,y = SingleCellAssay}: combine two experiments along rows/columns
-
-\item \code{x = SingleCellAssay,y = ANY}: combine two experiments along rows/columns
-}}
+You should transition to use the following replacements:
+\describe{
+  \item{\code{cData}}{\link{colData}}
+  \item{\code{fData}}{\link{mcols}}
+  \item{\code{exprs}}{\link{assay}}
+  \item{\code{combine}}{\link{cbind2} or \link{rbind2}}
+}
+}
+\seealso{
+exprs
+}
 

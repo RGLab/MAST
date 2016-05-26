@@ -7,12 +7,17 @@
 se.coef(object, ...)
 }
 \arguments{
-\item{...}{currently ignored}
+\item{object}{a model implementing \code{vcov}}
+
+\item{...}{passed to methods}
 }
 \value{
 vector or matrix
 }
 \description{
 Given a fitted model, return the standard errors of the coefficient
+}
+\seealso{
+ZlmFit-class
 }
 

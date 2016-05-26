@@ -106,6 +106,8 @@ setMethod('fData', 'SingleCellAssay', function(object){
 ##' @param data A rectangular array, with attributes attached to its rows and
 ##' columns
 ##' @param ... ignored
+##' @param na.rm ignored
+##' @param value.name name of 'values' column containing the measurement
 ##' @return A \code{data.frame} typically, with the cartesian product of the
 ##' row and column attributes and the values from the rectangular array
 ##' 
@@ -344,21 +346,7 @@ uniqueModNA <- function(df, include){
 
 setMethod('getwellKey', 'SingleCellAssay', function(sc) {colData(sc)$wellKey})
 
-##' Deprecated cell/feature data accessors/mutators
-##'
-##' These functions are now all deprecated and will be removed in a future release.
-##'
-##' @section Replacements:
-##'
-##' \describe{
-##'   \item{\code{cData}}{\link{colData}}
-##'   \item{\code{fData}}{\link{mcols}}
-##'   \item{\code{exprs}}{\link{assay}}
-##'   \item{\code{combine}}{\link{cbind2} or \link{rbind2}}
-##' }
-##' @param sc SingleCellAssay
-##' @param value replacement value
-##' @return a \code{DataFrame} or modifies the \code{SingleCellAssay} object in place
+##' @rdname cData
 ##' @export
 setMethod('cData', 'SingleCellAssay', function(sc){
     .Deprecated('use colData')
@@ -371,6 +359,7 @@ setMethod('cData', 'SingleCellAssay', function(sc){
 ##' @param x \code{SingleCellAssay}
 ##' @param ... expression
 ##' @return \code{SingleCellAssay}
+##' @rdname subset
 ##' @export
 setMethod('subset', 'SingleCellAssay', function(x, ...){
     e <- substitute(...)
@@ -399,7 +388,7 @@ setReplaceMethod('assayNames', c('SingleCellAssay', 'character'), function(x, i,
 
 
 ##' @export
-##' @describeIn cData replace the \code{colData}
+##' @rdname cData
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
     .Deprecated('colData<-')
     colData(sc) <- value
@@ -470,10 +459,11 @@ setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop
 
 
 ##' @export
-##' @describeIn cData combine two experiments along rows/columns
+##' @rdname cData
 ##' @param x \code{SingleCellAssay}
 ##' @param y \code{SingleCellAssay}
 ##' @param ... \code{SingleCellAssay}
+##' @details  \code{combine(x, y, ...)}: Concatenate two experiments along rows/columns
 setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y,  ...){
     ## Not using .Deprecated because I want to maintain test coverage for this function.
     warning('Deprecated: use rbind/cbind')
@@ -487,7 +477,7 @@ setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), functi
 })
 
 ##' @export
-##' @describeIn cData combine two experiments along rows/columns
+##' @rdname cData
 setMethod('combine', signature(x='SingleCellAssay', y='ANY'), function(x, y,  ...){
     if(ncol(x) == nrow(y) || ncol(x) == length(y)){
         cd <- cbind(colData(x), y)

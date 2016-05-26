@@ -54,7 +54,7 @@ setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), funct
     .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
 })
 
-##'  @describeIn ZlmFit Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
+##' @describeIn ZlmFit Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
     testIdx <- h@index
@@ -256,6 +256,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ##' @param x output from summary(ZlmFit)
 ##' @param n number of genes to show
 ##' @param by one of 'C' , 'D' or 'logFC' for continuous, discrete and log fold change z-scores for each contrast
+##' @param ... ignored
 ##' @seealso summary,ZlmFit-method
 ##' @export
 print.summaryZlmFit <- function(x, n=2, by='logFC', ...){

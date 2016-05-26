@@ -41,7 +41,8 @@ For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0),
 Return an object of class \code{ZlmFit} containing slots giving the coefficients, variance-covariance matrices, etc.
 After each gene, optionally run the function on the fit named by 'hook'
 }
-\details{
+\section{Empirical Bayes variance regularization}{
+
 The empirical bayes regularization of the gene variance assumes that the precision (1/variance) is drawn from a
 gamma distribution with unknown parameters.
 These parameters are estimated by considering the distribution of sample variances over all genes.
@@ -62,6 +63,6 @@ waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 }
 }
 \seealso{
-ebayes, glmlike-class, ZlmFit-class
+ebayes, glmlike-class, ZlmFit-class, BayesGLMlike-class
 }
 

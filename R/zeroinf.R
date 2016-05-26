@@ -43,7 +43,7 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##' and (conditional on the the response being >0), the continuous process is Gaussian, ie, a linear regression.
 ##' @param formula model formula
 ##' @param data a data.frame, list, environment or SingleCellAssay in which formula is evaluated
-##' @param method one of 'glm' or 'glmer'.  See SingleCellAssay:::methodDict for other possibilities.
+##' @param method one of 'glm', 'glmer' or 'bayesglm'.  See MAST:::methodDict for other possibilities.
 ##' @param silent if TRUE suppress common errors from fitting continuous part
 ##' @param ... passed to \code{fit}, and eventually to the linear model fitting function
 ##' @return list with "disc"rete part and "cont"inuous part 
@@ -58,7 +58,7 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##' summary.glm(fit$disc)
 ##' summary.glm(fit$cont)
 ##'
-##' @seealso GLMlike, LMERlike
+##' @seealso GLMlike, LMERlike, BayesGLMlike
 ##' @import stringr
 zlm <- function(formula, data, method='glm',silent=TRUE, ...){
     ## perhaps we should be generic, but since we are dispatching on second argument, which might be an S3 class, let's just do this instead.
@@ -88,7 +88,8 @@ summary.zlm <- function(out){
 ##' For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
 ##' Return an object of class \code{ZlmFit} containing slots giving the coefficients, variance-covariance matrices, etc.
 ##' After each gene, optionally run the function on the fit named by 'hook'
-##' 
+##'
+##' @section Empirical Bayes variance regularization:
 ##' The empirical bayes regularization of the gene variance assumes that the precision (1/variance) is drawn from a
 ##' gamma distribution with unknown parameters.
 ##' These parameters are estimated by considering the distribution of sample variances over all genes.
@@ -111,7 +112,7 @@ summary.zlm <- function(out){
 ##' @param ... arguments passed to the S4 model object upon construction.  For example, \code{fitArgsC} and \code{fitArgsD}, or \code{coefPrior}.
 ##' @return a object of class \code{ZlmFit} with methods to extract coefficients, etc.
 ##' @export
-##' @seealso ebayes, glmlike-class, ZlmFit-class
+##' @seealso ebayes, glmlike-class, ZlmFit-class, BayesGLMlike-class
 ##' @examples
 ##' \dontrun{
 ##' data(vbetaFA)

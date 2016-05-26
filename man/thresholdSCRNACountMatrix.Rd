@@ -26,6 +26,8 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 \item{absolute_min}{\code{numeric} giving a hard threshold below which everything is assumed to be noise}
 
 \item{return_log}{return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).}
+
+\item{adj}{bandwith adjustment, passed to \code{density}}
 }
 \value{
 \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data

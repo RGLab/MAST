@@ -106,6 +106,7 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param min_per_bin minimum number of genes within a bin
 #' @param absolute_min \code{numeric} giving a hard threshold below which everything is assumed to be noise
 #' @param return_log return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).
+#' @param adj bandwith adjustment, passed to \code{density}
 #'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data
 #'@importFrom plyr ldply
 #'@export
@@ -366,6 +367,7 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
 }
 
 ##' @describeIn summary.thresholdSCRNACountMatrix prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
+##' @param x a \code{summaryThresholdSCRNA} object, ie output from \code{summary.thresholdSCRNACountMatrix}
 ##' @export
 print.summaryThresholdSCRNA <- function(x, ...){
     class(x) <- class(x)[-length(class(x))]

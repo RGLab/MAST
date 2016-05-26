@@ -16,7 +16,11 @@ myBiplot(pc, colorfactor, scaling = 100, nudge = 1.2, N = 10,
 
 \item{nudge}{\code{numeric} to offset labels for loadings}
 
+\item{N}{number of variables with longest \code{dim[1]} or \code{dim[2]} projections to display}
+
 \item{dims}{\code{numeric} vector of length 2 indicating which PCs to plot}
+
+\item{...}{passed to plot}
 }
 \description{
 Creates a custom BiPlot for visualizing the results of PCA

@@ -91,7 +91,9 @@ setGeneric('fit', function(object, response, ...) standardGeneric('fit'))
 ##' Return coefficient standard errors
 ##'
 ##' Given a fitted model, return the standard errors of the coefficient
-##' @param ... currently ignored
+##' @param object a model implementing \code{vcov}
+##' @param ... passed to methods
+##' @seealso ZlmFit-class
 ##' @return vector or matrix
 setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
 
@@ -171,6 +173,7 @@ setGeneric('model.matrix<-', function(object, value) standardGeneric('model.matr
 ##' Return programmatically useful summary of a fit
 ##'
 ##' @param object LMlike or subclass
+##' @param ... other arguments
 ##' @return list of parameters characterizing fit
 setGeneric('summarize', function(object, ...) standardGeneric('summarize'))
 

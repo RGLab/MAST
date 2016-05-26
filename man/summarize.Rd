@@ -8,6 +8,8 @@ summarize(object, ...)
 }
 \arguments{
 \item{object}{LMlike or subclass}
+
+\item{...}{other arguments}
 }
 \value{
 list of parameters characterizing fit

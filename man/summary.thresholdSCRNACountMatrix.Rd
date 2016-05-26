@@ -13,6 +13,8 @@
 \item{object}{a \code{thresholdSCRNACountMatrix}}
 
 \item{...}{currently ignored}
+
+\item{x}{a \code{summaryThresholdSCRNA} object, ie output from \code{summary.thresholdSCRNACountMatrix}}
 }
 \value{
 a list of statistics on the original data, and thresholded data

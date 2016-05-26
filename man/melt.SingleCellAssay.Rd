@@ -12,6 +12,10 @@
 columns}
 
 \item{...}{ignored}
+
+\item{na.rm}{ignored}
+
+\item{value.name}{name of 'values' column containing the measurement}
 }
 \value{
 A \code{data.frame} typically, with the cartesian product of the

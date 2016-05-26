@@ -89,7 +89,8 @@ setMethod('update', signature=c(object='LMlike'), function(object, formula., des
 })
 
 #' @describeIn model.matrix return the \code{model.matrix}
-setMethod('model.matrix', signature=c(object='LMlike'), function(object){
+#' @param ... ignored
+setMethod('model.matrix', signature=c(object='LMlike'), function(object, ...){
     object@modelMatrix
 })
 

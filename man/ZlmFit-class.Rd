@@ -4,6 +4,7 @@
 \name{ZlmFit-class}
 \alias{ZlmFit-class}
 \alias{coef,ZlmFit-method}
+\alias{lrTest,ZlmFit,CoefficientHypothesis-method}
 \alias{lrTest,ZlmFit,Hypothesis-method}
 \alias{lrTest,ZlmFit,matrix-method}
 \alias{se.coef,ZlmFit-method}
@@ -12,6 +13,8 @@
 \alias{waldTest,ZlmFit,Hypothesis-method}
 \title{An S4 class to hold the output of a call to zlm}
 \usage{
+\S4method{lrTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis)
+
 \S4method{lrTest}{ZlmFit,Hypothesis}(object, hypothesis)
 
 \S4method{lrTest}{ZlmFit,matrix}(object, hypothesis)
@@ -40,6 +43,8 @@ This holds output from a call to zlm.SingleCellAssay.  Many methods are defined 
 }
 \section{Methods (by generic)}{
 \itemize{
+\item \code{lrTest}: Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
+
 \item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a \link{Hypothesis}.
 
 \item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a contrast \code{matrix}.

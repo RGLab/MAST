@@ -171,8 +171,10 @@ setReplaceMethod('model.matrix', signature=c(object='LMERlike'), function(object
 ## }
 
 
-##' ##' @include AllClasses.R
+##' @include AllClasses.R
 ##' @include AllGenerics.R
+##' @param silent mute some warnings emitted from the underlying modeling functions
+##' @rdname fit
 setMethod('fit', signature=c(object='LMERlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){
