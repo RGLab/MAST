@@ -231,11 +231,7 @@ test_that('Subset throws an intelligent error if thesubset cannot be evaluated',
  expect_that(subset(sc, NOTPRESENT==fdsfjkl), throws_error('not found'))
 })
 
-context("SCASet works")
-## test_that('Can construct', {
-## aset <- SCASet(melt(sc), primerid=primerid, idvars=idvars, measurement='et', splitby='Subject.ID')
-## })
-
+context('Splitting')
 test_that('Can split',{
         splat <- split(sc, colData(sc)$Subject.ID)
         expect_that(splat, is_a('list'))

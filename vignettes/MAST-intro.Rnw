@@ -131,17 +131,17 @@ mcols(sub3)
 The cellData and featureData \texttt{AnnotatedDataFrames} are subset
 accordingly as well.
 
-A \sca may be split into a list of \sca, which is known as an
-\texttt{SCASet}. The split method takes an argument which names the column
+A \sca may be split into a list of \sca. 
+The split method takes an argument which names the column
 (factor) on which to split the data. Each level of the factor will be placed
-in its own \sca within the SCASet.
+in its own \sca within the list.
 <<split,warning=FALSE>>=
 sp1 <- split(vbeta.fa, 'Subject.ID')
 show(sp1)
 @
 The splitting variable can either be a character vector naming column(s) of the \sca, or may be a \texttt{factor} or \texttt{list} of \texttt{factor}s.
 
-It's possible to combine \sca objects or an \texttt{SCASet} with the \texttt{cbind} method.
+It's possible to combine \sca objects with the \texttt{cbind} method.
 <<combine,warning=FALSE, echo=-1>>=
 cbind(sp1[[1]],sp1[[2]])
 @ 
@@ -285,12 +285,6 @@ We assume that suitable tools (eg, SAMseq or TopHat) have been applied to do thi
   confusion when combining data across projects, so the constructor
   will rename the fields the user provides to match the values
   specifed in \texttt{cmap} and \texttt{fmap}.
-
-  Sets of single cell assays are stored in the \texttt{SCASet}
-  class. A constructor for SCASet is provided to construct an SCASet
-  directly from a data frame.  Alternatively, a SingleCellAssay or
-  derived class can be \texttt{split} on an arbitray variable to
-  produce an SCASet.
 
   On construction of a \texttt{SingleCellAssay} object, the package
   tests for completeness, and will fill in the missing data (with NA)

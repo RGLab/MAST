@@ -46,20 +46,6 @@ setClass('FluidigmAssay', contains='SingleCellAssay', prototype=list(cmap=Fluidi
 
 
 
-##'SCASet is a set of SingleCellAssay objects or objects of its subclasses (i.e. FluidigmAssay)
-##'The constructor \code{SCASet} should be used to make objects of this class.
-##' @slot set: A \code{list} of \code{SingleCellAssays} or its subclasses
-##' @seealso SCASet
-setClass("SCASet",
-         representation=list(set="list"),validity=function(object){
-           if(all(names(object@set)!=unlist(lapply(object@set,function(x) x@id),use.names=FALSE))){
-             warning("Names of the SCASet don't match the SingleCellAssay id's. Plese use the SingleCellAssay() constructor.")
-             return(FALSE)
-           }
-           return(TRUE)
-         })
-
-
 ## Classes
 ##' Linear Model-like Class
 ##'
@@ -180,42 +166,3 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
 ##' @seealso zlm.SingleCellAssay summary,ZlmFit-method
 setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SummarizedExperiment0', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
-
-
-##' Constructor for a FluidigmAssay
-
-
-##' Constructs a SCASet
-##'
-##' An SCASet is a list of SingleCellAssays or objects inheriting from SingleCellAssay. The type of constructor called is determined by the value of contentClass, which should be the class of the SCA inheriting object contained in this SCASet. Both the class and the constructor should exist and have the same name. The code dynamically looks to see if the a function with the same name exists, and ASSUMES it is the constructor for the class.
-##' @param dataframe flat data.frame ala SingleCellAssay
-##' @param splitby either a character vector naming columns or a factor or a list of factors used to split dataframe into SingleCellAssays
-##' @param idvars character vector naming columns that uniquely identify a cell
-##' @param primerid character vector of length 1 that names the column that containing what feature was measured
-##' @param measurement character vector of length 1 that names the column containing the measurement
-##' @param contentClass a character, the name of the class being constructed within this SCASet. Defaults to SingleCellAssay. Other methods may pass in other classes, i.e. FluidigmAssay.
-##' @param ... passed up to SingleCellAssay or other dynamically called constructor.
-##' @return SCASet
-##' @note The dynamic lookup of the constructor could be made more robust. 
-##' @export 
-SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,contentClass="SingleCellAssay",...){
-  if(is.character(splitby) && all(splitby %in% names(dataframe))){
-  spl<-split(dataframe,dataframe[, splitby])
-} else if(is.factor(splitby) || is.list(splitby) || is.character(splitby)){
-  spl <- split(dataframe, splitby)
-} else{
-  stop("Invalid 'splitby' specification")
-}
- 
-  set<-vector("list",length(spl))
-  names(set)<-names(spl)
-  for(i in seq_along(set)){
-    ##construct a call using contentClass
-    F <- try(getFunction(contentClass),silent=TRUE)
-    if(is(F,"try-error"))
-      message("Can't construct a class of type ",contentClass[[1]],". Constructor of this name doesn't exist")
-      cl<-as.call(list(as.name(contentClass[[1]]),dataframe=spl[[i]],idvars=idvars,primerid=primerid,id=names(spl)[[i]], measurement=measurement,...))
-    set[[i]]<-eval(cl)
-  }
-  new("SCASet",set=set)
-}

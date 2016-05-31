@@ -26,7 +26,7 @@
 ##' @param metadataColClasses Optional \code{character} vector giving the column classes of the metadata file. See \link{read.table}.
 ##' @param meta.key Optional \code{character} vector that identifies the key column between the metadata and the fluidigm data
 ##' @param idvars Optional \code{character} vector that defines the set of columns uniquely identifying a well (unique cell, gene, and condition).
-##' @param splitby Optional \code{character} that defines the column / variable used to split the resulting data into an SCASet, such that unique levels of \code{splitby} each fall into their own SingleCellAssay object within an SCASet. Ususally the experimental unit subjected to different treatments.
+##' @param splitby Optional \code{character} that defines the column / variable used to split the resulting data into a list of SingleCellAssay, such that unique levels of \code{splitby} each fall into their own SingleCellAssay. Ususally the experimental unit subjected to different treatments.
 ##' @param unique.well.id The column that uniquely identifies a sample well in the data. Default is "Chamber.ID".
 ##' @param raw \code{logical} flag indicating this is raw data coming off the instrument. Thus we make some assumptions about the column names that are present. 
 ##' @param assay \code{character} name of a column that uniquely identifies an Assay (i.e. gene). Default is NULL
@@ -36,7 +36,7 @@
 ##' @param measurement \code{character} name of the column that holds the measurement. Default "X40.Ct".
 ##' @param measurement.processed \code{character} one of "Ct","40-Ct", or "et". If not "Ct", the measurement will be transformed.
 ##' @param ncells The column with the number of cells in this well.
-##' @return \code{SCASet} holding the data.
+##' @return list of \code{SingleCellAssay} holding the data.
 ##' @export read.fluidigm
 ##' @author Greg Finak
 read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.threshold=40,metadataColClasses=NULL,meta.key=NULL,idvars=NULL,splitby=NULL,unique.well.id="Chamber.ID",raw=TRUE,assay=NULL,geneid="Assay.Name",sample=NULL,well="Well",measurement="X40.Ct",measurement.processed="Ct",ncells="SampleRConc"){
@@ -62,9 +62,6 @@ read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.thre
   }
   if(is.null(idvars)){
     stop("Must provide `idvars` specifying columns that identify unique rows conditional on `splitby`")
-  }
-  if(is.null(splitby)){
-    stop("Must specify `splitby`, the column used to split the data into SingleCellAssay objects")
   }
   if(is.null(files)){
     stop("Invalid file name")
@@ -200,8 +197,10 @@ read.fluidigm<-function(files=NULL,metadata=NULL,header.size=2,skip=8,cycle.thre
   ##splitby, idvars
   ##constructor for SCA set
   ##constructor for single cell assay or other type of assay
-  
-  set<-SCASet(dataframe=bound,splitby=splitby,idvars=idvars,primerid="primer.id",measurement="et",geneid=geneid,ncells=ncells,contentClass="FluidigmAssay")
+
+  joint <- FromFlatDF(dataframe=bound, idvars=idvars,primerid="primer.id",measurement="et",featurevars=geneid,ncells=ncells,class="FluidigmAssay")
+  if(is.null(splitby)) return(joint)
+  set<-split(joint, splitby)
   return(set)
 }
 

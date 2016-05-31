@@ -44,7 +44,6 @@ Collate:
     'MultidimensionalScaling.R'
     'RNASeqAssay-methods.R'
     'Readers.R'
-    'SCASet-methods.R'
     'SingleCellAssay-methods.R'
     'UtilityFunctions.R'
     'ZlmFit-bootstrap.R'
