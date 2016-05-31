@@ -35,7 +35,7 @@ Mandatory_Cellvars <- character()
 ##' @import SummarizedExperiment
 ##' @import S4Vectors
 ##' @importMethodsFrom S4Vectors mcols
-##' @importMethodsFrom GenomicRanges colData assays assay
+##' @importMethodsFrom SummarizedExperiment colData assays assay
 setClass('SingleCellAssay', contains='SummarizedExperiment0',
          slots=list(cmap='character', fmap='character'),
          prototype=list(cmap=Mandatory_Cellvars,
