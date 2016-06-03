@@ -3,7 +3,8 @@
 #' @param object A \code{ZlmFit}
 #' @param newdata The data to predict from. Currently ignored, will use the data in the object.
 #' @param modelmatrix The model matrix specifying the linear combination of coefficients.
-#'
+#' @param sepinto Separate the sample column into groups with these named columns
+#' @param groupby variables to facet by for the plot, will impute missing based on facets.
 #' @return Predictions and standard errors.
 #' @export
 #'
@@ -31,6 +32,26 @@ predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL){
 	colnames(contrCovD) = c("primer","sample","seD")
 	colnames(predC) = c("primer","sample","muC")
 	colnames(predD) = c("primer","sample","muD")
-  merge(merge(merge(predC,contrCovC,by=c("primer","sample")),predD,by=c("primer","sample")),contrCovD,by=c("primer","sample"))
+   m = merge(merge(merge(predC,contrCovC,by=c("primer","sample")),predD,by=c("primer","sample")),contrCovD,by=c("primer","sample"))
+   setDT(m)
+   m
 }
 
+
+#' impute missing continuous expression for plotting
+#'
+#' @param object Output of predict
+#' @param groupby Variables (column names in predict) to group by for imputation (facets of the plot)
+#'
+#' @return
+#' @export
+#'
+#' @examples
+impute=function(object,groupby){
+	setDT(object)
+	object[,missing:=any(is.na(muC))&!is.na(muD),eval(groupby)]
+	object[missing==TRUE,muC:=replace(muC,is.na(muC),mean(muC,na.rm=TRUE)),eval(groupby)]
+	object[missing==TRUE,seC:=replace(seC,is.na(seC),sum(seC,na.rm=TRUE)),eval(groupby)]
+	object[,missing:=NULL]
+	return(na.omit(object))
+}

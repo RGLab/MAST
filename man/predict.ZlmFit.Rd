@@ -12,6 +12,10 @@
 \item{newdata}{The data to predict from. Currently ignored, will use the data in the object.}
 
 \item{modelmatrix}{The model matrix specifying the linear combination of coefficients.}
+
+\item{sepinto}{Separate the sample column into groups with these named columns}
+
+\item{groupby}{variables to facet by for the plot, will impute missing based on facets.}
 }
 \value{
 Predictions and standard errors.
