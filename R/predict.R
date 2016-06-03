@@ -3,12 +3,13 @@
 #' @param object A \code{ZlmFit}
 #' @param newdata The data to predict from. Currently ignored, will use the data in the object.
 #' @param modelmatrix The model matrix specifying the linear combination of coefficients.
+#' @param ... additional arguments
 #'
 #' @return Predictions and standard errors.
 #' @export
 #'
 #' @examples
-predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL){
+predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL,...){
 	C = coef(fit,"C")[,colnames(modelmatrix)]
 	D = coef(fit,"D")[,colnames(modelmatrix)]
 	C = complexifyNA(C)

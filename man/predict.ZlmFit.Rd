@@ -4,7 +4,7 @@
 \alias{predict.ZlmFit}
 \title{Return predictions from a ZlmFit object.}
 \usage{
-\method{predict}{ZlmFit}(object, newdata = NULL, modelmatrix = NULL)
+\method{predict}{ZlmFit}(object, newdata = NULL, modelmatrix = NULL, ...)
 }
 \arguments{
 \item{object}{A \code{ZlmFit}}
@@ -12,6 +12,8 @@
 \item{newdata}{The data to predict from. Currently ignored, will use the data in the object.}
 
 \item{modelmatrix}{The model matrix specifying the linear combination of coefficients.}
+
+\item{...}{additional arguments}
 }
 \value{
 Predictions and standard errors.
