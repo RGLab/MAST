@@ -1,7 +1,7 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 0.933
+Version: 0.934
 Date: 2015-12-27
 Author: Andrew McDavid <amcdavid@fredhutch.org>, Greg Finak
     <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
@@ -58,6 +58,8 @@ Collate:
     'lmWrapper-glmer.R'
     'lmWrapper-ridge.R'
     'lrtest.r'
+    'predict.R'
+    'stat_ell.R'
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
