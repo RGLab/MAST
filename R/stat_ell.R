@@ -38,7 +38,7 @@ StatEll <- ggproto("StatEll", Stat,
 #' @importFrom ggplot2 Stat
 #' @examples 
 stat_ell = function(mapping = NULL, data = NULL, geom = "polygon", position = "identity", na.rm = FALSE, show.legend = NA,inherit.aes = TRUE,fill=NA, level=0.05,lty=2,...) {
-  layer(
+  ggplot2:::layer(
     stat = StatEll, data = data, mapping = mapping, geom = geom, 
     position = position, show.legend = show.legend, inherit.aes = inherit.aes,
     params = list(na.rm = na.rm,level=level,lty=lty,fill=fill, ...)
