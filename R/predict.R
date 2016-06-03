@@ -10,8 +10,8 @@
 #'
 #' @examples
 predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL,...){
-	C = coef(fit,"C")[,colnames(modelmatrix)]
-	D = coef(fit,"D")[,colnames(modelmatrix)]
+	C = coef(object,"C")[,colnames(modelmatrix)]
+	D = coef(object,"D")[,colnames(modelmatrix)]
 	C = complexifyNA(C)
 	D = complexifyNA(D)
 	predC = C%*%t(modelmatrix)
