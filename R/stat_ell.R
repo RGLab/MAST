@@ -11,8 +11,14 @@ ell=function(x,xse,y,yse,segments=20,radius){
 }
 
 StatEll <- ggproto("StatEll", Stat,
-  compute_group = function(data, scales,level=0.05) {
-    ell(x=data$x, xse=data$xse,y=data$y,yse=data$yse,radius=sqrt(qchisq(1-level,df=2)))
+  compute_group = function(data, scales,level=0.95,invert=FALSE) {
+    e=ell(x=data$x, xse=data$xse,y=data$y,yse=data$yse,radius=sqrt(qchisq(level,df=2)))
+    if(invert==c("x")){
+    	e[,1] =arm::invlogit(e[,1])
+    }else if(invert==c("y")){
+    	e[,2] =arm::invlogit(e[,2])
+    }
+    return(e)
   },
   required_aes = c("x","xse", "y","yse","alpha")
 )
@@ -29,6 +35,8 @@ StatEll <- ggproto("StatEll", Stat,
 #' @param fill A color or aesthetic mapping to fill color. Defaults to NA for empty ellipses.
 #' @param level The confidence level at which to draw an ellipse (default is level=0.95).
 #' @param lty The linetype to use. Can map to a variable. Defaults to 2 (dashed line)
+#' @param invert vector of length 1 that should either be \code{"x","y",or TRUE}. Specifies whether to plot the estimates from the discrete component on the inverse logit scale. invert specifies which axis to invert.
+#' @param group grouping information
 #' @param ... other arguments passed on to layer. These are often aesthetics, used to set an aesthetic to a fixed value, like color = "red" or size = 3. They may also be parameters to the paired geom/stat.
 #'
 #' @export
@@ -37,11 +45,11 @@ StatEll <- ggproto("StatEll", Stat,
 #' @importFrom ggplot2 ggproto
 #' @importFrom ggplot2 Stat
 #' @examples 
-stat_ell = function(mapping = NULL, data = NULL, geom = "polygon", position = "identity", na.rm = FALSE, show.legend = NA,inherit.aes = TRUE,fill=NA, level=0.05,lty=2,...) {
+stat_ell = function(mapping = NULL, data = NULL, geom = "polygon", position = "identity", na.rm = FALSE, show.legend = NA,inherit.aes = TRUE,fill=NA, level=0.95,lty=2,invert=FALSE,...) {
   ggplot2:::layer(
     stat = StatEll, data = data, mapping = mapping, geom = geom, 
     position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-    params = list(na.rm = na.rm,level=level,lty=lty,fill=fill, ...)
+    params = list(na.rm = na.rm,level=level,lty=lty,fill=fill,invert=invert, ...)
   )
 }
 
