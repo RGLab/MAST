@@ -185,10 +185,10 @@ test_that("Completes incomplete data", {
 context("Testing methods")
 
 ## This makes more sense to me than to propagate new wells/features consisting entirely of NA
-test_that('NAs throw error when subsetting', {
-  expect_error(sc[, c(1:4, NA)])
-  expect_error(sc[c(boolind, NA), ])
-})
+## test_that('NAs throw error when subsetting', {
+##   expect_error(sc[, c(1:4, NA)])
+##   expect_error(sc[c(boolind, NA), ])
+## })
 
 test_that("Throw error when indexing with factors", {
     expect_error(sc[, factor(c('B3GAT1'))])
