@@ -4,8 +4,8 @@
 \alias{zlm.SingleCellAssay}
 \title{Zero-inflated regression for SingleCellAssay}
 \usage{
-zlm.SingleCellAssay(formula, sca, method = "glm", silent = TRUE,
-  ebayes = FALSE, ebayesControl = NULL, force = FALSE, hook = NULL,
+zlm.SingleCellAssay(formula, sca, method = "bayesglm", silent = TRUE,
+  ebayes = TRUE, ebayesControl = NULL, force = FALSE, hook = NULL,
   parallel = TRUE, LMlike, onlyCoef = FALSE, ...)
 }
 \arguments{

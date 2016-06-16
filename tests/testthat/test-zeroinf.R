@@ -20,13 +20,13 @@ test_that('zlm throws error on NA', {
 })
 
 test_that('zlm can run linear regression', {
-  out <- zlm(y ~ x1 + x2, dat)
+  out <- zlm(y ~ x1 + x2, dat, method='glm')
   expect_equivalent(coef(disc), coef(out$disc))
   expect_equivalent(coef(cont), coef(out$cont))
 })
 
 test_that('zlm accepts expressions in formulae', {
-    out <- zlm(y ~ cut(x2, 3) + x1, dat)
+    out <- zlm(y ~ cut(x2, 3) + x1, dat, method='glm')
 })
 
   fd2 <- fd[1:20,]
@@ -42,7 +42,7 @@ if(require('lme4')){
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
     test_that('zlm.SingleCellAssay can run lmer', {
-        hushWarning(z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer'), 'gradient|singular|multiple')
+        hushWarning(z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer', ebayes=FALSE), 'gradient|singular|multiple')
         expect_is(z, 'ZlmFit')
         expect_equal(nrow(z@df.null), 20)
         expect_equal(dim(z@vcovC)[[3]], 20)
@@ -53,7 +53,7 @@ if(require('lme4')){
  
 
 test_that('zlm.SingleCellAssay works', {
-  zzinit <<- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
+  zzinit <<- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, method='glm', ebayes=FALSE))
   expect_that(zzinit, is_a('ZlmFit'))
   expect_equal(rownames(zzinit@coefC), mcols(fd2)$primerid)
 })
@@ -63,11 +63,11 @@ test_that("zlm.SingleCellAssay doesn't die on 100% expression", {
   ee <- exprs(fd3)
   ee[,1] <- rnorm(ncol(fd3))+20
   exprs(fd3) <- ee
-  hushWarning(zz <- zlm.SingleCellAssay( ~ Population, fd3), 'glm.fit')
+  hushWarning(zz <- zlm.SingleCellAssay( ~ Population, fd3, method='glm', ebayes=FALSE), 'glm.fit')
   expect_that(zz, is_a('ZlmFit'))
   expect_lt(zz@df.resid[1,'D'], 1)
 
-    zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm')
+    zz3 <- zlm.SingleCellAssay( ~ Population, fd3, method='bayesglm', ebayes=FALSE)
     expect_that(zz3, is_a('ZlmFit'))
     expect_true(zz3@converged[1,'D'])
 
@@ -100,21 +100,21 @@ test_that('Gradients match analytic', {
 }
 
 test_that('Empirical Bayes works', {
-    zz <- zlm.SingleCellAssay( ~ Population, fd2,ebayes=TRUE)
+    zz <- zlm.SingleCellAssay( ~ Population, fd2,method='glm', ebayes=TRUE)
     expect_false(any(zz@dispersion[,'C']==zz@dispersionNoshrink[, 'C'], na.rm=TRUE))
      #expect_that(zz@dispersion, not(is_equivalent_to(zz@dispersionNoshrink)))
 })
 
 context('Test error handling')
 test_that('Give up after 5 errors', {
-     expect_error(zlm.SingleCellAssay(~ Population1234*Stim.Condition, fd2, force=FALSE), 'Population1234')
+     expect_error(zlm.SingleCellAssay(~ Population1234*Stim.Condition, fd2, force=FALSE, method='glm', ebayes=FALSE), 'Population1234')
 })
 
 test_that('No holes in output', {
     ee <- exprs(fd2)
     ee[1,2] <- NA
     exprs(fd2) <- ee
-    zze <- zlm.SingleCellAssay(~Stim.Condition, fd2)
+    zze <- zlm.SingleCellAssay(~Stim.Condition, fd2,  method='glm', ebayes=FALSE)
     expect_equal(nrow(zze@coefD), nrow(fd2))
     expect_true(all(is.na(zze@coefD[2,])))
     expect_equal(dim(zze@vcovD)[3], nrow(fd2))
@@ -125,12 +125,12 @@ test_that('No holes in output', {
 
 context('Test hooks')
 test_that('Identity Hook', {
-     zz <- zlm.SingleCellAssay(value ~ Population, fd2, hook=function(x) x)
+     zz <- zlm.SingleCellAssay(value ~ Population, fd2,  method='glm', ebayes=FALSE, hook=function(x) x)
      expect_is(revealHook(zz)[[1]], 'GLMlike')
 })
 
 test_that('Residuals Hook', {
-     zz <- zlm.SingleCellAssay(value ~ Population, fd2, hook=residualsHook)
+     zz <- zlm.SingleCellAssay(value ~ Population, fd2,  method='glm', ebayes=FALSE, hook=residualsHook)
      fd3 <- collectResiduals(zz, fd2)
      expect_is(fd3, 'SingleCellAssay')
 })
