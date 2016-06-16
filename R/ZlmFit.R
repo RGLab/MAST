@@ -125,7 +125,7 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), fu
 
 ##' @describeIn show print info on ZlmFit
 setMethod('show', signature=c(object='ZlmFit'), function(object){
-    cat('Fitted zlm on', ncol(object@sca), 'genes and', nrow(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
+    cat('Fitted zlm on', nrow(object@sca), 'genes and', ncol(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
 })
 
 ##' @describeIn ZlmFit Returns the matrix of coefficients for component \code{which}.
