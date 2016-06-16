@@ -8,7 +8,6 @@
 #' @return Predictions and standard errors.
 #' @export
 #'
-#' @examples
 predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL){
 	C = coef(object,"C")[,colnames(modelmatrix)]
 	D = coef(object,"D")[,colnames(modelmatrix)]
@@ -39,15 +38,15 @@ predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL){
 
 
 #' impute missing continuous expression for plotting
-#'
+#' 
+#' If there are no positive observations for a contrast, it is generally not estimible.
+#' However, for the purposes of testing we can replace it with the least favorable value with respect to the contrasts that are defined.
 #' @param object Output of predict
 #' @param groupby Variables (column names in predict) to group by for imputation (facets of the plot)
 #'
-#' @return
+#' @return data.table with missing con
 #' @export
-#'
-#' @examples
-impute=function(object,groupby){
+impute <- function(object,groupby){
 	setDT(object)
 	object[,missing:=any(is.na(muC))&!is.na(muD),eval(groupby)]
 	object[missing==TRUE,muC:=replace(muC,is.na(muC),mean(muC,na.rm=TRUE)),eval(groupby)]
