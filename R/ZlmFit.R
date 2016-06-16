@@ -240,8 +240,9 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
         dt <- merge(llrt, dt, all.x=TRUE, all.y=TRUE)
         dt[is.na(component), component :='H']
     }
-    setattr(dt, 'class', c('summaryZlmFit', class(dt)))
-    dt
+    out <- list(datatable=dt)
+    class(out) <- c('summaryZlmFit', 'list')
+    out
 })
 
 if(getRversion() >= "2.15.1") globalVariables(c(
@@ -260,7 +261,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ##' @seealso summary,ZlmFit-method
 ##' @export
 print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
-    class(x) <- class(x)[-1]
+    x <- x$datatable
     ns <- seq_len(n)
     dt <- x[contrast!='(Intercept)',]
     by <- match.arg(by, c('logFC', 'D', 'C'))

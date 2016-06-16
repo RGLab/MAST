@@ -74,10 +74,11 @@ test_that('log fold change via contrasts', {
 context('summary')
 test_that('summary works', {
     zzs <- summary(zzsimple, logFC=TRUE, doLRT=FALSE)
-    expect_is(zzs, 'data.table')
-    expect_equivalent(unique(as.character(zzs$contrast)), c('(Intercept)', 'Stim.ConditionUnstim'))
-    expect_equivalent(sort(c('C', 'D', 'logFC', 'S')), sort(unique(as.character(zzs$component))))
-    expect_equal(nrow(zzs), nrow(fd2)*(2*4-1)) #primerid, contrast (no intercept for logFC), component
+    expect_is(zzs, 'summaryZlmFit')
+    zzd <- zzs$datatable
+    expect_equivalent(unique(as.character(zzd$contrast)), c('(Intercept)', 'Stim.ConditionUnstim'))
+    expect_equivalent(sort(c('C', 'D', 'logFC', 'S')), sort(unique(as.character(zzd$component))))
+    expect_equal(nrow(zzd), nrow(fd2)*(2*4-1)) #primerid, contrast (no intercept for logFC), component
     expect_output(print(zzs, n=2), c("Fitted zlm with top 2 genes per contrast:
 ( log fold change Z-score )
  primerid Stim.ConditionUnstim
