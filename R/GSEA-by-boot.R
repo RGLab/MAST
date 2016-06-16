@@ -278,7 +278,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
         TT <- getStats(Tidx)
         tests[sidx,,,] <- scaleStats(TT, OO, NN)
     }
-    structure(tests, bootR=dimb['rep'])
+    new('GSEATests', tests=tests, bootR=dimb['rep'])
 }
 
 ##match moments to get approximation of t statistic
@@ -311,13 +311,15 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
 ##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|)) if \code{combined='no'}, otherwise just a matrix.
 ##' @export
 ##' @seealso gseaAfterBoot
-calcZ <- function(tests, testType='t', combined='no'){
+calcZ <- function(gseaObj, testType='t', combined='none'){
+    if(!inherits(gseaObj, 'GSEATests')) stop('`gseaObj` must inherit from `GSEAtests`')
+    tests <- gseaObj@tests
+    bootR <- gseaObj@bootR
     testType <- match.arg(testType, c('t', 'normal'))
-    combined <- match.arg(combined, c('no', 'fisher', 'stouffer'))
+    combined <- match.arg(combined, c('none', 'fisher', 'stouffer'))
     Z <- (tests[,,'stat','test']-tests[,,'stat','null'])/sqrt(tests[,,'var','test']+tests[,,'var','null'])
     
     if(testType=='t'){
-        bootR <- attr(tests, 'bootR')
         ## satterthwaite approximation to degrees of freedom
         dof <- (bootR-1)*(tests[,,'var','test']+tests[,,'var','null'])^2/(tests[,,'var','test']^2+tests[,,'var','null']^2)
         dof[is.na(dof)] <- 0 #component we couldn't test
@@ -328,7 +330,7 @@ calcZ <- function(tests, testType='t', combined='no'){
     out3d <- abind(Z=Z, P=P, rev.along=0)
     names(dimnames(out3d)) <- c('set', 'comp', 'metric')
     ntest <- rowSums(!is.na(Z))
-    if(combined=='no'){
+    if(combined=='none'){
         return(out3d)
     }else if(combined =='fisher'){
         maxsign <- sign(rowSums(Z, na.rm=TRUE))
@@ -353,3 +355,48 @@ calcZ <- function(tests, testType='t', combined='no'){
     names(dimnames(out2d)) <- c('set', 'metric')
     return(out2d)
 }
+
+
+##' Summarize model features from a \code{ZlmFit} object
+##'
+##' Returns a \code{data.table} with a special print method that shows the top 2 most significant genes by contrast.
+##' This \code{data.table} contains columns: 
+##' \describe{
+#'   \item{primerid}{the gene}
+#'   \item{component}{C=continuous, D=discrete, logFC=log fold change, S=combined using Stouffer's method, H=combined using hurdle method}
+#' \item{contrast}{the coefficient/contrast of interest}
+#' \item{ci.hi}{upper bound of confidence interval}
+#' \item{ci.lo}{lower bound of confidence interval}
+#' \item{coef}{point estimate}
+#' \item{z}{z score (coefficient divided by standard error of coefficient)}
+#' \item{Pr(>Chisq)}{likelihood ratio test p-value (only if \code{doLRT=TRUE})}
+#' }
+#' Some of these columns will contain NAs if they are not applicable for a particular component or contrast.
+##' @param object A \code{ZlmFit} object
+##' @param logFC If TRUE, calculate log-fold changes, or output from a call to \code{getLogFC}.
+##' @param doLRT if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.
+##' @param level what level of confidence coefficient to return.  Defaults to 95 percent. 
+##' @param ... ignored
+##' @seealso print.summaryZlmFit
+##' @examples
+##' data(vbetaFA)
+##' z <- zlm(~Stim.Condition, vbetaFA[1:5,])
+##' zs <- summary(z)
+##' names(zs)
+##' print(zs)
+##' ##remove summaryZlmFit class to get normal print method (or call data.table:::print.data.table) 
+##' data.table::setattr(zs, 'class', class(zs)[-1])
+##' @export
+setMethod('summary', signature=c(object='GSEATests'), function(object, level=.95, ...){
+    message('Reticulating splines...')
+    t_stat <- as.data.table(reshape2::melt(calcZ(object, combined='none', ...)))
+
+    t_stat_wide <- dcast(t_stat, set ~ comp + metric)
+    pvalArr <- calcZ(gsea, combined = "stouffer", ...)
+    pvals <- data.table(pvalArr)
+    pvals$set <- rownames(pvalArr)
+    t_stat_comb <- merge(t_stat_wide, pvals, by = "set")
+    setorder(t_stat_comb,P)
+    t_stat_comb[,adj:=p.adjust(P,"fdr")]
+    t_stat_comb
+    })

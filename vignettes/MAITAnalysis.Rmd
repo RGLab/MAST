@@ -278,23 +278,18 @@ We will use the Blood Transcriptional Modules of [Li, et al](www.nature.com/ni/j
 
 ```{r gsea}
 gsea <- gseaAfterBoot(zlmCond, boots, sets_indices, CoefficientHypothesis("conditionStim"))
-t_stat <- melt(calcZ(gsea, testType = "normal"))
-t_stat_wide <- dcast(t_stat, set ~ comp + metric)
-t_stat <- data.frame(calcZ(gsea, testType = "normal", combined = "stouffer"))
-t_stat$set <- rownames(t_stat)
-t_stat_comb <- data.table(merge(t_stat_wide, t_stat, by = "set"))
-setorder(t_stat_comb,P)
-t_stat_comb[,adj:=p.adjust(P,"fdr")]
+t_stat_comb <- summary(gsea)
 
 ##Filter by effect size: discrete odds ratio of 1
 t_stat_comb=t_stat_comb[set%in%names(which(abs(gsea[,"disc","stat","test"]-gsea[,"disc","stat","null"])>log(2.5) ))|set%in%names(which(abs(gsea[,"cont","stat","test"]-gsea[,"cont","stat","null"])>log2(1.5)))]
+noyet <- FALSE
 ```
 
 
 
 <!-- ### Visualization of most enriched modules -->
 
-```{r, eval=TRUE, dependson="data;zlm;boots;gsea"}
+```{r, eval=noyet}
 for (i in c(1:10,12,13)) {
     genes_to_plot <- unlist(gene_ids[names(gene_ids) == as.character(t_stat_comb$set[i])])
     gp <- ggplot(dt_long[gene_id %in% genes_to_plot], aes(x = condition, y = value, 
@@ -307,7 +302,7 @@ for (i in c(1:10,12,13)) {
 
 <!-- ### Visualization of module "scores" for stimulated and unstimulated cells -->
 
-```{r scores_fit, dependson="data;gsea;zlm",fig.width=10,fig.height=10}
+```{r scores_fit, eval=noyet, fig.width=10,fig.height=10}
 options("mc.cores" = LARGE_MEMORY_CORES)
 
 score_4_hook <- function(x) {
@@ -337,7 +332,7 @@ zlm.scores <-
   )
 ```
 
-```{r scores, dependson="data;gsea;scores_fit;zlm",fig.width=10,fig.height=10}
+```{r scores, eval=noyet,fig.width=10,fig.height=10}
 scores <- do.call(rbind,zlm.scores@hookOut)
 rownames(scores) <- names(zlm.scores@hookOut)
 
@@ -392,7 +387,7 @@ kable(dcast(scores[set %in% sets,list(score = mean(score)),list(cell,set,conditi
 
 ### Heatmap and PCA of module scores
 
-```{r,fig.width=20,fig.height=13}
+```{r, eval=noyet, fig.width=20,fig.height=13}
 #heatmap of module scores
 mat = dcast(unique(scores[,list(cell,set,score)]),cell~set,value.var="score",fun.aggregate=mean)
 #colnames(mat) = gsub("\\n"," ",colnames(mat))
@@ -413,7 +408,7 @@ plot(prcomp(mat))
 
 <!-- ### Correlation of residuals across all cells using top 20 DE genes -->
 
-```{r residuals,dependson="data;zlm",include=FALSE,eval=TRUE,results='hide'} 
+```{r residuals,include=FALSE,eval=noyet,results='hide'} 
 zlm.resid <- zlm.SingleCellAssay(~condition + cngeneson, sca, method = "bayesglm", 
     ebayes = TRUE, ebayesControl = list(method = "MLE", model = "H1"),hook=deviance_residuals_hook)
 
@@ -435,7 +430,7 @@ COMPASS::pheatmap(C,row_annotation=cData(sca)[,"condition",drop=FALSE],show_rown
 
 <!-- ### PCA of residuals (model with ngeneson) -->
 
-```{r pcaResid,dependson="data;residuals;",fig.width=10,include=FALSE}
+```{r pcaResid,eval=noyet, fig.width=10,include=FALSE}
 library(grid)
 PCbiplot <- function(PC, x="PC1", y="PC2", colors=c('black', 'black', 'red', 'red'),arrow_colors="red",point_colors="black",arrow_alpha=0.75,gene_subset=NULL) {
     # PC being a prcomp object
@@ -464,33 +459,9 @@ genes_to_plot <- res_gene_hurdle[abs(logFC)>FCTHRESHOLD&adj<0.01][order(-abs(log
 pcaplot<-PCbiplot(prcomp(t(residuals[genes_to_plot,])),point_colors=point_colors,arrow_colors="blue",arrow_alpha=0.75,gene_subset=genes)+theme_bw()
 ```
 
-### Figure 4 - Residual Correlations and PCA
-
-```{r,fig.width=15}
-grid.newpage()
-lay<-grid.layout(nrow(lout), ncol(lout))
-pushViewport(viewport(layout=lay,name = "top"))
-matchind<-which(lout==c(1),T)
-vp<-viewport(layout.pos.row = matchind[,1],layout.pos.col = matchind[,2],name="hmap")
-pushViewport(vp)
-grid.draw(nostim)
-seekViewport("top")
-matchind<-which(lout==c(2),T)
-vp=viewport(layout.pos.row = matchind[,1],layout.pos.col = matchind[,2])
-pushViewport(vp)
-grid.draw(stim)
-seekViewport("top")
-matchind<-which(lout==c(3),T)
-vp=viewport(layout.pos.row = matchind[,1],layout.pos.col = matchind[,2])
-print(pcaplot,vp=vp)
-grid.draw(textGrob("A",0.01,0.95))
-grid.draw(textGrob("B",0.3,0.95))
-grid.draw(textGrob("C",0.65,0.95))
-```
-
 <!-- ### Network estimation from residuals -->
 
-```{r network,dependson="data;zlm;residuals",fig.width=10,eval=FALSE,echo=FALSE,include=FALSE,eval=FALSE}
+```{r network,fig.width=10,eval=FALSE,echo=FALSE,include=FALSE,eval=noyet}
 # library(Matrix)
 # library(igraph)
 # library(glasso)
@@ -523,187 +494,7 @@ grid.draw(textGrob("C",0.65,0.95))
 # PCbiplot(prcomp((residuals[sort(vertex.attributes(G)$name),])),arrow_color=NA,point_colors=gene_colors)+ggtitle("PCA of residuals of genes from network estimate with ngeneson")
 ```
 
-<!-- ### Network estimates without ngeneson -->
-
-```{r network_nong, dependson="data;zlm;nongeneson",fig.width=10,eval=FALSE,echo=FALSE,include=FALSE,eval=FALSE}
-# residuals.nong<-do.call(rbind,zlm.resid.nong@hookOut)
-# rownames(residuals.nong)<-fData(sca)[,"symbolid"]
-# colnames(residuals.nong)<-rownames(cData(sca))
-# genes_to_plot <- res_gene_hurdle_nong[,adj:=p.adjust(value,"fdr")][abs(logFC)>3&adj<0.01][order(-abs(logFC),adj)][,symbolid]
-# G<-getNetwork(residuals.nong[,cData(sca)[,"condition"]%in%c("Stim","Unstim")],genes_to_plot,0.35,main="Residuals network in MAIT (no ngeneson correction)")
-# 
-# 
-# gene_colors<-c("red","blue")[as.numeric(factor(sign(res_gene_hurdle_nong[symbolid%in%vertex.attributes(G)$name,][order(symbolid),logFC])))]
-# 
-# COMPASS::pheatmap(exprs(sca[,vertex.attributes(G)$name]),row_annotation=cData(sca)[,"condition",FALSE],main="Genes from residuals network in MAIT (without ngeneson)",col=rev(colorRampPalette(colors = brewer.pal(name="PiYG",n=10))(20)),breaks = seq(-1,1,l=21))
-# COMPASS::pheatmap(cor(t(residuals.nong[vertex.attributes(G)$name,])),main="Gene-gene correlation from network estimation (without ngeneson)",col=rev(colorRampPalette(colors = brewer.pal(name="PiYG",n=10))(20)),breaks = seq(-1,1,l=21))
-# PCbiplot(prcomp((residuals.nong[vertex.attributes(G)$name,])),arrow_color=NA,point_color=gene_colors)+ggtitle("PCA of residuals of genes from network estimate without ngeneson")
-```
-
-<!-- ### Background correlation adjusting for ngeneson -->
-
-```{r background_correlation,cache=FALSE,dependson="residuals;data;nongeneson;zlm",results='hide'}
-library(stringr)
-unstim<-colnames(residuals.nong)%like%"Unstim"
-
-S1<-cor(t(residuals.nong[,unstim]))
-S1.s<-cor(t(residuals.nong[,!unstim]))
-
-S2<-cor(t(residuals[,unstim]))
-S2.s<-cor(t(residuals[,!unstim]))
-
-extractCor<-function(x,genes,class,model){
-  S<-x[genes,genes]
-  S<-S[upper.tri(S,diag=FALSE)]
-  gn<-matrix(rep(genes,length(genes)),ncol=length(genes),byrow=TRUE)
-  gn1<-gn[upper.tri(gn,diag=FALSE)]
-  gn<-matrix(rep(genes,length(genes)),ncol=length(genes),byrow=FALSE)
-  gn2<-gn[upper.tri(gn,diag=FALSE)]
-  data.table(rho=S,gene1=gn1,gene2=gn2,class,model)
-}
-
-C<-extractCor(S1,rownames(S1),class = "no_ngeneson",model = "no_ngeneson")
-C.s<-extractCor(S1.s,rownames(S1.s),class = "no_ngeneson",model = "no_ngeneson")
-C2<-extractCor(S2,rownames(S2),class = "ngeneson",model = "ngeneson")
-C2.s<-extractCor(S2.s,rownames(S2.s),class = "ngeneson",model = "ngeneson")
-
-C3<-rbind(C,C2)
-C3.s<-rbind(C.s,C2.s)
-
-stopifnot(all.equal(C[,list(gene1, gene2)],C2[,list(gene1, gene2)]))
-stopifnot(all.equal(C.s[,list(gene1, gene2)],C2.s[,list(gene1, gene2)]))
-Cboth <- rbind(data.table("Rho (background)"=C[,rho], "Rho (CDR)"=C2[,rho], Condition='Non-stimulated'),
-               data.table("Rho (background)"=C.s[,rho], "Rho (CDR)"=C2.s[,rho], Condition='Stimulated'))
-Cboth <- Cboth[sample(nrow(Cboth), 1e5),]
-
-
-
-C3 = C3[,delrho := rho[class == "no_ngeneson"] - rho[class == "ngeneson"],list(gene1,gene2)]
-C3.s[,delrho := rho[class == "no_ngeneson"] - rho[class == "ngeneson"],list(gene1,gene2)]
-setkey(C3,delrho)
-setkey(C3.s,delrho)
-
-C3[,bin:=cut(delrho,breaks = 1000)]
-C3 = C3[!is.na(bin)]
-C3sumry=C3[,.N,bin]
-C3sumry[,cdf:=cumsum(N)/sum(N)]
-C3sumry[,bin_c:=mean(as.numeric(str_split_fixed(pattern=",",gsub("]","",gsub("\\(","",bin)),2))),bin]
-
-# p = ggplot(C3sumry) + geom_line(aes(x = bin_c,y = cdf,group = 1)) + geom_vline(x =
-#                                                                                  0) + theme_linedraw() + theme(axis.text.x = element_text(angle = 90,hjust =
-#                                                                                  1),aspect.ratio = 1) + scale_x_continuous("Difference in correlation (without CDR - with CDR)",breaks =
-#                                                                                  seq(-1,1,l = 21)) + scale_y_continuous("fraction of gene pairs")+ggtitle("Unstimulated")
-#  
-
-C3.s[,bin:=cut(delrho,breaks = 1000)]
-C3.s = C3.s[!is.na(bin)]
-C3s.sumry=C3.s[,.N,bin]
-C3s.sumry[,cdf:=cumsum(N)/sum(N)]
-C3s.sumry[,bin_c:=mean(as.numeric(str_split_fixed(pattern=",",gsub("]","",gsub("\\(","",bin)),2))),bin]
-       
-p=ggplot(data.table(rbind(C3s.sumry,C3sumry),Stim=rep(c("Stim","Unstim"),c(nrow(C3s.sumry),nrow(C3sumry)))))+geom_line(aes(x=bin_c,y=cdf,col=Stim))+ geom_vline(x =
-                                                                                 0) + theme_linedraw() + theme(axis.text.x = element_text(angle = 90,hjust =
-                                                                                 1),aspect.ratio = 1) + scale_x_continuous("Difference in correlation (without CDR - with CDR)",breaks =
-                                                                                 seq(-1,1,l = 21)) + scale_y_continuous("fraction of gene pairs")
-# 
-# p.s = ggplot(C3s.sumry) + geom_line(aes(x = bin_c,y = cdf,group = 1)) + geom_vline(x =
-#                                                                                  0) + theme_linedraw() + theme(axis.text.x = element_text(angle = 90,hjust =
-#                                                                                  1),aspect.ratio = 1) + scale_x_continuous("Difference in correlation (without CDR - with CDR)",breaks =
-#                                                                                  seq(-1,1,l = 21)) + scale_y_continuous("fraction of gene pairs")+ggtitle("Stimulated")
-#  
-#                                                                          
-# p<-ggplot(C3)+aes(x=delrho)+stat_ecdf()+theme_linedraw()+ggtitle("Unstimulated")+theme(aspect.ratio=1)
-# p.s<-ggplot(C3.s)+aes(x=delrho)+stat_ecdf()+theme_linedraw()+ggtitle("Stimulated")+theme(aspect.ratio=1)
-
-library(gridExtra)
-
-colors<-c(brewer.pal(name = "PiYG",n=3)[c(1)],"#5729EE")
-layout<-matrix(1,ncol=1)
-pdf("../inst/extdata/output/Supplementary_Figure_10.pdf",width=8,height=4)
-grid.newpage()
-pushViewport(viewport(layout = grid.layout(nrow=1,ncol=1)))
-print(p+plotheme+scale_color_discrete("Condition",labels=c("Stimulated","Non-stimulated")),vp=viewport(layout.pos.row = 1,layout.pos.col = 1))
-#print(p.s+plotheme+scale_color_discrete("Model",labels=c("CDR adjusted","No CDR")),vp=viewport(layout.pos.row = 1,layout.pos.col = 2))
-dev.off()
-
-cond_de_genes_ng<-res_gene_hurdle[adj<0.01&abs(logFC)>FCTHRESHOLD,symbolid]
-cond_de_genes_nong<-res_gene_hurdle_nong[adj<0.01&abs(logFC)>FCTHRESHOLD,symbolid]
-foo<-data.table(S2[cond_de_genes_ng,cond_de_genes_ng][upper.tri(S2[cond_de_genes_ng,cond_de_genes_ng],diag=FALSE)])
-ng.signif.cors.unstim<-nrow(foo)*foo[,mean(p.adjust(r.test(n=sum(unstim),r12=V1)$p,"fdr")<0.01)]
-foo<-data.table(S2.s[cond_de_genes_ng,cond_de_genes_ng][upper.tri(S2.s[cond_de_genes_ng,cond_de_genes_ng],diag=FALSE)])
-ng.signif.cors.stim<-nrow(foo)*foo[,mean(p.adjust(r.test(n=sum(!unstim),r12=V1)$p,"fdr")<0.01)]
-
-foo<-data.table(S1[cond_de_genes_nong,cond_de_genes_nong][upper.tri(S1[cond_de_genes_nong,cond_de_genes_nong],diag=FALSE)])
-nong.signif.cors.unstim<-nrow(foo)*foo[,mean(p.adjust(r.test(n=sum(unstim),r12=V1)$p,"fdr")<0.01,na.rm=TRUE)]
-foo<-data.table(S1.s[cond_de_genes_nong,cond_de_genes_nong][upper.tri(S1.s[cond_de_genes_nong,cond_de_genes_nong],diag=FALSE)])
-nong.signif.cors.stim<-nrow(foo)*foo[,mean(p.adjust(r.test(n=sum(!unstim),r12=V1)$p,"fdr")<0.01)]
-
-
-C<-extractCor(S1[cond_de_genes_nong,cond_de_genes_nong],rownames(S1[cond_de_genes_nong,cond_de_genes_nong]),class = "no_ngeneson",model = "no_ngeneson")
-C.s<-extractCor(S1.s[cond_de_genes_nong,cond_de_genes_nong],rownames(S1.s[cond_de_genes_nong,cond_de_genes_nong]),class = "no_ngeneson",model = "no_ngeneson")
-C2<-extractCor(S2[cond_de_genes_ng,cond_de_genes_ng],rownames(S2[cond_de_genes_ng,cond_de_genes_ng]),class = "ngeneson",model = "ngeneson")
-C2.s<-extractCor(S2.s[cond_de_genes_ng,cond_de_genes_ng],rownames(S2.s[cond_de_genes_ng,cond_de_genes_ng]),class = "ngeneson",model = "ngeneson")
-
-
-# #################
-highly.correlated.genes.ng.unstim<-unique(unlist(C2[data.table(S2[cond_de_genes_ng,cond_de_genes_ng][upper.tri(S2[cond_de_genes_ng,cond_de_genes_ng],diag=FALSE)])[,which((p.adjust(r.test(n=sum(unstim),r12=V1)$p,"fdr")<0.01))],list(gene1,gene2)],use.names=FALSE))
-highly.correlated.genes.ng.stim<-unique(unlist(C2.s[data.table(S2.s[cond_de_genes_ng,cond_de_genes_ng][upper.tri(S2.s[cond_de_genes_ng,cond_de_genes_ng],diag=FALSE)])[,which((p.adjust(r.test(n=sum(!unstim),r12=V1)$p,"fdr")<0.01))],list(gene1,gene2)],use.names=FALSE))
-highly.correlated.genes.nong.unstim<-unique(unlist(C[data.table(S1[cond_de_genes_nong,cond_de_genes_nong][upper.tri(S1[cond_de_genes_nong,cond_de_genes_nong],diag=FALSE)])[,which((p.adjust(r.test(n=sum(unstim),r12=V1)$p,"fdr")<0.01))],list(gene1,gene2)],use.names=FALSE))
-highly.correlated.genes.nong.stim<-unique(unlist(C.s[data.table(S1.s[cond_de_genes_nong,cond_de_genes_nong][upper.tri(S1.s[cond_de_genes_nong,cond_de_genes_nong],diag=FALSE)])[,which((p.adjust(r.test(n=sum(!unstim),r12=V1)$p,"fdr")<0.01))],list(gene1,gene2)],use.names=FALSE))
-
-sum(highly.correlated.genes.ng.stim%in%c(mait_signature_genes_up,mait_signature_genes_down))
-sum(highly.correlated.genes.nong.stim%in%c(mait_signature_genes_up,mait_signature_genes_down))
-
-sum(highly.correlated.genes.ng.unstim%in%c(mait_signature_genes_up,mait_signature_genes_down))
-sum(highly.correlated.genes.nong.unstim%in%c(mait_signature_genes_up,mait_signature_genes_down))
-```
-
-### Supplementary Figure 10 - Change in residual background correlation after adjusting for CDR.
-
-```{r,fig.width=10}
-grid.newpage()
-pushViewport(viewport(layout = grid.layout(nrow=1,ncol=1)))
-print(p+plotheme+scale_color_discrete("Condition",labels=c("Stimulated","Non-Stimulated")),vp=viewport(layout.pos.row = 1,layout.pos.col = 1))
-#print(p.s+plotheme+scale_color_discrete("Model",labels=c("CDR adjusted","No CDR")),vp=viewport(layout.pos.row = 1,layout.pos.col = 2))
-```
-
-<!--  ### Differential expression amongst Stimulated Cells for the outliers vs  non-outliers. -->
-
-```{r outlier_stim_DE,include=FALSE}
-library(class)
-genes_to_plot <- res_gene_hurdle[abs(logFC)>FCTHRESHOLD&adj<0.01][order(-abs(logFC),adj)][1:100,symbolid]
-qplot(x=GZMB,y=IFNG,data=(data.frame(cData(sca),exprs(subset(sca[,c("IFNG","GZMB")],condition%in%c("Stim","Unstim"))))),col=condition)+theme_linedraw()+geom_hline(y=12,lty=2)+geom_vline(x=10,lty=2)
-#qplot(x=IFNG,y=SIN3A,data=(data.frame(cData(sca_stim),exprs((sca_stim[,c("SIN3A","RREB1","CD8A","IFNG","GZMB","PIM2","PIM1","NCOR1")])))),col=block)+theme_linedraw()
-
-#IFNG < 12
-#GZMB <10
-blocked_cells<-data.table(cData(subset(sca,condition%in%"Stim")),exprs(subset(sca[,c("IFNG","GZMB")],condition%in%"Stim")))
-blocked_cells[,block:=GZMB<10&IFNG < 12]
-sca_stim<-subset(sca,condition%in%"Stim")
-cData(sca_stim)<-merge(cData(sca_stim),blocked_cells[,c("wellKey","block"),with=FALSE],by="wellKey",all=TRUE)
-#fit zlm
-zlm_block <- zlm.SingleCellAssay(~block + cngeneson, sca_stim, method = "bayesglm", ebayes = TRUE, ebayesControl = list(method = "MLE", model = "H1"),hook  =deviance_residuals_hook)
-block_logfc<-getLogFC(zlm_block)
-block_logfc<-na.omit(block_logfc[contrast=="blockTRUE"])
-block_logfc[order(-abs(logFC),2*(1-pnorm(abs(z)))),list(primerid,contrast,logFC,varLogFC,z,p=2*(1-pnorm(abs(z))),adj=p.adjust(2*(1-pnorm(abs(z))),"fdr"))][adj<0.05&abs(logFC)>FCTHRESHOLD]
-
-lr_block<-lrTest(object = zlm_block,CoefficientHypothesis("blockTRUE"))
-lr_block<-dcast(melt(lr_block[,"hurdle",]),primerid~metric)
-lr_block<-data.table(lr_block)
-lr_block[,adj:=p.adjust(`Pr(>Chisq)`,"fdr")]
-lr_block[adj<0.05][order(adj)]
-
-res_gene_block<-merge(lr_block,block_logfc,by="primerid")
-genes_to_plot_block<-res_gene_block[adj<0.05&abs(logFC)>log2(2)][order(-abs(logFC),adj)][,primerid]
-colors<-colorRampPalette(brewer.pal(n=9,"PiYG"))(21)
-colors[11]<-"#FFFFFF"
-COMPASS:::pheatmap(exprs(sca_stim[,genes_to_plot_block]),scale="column",col=colors,breaks=seq(-4,4,l=21))
-hmap_stim_nonresponders <- grid.grab(wrap=TRUE)
-```
-
-<!-- ### Differential expression amongst non-activated cells (Stimulated and  non-stimulated). -->
-
-```{r,include=FALSE}
+```{r,include=FALSE, eval=noyet}
 library(class)
 genes_to_plot <- res_gene_hurdle[abs(logFC)>FCTHRESHOLD&adj<0.01][order(-abs(logFC),adj)][1:100,symbolid]
 qplot(x=GZMB,y=IFNG,data=(data.frame(cData(sca),exprs(subset(sca[,c("IFNG","GZMB")],condition%in%c("Stim","Unstim"))))),col=condition)+theme_linedraw()+geom_hline(y=12,lty=2)+geom_vline(x=10,lty=2)
@@ -737,7 +528,7 @@ hmap_unstim_nonresponders<-grid.grab(wrap=TRUE)
 ```
 
 
-```{r}
+```{r, eval=noyet}
 nonresponders_biplot<-PCbiplot(prcomp(exprs(sca[,c(genes_to_plot_noact,genes_to_plot_block)])),x="PC1",y="PC2",point_colors = c("#E9A3C9","#5729EE")[cData(sca)$block+1],gene_subset=c(1:6,26,29:34))+theme_linedraw()+theme(aspect.ratio=1)+plotheme
 
 pdf("../inst/extdata/output/Supplementary_Figure_14.pdf",width=24,height=7)
@@ -771,195 +562,5 @@ setnames(map,c("chrmap","egid"))
 symbols<-merge(map,symbols)
 symbols<-data.table(symbols)
 kable(symbols[chrmap%in%(symbols[,.N,chrmap][N>1]$chrmap)][order(chrmap)])
-```
-
-### Supplementary Figure 14 - Heatmaps of DE genes between non-responding stimulated cells and stimulated / non-stimulated cells
-
-```{r, fig.width=20}
-grid.newpage()
-pushViewport(viewport(layout = grid.layout(nrow=1,ncol=3)))
-vp<-viewport(layout.pos.row = 1,layout.pos.col = 1)
-pushViewport(vp)
-grid.draw(hmap_stim_nonresponders)
-popViewport(n=2)
-vp<-viewport(layout.pos.row = 1,layout.pos.col = 2)
-pushViewport(vp)
-grid.draw(hmap_unstim_nonresponders)
-popViewport(n=2)
-vp<-viewport(layout.pos.row = 1,layout.pos.col = 3)
-pushViewport(vp)
-print(nonresponders_biplot,vp=vp)
-popViewport(n=2)
-```
-
-
-### GSEA between non-stimulated and non-responding cells
-
-```{r,results='hide',fig.width=10,fig.height=9,cache=FALSE}
-module<-"bp"
-module_file <- list.files("../inst/extdata/", pattern = module, full.names = TRUE)
-gene_set <- getGmt(module_file)
-gene_ids <- geneIds(gene_set)
-sets_indices <- ids2indices(gene_ids, fd$symbolid)
-# Only keep modules with at least min_gene_in_module
-sets_indices <- sets_indices[sapply(sets_indices, length) >= min_gene_in_module]
-
-cache(boot_noact_vs_unstim<-bootVcov1(zlm_noact,R=50))
-cache(boot_noact_vs_stim<-bootVcov1(zlm_block,R=50))
-cache(gsea_noact_unstim<-gseaAfterBoot(zFit = zlm_noact,boots=boot_noact_vs_unstim,hypothesis = CoefficientHypothesis("blockTRUE"),sets=sets_indices))
-cache(gsea_noact_stim<-gseaAfterBoot(zFit = zlm_block,boots=boot_noact_vs_stim,hypothesis = CoefficientHypothesis("blockTRUE"),sets=sets_indices))
-
-t_stat_unstim <- melt(calcZ(gsea_noact_unstim, testType = "normal"))
-t_stat_unstim_wide <- dcast(t_stat_unstim, set ~ comp + metric)
-t_stat_unstim <- data.frame(calcZ(gsea_noact_unstim, testType = "normal", combined = "stouffer"))
-t_stat_unstim$set <- rownames(t_stat_unstim)
-t_stat_unstim_comb <- data.table(merge(t_stat_unstim_wide, t_stat_unstim, by = "set"))
-setorder(t_stat_unstim_comb,P)
-t_stat_unstim_comb[p.adjust(disc_P,"fdr")<0.01, ][order(disc_Z)]
-filt_unstim_filt=unique(c(names(which(abs(gsea_noact_unstim[,"disc","stat","test"]-gsea_noact_unstim[,"disc","stat","null"])> log(2.5) )),names(which(abs(gsea_noact_unstim[,"cont","stat","test"]-gsea_noact_unstim[,"cont","stat","null"])>log2(1.5)))))
-t_stat_unstim_comb[set%in%filt_unstim_filt&p.adjust(disc_P,"fdr")<0.01][order(disc_Z)]
-
-t_stat_stim <- melt(calcZ(gsea_noact_stim, testType = "normal"))
-t_stat_stim_wide <- dcast(t_stat_stim, set ~ comp + metric)
-t_stat_stim <- data.frame(calcZ(gsea_noact_stim, testType = "normal", combined = "stouffer"))
-t_stat_stim$set <- rownames(t_stat_stim)
-t_stat_stim_comb <- data.table(merge(t_stat_stim_wide, t_stat_stim, by = "set"))
-setorder(t_stat_stim_comb,P)
-filt_stim_filt=unique(c(names(which(abs(gsea_noact_stim[,"disc","stat","test"]-gsea_noact_stim[,"disc","stat","null"])> log(2.5) )),names(which(abs(gsea_noact_stim[,"cont","stat","test"]-gsea_noact_stim[,"cont","stat","null"])>log2(1.5)))))
-t_stat_stim_comb[set%in%filt_stim_filt&p.adjust(disc_P,"fdr")<0.01][order(disc_Z)]
-
-lim=t_stat_stim_comb[set%in%filt_stim_filt&p.adjust(P,"fdr")<0.01][order(Z),set]
-
-ggplot(setDT(melt(t_stat_stim_comb[set%in%filt_stim_filt&p.adjust(P,"fdr")<0.01][order(Z),]))[variable%like%"Z"])+geom_tile(aes(x=variable,y=set,fill=value))+scale_y_discrete(limits=lim)+scale_fill_gradient2("GSEA Z-score",low = ("#E9A3C9"),mid=("#F7F7F7"),high=("#A1D76A"),space="Lab")+scale_x_discrete("Component",labels=c("Continous","Discrete","Combined"))+theme_linedraw()+plotheme+theme(axis.text.x=element_text(angle=90,hjust=1))+ggtitle("GSEA of non-responding MAITs vs stimulated MAITs")
-ggsave(file="../inst/extdata/output/GSEA_nonresponsive_vs_stim_gobp.pdf",width=15,height=10)
-lim2=t_stat_unstim_comb[set%in%filt_unstim_filt&p.adjust(P,"fdr")<0.01][order(Z),set]
-
-ggplot(setDT(melt(t_stat_unstim_comb[set%in%filt_unstim_filt&p.adjust(P,"fdr")<0.01][order(Z)]))[variable%like%"Z"])+geom_tile(aes(x=variable,y=set,fill=value))+scale_y_discrete(limits=lim2)+scale_fill_gradient2("GSEA Z-score",low = ("#E9A3C9"),mid=("#F7F7F7"),high=("#A1D76A"),space="Lab")+scale_x_discrete("Component",labels=c("Continous","Discrete","Combined"))+theme_linedraw()+plotheme+theme(axis.text.x=element_text(angle=90,hjust=1))+ggtitle("GSEA of non-responding MAITs vs unstimulated MAITs")
-ggsave(file="../inst/extdata/output/GSEA_nonresponsive_vs_unstim_gobp.pdf",width=15,height=10)
-```
-
-<!-- ### ngeneson effect -->
-
-```{r, eval=FALSE,echo=FALSE}
-layer(sca_mait)<-"tpm"
-melted<-data.table(MAST:::melt.SingleCellAssay(sca_mait))
-melted[,ngeneson:=mean(tpm>0),wellKey]
-melted[,cut_ngeneson:=cut(.SD[,(ngeneson)],quantile(.SD[,(ngeneson)],seq(0,1,length.out=11))),condition]
-ggplot(melted[!is.na(cut_ngeneson)][,list(cond_mean=ifelse(sum(tpm)==0,NA_real_,log2(mean(tpm[tpm>0])))),list(cut_ngeneson,primerid,condition)])+geom_boxplot()+aes(x=cut_ngeneson,y=cond_mean)+theme_linedraw()+theme(axis.text.x=element_text(angle=90,hjust=1))+geom_smooth(aes(group=condition))+facet_wrap(~condition)
-```
-
-### PCA plots for ngeneson effect
-
-```{r fig1,eval=TRUE}
-sca=sca_mait
-sca=subset(sca,nGeneOn>4000)
-pcsm<-prcomp(exprs(sca))$x
-scree_mait<-lapply(list(prcomp(exprs(sca))$sdev^2),function(x)x/sum(x))[[1]][1:8]
-foo=data.table(MAST:::melt.SingleCellAssay(sca))
-```
-
-### Figure 1
-
-
-```{r fig1_1,fig.width=10,include=TRUE}
-mait_pc<-data.frame(pcsm[,1:2],ngeneson=foo[,list(ngeneson=mean(tpm>0)),`wellKey`][,ngeneson],experiment="MAIT",stim=cData(sca)[,"condition"])
-
-pcs<-prcomp(exprs(sca_alex))$x
-scree_shalek<-lapply(list(prcomp(exprs(sca_alex))$sdev^2),function(x)x/sum(x))[[1]][1:8]
-shalek_pc<-data.frame(pcs[,1:2],ngeneson=cData(sca_alex)[,"ngeneson",FALSE],experiment="DCs",stim=cData(sca_alex)[,"Stim",FALSE])
-setnames(shalek_pc,"Stim","stim")
-colors2<-brewer.pal(name="PiYG",n=4)
-colors<-c(brewer.pal(name = "PiYG",n=3)[c(1)],"#5729EE")
-
-scree_shalek[1:2]*100
-
-f2<-ggplot(data.table(mait_pc))+geom_point(aes(y=PC2,x=ngeneson,col=stim),show_guide=FALSE)+facet_wrap(~experiment,scales="free")+theme_linedraw()+scale_color_manual(values=colors)+scale_y_continuous(paste0("PC2 (",sprintf("%2.1f",100*scree_mait[2]),"%)"))+scale_x_continuous("Cellular Detection Rate")
-f1<-ggplot(data.table(mait_pc))+geom_point(aes(y=PC1,x=ngeneson,col=stim),show_guide=FALSE)+facet_wrap(~experiment,scales="free")+theme_linedraw()+scale_color_manual(values=colors)+scale_y_continuous(paste0("PC1 (",sprintf("%2.1f",100*scree_mait[1]),"%)"))+scale_x_continuous("Cellular Detection Rate")
-f3<-ggplot(data.table(shalek_pc))+geom_point(aes(y=PC2,x=ngeneson,col=stim),show_guide=FALSE)+facet_wrap(~experiment,scales="free")+theme_linedraw()+scale_color_manual(values=colors2)+scale_y_continuous(paste0("PC2 (",sprintf("%2.1f",100*scree_shalek[2]),"%)"))+scale_x_continuous("Cellular Detection Rate")
-f4<-ggplot(data.table(shalek_pc))+geom_point(aes(y=PC1,x=ngeneson,col=stim),show_guide=FALSE)+facet_wrap(~experiment,scales="free")+theme_linedraw()+scale_color_manual(values=colors2)+scale_y_continuous(paste0("PC1 (",sprintf("%2.1f",100*scree_shalek[1]),"%)"))+scale_x_continuous("Cellular Detection Rate")
-
-scree<-rbind(data.frame(pvar=100*scree_mait,PC=paste0("PC",1:8),experiment="MAIT"),data.frame(pvar=100*scree_shalek,PC=paste0("PC",1:8),experiment="DCs"))
-
-ggplot(scree)+geom_bar(aes(x=PC,y=pvar,fill=experiment),stat="identity",position="dodge")+theme_linedraw()
-
-layout=matrix(1:4,ncol=2)
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(nrow=nrow(layout),ncol=ncol(layout))))
-vp=viewport(layout.pos.row = 1,layout.pos.col = 2)
-print(f1,vp=vp)
-vp=viewport(layout.pos.row = 1,layout.pos.col = 1)
-print(f4,vp=vp)
-vp=viewport(layout.pos.row = 2,layout.pos.col = 2)
-print(f2,vp=vp)
-vp=viewport(layout.pos.row = 2,layout.pos.col = 1)
-print(f3,vp=vp)
-grid.text("A",x=0.02,y=0.96)
-grid.text("B",x=0.52,y=0.96)
-grid.text("C",x=0.02,y=0.52)
-grid.text("D",x=0.52,y=0.52)
-
-```
-
-```{r,echo=FALSE}
-pdf(file="../inst/extdata/output/Figure1.pdf",width=6.5,height=6.5)
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(nrow=nrow(layout),ncol=ncol(layout))))
-vp=viewport(layout.pos.row = 1,layout.pos.col = 2)
-print(f1+plotheme,vp=vp)
-vp=viewport(layout.pos.row = 1,layout.pos.col = 1)
-print(f4+plotheme,vp=vp)
-vp=viewport(layout.pos.row = 2,layout.pos.col = 2)
-print(f2+plotheme,vp=vp)
-vp=viewport(layout.pos.row = 2,layout.pos.col = 1)
-print(f3+plotheme,vp=vp)
-grid.text("A",x=0.02,y=0.96)
-grid.text("B",x=0.52,y=0.96)
-grid.text("C",x=0.02,y=0.52)
-grid.text("D",x=0.52,y=0.52)
-dev.off()
-```
-
-
-```{r,eval=FALSE,echo=FALSE,fig.width=8,fig.height=8}
-grid.newpage()
-pushViewport(viewport(layout=grid.layout(nrow=nrow(layout),ncol=ncol(layout))))
-vp=viewport(layout.pos.row = 1,layout.pos.col = 2)
-print(f1+plotheme,vp=vp)
-vp=viewport(layout.pos.row = 1,layout.pos.col = 1)
-print(f4+plotheme,vp=vp)
-vp=viewport(layout.pos.row = 2,layout.pos.col = 2)
-print(f2+plotheme,vp=vp)
-vp=viewport(layout.pos.row = 2,layout.pos.col = 1)
-print(f3+plotheme,vp=vp)
-grid.text("A",x=0.02,y=0.96)
-grid.text("B",x=0.52,y=0.96)
-grid.text("C",x=0.02,y=0.52)
-grid.text("D",x=0.52,y=0.52)
-```
-
-## Flow cytometry data
-
-```{r, fig.width=15,fig.height=7,cache=FALSE}
-library(flowCore)
-library(flowWorkspace)
-library(gridExtra)
-ws = openWorkspace("../inst/extdata/(2)140702-BRI MAIT ICS-HM.xml")
-g = parseWorkspace(ws,name=4,subset=c(2,3))
-nds = getNodes(g)[13:16]
-pData(g)$Stim=c("Unstim","Stim")
-p1=plotGate(g,"L/Live/MAITs",cond="Stim")
-p3=plotGate(g,nds,cond="Stim")
-toplot=data.table(fsApply(getData(g,"L/Live/MAITs"),function(x)exprs(x)[,c("FSC-A","SSC-A")]),Stim=rep(c("Unstim","Stim"),fsApply(getData(g,"L/Live/MAITs"),dim)[,1]))
-p2<-ggplot(toplot)+aes(x=`FSC-A`,y=`SSC-A`)+geom_point(alpha=0.25)+geom_density2d(aes(col=Stim))+theme_linedraw()+plotheme+ scale_color_manual("",values = rev(c(brewer.pal(name = "PiYG",n = 3)[c(1)],"#5729EE")))
-pdf(file="../inst/extdata/output/Supplementary_Figure_6.pdf",width=15,height=5)
-grid.arrange(p1,p2,p3,ncol=3)
-grid.text(c("A","B","C"),x = c(0.05,0.35,0.65),y=c(0.95,0.95,0.95))
-dev.off()
-png(file="../inst/extdata/output/Supplementary_Figure_6.png",width=15*150,height=5*150,res=150)
-grid.arrange(p1,p2,p3,ncol=3)
-grid.text(c("A","B","C"),x = c(0.05,0.35,0.65),y=c(0.95,0.95,0.95))
-dev.off()
-grid.arrange(p1,p2,p3,ncol=3)
-grid.text(c("A","B","C"),x = c(0.05,0.35,0.65),y=c(0.95,0.95,0.95))
 ```
 

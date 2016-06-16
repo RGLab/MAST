@@ -166,3 +166,14 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
 ##' @seealso zlm.SingleCellAssay summary,ZlmFit-method
 setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SummarizedExperiment0', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
+
+##' An S4 class for Gene Set Enrichment output
+##'
+##' This holds output from a call to gseaAfterBoot.
+##' It primarily provides a summary method.
+##' @slot tests array: gene sets X {discrete,continuous} X {stat, variance, degrees of freedom, avg correlation} X {test, null}
+##' @slot bootR number of bootstrap replicates
+##' @seealso gseaAfterBoot
+##' @seealso calcZ
+##' @seealso summary,GSEATests-method
+setClass('GSEATests', slots=list(tests='array', bootR='numeric'))
