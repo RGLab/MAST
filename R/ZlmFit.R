@@ -187,8 +187,8 @@ normalci <- function(center, se, level){
 ##' zs <- summary(z)
 ##' names(zs)
 ##' print(zs)
-##' ##remove summaryZlmFit class to get normal print method (or call data.table:::print.data.table) 
-##' data.table::setattr(zs, 'class', class(zs)[-1])
+##' ##Select `datatable` copmonent to get normal print method
+##' zs$datatable
 ##' @export
 setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE, level=.95, ...){
     message('Combining coefficients and standard errors')

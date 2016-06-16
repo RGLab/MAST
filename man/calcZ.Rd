@@ -4,14 +4,14 @@
 \alias{calcZ}
 \title{Get Z or T statistics and P values after running gseaAfterBoot}
 \usage{
-calcZ(tests, testType = "t", combined = "no")
+calcZ(gseaObj, testType = "t", combined = "none")
 }
 \arguments{
-\item{tests}{output from \code{gseaAfterBoot}}
-
 \item{testType}{either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.}
 
 \item{combined}{\code{character} one of 'none', 'fisher' or 'stouffer'}
+
+\item{tests}{output from \code{gseaAfterBoot}}
 }
 \value{
 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|)) if \code{combined='no'}, otherwise just a matrix.

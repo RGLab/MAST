@@ -357,35 +357,23 @@ calcZ <- function(gseaObj, testType='t', combined='none'){
 }
 
 
-##' Summarize model features from a \code{ZlmFit} object
+##' Summarize gene set enrichment tests
 ##'
-##' Returns a \code{data.table} with a special print method that shows the top 2 most significant genes by contrast.
+##' Returns a \code{data.table} with one row per gene set.
 ##' This \code{data.table} contains columns: 
 ##' \describe{
-#'   \item{primerid}{the gene}
-#'   \item{component}{C=continuous, D=discrete, logFC=log fold change, S=combined using Stouffer's method, H=combined using hurdle method}
-#' \item{contrast}{the coefficient/contrast of interest}
-#' \item{ci.hi}{upper bound of confidence interval}
-#' \item{ci.lo}{lower bound of confidence interval}
-#' \item{coef}{point estimate}
-#' \item{z}{z score (coefficient divided by standard error of coefficient)}
-#' \item{Pr(>Chisq)}{likelihood ratio test p-value (only if \code{doLRT=TRUE})}
+#'   \item{set}{name of gene set}
+#'   \item{cond_Z}{Z statistic for continuous component}
+#' \item{cont_P}{wald P value}
+#' \item{disc_Z}{Z statistic for discrete}
+#' \item{disc_P}{wald P value}
+#' \item{Z}{combined discrete and continuous Z statistic using Stouffer's method}
+#' \item{P}{combined P value}
+#' \item{adj}{FDR adjusted combined P value}
 #' }
-#' Some of these columns will contain NAs if they are not applicable for a particular component or contrast.
-##' @param object A \code{ZlmFit} object
-##' @param logFC If TRUE, calculate log-fold changes, or output from a call to \code{getLogFC}.
-##' @param doLRT if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.
-##' @param level what level of confidence coefficient to return.  Defaults to 95 percent. 
-##' @param ... ignored
-##' @seealso print.summaryZlmFit
-##' @examples
-##' data(vbetaFA)
-##' z <- zlm(~Stim.Condition, vbetaFA[1:5,])
-##' zs <- summary(z)
-##' names(zs)
-##' print(zs)
-##' ##remove summaryZlmFit class to get normal print method (or call data.table:::print.data.table) 
-##' data.table::setattr(zs, 'class', class(zs)[-1])
+##' @param object A \code{GSEATests} object
+##' @param ... passed to \code{calcZ}
+##' @return \code{data.table}
 ##' @export
 setMethod('summary', signature=c(object='GSEATests'), function(object, level=.95, ...){
     message('Reticulating splines...')
