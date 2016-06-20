@@ -95,6 +95,7 @@ Drop <- function(x, d){
 ##' @importFrom plyr aaply
 ##' @export
 ##' @seealso calcZ
+##' @seealso summary,GSEATests-method
 ##' @examples
 ##' data(vbetaFA)
 ##' vb1 = subset(vbetaFA, ncells==1)
@@ -104,7 +105,7 @@ Drop <- function(x, d){
 ##' sets=list(A=1:5, B=3:10, C=15, D=1:5)
 ##' gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))
 ##' dimnames(gsea@tests)
-##' calcZ(gsea)
+##' summary(gsea)
 ##' stopifnot(all.equal(gsea@tests['A',,,],gsea@tests['D',,,]))
 ##' stopifnot(all.equal(gsea@tests['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
 gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=Inf, var_estimate='bootall')){
@@ -365,25 +366,33 @@ calcZ <- function(gseaObj, testType='t', combined='none'){
 #'   \item{set}{name of gene set}
 #'   \item{cond_Z}{Z statistic for continuous component}
 #' \item{cont_P}{wald P value}
+#' \item{cont_effect}{difference in continuous regression coefficients between null and test sets (ie, the numerator of the Z-statistic.)}
 #' \item{disc_Z}{Z statistic for discrete}
 #' \item{disc_P}{wald P value}
-#' \item{Z}{combined discrete and continuous Z statistic using Stouffer's method}
-#' \item{P}{combined P value}
-#' \item{adj}{FDR adjusted combined P value}
+#' \item{disc_effect}{difference in discrete regression coefficients between null and test sets.}
+#' \item{combined_Z}{combined discrete and continuous Z statistic using Stouffer's method}
+#' \item{combined_P}{combined P value}
+#' \item{combined_adj}{FDR adjusted combined P value}
 #' }
 ##' @param object A \code{GSEATests} object
 ##' @param ... passed to \code{calcZ}
 ##' @return \code{data.table}
+##' @seealso gseaAfterBoot
 ##' @export
 setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
     t_stat <- as.data.table(reshape2::melt(calcZ(object, combined='none', ...)))
-
+    effect_size <- as.data.table(reshape2::melt(object@tests[,,'stat','test']-object@tests[,,'stat','null']))
+    effect_size_wide <- dcast(effect_size, set ~ comp)
+    setnames(effect_size_wide, c('disc', 'cont'), c('disc_effect', 'cont_effect'))
+    
     t_stat_wide <- dcast(t_stat, set ~ comp + metric)
     pvalArr <- calcZ(gsea, combined = "stouffer", ...)
     pvals <- data.table(pvalArr)
+    setnames(pvals, c('P', 'Z'), c('combined_P', 'combined_Z'))
     pvals$set <- rownames(pvalArr)
     t_stat_comb <- merge(t_stat_wide, pvals, by = "set")
-    setorder(t_stat_comb,P)
-    t_stat_comb[,adj:=p.adjust(P,"fdr")]
+    t_stat_comb <- merge(t_stat_comb, effect_size_wide, by='set')
+    t_stat_comb[,combined_adj:=p.adjust(combined_P,"fdr")]
+    setorder(t_stat_comb,combined_adj)
     t_stat_comb
     })

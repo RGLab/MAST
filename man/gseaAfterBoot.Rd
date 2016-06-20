@@ -49,7 +49,7 @@ boots = bootVcov1(zf, 10)
 sets=list(A=1:5, B=3:10, C=15, D=1:5)
 gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))
 dimnames(gsea@tests)
-calcZ(gsea)
+summary(gsea)
 stopifnot(all.equal(gsea@tests['A',,,],gsea@tests['D',,,]))
 stopifnot(all.equal(gsea@tests['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
 }

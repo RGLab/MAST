@@ -22,11 +22,13 @@ This \code{data.table} contains columns:
   \item{set}{name of gene set}
   \item{cond_Z}{Z statistic for continuous component}
 \item{cont_P}{wald P value}
+\item{cont_effect}{difference in continuous regression coefficients between null and test sets (ie, the numerator of the Z-statistic.)}
 \item{disc_Z}{Z statistic for discrete}
 \item{disc_P}{wald P value}
-\item{Z}{combined discrete and continuous Z statistic using Stouffer's method}
-\item{P}{combined P value}
-\item{adj}{FDR adjusted combined P value}
+\item{disc_effect}{difference in discrete regression coefficients between null and test sets.}
+\item{combined_Z}{combined discrete and continuous Z statistic using Stouffer's method}
+\item{combined_P}{combined P value}
+\item{combined_adj}{FDR adjusted combined P value}
 }
 }
 
