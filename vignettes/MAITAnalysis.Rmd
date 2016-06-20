@@ -5,22 +5,18 @@ author: Greg Finak, Andrew McDavid, Masanao Yajima, Jingyuan Deng, Vivian Gersuk
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{MAIT Analysis}
+  %\VignetteIndexEntry{Using MAST for filtering, differential expression and gene set enrichment in MAIT cells}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
-# Stimulated vs. Non-stimulated MAIT Cells
 
-
+# Overview
 We will learn how to use the package [MAST](http://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0844-5) to analyze single cell gene expression experiments.
 
 Starting from a matrix of counts of transcripts (cells by transcripts), we will discuss the preliminary steps of quality control, filtering, and exploratory data analysis.  Once we are satisfied that we have high-quality expression, we will consider tests for differential expression and ways to visualize results.
 It is often helpful to synthesize from gene-level into module-level statements.  Therefore, we will learn how to use MAST to test for gene set enrichment.
 
-An example data set of Mucosal Associated Invariant T cells (MAITs) that have been cytokine stimulated will be provided.  Participants are also encouraged to bring their own data.
-
-Prerequisites for this class will include basic R syntax, plotting and manipulation of data using `data.table` and `ggplot2`.  Background with linear models may be useful as well.
-
+We will apply these methods to a data set of Mucosal Associated Invariant T cells (MAITs), measured on the Fluidigm C1.  Half of the cells have been cytokine stimulated.
 
 ```{r eval=FALSE}
 library(devtools)
@@ -58,7 +54,7 @@ options(mc.cores = detectCores() - 1) #or set smaller if you find yourself runni
 options(mc.cores = 1) #or set smaller if you find yourself running out of memory
 })
 LARGE_MEMORY_CORES <- 1 #for large memory operations
-knitr::opts_chunk$set(echo = FALSE,eval = TRUE,message = FALSE,error = FALSE,warning = FALSE,cache = TRUE,fig.width=10,fig.height=8)
+knitr::opts_chunk$set(echo = FALSE,eval = TRUE,message = FALSE,error = FALSE,warning = FALSE,cache = TRUE,fig.width=10,fig.height=8, auto.dep=TRUE)
 plotheme <-
 theme(
 plot.background = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),axis.line =
@@ -69,7 +65,7 @@ element_line(colour = "black")
 
 # Loading and transforming data
 ```{r MASToptions}
-percent_expressed <- 0.2
+freq_expressed <- 0.2
 FCTHRESHOLD <- log2(1.5)
 ```
 First, let's set some constants that we can use throughout this analysis.
@@ -83,7 +79,7 @@ head(maits$cdat)
 head(maits$fdat)
 ```
 Next, let's load the data, which consists of a matrix of log2 + 1 transcripts per million (TPM), as output by RSEM.
-Internally, we use the packages RNASeqPipelineR and preprocessData to facilitate aligning and quantitating the raw reads.
+Internally, we use the packages (RNASeqPipelineR)[https://github.com/RGLab/RNASeqPipelineR] and (preprocessData)[https://github.com/RGLab/preProcessData] to facilitate aligning and quantitating the raw reads.
 This is an experiment on Mucosal Associated Invariant T-cells from a single healthy donor.
 A number of cells were subjected to reverse transcription and library prep immediately, while others were first stimulated for 24 hours with a cytokine cocktail.
 
@@ -91,8 +87,10 @@ A number of cells were subjected to reverse transcription and library prep immed
 ```{r createSca}
 scaRaw <- FromMatrix(t(maits$expressionmat), maits$cdat, maits$fdat)
 ```
-There are `r ncol(scaRaw)` single cells measured over `r nrow(scaRaw)` genes.
-We derive from the `SummarizedExperiment` class, which makes it easy for feature (row) and cell (column) meta data to come along for the ride.
+`FromMatrix` constructs an object from a matrix (genes $\times$ cells) of expression, a `data.frame` of cell-level covariance and a `data.frame` of feature-level covariates.
+In this case, there are `r ncol(scaRaw)` single cells measured over `r nrow(scaRaw)` genes.
+We derive from the `SummarizedExperiment` class, which makes it easy for feature (row) and cell (column) metadata to come along for the ride.
+There is also a constructor, `FromFlatDF` for flattened data where measurments, and cell and feature covariates are intermingled.
 
 
 ## EDA
@@ -162,10 +160,10 @@ When we plot the threshold vs genes binned by median expression value, we can se
 
 ```{r assignThresh}
 assays(sca) <- list(thresh=thres$counts_threshold, tpm=assay(sca))
-expressed_genes <- freq(sca) > percent_expressed
+expressed_genes <- freq(sca) > freq_expressed
 sca <- sca[expressed_genes,]
 ```
-We'll limit ourselves to genes that are found in at least `r percent_expressed` fraction of the sample (since we won't have any power to conclude much about less frequent transcripts).
+We'll limit ourselves to genes that are found in at least `r freq_expressed` fraction of the sample (since we won't have any power to conclude much about less frequent transcripts).
 
 # Differential Expression using a Hurdle model
 ```{r zlm}
@@ -221,7 +219,7 @@ entrez_to_plot <- fcHurdleSig[,primerid]
 symbols_to_plot <- fcHurdleSig[,symbolid]
 flat_dat <- as(sca[entrez_to_plot,], 'data.table')
 ggbase <- ggplot(flat_dat, aes(x=condition, y=thresh,color=condition)) + geom_jitter()+facet_wrap(~symbolid)+ggtitle("DE Genes in Activated MAIT Cells")
-ggbase+geom_violin()
+ggbase+geom_violin() 
 
 flat_dat[,lmPred:=lm(thresh~cngeneson + condition)$fitted, key=symbolid]
 
@@ -261,8 +259,7 @@ saveRDS(boots, '../inst/extdata/bootstraps.rds')
 ```{r setupBTM, dependson="data;zlm;boots",results='hide'}
 module <- "BTM"
 min_gene_in_module <- 5
-packageExt <- system.file("inst/extdata/", package='MAST')
-
+packageExt <- system.file("inst", "extdata", package='MAST')
 boots <- readRDS(file.path(packageExt, 'bootstraps.rds'))
 module_file <- list.files(packageExt, pattern = module, full.names = TRUE)
 gene_set <- getGmt(module_file)
@@ -277,11 +274,11 @@ We will use the Blood Transcriptional Modules of [Li, et al](www.nature.com/ni/j
 
 
 ```{r gsea}
-gsea <- gseaAfterBoot(zlmCond, boots, sets_indices, CoefficientHypothesis("conditionStim"))
+gsea <- gseaAfterBoot(zlmCond, boots, sets_indices, CoefficientHypothesis("conditionStim")) 
 t_stat_comb <- summary(gsea)
 
 ##Filter by effect size: discrete odds ratio of 1
-t_stat_comb=t_stat_comb[set%in%names(which(abs(gsea[,"disc","stat","test"]-gsea[,"disc","stat","null"])>log(2.5) ))|set%in%names(which(abs(gsea[,"cont","stat","test"]-gsea[,"cont","stat","null"])>log2(1.5)))]
+#t_stat_comb=t_stat_comb[set%in%names(which(abs(gsea[,"disc","stat","test"]-gsea[,"disc","stat","null"])>log(2.5) ))|set%in%names(which(abs(gsea[,"cont","stat","test"]-gsea[,"cont","stat","null"])>log2(1.5)))]
 noyet <- FALSE
 ```
 
