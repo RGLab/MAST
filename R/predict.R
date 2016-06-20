@@ -26,11 +26,11 @@ predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL, ...){
 	contrCovC=melt(aaply(contrCovC,1,function(x)sqrt(diag(x))))
 	predD=melt(predD)
 	contrCovD=melt(aaply(contrCovD,1,function(x)sqrt(diag(x))))
-	colnames(contrCovC) = c("primer","sample","seC")
-	colnames(contrCovD) = c("primer","sample","seD")
-	colnames(predC) = c("primer","sample","muC")
-	colnames(predD) = c("primer","sample","muD")
-   m = merge(merge(merge(predC,contrCovC,by=c("primer","sample")),predD,by=c("primer","sample")),contrCovD,by=c("primer","sample"))
+	colnames(contrCovC) = c("primerid","sample","seC")
+	colnames(contrCovD) = c("primerid","sample","seD")
+	colnames(predC) = c("primerid","sample","muC")
+	colnames(predD) = c("primerid","sample","muD")
+   m = merge(merge(merge(predC,contrCovC,by=c("primerid","sample")),predD,by=c("primerid","sample")),contrCovD,by=c("primerid","sample"))
    setDT(m)
    m
 }
