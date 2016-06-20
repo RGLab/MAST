@@ -20,41 +20,34 @@ We will apply these methods to a data set of Mucosal Associated Invariant T cell
 
 ```{r eval=FALSE}
 library(devtools)
-install_github('RGLab/MAST@summarizedExpt')
 library(BiocInstaller)
 useDevel()
 biocLite('SummarizedExperiment')
 biocValid()
+install_github('RGLab/MAST@summarizedExpt')
 ```
 If you are running this at BioC, you should not need to run this chunk.
 Otherwise you will need to install the summarizedExpt branch and the devel (3.4) branch of Bioconductor.
 
 
-```{r libraries,echo=FALSE, error=FALSE,echo=FALSE,results='hide',warnin=FALSE}
+```{r libraries,echo=FALSE, error=FALSE,echo=TRUE,results='hide',warnin=FALSE}
 suppressPackageStartupMessages({
     library("ggplot2")
     library(GGally)
     library("GSEABase")
-    library("limma")
     library("reshape2")
-    library(RColorBrewer)
     library("data.table")
     library("knitr")
-#library(psych)
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-library(org.Hs.eg.db)
-#library(flowClust)
-#library(COMPASS)
-    ##library(scales)
+    library(TxDb.Hsapiens.UCSC.hg19.knownGene)
     library(stringr)
-    library(class)
     library(NMF)
     library(rsvd)
+    library(RColorBrewer)
 options(mc.cores = detectCores() - 1) #or set smaller if you find yourself running out of memory
 options(mc.cores = 1) #or set smaller if you find yourself running out of memory
 })
 LARGE_MEMORY_CORES <- 1 #for large memory operations
-knitr::opts_chunk$set(echo = FALSE,eval = TRUE,message = FALSE,error = FALSE,warning = FALSE,cache = TRUE,fig.width=10,fig.height=8, auto.dep=TRUE)
+knitr::opts_chunk$set(message = FALSE,error = FALSE,warning = FALSE,cache = TRUE,fig.width=8,fig.height=6, auto.dep=TRUE)
 plotheme <-
 theme(
 plot.background = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),axis.line =
@@ -79,7 +72,7 @@ head(maits$cdat)
 head(maits$fdat)
 ```
 Next, let's load the data, which consists of a matrix of log2 + 1 transcripts per million (TPM), as output by RSEM.
-Internally, we use the packages (RNASeqPipelineR)[https://github.com/RGLab/RNASeqPipelineR] and (preprocessData)[https://github.com/RGLab/preProcessData] to facilitate aligning and quantitating the raw reads.
+Internally, we use the packages [RNASeqPipelineR](https://github.com/RGLab/RNASeqPipelineR) and [preprocessData](https://github.com/RGLab/preProcessData) to facilitate aligning and quantitating the raw reads.
 This is an experiment on Mucosal Associated Invariant T-cells from a single healthy donor.
 A number of cells were subjected to reverse transcription and library prep immediately, while others were first stimulated for 24 hours with a cytokine cocktail.
 
@@ -129,6 +122,19 @@ sca <- sca[freq(sca)>0,]
 We'll now consider only cells that pass the filter.  `subset(scaRaw, filterCrit)` is just syntactic sugar for subsetting by columns, but who doesn't like a little sugar?
 We'll also limit ourselves to transcripts that have a an entrez gene id to facilitate interpretation.
 
+### Recalculating the cellular detection rate (ngeneson)
+We and others have found that the number of genes detected in a sample, which we deemed the cellular detection rate is often the first principal component.
+After we removed genes low expression, perhaps we want to recalculate it.
+```{r}
+cdr2 <-colSums(assay(sca)>0)
+qplot(x=cdr2, y=colData(sca)$nGeneOn) + xlab('New CDR') + ylab('Old CDR')
+```
+
+We can assign this to a new column in the `colData` in the obvious fashion:
+```{r}
+colData(sca)$cngeneson <- scale(cdr2)
+```
+
 ### PCA on filtered cells
 ```{r pcaFilter}
 plotPCA(sca)
@@ -136,7 +142,13 @@ plotPCA(sca)
 PC1 now primarily captures stimulation effects.
 We still observe that PC2 correlates with the exonRate and ngeneson, but the data are more smoothly distributed.
 
-## Adaptive thresholding
+### Exercises on loading and transforming data
+
+1.  These samples were reverse-transcribed and amplified on two Fluidigm C1 chips (and stimulation is completely confounded with chip...)  The chip location is contained in the column `wellKey` in `colData(sca)` as a three-character string like `CXX`.
+How could you extract the chip location and add it as column to the cellular data?  Hint: `str_split_fixed` or `str_extract` may be your friends here.
+
+
+# Adaptive thresholding
 ```{r distribution, fig.width=8, fig.height=8}
 scaSample <- sca[sample(nrow(sca), 20),]
 flat <- as(scaSample, 'data.table')
@@ -164,6 +176,11 @@ expressed_genes <- freq(sca) > freq_expressed
 sca <- sca[expressed_genes,]
 ```
 We'll limit ourselves to genes that are found in at least `r freq_expressed` fraction of the sample (since we won't have any power to conclude much about less frequent transcripts).
+
+### Exercises on thresholding
+
+2.  Many modeling procedures assume (or perform best) when the data are normally distributed.  How could we evaluate how thresholding affects the normality of the data?  How about the normality of the non-zero data?
+
 
 # Differential Expression using a Hurdle model
 ```{r zlm}
@@ -231,15 +248,25 @@ ggbase +aes(x=cngeneson) + geom_line(aes(y=lmPred), lty=1)
 
 ## Heatmap of MAITs based on most differentially expressed genes
 
-Top 100 DE genes between stimulated and non-stimulated MAIT cells. 
+ DE genes between stimulated and non-stimulated MAIT cells. 
 
 ```{r, dependson="data;zlm",fig.width=15,fig.height=10}
 mat_to_plot <- assay(sca[entrez_to_plot,])
 rownames(mat_to_plot) <- symbols_to_plot
-aheatmap(mat_to_plot,annCol=colData(sca)[,"condition"],main="Top 100 DE genes",col=rev(colorRampPalette(colors = brewer.pal(name="PiYG",n=10))(20)))
+aheatmap(mat_to_plot,annCol=colData(sca)[,"condition"],main="DE genes",col=rev(colorRampPalette(colors = brewer.pal(name="PiYG",n=10))(20)))
 
 ```
 Some of the activated MAITs have transcriptional profiles more similar to unactivated MAITS.
+
+### Exercises on hurdle model differential expression
+3.  In some of the libraries it was possible to recover portions of the T-cell receptor alpha and beta chains from the reads.
+Behold, we live a golden age:
+```{r}
+table(colData(sca)$beta, exclude=NULL)
+#Note that we currently throw an uninformative error if a covariate is `NA`
+scaHasBeta <- subset(sca, !is.na(beta))
+```
+How could you test for differential expression between TCR `beta` subtypes among `scaHasBeta`, the cells in which the TCR was successfully inferred?  What is worrying about this procedure?
 
 # Gene Set Enrichment Analysis
 We use a competitive gene set enrichment test, in which a contrast (hurdle model coefficient) from various gene sets of interest is compared to the background, accounting for the intergene correlation of the module coefficient.
@@ -248,7 +275,7 @@ To estimate the intergene correlation of the contrast, we use bootstrapping.
 Cells (columns in `sca`) are sampled with replacement a number of times and we refit the model.
 At some point, we may implement a GEE-like method to estimate the intergene correlation through asymptotic calculations.
 But in the meantime, the bootstrapping can be a bit slow, although is pleasingly parallelizable.
-To avoid wasting too many CPU cycles, the result of such a bootstrap has been pre-calculated.
+To avoid heating up the server farm too much, the result of such a bootstrap has been pre-calculated.
 ```{r boots, eval=FALSE}
 #bootstrap
 boots <- bootVcov1(zlmCond, 50)
@@ -275,13 +302,19 @@ We will use the Blood Transcriptional Modules of [Li, et al](www.nature.com/ni/j
 
 ```{r gsea}
 gsea <- gseaAfterBoot(zlmCond, boots, sets_indices, CoefficientHypothesis("conditionStim")) 
-t_stat_comb <- summary(gsea)
+z_stat_comb <- summary(gsea)
 
-##Filter by effect size: discrete odds ratio of 1
-#t_stat_comb=t_stat_comb[set%in%names(which(abs(gsea[,"disc","stat","test"]-gsea[,"disc","stat","null"])>log(2.5) ))|set%in%names(which(abs(gsea[,"cont","stat","test"]-gsea[,"cont","stat","null"])>log2(1.5)))]
 noyet <- FALSE
 ```
+The `summary` method returns a `data.table` with columns giving discrete and continuous Z-scores (`disc_Z` and `cont_Z`) and P-values testing if the average coefficient in the gene set differs from the average coefficient outside the set.
+A combined P-value (using Stouffer's method) is given in column `combined_P`.
+The effect sizes (difference in average regression coefficients) is given in `effect_disc` and `effect_cont`.  For the discrete component this gives, for example, the difference in the average odds of expression in the set vs outside the set.
 
+```{r gseaView}
+sigModules <- z_stat_comb[combined_adj<.01]
+gseaTable <- melt(sigModules[,.(set, disc_Z, cont_Z, combined_Z)], id.vars='set')
+ggplot(gseaTable, aes(y=set, x=variable, fill=value))+geom_raster() + scale_fill_distiller(palette="PiYG")
+```
 
 
 <!-- ### Visualization of most enriched modules -->

@@ -20,7 +20,8 @@ Imports:
     parallel,
     reshape2
 Depends:
-    SummarizedExperiment
+    SummarizedExperiment,
+    R(>= 2.10)
 Suggests:
     knitr,
     testthat,
@@ -29,7 +30,14 @@ Suggests:
     numDeriv,
     car,
     gdata,
-    lattice
+    lattice,
+    GGally,
+    GSEABase,
+    NMF,
+    TxDb.Hsapiens.UCSC.hg19.knownGene,
+    rsvd,
+    limma,
+    RColorBrewer
 Description: Core data structures and methods for handling single cell assay
     data.
 License: GPL(>= 2)
