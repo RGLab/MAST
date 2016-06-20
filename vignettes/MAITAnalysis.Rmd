@@ -43,17 +43,10 @@ suppressPackageStartupMessages({
     library(NMF)
     library(rsvd)
     library(RColorBrewer)
-options(mc.cores = detectCores() - 1) #or set smaller if you find yourself running out of memory
-options(mc.cores = 1) #or set smaller if you find yourself running out of memory
 })
-LARGE_MEMORY_CORES <- 1 #for large memory operations
+#options(mc.cores = detectCores() - 1) #if you have multiple cores to spin
+options(mc.cores = 1)
 knitr::opts_chunk$set(message = FALSE,error = FALSE,warning = FALSE,cache = TRUE,fig.width=8,fig.height=6, auto.dep=TRUE)
-plotheme <-
-theme(
-plot.background = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank(),axis.line =
-element_line(colour = "black")
-)
-
 ```
 
 # Loading and transforming data
@@ -125,7 +118,7 @@ We'll also limit ourselves to transcripts that have a an entrez gene id to facil
 ### Recalculating the cellular detection rate (ngeneson)
 We and others have found that the number of genes detected in a sample, which we deemed the cellular detection rate is often the first principal component.
 After we removed genes low expression, perhaps we want to recalculate it.
-```{r}
+```{r, fig.width=4, fig.height=4}
 cdr2 <-colSums(assay(sca)>0)
 qplot(x=cdr2, y=colData(sca)$nGeneOn) + xlab('New CDR') + ylab('Old CDR')
 ```
@@ -149,22 +142,22 @@ How could you extract the chip location and add it as column to the cellular dat
 
 
 # Adaptive thresholding
-```{r distribution, fig.width=8, fig.height=8}
-scaSample <- sca[sample(nrow(sca), 20),]
+```{r distribution, fig.width=6, fig.height=6}
+scaSample <- sca[sample(which(freq(sca)>.1), 20),]
 flat <- as(scaSample, 'data.table')
 ggplot(flat, aes(x=value))+geom_density() +facet_wrap(~symbolid, scale='free_y')
-
 ```
+
 Single cell gene expression data are known to be zero-inflated and bimodal, which is feature we observe here as well.
 Here we've taken subsample of size 20, then flattened it into a `data.table` to make it easy to plot with `ggplot2`.
 
 
-```{r threshold, results='hide'}
+```{r threshold, results='hide', fig.width=6}
 thres <- thresholdSCRNACountMatrix(assay(sca), nbins = 20, min_per_bin = 30)
 par(mfrow=c(5,4))
 plot(thres)
-
 ```
+
 We suspect that the left-most mode corresponds to non-specific hybridization of mRNA or genomic DNA.
 Here we apply an adaptive scheme to threshold values below a cut-off that depends on the intensity of the signal cluster from the gene (determined from the median expression value).
 When we plot the threshold vs genes binned by median expression value, we can see this evolution of thresholding value.
@@ -175,7 +168,7 @@ assays(sca) <- list(thresh=thres$counts_threshold, tpm=assay(sca))
 expressed_genes <- freq(sca) > freq_expressed
 sca <- sca[expressed_genes,]
 ```
-We'll limit ourselves to genes that are found in at least `r freq_expressed` fraction of the sample (since we won't have any power to conclude much about less frequent transcripts).
+We'll limit ourselves to genes that are found in at least `r freq_expressed` of the sample (since we won't have any power to conclude much about less frequent transcripts).
 
 ### Exercises on thresholding
 
@@ -184,7 +177,6 @@ We'll limit ourselves to genes that are found in at least `r freq_expressed` fra
 
 # Differential Expression using a Hurdle model
 ```{r zlm}
-options(mc.cores=LARGE_MEMORY_CORES)
 # ZLM (ridge regression for continuous, get standardized deviance residuals)
 cond<-factor(colData(sca)$condition)
 cond<-relevel(cond,"Unstim")
@@ -250,7 +242,7 @@ ggbase +aes(x=cngeneson) + geom_line(aes(y=lmPred), lty=1)
 
  DE genes between stimulated and non-stimulated MAIT cells. 
 
-```{r, dependson="data;zlm",fig.width=15,fig.height=10}
+```{r}
 mat_to_plot <- assay(sca[entrez_to_plot,])
 rownames(mat_to_plot) <- symbols_to_plot
 aheatmap(mat_to_plot,annCol=colData(sca)[,"condition"],main="DE genes",col=rev(colorRampPalette(colors = brewer.pal(name="PiYG",n=10))(20)))
@@ -333,7 +325,7 @@ for (i in c(1:10,12,13)) {
 <!-- ### Visualization of module "scores" for stimulated and unstimulated cells -->
 
 ```{r scores_fit, eval=noyet, fig.width=10,fig.height=10}
-options("mc.cores" = LARGE_MEMORY_CORES)
+
 
 score_4_hook <- function(x) {
   if (all(x@fitted)) {

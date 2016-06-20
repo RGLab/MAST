@@ -24,6 +24,7 @@ Depends:
     R(>= 2.10)
 Suggests:
     knitr,
+    rmarkdown,
     testthat,
     lme4(>= 1.0),
     roxygen2(> 4.0.0),
