@@ -26,8 +26,18 @@ NULL
 ##' @name vbetaFA
 ##' @rdname vbetaFA-dataset
 ##' @format a \code{FluidigmAssay} of the vbeta data set.
-##' @seealso \code{\link{vbeta}}, \code{\link{FluidigmAssay}}
+##' @seealso \code{\link{vbeta}}, \code{\link{FromFlatDF}}
 NULL
+
+
+##' MAITs data set, RNASeq
+##' @docType data
+##' @name maits
+##' @rdname maits-dataset
+##' @format a \code{list} containing an expression matrix (\code{expressionmat}), cell \code{cdat} and feature \code{fdat}.
+##' @seealso \code{\link{FromMatrix}}
+NULL
+
 
 Mandatory_Featurevars <- character()
 Mandatory_Cellvars <- character()

@@ -305,7 +305,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
 ##' The "Z" score returned by Stouffer when \code{testType='normal'} is the sum of the Z scores, over sqrt(2).
 ##' When \code{testType='t'} it is a weighted combination of the Z scores, with weights correponding to the degrees of freedom in each of the t statistics.
 ##' A t-approximation to this sum of t-variables is derived by matching moments.  It seems to be fairly accurate in practice.
-##' @param tests output from \code{gseaAfterBoot}
+##' @param gseaObj output from \code{gseaAfterBoot}
 ##' @param testType either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.
 ##' @param combined \code{character} one of 'none', 'fisher' or 'stouffer'
 ##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|)) if \code{combined='no'}, otherwise just a matrix.
@@ -375,8 +375,7 @@ calcZ <- function(gseaObj, testType='t', combined='none'){
 ##' @param ... passed to \code{calcZ}
 ##' @return \code{data.table}
 ##' @export
-setMethod('summary', signature=c(object='GSEATests'), function(object, level=.95, ...){
-    message('Reticulating splines...')
+setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
     t_stat <- as.data.table(reshape2::melt(calcZ(object, combined='none', ...)))
 
     t_stat_wide <- dcast(t_stat, set ~ comp + metric)

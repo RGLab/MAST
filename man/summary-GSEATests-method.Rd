@@ -5,7 +5,7 @@
 \alias{summary,GSEATests-method}
 \title{Summarize gene set enrichment tests}
 \usage{
-\S4method{summary}{GSEATests}(object, level = 0.95, ...)
+\S4method{summary}{GSEATests}(object, ...)
 }
 \arguments{
 \item{object}{A \code{GSEATests} object}
