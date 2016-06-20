@@ -72,3 +72,4 @@ Collate:
     'zeroinf.R'
     'zlmHooks.R'
 RoxygenNote: 5.0.1
+LazyData: true
