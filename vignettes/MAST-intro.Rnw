@@ -257,9 +257,9 @@ remain in the package for user convenience.
 
 \section{Use with single cell RNA-sequencing data}
 In RNA-sequencing data is essentially no different than qPCR-based single cell gene expression, once it has been aligned and mapped, if one is willing to reduce the experiment to counts or count-like data for a fixed set of genes/features.  
-We assume that suitable tools (eg, SAMseq or TopHat) have been applied to do this. 
+We assume that suitable tools (eg, RSEM, Kallisto or TopHat) have been applied to do this.
 
-**More details on convenience functions for RNAseq data**
+An example of this use is provided in a vignette.  Type \texttt{vignette('MAITAnalysis')} to view.
 \begin{comment}
   \section{Implementation Details}
   Here we provide some background on the implementation of the

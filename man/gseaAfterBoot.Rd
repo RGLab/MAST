@@ -55,5 +55,7 @@ stopifnot(all.equal(gsea@tests['C','cont','stat','test'], coef(zf, 'C')[15,'Stim
 }
 \seealso{
 calcZ
+
+summary,GSEATests-method
 }
 

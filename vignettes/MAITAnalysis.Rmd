@@ -32,17 +32,19 @@ Otherwise you will need to install the summarizedExpt branch and the devel (3.4)
 
 ```{r libraries,echo=FALSE, error=FALSE,echo=TRUE,results='hide',warnin=FALSE}
 suppressPackageStartupMessages({
-    library("ggplot2")
+    library(ggplot2)
     library(GGally)
-    library("GSEABase")
-    library("reshape2")
-    library("data.table")
-    library("knitr")
+    library(GSEABase)
+    library(limma)
+    library(reshape2)
+    library(data.table)
+    library(knitr)
     library(TxDb.Hsapiens.UCSC.hg19.knownGene)
     library(stringr)
     library(NMF)
     library(rsvd)
     library(RColorBrewer)
+    library(MAST)
 })
 #options(mc.cores = detectCores() - 1) #if you have multiple cores to spin
 options(mc.cores = 1)
@@ -59,7 +61,7 @@ First, let's set some constants that we can use throughout this analysis.
 
 
 ```{r data,results='hide'}
-data(maits)
+data(maits, package='MAST')
 dim(maits$expressionmat)
 head(maits$cdat)
 head(maits$fdat)
@@ -278,13 +280,13 @@ saveRDS(boots, '../inst/extdata/bootstraps.rds')
 ```{r setupBTM, dependson="data;zlm;boots",results='hide'}
 module <- "BTM"
 min_gene_in_module <- 5
-packageExt <- system.file("inst", "extdata", package='MAST')
+packageExt <- system.file("extdata", package='MAST')
 boots <- readRDS(file.path(packageExt, 'bootstraps.rds'))
 module_file <- list.files(packageExt, pattern = module, full.names = TRUE)
 gene_set <- getGmt(module_file)
 gene_ids <- geneIds(gene_set)
 gene_ids <- gene_ids[!names(gene_ids)%like%"TBA"&!names(gene_ids)%like%"B cell"]
-sets_indices <- ids2indices(gene_ids, mcols(sca)$symbolid)
+sets_indices <- limma::ids2indices(gene_ids, mcols(sca)$symbolid)
 # Only keep modules with at least min_gene_in_module
 sets_indices <- sets_indices[sapply(sets_indices, length) >= min_gene_in_module]
 
