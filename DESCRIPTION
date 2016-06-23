@@ -1,7 +1,7 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 0.99.1
+Version: 0.99.0
 Date: 2016-05-18
 Author: Andrew McDavid <amcdavid@fredhutch.org>, Greg Finak
     <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
@@ -20,16 +20,25 @@ Imports:
     parallel,
     reshape2
 Depends:
-    SummarizedExperiment
+    SummarizedExperiment,
+    R(>= 2.10)
 Suggests:
     knitr,
+    rmarkdown,
     testthat,
     lme4(>= 1.0),
     roxygen2(> 4.0.0),
     numDeriv,
     car,
     gdata,
-    lattice
+    lattice,
+    GGally,
+    GSEABase,
+    NMF,
+    TxDb.Hsapiens.UCSC.hg19.knownGene,
+    rsvd,
+    limma,
+    RColorBrewer
 Description: Core data structures and methods for handling single cell assay
     data.
 License: GPL(>= 2)
@@ -63,3 +72,4 @@ Collate:
     'zeroinf.R'
     'zlmHooks.R'
 RoxygenNote: 5.0.1
+LazyData: true

@@ -125,7 +125,7 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), fu
 
 ##' @describeIn show print info on ZlmFit
 setMethod('show', signature=c(object='ZlmFit'), function(object){
-    cat('Fitted zlm on', ncol(object@sca), 'genes and', nrow(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
+    cat('Fitted zlm on', nrow(object@sca), 'genes and', ncol(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
 })
 
 ##' @describeIn ZlmFit Returns the matrix of coefficients for component \code{which}.
@@ -187,8 +187,8 @@ normalci <- function(center, se, level){
 ##' zs <- summary(z)
 ##' names(zs)
 ##' print(zs)
-##' ##remove summaryZlmFit class to get normal print method (or call data.table:::print.data.table) 
-##' data.table::setattr(zs, 'class', class(zs)[-1])
+##' ##Select `datatable` copmonent to get normal print method
+##' zs$datatable
 ##' @export
 setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE, level=.95, ...){
     message('Combining coefficients and standard errors')
@@ -240,8 +240,9 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
         dt <- merge(llrt, dt, all.x=TRUE, all.y=TRUE)
         dt[is.na(component), component :='H']
     }
-    setattr(dt, 'class', c('summaryZlmFit', class(dt)))
-    dt
+    out <- list(datatable=dt)
+    class(out) <- c('summaryZlmFit', 'list')
+    out
 })
 
 if(getRversion() >= "2.15.1") globalVariables(c(
@@ -260,7 +261,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ##' @seealso summary,ZlmFit-method
 ##' @export
 print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
-    class(x) <- class(x)[-1]
+    x <- x$datatable
     ns <- seq_len(n)
     dt <- x[contrast!='(Intercept)',]
     by <- match.arg(by, c('logFC', 'D', 'C'))

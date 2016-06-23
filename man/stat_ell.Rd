@@ -33,8 +33,6 @@ stat_ell(mapping = NULL, data = NULL, geom = "polygon",
 \item{invert}{vector of length 1 that should either be \code{"x","y",or TRUE}. Specifies whether to plot the estimates from the discrete component on the inverse logit scale. invert specifies which axis to invert.}
 
 \item{...}{other arguments passed on to layer. These are often aesthetics, used to set an aesthetic to a fixed value, like color = "red" or size = 3. They may also be parameters to the paired geom/stat.}
-
-\item{group}{grouping information}
 }
 \description{
 Plot confidence ellipse in 2D.

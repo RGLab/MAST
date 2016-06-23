@@ -4,7 +4,7 @@
 \alias{zlm}
 \title{Convenience function for running a zero-inflated regression}
 \usage{
-zlm(formula, data, method = "glm", silent = TRUE, ...)
+zlm(formula, data, method = "bayesglm", silent = TRUE, ...)
 }
 \arguments{
 \item{formula}{model formula}

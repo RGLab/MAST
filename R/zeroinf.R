@@ -60,7 +60,7 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##'
 ##' @seealso GLMlike, LMERlike, BayesGLMlike
 ##' @import stringr
-zlm <- function(formula, data, method='glm',silent=TRUE, ...){
+zlm <- function(formula, data, method='bayesglm',silent=TRUE, ...){
     ## perhaps we should be generic, but since we are dispatching on second argument, which might be an S3 class, let's just do this instead.
     if(inherits(data, 'SingleCellAssay')){
         return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, ...))
@@ -123,7 +123,7 @@ summary.zlm <- function(out){
 ##' vcov(zlmVbeta, 'D')[,,'CD27']
 ##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 ##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
+zlm.SingleCellAssay <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
     ## Default call
     if(missing(LMlike)){
         ## Which class are we using for the fits...look it up by keyword

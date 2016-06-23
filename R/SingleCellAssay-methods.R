@@ -115,11 +115,16 @@ setMethod('fData', 'SingleCellAssay', function(object){
 melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     featdata <- as.data.table(mcols(data))
     celldata <- as.data.table(colData(data))
-    m <- cbind( featdata[rep(seq_len(nrow(featdata)), nrow(celldata)),,drop=FALSE],
-          celldata[rep(seq_len(nrow(celldata)), each=nrow(featdata)),,drop=FALSE],
-          value=as.vector(assay(data)))      
+
+    exprs <- do.call(cbind, lapply(assays(data), as.vector))
+    if( (ncol(exprs)==1 && !is.null(value.name)) || is.null(colnames(exprs))|| colnames(exprs)=='NULL'){ #??
+        colnames(exprs) <- make.unique(rep(value.name, ncol(exprs)))
+    }
     
-  setnames(m, 'value', value.name) 
+    m <- cbind( featdata[rep(seq_len(nrow(featdata)), nrow(celldata)),,drop=FALSE],
+               celldata[rep(seq_len(nrow(celldata)), each=nrow(featdata)),,drop=FALSE], exprs)
+
+  
   return(m)
 }
 

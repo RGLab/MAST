@@ -19,7 +19,7 @@ gseaAfterBoot(zFit, boots, sets, hypothesis, control = list(n_randomize = Inf,
 \item{control}{list of control parameters.  See details.}
 }
 \value{
-4D array.  See details.
+Object of class \code{GSEATests}, containing slots \code{tests},  4D array and \code{bootR}, the number of boostrap replicates.
 }
 \description{
 Modules defined in \code{sets} are tested for average differences in expression from the "average" gene.
@@ -48,12 +48,14 @@ zf = zlm.SingleCellAssay(~Stim.Condition, vb1)
 boots = bootVcov1(zf, 10)
 sets=list(A=1:5, B=3:10, C=15, D=1:5)
 gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))
-dimnames(gsea)
-calcZ(gsea)
-stopifnot(all.equal(gsea['A',,,],gsea['D',,,]))
-stopifnot(all.equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
+dimnames(gsea@tests)
+summary(gsea)
+stopifnot(all.equal(gsea@tests['A',,,],gsea@tests['D',,,]))
+stopifnot(all.equal(gsea@tests['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
 }
 \seealso{
 calcZ
+
+summary,GSEATests-method
 }
 

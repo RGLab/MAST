@@ -2,7 +2,7 @@ fd2 <- fd[1:20,]
 
 context("ZlmFit")
 test_that('zlm.SingleCellAssay works', {
-  zzinit <<- hushWarning(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, parallel=FALSE), 'never estimible')
+  zzinit <<- hushWarning(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, parallel=FALSE, method='glm', ebayes=FALSE), 'never estimible')
   expect_that(zzinit, is_a('ZlmFit'))
 })
 
@@ -44,7 +44,7 @@ test_that('Three flavors of wald on ZlmFit', {
 
 context('Log fold change calcs')
 test_that('log fold changes match zero-inflated regression', {
-    zzsimple <<- zlm.SingleCellAssay( ~ Stim.Condition, fd2)
+    zzsimple <<- zlm.SingleCellAssay( ~ Stim.Condition, fd2, method='glm', ebayes=FALSE)
     lfc <- logFC(zzsimple)
     expect_equal(nrow(lfc$logFC), nrow(zzsimple@sca))
     expect_true(all(lfc$varLogFC>0, na.rm=TRUE))
@@ -74,10 +74,11 @@ test_that('log fold change via contrasts', {
 context('summary')
 test_that('summary works', {
     zzs <- summary(zzsimple, logFC=TRUE, doLRT=FALSE)
-    expect_is(zzs, 'data.table')
-    expect_equivalent(unique(as.character(zzs$contrast)), c('(Intercept)', 'Stim.ConditionUnstim'))
-    expect_equivalent(sort(c('C', 'D', 'logFC', 'S')), sort(unique(as.character(zzs$component))))
-    expect_equal(nrow(zzs), nrow(fd2)*(2*4-1)) #primerid, contrast (no intercept for logFC), component
+    expect_is(zzs, 'summaryZlmFit')
+    zzd <- zzs$datatable
+    expect_equivalent(unique(as.character(zzd$contrast)), c('(Intercept)', 'Stim.ConditionUnstim'))
+    expect_equivalent(sort(c('C', 'D', 'logFC', 'S')), sort(unique(as.character(zzd$component))))
+    expect_equal(nrow(zzd), nrow(fd2)*(2*4-1)) #primerid, contrast (no intercept for logFC), component
     expect_output(print(zzs, n=2), c("Fitted zlm with top 2 genes per contrast:
 ( log fold change Z-score )
  primerid Stim.ConditionUnstim

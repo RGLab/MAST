@@ -203,7 +203,7 @@ zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1, method='gl
 show(zlm.output)
 
 ## returns a data.table with a summary of the fit
-coefAndCI <- summary(zlm.output, logFC=FALSE)
+coefAndCI <- summary(zlm.output, logFC=FALSE)$datatable
 coefAndCI <- coefAndCI[contrast != '(Intercept)',]
 coefAndCI[,contrast:=abbreviate(contrast)]
 ggplot(coefAndCI, aes(x=contrast, y=coef, ymin=ci.lo, ymax=ci.hi, col=component))+
@@ -228,9 +228,7 @@ In fact, the \texttt{zlm} framework is quite general, and has wrappers for a var
 Multicore support is offered by setting \texttt{options(mc.cores=4)}, or however many cores your system has.
 <<lmerExample, warning=FALSE, message=FALSE, eval=TRUE>>=
 library(lme4)
-
-lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1,
-                                   method='glmer')
+lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer', ebayes=FALSE)
 @
 
 \subsection{Two-sample Likelihood Ratio Test}
@@ -251,7 +249,7 @@ Here we compare each population (\texttt{CD154-VbetaResponsive, CD154-VbetaUnres
   $\chi^2$ p-value (two degrees of freedom).
 Other options are whether additional information about the tests are
 returned (\texttt{returnall=TRUE}) and if the testing should be
-stratified by a character vector naming columns in \texttt{colData}
+stratified by a character vector naming columns in \texttt{colData} 
 containing grouping variables (\texttt{groups}).
 
 These tests have been subsumed by \texttt{zlm.SingleCellAssay} but
@@ -259,9 +257,9 @@ remain in the package for user convenience.
 
 \section{Use with single cell RNA-sequencing data}
 In RNA-sequencing data is essentially no different than qPCR-based single cell gene expression, once it has been aligned and mapped, if one is willing to reduce the experiment to counts or count-like data for a fixed set of genes/features.  
-We assume that suitable tools (eg, SAMseq or TopHat) have been applied to do this.
+We assume that suitable tools (eg, RSEM, Kallisto or TopHat) have been applied to do this.
 
-**More details on convenience functions for RNAseq data**
+An example of this use is provided in a vignette.  Type \texttt{vignette('MAITAnalysis')} to view.
 \begin{comment}
   \section{Implementation Details}
   Here we provide some background on the implementation of the

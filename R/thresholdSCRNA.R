@@ -97,7 +97,7 @@ apply_by<-function(x,by_idx,fun,...){
 #'An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
 #'of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
 #'binned data.
-#' @param data_all \code{matrix} of counts.  Rows are cells and columns are genes.
+#' @param data_all \code{matrix} of (possibly log-transformed) counts or TPM.  Rows are genes and columns are cells.
 #' @param conditions Bins are be determined per gene and per condition.  Typically contrasts of interest should be specified.
 #' @param cutbins \code{vector} of cut points.
 #' @param nbins \code{integer} number of bins when cutbins is not specified.
@@ -105,7 +105,7 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param qt when \code{bin_by} is "quantile", what quantile should be used to form the bins
 #' @param min_per_bin minimum number of genes within a bin
 #' @param absolute_min \code{numeric} giving a hard threshold below which everything is assumed to be noise
-#' @param return_log return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).
+#' @param data_log is \code{data_all} log+1 transformed?  If so, it will be returned on the (log+1)-scale as well.
 #' @param adj bandwith adjustment, passed to \code{density}
 #'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data
 #'@importFrom plyr ldply
@@ -118,23 +118,28 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                       qt          = 0.975,
                                       min_per_bin = 50      ,
                                       absolute_min= 0.0     ,
-                                      return_log  = TRUE,
+                                      data_log  = TRUE,
                                       adj = 1
                                     )
 {
 
-    data_all <- t(data_all)   #internally we work with the data having rows as genes and columns as cells
                                         # when there is no condition to stratefy
     log_base <- 2
+    if(!data_log){
+        log_data      <- log( data + 1, base = log_base )
+    } else{
+        log_data <- data_all
+    }
     if( is.null( conditions ) ){ 
         conditions <- rep( 1, dim( data_all )[2] ) 
     } else { 
         conditions <- as.character( conditions )
     }
-    comp_zero_idx <- rowSums( log( data_all+1, base = log_base )> 0.0 ) == 0
-    data          <- data_all[!comp_zero_idx,]
+    ## exclude genes with no counts from thresholding
+    comp_zero_idx <- rowSums( log_data> 0.0 ) == 0
+    data          <- 2^log_data[!comp_zero_idx,]-1
+    log_data <- log_data[!comp_zero_idx,]
     uni_cond      <- unique( conditions )
-    log_data      <- log( data + 1, base = log_base )
 
     arg <- match.arg( bin_by, c( "quantile", "proportion", "mean", "median","iqr" ) )
     if( arg == "median" ){
@@ -256,8 +261,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 
     }
     cutpoints <- lapply( cutpoints, function(x) max( absolute_min ,x ) )
-
-    if(return_log){
+    if(data_log){
          data_threshold <- log_data
     } else {
          data_threshold <- data#log_data
@@ -278,8 +282,8 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     data_threshold_all[!comp_zero_idx,] <- data_threshold #2^( data_threshold ) - 1
     bin_all       <- factor(cond_stat_bins_array)
     dim(bin_all)  <- dim(cond_stat_bins_array)
-    res_obj       <- list( counts_threshold = t(data_threshold_all),
-                          original_data     = t(log_data),
+    res_obj       <- list( counts_threshold = data_threshold_all,
+                          original_data     = data_all,
                           cutpoint          = cutpoints,
                           bin               =  bin_all,
                           conditions        = conditions,

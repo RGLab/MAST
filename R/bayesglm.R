@@ -999,6 +999,11 @@ logit <- function (x) {
   log(x/(1-x))
 }
 
+##' Inverse of logistic transformation
+##' 
+##' @export
+##' @param x numeric
+##' @return inverse
 invlogit <- function (x) {
     1/(1+exp(-x))
 }

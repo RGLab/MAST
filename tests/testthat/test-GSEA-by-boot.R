@@ -20,7 +20,8 @@ bootsUncor <- aaply(bootsUncor, 3:4, function(mat){
 bootsUncor <- aperm(bootsUncor, c(3,4,1,2))
 sets=list(A=1:5, B=3:10, C=15, D=1:5, E=12:14, F=15:24, G=12, H=13, I=14)
 sets[['notE']] <- setdiff(1:nrow(vb1), sets[['E']])
-gsea <- gseaAfterBoot(zf, bootsUncor, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))
+gseaClass <- gseaAfterBoot(zf, bootsUncor, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))
+gsea <- gseaClass@tests
 test_that('equal sets yield equal results', {
     expect_equal(gsea['A',,,],gsea['D',,,])
 })
@@ -42,7 +43,7 @@ test_that('Triples work as expected', {
 
 
 test_that('model-based singletons agree with model', {
-    gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=20, var_estimate='modelbased'))
+    gsea <- gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=20, var_estimate='modelbased'))@tests
     expect_equal(gsea['C','cont','var','test'], vcov(zf, 'C')['Stim.ConditionUnstim','Stim.ConditionUnstim', 15])
     expect_equal(gsea['C','disc','var','test'], vcov(zf, 'D')['Stim.ConditionUnstim', 'Stim.ConditionUnstim', 15])
 })
@@ -50,11 +51,11 @@ test_that('model-based singletons agree with model', {
 
 test_that('Order is invariant', {
     setsRev <- sets[rev(seq_along(sets))]
-    gseaRev <- gseaAfterBoot(zf, bootsUncor, setsRev, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))
+    gseaRev <- gseaAfterBoot(zf, bootsUncor, setsRev, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))@tests
     expect_equivalent(gsea, gseaRev[names(sets),,,])
 })
 
-gsea1 <-  gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))
+gsea1 <-  gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=Inf))@tests
 test_that('Null and test statistic are complements in complementary modules',{
     expect_true(all.equal(gsea1['E',,c('stat', 'var', 'dof'),'null'],     gsea1['notE',,c('stat', 'var', 'dof'),'test']))
 })
@@ -65,13 +66,13 @@ test_that('Variances are positive', {
 })
 
 test_that('combining coefficients works',{
-              Zn <- calcZ(gsea, testType='normal')
-              Zt <- calcZ(gsea, testType='t')
+              Zn <- calcZ(gseaClass, testType='normal')
+              Zt <- calcZ(gseaClass, testType='t')
               ntest <- rowSums(!is.na(Zn[,,'Z']))
-              ZnF <- calcZ(gsea, testType='normal', combined='fisher')
-              ZtF <- calcZ(gsea, testType='t', combined='fisher')
-              ZnS <- calcZ(gsea, testType='normal', combined='sto')
-              ZtS <- calcZ(gsea, testType='t', combined='sto')
+              ZnF <- calcZ(gseaClass, testType='normal', combined='fisher')
+              ZtF <- calcZ(gseaClass, testType='t', combined='fisher')
+              ZnS <- calcZ(gseaClass, testType='normal', combined='sto')
+              ZtS <- calcZ(gseaClass, testType='t', combined='sto')
               ## Stouffer is just scale sum of Z's under normality
               expect_equal(ZnS[,'Z'], rowSums(Zn[,,'Z'],na.rm=TRUE)/sqrt(ntest))
               ## Fisher is just chi-square sum of log-pvalues

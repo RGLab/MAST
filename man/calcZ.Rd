@@ -4,10 +4,10 @@
 \alias{calcZ}
 \title{Get Z or T statistics and P values after running gseaAfterBoot}
 \usage{
-calcZ(tests, testType = "t", combined = "no")
+calcZ(gseaObj, testType = "t", combined = "none")
 }
 \arguments{
-\item{tests}{output from \code{gseaAfterBoot}}
+\item{gseaObj}{output from \code{gseaAfterBoot}}
 
 \item{testType}{either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.}
 

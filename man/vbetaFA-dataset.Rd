@@ -9,6 +9,6 @@
 Vbeta Data Set, FluidigmAssay
 }
 \seealso{
-\code{\link{vbeta}}, \code{\link{FluidigmAssay}}
+\code{\link{vbeta}}, \code{\link{FromFlatDF}}
 }
 

@@ -90,11 +90,12 @@ Drop <- function(x, d){
 ##' @param sets list of indices of genes
 ##' @param hypothesis a \code{Hypothesis} to test. Currently only one degree \code{CoefficientHypothesis} are supported.
 ##' @param control list of control parameters.  See details.
-##' @return 4D array.  See details.
+##' @return Object of class \code{GSEATests}, containing slots \code{tests},  4D array and \code{bootR}, the number of boostrap replicates.
 ##' @import abind
 ##' @importFrom plyr aaply
 ##' @export
 ##' @seealso calcZ
+##' @seealso summary,GSEATests-method
 ##' @examples
 ##' data(vbetaFA)
 ##' vb1 = subset(vbetaFA, ncells==1)
@@ -103,10 +104,10 @@ Drop <- function(x, d){
 ##' boots = bootVcov1(zf, 10)
 ##' sets=list(A=1:5, B=3:10, C=15, D=1:5)
 ##' gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))
-##' dimnames(gsea)
-##' calcZ(gsea)
-##' stopifnot(all.equal(gsea['A',,,],gsea['D',,,]))
-##' stopifnot(all.equal(gsea['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
+##' dimnames(gsea@tests)
+##' summary(gsea)
+##' stopifnot(all.equal(gsea@tests['A',,,],gsea@tests['D',,,]))
+##' stopifnot(all.equal(gsea@tests['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
 gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=Inf, var_estimate='bootall')){
 
     ## Basic idea is to average statistics (based on coefficients defined in Zfit) and find the variance of that average using the bootstraps
@@ -278,7 +279,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
         TT <- getStats(Tidx)
         tests[sidx,,,] <- scaleStats(TT, OO, NN)
     }
-    structure(tests, bootR=dimb['rep'])
+    new('GSEATests', tests=tests, bootR=dimb['rep'])
 }
 
 ##match moments to get approximation of t statistic
@@ -305,19 +306,21 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
 ##' The "Z" score returned by Stouffer when \code{testType='normal'} is the sum of the Z scores, over sqrt(2).
 ##' When \code{testType='t'} it is a weighted combination of the Z scores, with weights correponding to the degrees of freedom in each of the t statistics.
 ##' A t-approximation to this sum of t-variables is derived by matching moments.  It seems to be fairly accurate in practice.
-##' @param tests output from \code{gseaAfterBoot}
+##' @param gseaObj output from \code{gseaAfterBoot}
 ##' @param testType either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.
 ##' @param combined \code{character} one of 'none', 'fisher' or 'stouffer'
 ##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|)) if \code{combined='no'}, otherwise just a matrix.
 ##' @export
 ##' @seealso gseaAfterBoot
-calcZ <- function(tests, testType='t', combined='no'){
+calcZ <- function(gseaObj, testType='t', combined='none'){
+    if(!inherits(gseaObj, 'GSEATests')) stop('`gseaObj` must inherit from `GSEAtests`')
+    tests <- gseaObj@tests
+    bootR <- gseaObj@bootR
     testType <- match.arg(testType, c('t', 'normal'))
-    combined <- match.arg(combined, c('no', 'fisher', 'stouffer'))
+    combined <- match.arg(combined, c('none', 'fisher', 'stouffer'))
     Z <- (tests[,,'stat','test']-tests[,,'stat','null'])/sqrt(tests[,,'var','test']+tests[,,'var','null'])
     
     if(testType=='t'){
-        bootR <- attr(tests, 'bootR')
         ## satterthwaite approximation to degrees of freedom
         dof <- (bootR-1)*(tests[,,'var','test']+tests[,,'var','null'])^2/(tests[,,'var','test']^2+tests[,,'var','null']^2)
         dof[is.na(dof)] <- 0 #component we couldn't test
@@ -328,7 +331,7 @@ calcZ <- function(tests, testType='t', combined='no'){
     out3d <- abind(Z=Z, P=P, rev.along=0)
     names(dimnames(out3d)) <- c('set', 'comp', 'metric')
     ntest <- rowSums(!is.na(Z))
-    if(combined=='no'){
+    if(combined=='none'){
         return(out3d)
     }else if(combined =='fisher'){
         maxsign <- sign(rowSums(Z, na.rm=TRUE))
@@ -353,3 +356,43 @@ calcZ <- function(tests, testType='t', combined='no'){
     names(dimnames(out2d)) <- c('set', 'metric')
     return(out2d)
 }
+
+
+##' Summarize gene set enrichment tests
+##'
+##' Returns a \code{data.table} with one row per gene set.
+##' This \code{data.table} contains columns: 
+##' \describe{
+#'   \item{set}{name of gene set}
+#'   \item{cond_Z}{Z statistic for continuous component}
+#' \item{cont_P}{wald P value}
+#' \item{cont_effect}{difference in continuous regression coefficients between null and test sets (ie, the numerator of the Z-statistic.)}
+#' \item{disc_Z}{Z statistic for discrete}
+#' \item{disc_P}{wald P value}
+#' \item{disc_effect}{difference in discrete regression coefficients between null and test sets.}
+#' \item{combined_Z}{combined discrete and continuous Z statistic using Stouffer's method}
+#' \item{combined_P}{combined P value}
+#' \item{combined_adj}{FDR adjusted combined P value}
+#' }
+##' @param object A \code{GSEATests} object
+##' @param ... passed to \code{calcZ}
+##' @return \code{data.table}
+##' @seealso gseaAfterBoot
+##' @export
+setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
+    t_stat <- as.data.table(reshape2::melt(calcZ(object, combined='none', ...)))
+    effect_size <- as.data.table(reshape2::melt(object@tests[,,'stat','test']-object@tests[,,'stat','null']))
+    effect_size_wide <- dcast(effect_size, set ~ comp)
+    setnames(effect_size_wide, c('disc', 'cont'), c('disc_effect', 'cont_effect'))
+    
+    t_stat_wide <- dcast(t_stat, set ~ comp + metric)
+    pvalArr <- calcZ(gsea, combined = "stouffer", ...)
+    pvals <- data.table(pvalArr)
+    setnames(pvals, c('P', 'Z'), c('combined_P', 'combined_Z'))
+    pvals$set <- rownames(pvalArr)
+    t_stat_comb <- merge(t_stat_wide, pvals, by = "set")
+    t_stat_comb <- merge(t_stat_comb, effect_size_wide, by='set')
+    t_stat_comb[,combined_adj:=p.adjust(combined_P,"fdr")]
+    setorder(t_stat_comb,combined_adj)
+    t_stat_comb
+    })
