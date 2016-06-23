@@ -51,7 +51,15 @@ impute=function(object,groupby){
 	setDT(object)
 	object[,missing:=any(is.na(muC))&!is.na(muD),eval(groupby)]
 	object[missing==TRUE,muC:=replace(muC,is.na(muC),mean(muC,na.rm=TRUE)),eval(groupby)]
-	object[missing==TRUE,seC:=replace(seC,is.na(seC),sum(seC,na.rm=TRUE)),eval(groupby)]
+	object[missing==TRUE&!is.nan(muC),seC:=replace(seC,is.na(seC),max(abs(na.omit((muC[is.na(seC)]-c(muC-seC,muC+seC)))))),eval(groupby)]
 	object[,missing:=NULL]
 	return(na.omit(object))
 }
+# impute=function(object,groupby){
+# 	setDT(object)
+# 	object[,missing:=any(is.na(muC))&!is.na(muD),eval(groupby)]
+# 	object[missing==TRUE,muC:=replace(muC,is.na(muC),mean(muC,na.rm=TRUE)),eval(groupby)]
+# 	object[missing==TRUE,seC:=replace(seC,is.na(seC),{browser();sum(seC,na.rm=TRUE)}),eval(groupby)]
+# 	object[,missing:=NULL]
+# 	return(na.omit(object))
+# }
