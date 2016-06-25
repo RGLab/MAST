@@ -90,23 +90,22 @@ expressed_genes <- freq(sca) > freq_expressed
 sca <- sca[expressed_genes,]
 
 ## ----zlm-----------------------------------------------------------------
-# ZLM (ridge regression for continuous, get standardized deviance residuals)
 cond<-factor(colData(sca)$condition)
 cond<-relevel(cond,"Unstim")
 colData(sca)$condition<-cond
 zlmCond <- zlm.SingleCellAssay(~condition + cngeneson, sca)
-## The following are equivalent
+# The following are equivalent
 ## lrt <- lrTest(zlm, "condition")
 ## lrt <- lrTest(zlm, CoefficientHypothesis('conditionStim'))
 
-## This would test if 2*cngeneson=conditionStim
+# This would test if 2*cngeneson=conditionStim
 #  This is sheer nonsense biologically and statistically, but gives an example of the flexibility.
 ## lrt <- lrTest(zlm, Hypothesis('2*cngeneson-conditionStim'))
 
-
 ## ----zlmSummary----------------------------------------------------------
-summaryCond <- summary(zlmCond, doLRT='conditionStim') #only test the condition coefficient.
-##print the top 4 genes by contrast using the logFC
+#only test the condition coefficient.
+summaryCond <- summary(zlmCond, doLRT='conditionStim') 
+#print the top 4 genes by contrast using the logFC
 print(summaryCond, n=4)
 ## by discrete Z-score
 print(summaryCond, n=4, by='D')
@@ -118,20 +117,20 @@ summaryDt <- summaryCond$datatable
 fcHurdle <- merge(summaryDt[contrast=='conditionStim' & component=='H',.(primerid, `Pr(>Chisq)`)], #hurdle P values
                       summaryDt[contrast=='conditionStim' & component=='logFC', .(primerid, coef, ci.hi, ci.lo)], by='primerid') #logFC coefficients
 
-fcHurdle[,fdr:=p.adjust(`Pr(>Chisq)`)]
+fcHurdle[,fdr:=p.adjust(`Pr(>Chisq)`, 'fdr')]
 fcHurdleSig <- merge(fcHurdle[fdr<.05 & abs(coef)>FCTHRESHOLD], as.data.table(mcols(sca)), by='primerid')
+setorder(fcHurdleSig, fdr)
 
 ## ---- fig.width=8,fig.height=8-------------------------------------------
-entrez_to_plot <- fcHurdleSig[,primerid]
-symbols_to_plot <- fcHurdleSig[,symbolid]
+entrez_to_plot <- fcHurdleSig[1:50,primerid]
+symbols_to_plot <- fcHurdleSig[1:50,symbolid]
 flat_dat <- as(sca[entrez_to_plot,], 'data.table')
-ggbase <- ggplot(flat_dat, aes(x=condition, y=thresh,color=condition)) + geom_jitter()+facet_wrap(~symbolid)+ggtitle("DE Genes in Activated MAIT Cells")
+ggbase <- ggplot(flat_dat, aes(x=condition, y=thresh,color=condition)) + geom_jitter()+facet_wrap(~symbolid, scale='free_y')+ggtitle("DE Genes in Activated MAIT Cells")
 ggbase+geom_violin() 
 
 ## ------------------------------------------------------------------------
 flat_dat[,lmPred:=lm(thresh~cngeneson + condition)$fitted, key=symbolid]
-
-ggbase +aes(x=cngeneson) + geom_line(aes(y=lmPred), lty=1)
+ggbase +aes(x=cngeneson) + geom_line(aes(y=lmPred), lty=1) + xlab('Standardized Cellular Detection Rate')
 
 
 ## ------------------------------------------------------------------------
@@ -146,7 +145,11 @@ predicted_sig <- merge(mcols(sca), predicted[primerid%in%entrez_to_plot], by='pr
 predicted_sig <- as.data.table(predicted_sig)
 
 ## plot with inverse logit transformed x-axis
-ggplot(predicted_sig)+aes(x=invlogit(muD),y=muC,xse=seD,yse=seC,col=sample)+facet_wrap(~symbolid,scales="free_y")+theme_linedraw()+geom_point(size=0.5)+scale_x_continuous("Proportion expression")+scale_y_continuous("Estimated Mean")+stat_ell(aes(x=muD,y=muC),level=0.95, invert='x')
+ggplot(predicted_sig)+aes(x=invlogit(muD),y=muC,xse=seD,yse=seC,col=sample)+
+    facet_wrap(~symbolid,scales="free_y")+theme_linedraw()+
+    geom_point(size=0.5)+scale_x_continuous("Proportion expression")+
+    scale_y_continuous("Estimated Mean")+
+    stat_ell(aes(x=muD,y=muC),level=0.95, invert='x')
 
 
 ## ---- fig.height=8-------------------------------------------------------
@@ -159,6 +162,19 @@ aheatmap(mat_to_plot,annCol=colData(sca)[,"condition"],main="DE genes",col=rev(c
 table(colData(sca)$beta, exclude=NULL)
 #Note that we currently throw an uninformative error if a covariate is `NA`
 scaHasBeta <- subset(sca, !is.na(beta))
+
+## ----residuals-----------------------------------------------------------
+scaDE <- sca[entrez_to_plot,]
+zlmResidDE <- zlm.SingleCellAssay(~condition + cngeneson, scaDE, hook=deviance_residuals_hook)
+residDE <- zlmResidDE@hookOut
+residDEMatrix <- do.call(rbind, residDE)
+
+## ----addResiduals--------------------------------------------------------
+assays(scaDE) <- c(assays(scaDE), list(resid=residDEMatrix))
+scaResidFlat <- as(scaDE, 'data.table')
+scaResidFlat[1:4,]
+ggplot(scaResidFlat, aes(x=ngeneson, y=resid))+geom_point(aes(col=condition))+geom_smooth()+facet_wrap(~symbolid)
+
 
 ## ----boots, eval=FALSE---------------------------------------------------
 #  #bootstrap

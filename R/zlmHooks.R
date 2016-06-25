@@ -147,10 +147,12 @@ deviance_residuals_hook<-function (x)
     class(x@fitD) <- c("bayesglm", "glm", "lm")
     cont.resid<-rstandard(x@fitC,type="deviance")
     disc.resid<-rstandard(x@fitD,type="deviance")
-    cont.resid<-data.frame(id=names(x@fitC$y),cont.resid)
-    disc.resid<-data.frame(id=names(x@fitD$y),disc.resid)
+    cont.resid<-data.table(id=names(x@fitC$y),cont.resid)
+    disc.resid<-data.table(id=names(x@fitD$y),disc.resid)
     resid<-merge(cont.resid,disc.resid,by="id",all=TRUE)
-    resid<-data.frame(data.table(melt(resid))[,list(resid=mean(value,na.rm=TRUE)),id])
+    resid<-data.frame(
+        melt(resid, id='id')[,list(resid=mean(value,na.rm=TRUE)),id]
+    )
     rownames(resid)<-resid[,"id"]
     resid<-resid[,-1,drop=FALSE]
     resid<-resid[rownames(x@modelMatrix),] #ensure consistent ordering

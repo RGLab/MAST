@@ -114,7 +114,7 @@ sca <- sca[mcols(sca)$entrez %in% ueid,]
 sca <- sca[freq(sca)>0,]
 ```
 We'll now consider only cells that pass the filter.  `subset(scaRaw, filterCrit)` is just syntactic sugar for subsetting by columns, but who doesn't like a little sugar?
-We'll also limit ourselves to transcripts that have a an entrez gene id to facilitate interpretation.
+We'll also limit ourselves to transcripts that have an EntrezGene id to facilitate interpretation.
 
 ### Recalculating the cellular detection rate (ngeneson)
 We and others have found that the number of genes detected in a sample, which we deemed the cellular detection rate is often the first principal component.
@@ -143,13 +143,13 @@ How could you extract the chip location and add it as column to the cellular dat
 
 
 # Adaptive thresholding
+Single cell gene expression data are known to be zero-inflated and bimodal, which is feature we observe here as well.
 ```{r distribution, fig.width=6, fig.height=6}
 scaSample <- sca[sample(which(freq(sca)>.1), 20),]
 flat <- as(scaSample, 'data.table')
 ggplot(flat, aes(x=value))+geom_density() +facet_wrap(~symbolid, scale='free_y')
 ```
 
-Single cell gene expression data are known to be zero-inflated and bimodal, which is feature we observe here as well.
 Here we've taken subsample of size 20, then flattened it into a `data.table` to make it easy to plot with `ggplot2`.
 
 
@@ -173,33 +173,34 @@ We'll limit ourselves to genes that are found in at least `r freq_expressed` of 
 
 ### Exercises on thresholding
 
-2.  Many modeling procedures assume (or perform best) when the data are normally distributed.  How could we evaluate how thresholding affects the normality of the data?  How about the normality of the non-zero data?
+2.  Many modeling procedures assume (or perform best) when the data are Normally distributed.  How could we evaluate how thresholding affects the Normality of the data?  How about the Normality of the non-zero data?
 
 
 # Differential Expression using a Hurdle model
+We'll fit a hurdle model, modeling the condition and (centered) `ngeneson` factor, thus adjusting for the cellular detection rate.
+
+In order to have more interpretable coefficients, we'll set the reference level of the factor to be the "unstimulated" cells.
 ```{r zlm}
-# ZLM (ridge regression for continuous, get standardized deviance residuals)
 cond<-factor(colData(sca)$condition)
 cond<-relevel(cond,"Unstim")
 colData(sca)$condition<-cond
 zlmCond <- zlm.SingleCellAssay(~condition + cngeneson, sca)
-## The following are equivalent
+# The following are equivalent
 ## lrt <- lrTest(zlm, "condition")
 ## lrt <- lrTest(zlm, CoefficientHypothesis('conditionStim'))
 
-## This would test if 2*cngeneson=conditionStim
+# This would test if 2*cngeneson=conditionStim
 #  This is sheer nonsense biologically and statistically, but gives an example of the flexibility.
 ## lrt <- lrTest(zlm, Hypothesis('2*cngeneson-conditionStim'))
-
 ```
-We'll fit a hurdle model, modeling the condition and (centered) `ngeneson` factor, thus adjusting for the cellular detection rate.
+
 We could run a likelihood ratio test here, testing for differences when we drop the `condition` factor.
 Note that any arbitrary contrast matrix can be tested here, and specified either using a matrix or syntactically. See `Hypothesis` for details.
 
-
 ```{r zlmSummary}
-summaryCond <- summary(zlmCond, doLRT='conditionStim') #only test the condition coefficient.
-##print the top 4 genes by contrast using the logFC
+#only test the condition coefficient.
+summaryCond <- summary(zlmCond, doLRT='conditionStim') 
+#print the top 4 genes by contrast using the logFC
 print(summaryCond, n=4)
 ## by discrete Z-score
 print(summaryCond, n=4, by='D')
@@ -216,34 +217,35 @@ summaryDt <- summaryCond$datatable
 fcHurdle <- merge(summaryDt[contrast=='conditionStim' & component=='H',.(primerid, `Pr(>Chisq)`)], #hurdle P values
                       summaryDt[contrast=='conditionStim' & component=='logFC', .(primerid, coef, ci.hi, ci.lo)], by='primerid') #logFC coefficients
 
-fcHurdle[,fdr:=p.adjust(`Pr(>Chisq)`)]
+fcHurdle[,fdr:=p.adjust(`Pr(>Chisq)`, 'fdr')]
 fcHurdleSig <- merge(fcHurdle[fdr<.05 & abs(coef)>FCTHRESHOLD], as.data.table(mcols(sca)), by='primerid')
+setorder(fcHurdleSig, fdr)
 ```
-We see that there are `nrow(fcHurdleSig)` genes significant at a FDR of 5\% and with a log-fold change larger than `r FCTHRESHOLD`.
+We see that there are `r nrow(fcHurdleSig)` genes significant at a FDR of 5\% and with a log-fold change larger than `r round(FCTHRESHOLD, 1)`.
 
 
-### Visualization of most differentially expressed genes
+### Visualization of 50 most differentially expressed genes
 
 ```{r, fig.width=8,fig.height=8}
-entrez_to_plot <- fcHurdleSig[,primerid]
-symbols_to_plot <- fcHurdleSig[,symbolid]
+entrez_to_plot <- fcHurdleSig[1:50,primerid]
+symbols_to_plot <- fcHurdleSig[1:50,symbolid]
 flat_dat <- as(sca[entrez_to_plot,], 'data.table')
-ggbase <- ggplot(flat_dat, aes(x=condition, y=thresh,color=condition)) + geom_jitter()+facet_wrap(~symbolid)+ggtitle("DE Genes in Activated MAIT Cells")
+ggbase <- ggplot(flat_dat, aes(x=condition, y=thresh,color=condition)) + geom_jitter()+facet_wrap(~symbolid, scale='free_y')+ggtitle("DE Genes in Activated MAIT Cells")
 ggbase+geom_violin() 
 ```
 Here is a standard violin plot showing how expression differs in each gene between stimulated and unstimulated cells.
-
+What could be improved about this visualization to make it more accurately reflect the model that's being fit?
 
 ```{r}
 flat_dat[,lmPred:=lm(thresh~cngeneson + condition)$fitted, key=symbolid]
-
-ggbase +aes(x=cngeneson) + geom_line(aes(y=lmPred), lty=1)
+ggbase +aes(x=cngeneson) + geom_line(aes(y=lmPred), lty=1) + xlab('Standardized Cellular Detection Rate')
 
 ```
-But really we are doing an analysis of covariance (ANCOVA), where we ask if at each value of `cngeneson` if the stimulated cells differ from the unstimulated, in multiple module components.
+Really we are doing an analysis of covariance (ANCOVA), where we ask if at each value of `cngeneson` if the stimulated cells differ from the unstimulated, in multiple module components.
 That is a little bit complicated to visualize, so we'll settle for just showing what the ANCOVA looks like on the zero-inflated data.
 Adding these fitted values is easy with `data.table` on the melted data.
 
+### Visualizing both components
 ```{r}
 ## This is all rather kludgy at the moment
 MM <- model.matrix(~condition,unique(colData(sca)[,c("condition"),drop=FALSE]))
@@ -256,7 +258,11 @@ predicted_sig <- merge(mcols(sca), predicted[primerid%in%entrez_to_plot], by='pr
 predicted_sig <- as.data.table(predicted_sig)
 
 ## plot with inverse logit transformed x-axis
-ggplot(predicted_sig)+aes(x=invlogit(muD),y=muC,xse=seD,yse=seC,col=sample)+facet_wrap(~symbolid,scales="free_y")+theme_linedraw()+geom_point(size=0.5)+scale_x_continuous("Proportion expression")+scale_y_continuous("Estimated Mean")+stat_ell(aes(x=muD,y=muC),level=0.95, invert='x')
+ggplot(predicted_sig)+aes(x=invlogit(muD),y=muC,xse=seD,yse=seC,col=sample)+
+    facet_wrap(~symbolid,scales="free_y")+theme_linedraw()+
+    geom_point(size=0.5)+scale_x_continuous("Proportion expression")+
+    scale_y_continuous("Estimated Mean")+
+    stat_ell(aes(x=muD,y=muC),level=0.95, invert='x')
 
 ```
 Lastly, we can visualize how each component of the hurdle model is combined to yield a differential test by plotting the estimated coefficients (and standard errors) as a scatter plot.
@@ -265,7 +271,7 @@ What do you notice about the relationship between the confidence interval on the
 
 ## Heatmap of MAITs based on most differentially expressed genes
 
- DE genes between stimulated and non-stimulated MAIT cells. 
+Here's what the 50 most significantly differentially expressed(DE) genes look like.
 
 ```{r, fig.height=8}
 mat_to_plot <- assay(sca[entrez_to_plot,])
@@ -274,6 +280,7 @@ aheatmap(mat_to_plot,annCol=colData(sca)[,"condition"],main="DE genes",col=rev(c
 
 ```
 Some of the activated MAITs have transcriptional profiles more similar to unactivated MAITS.
+
 
 ### Exercises on hurdle model differential expression
 3.  In some of the libraries it was possible to recover portions of the T-cell receptor alpha and beta chains from the reads.
@@ -284,6 +291,34 @@ table(colData(sca)$beta, exclude=NULL)
 scaHasBeta <- subset(sca, !is.na(beta))
 ```
 How could you test for differential expression between TCR `beta` subtypes among `scaHasBeta`, the cells in which the TCR was successfully inferred?  What is worrying about this procedure?
+
+
+## Residuals
+In the MAST paper, we assessed this further by examining a *residual* from the Hurdle linear model.
+This is not an entirely well-defined concept, as there are really two residuals in the Hurdle model, and there are multiple forms of residual that one can consider in logistic regression.
+Nonetheless, it can be a useful diagnostic.
+You can get a form of [deviance residual](https://en.wikipedia.org/wiki/Deviance_(statistics)) by supplying a "hook" function to be called after each regression.
+
+For example, in the subset of differentially expressed genes, we can refit the model and pull out the residual.
+```{r residuals}
+scaDE <- sca[entrez_to_plot,]
+zlmResidDE <- zlm.SingleCellAssay(~condition + cngeneson, scaDE, hook=deviance_residuals_hook)
+residDE <- zlmResidDE@hookOut
+residDEMatrix <- do.call(rbind, residDE)
+```
+The `residDE` was a list of residuals (one per gene in `scaDE`).
+We concatenated them into a matrix.
+
+Now we can add `residDEMatrix` as another component of the "assay":
+```{r addResiduals}
+assays(scaDE) <- c(assays(scaDE), list(resid=residDEMatrix))
+scaResidFlat <- as(scaDE, 'data.table')
+scaResidFlat[1:4,]
+ggplot(scaResidFlat, aes(x=ngeneson, y=resid))+geom_point(aes(col=condition))+geom_smooth()+facet_wrap(~symbolid)
+
+```
+This allows us, for example, to evaluate model diagnostics such as this "residuals vs variable" plot to check the linearity assumption of "ngeneson".
+One can also conduct PCA or examine the correlation matrix to look for co-expressing modules of genes.
 
 # Gene Set Enrichment Analysis
 We use a competitive gene set enrichment test, in which a contrast (hurdle model coefficient) from various gene sets of interest is compared to the background, accounting for the intergene correlation of the module coefficient.
