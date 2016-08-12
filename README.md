@@ -33,8 +33,9 @@ Then you may install or update `MAST` with:
 
      install.packages('devtools')
      library(devtools)
-     install_github('RGLab/MAST')
+     install_github('RGLab/MAST@summarizedExpt')
      # *or* if you don't have a working latex setup
-     install_github(RGLab/'MAST', build_vignettes=FALSE)
+     install_github('RGLab/MAST@summarizedExpt', build_vignettes=FALSE)
      vignette('MAST-intro')
+     vignette('MAITAnalysis')
 
