@@ -28,7 +28,7 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     vc
 })
 
-##
+## Degree of freedom calculations
 .glmDOF <- function(object, pos){
     npos <- sum(pos)
     ## bayesglm doesn't correctly set the residual DOF, and this won't hurt for regular glm
@@ -107,8 +107,8 @@ setMethod('logLik', signature=c(object='GLMlike'), function(object){
     }
 
     if(object@fitted['D']){
-         dev <- object@fitD$deviance
-         L['D'] <- -dev/2
+        dev <- object@fitD$deviance
+        L['D'] <- -dev/2
     }
     return(L)
 })
@@ -141,20 +141,20 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
 rowm <- function(C, D){
     x <- c(C=NA, D=NA)
     try({if(is.null(C) | missing(C))
-        C <- NA
-    if(is.null(D) | missing(D))
-        D <- NA
-    x <- c(C=C, D=D)
-     }, silent=TRUE)
+             C <- NA
+             if(is.null(D) | missing(D))
+                 D <- NA
+             x <- c(C=C, D=D)
+    }, silent=TRUE)
     ## dim(x) <- c(1, length(x))
     ## colnames(x) <- c('C', 'D')
     x
 }
 
 torowm <- function(x){
-     ## dim(x) <- c(1, length(x))
-     ## colnames(x) <- c('C', 'D')
-     x
+    ## dim(x) <- c(1, length(x))
+    ## colnames(x) <- c('C', 'D')
+    x
 }
 
 setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
@@ -166,11 +166,11 @@ setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
     vcD <- vcov(object, 'D')
     
     list(coefC=coefC, vcovC=vcC,
-          deviance=rowm(C=object@fitC$deviance, D=object@fitD$deviance),
-          df.null=rowm(C=object@fitC$df.null, D=object@fitD$df.null),
-          df.resid=rowm(C=object@fitC$df.residual, D=object@fitD$df.residual),
-          dispersion=rowm(C=object@fitC$dispersionMLE, D=object@fitD$dispersion),
-          dispersionNoshrink=rowm(C=object@fitC$dispersionMLENoShrink, D=object@fitD$dispersion),
-          loglik=torowm(logLik(object)),
-          coefD=coefD, vcovD=vcD, converged=torowm(object@fitted))
-  })
+         deviance=rowm(C=object@fitC$deviance, D=object@fitD$deviance),
+         df.null=rowm(C=object@fitC$df.null, D=object@fitD$df.null),
+         df.resid=rowm(C=object@fitC$df.residual, D=object@fitD$df.residual),
+         dispersion=rowm(C=object@fitC$dispersionMLE, D=object@fitD$dispersion),
+         dispersionNoshrink=rowm(C=object@fitC$dispersionMLENoShrink, D=object@fitD$dispersion),
+         loglik=torowm(logLik(object)),
+         coefD=coefD, vcovD=vcD, converged=torowm(object@fitted))
+})

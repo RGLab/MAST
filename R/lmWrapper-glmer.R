@@ -1,4 +1,9 @@
- ## Invariants:
+## This is a horrible hack, and should be rewritten to use the lmer internals.
+## But in the meantime: we make the fixed effects model matrix, then call the formula method for lmer/glmer
+## This is to allow us to do arbitrary LRT tests and add/drop columns of the design
+
+## Details:
+## Invariants:
 ## 1. model.matrix contains fixed effects--so whenever we set the model.matrix, we'll delete the random effects
 ## 2. formula contains full model (fixed and random), so we can update it normally
 ## 3. Random portion of the model will be parsed off
@@ -198,7 +203,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
     if(any(pos)){
         datpos <- dat[pos,]
         object@fitC <- do.call(lmer, c(list(formula=formC, data=quote(datpos), REML=FALSE), fitArgsC))
-}
+    }
     if(!all(pos)){
         object@fitD <- do.call(glmer, c(list(formula=formD, data=quote(dat), family=binomial()), fitArgsD))
         object@fitted['D'] <- length(object@fitD@optinfo$conv$lme)==0
@@ -250,7 +255,7 @@ setMethod('coef', signature=c(object='LMERlike'), function(object, which, singul
 
 setMethod('logLik', signature=c(object='LMERlike'), function(object){
     L <- c(C=0, D=0)
-     if(object@fitted['C']) L['C'] <- logLik(object@fitC)
+    if(object@fitted['C']) L['C'] <- logLik(object@fitC)
     if(object@fitted['D']) L['D'] <- logLik(object@fitD)
     L
 })

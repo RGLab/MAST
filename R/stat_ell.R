@@ -1,27 +1,27 @@
 ell <- function(x,xse,y,yse,segments=20,radius){
-	center=c(x,y)
-	angles <- (0:segments) * 2 * pi/segments
-   unit.circle <- cbind(cos(angles), sin(angles))
-   shape=matrix(c(xse^2,0,0,yse^2),ncol=2)
-   Q <- chol(shape, pivot = TRUE)
-   order <- order(attr(Q, "pivot"))
-   ellipse <- t(center + radius * t(unit.circle %*% Q[, order]))
-   colnames(ellipse)=c("x","y")
-   ellipse
+    center=c(x,y)
+    angles <- (0:segments) * 2 * pi/segments
+    unit.circle <- cbind(cos(angles), sin(angles))
+    shape=matrix(c(xse^2,0,0,yse^2),ncol=2)
+    Q <- chol(shape, pivot = TRUE)
+    order <- order(attr(Q, "pivot"))
+    ellipse <- t(center + radius * t(unit.circle %*% Q[, order]))
+    colnames(ellipse)=c("x","y")
+    ellipse
 }
 
 StatEll <- ggproto("StatEll", Stat,
-  compute_group = function(data, scales,level=0.95,invert=FALSE) {
-    e=ell(x=data$x, xse=data$xse,y=data$y,yse=data$yse,radius=sqrt(qchisq(level,df=2)))
-    if(invert==c("x")){
-    	e[,1] =invlogit(e[,1])
-    }else if(invert==c("y")){
-    	e[,2] =invlogit(e[,2])
-    }
-    return(e)
-  },
-  required_aes = c("x","xse", "y","yse","alpha")
-)
+                   compute_group = function(data, scales,level=0.95,invert=FALSE) {
+                       e=ell(x=data$x, xse=data$xse,y=data$y,yse=data$yse,radius=sqrt(qchisq(level,df=2)))
+                       if(invert==c("x")){
+                           e[,1] =invlogit(e[,1])
+                       }else if(invert==c("y")){
+                           e[,2] =invlogit(e[,2])
+                       }
+                       return(e)
+                   },
+                   required_aes = c("x","xse", "y","yse","alpha")
+                   )
 
 #' Plot confidence ellipse in 2D.
 #'
@@ -44,11 +44,11 @@ StatEll <- ggproto("StatEll", Stat,
 #' @importFrom ggplot2 ggproto
 #' @importFrom ggplot2 Stat
 stat_ell = function(mapping = NULL, data = NULL, geom = "polygon", position = "identity", na.rm = FALSE, show.legend = NA,inherit.aes = TRUE,fill=NA, level=0.95,lty=2,invert=FALSE,...) {
-  ggplot2::layer(
-    stat = StatEll, data = data, mapping = mapping, geom = geom, 
-    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-    params = list(na.rm = na.rm,level=level,lty=lty,fill=fill,invert=invert, ...)
-  )
+    ggplot2::layer(
+        stat = StatEll, data = data, mapping = mapping, geom = geom, 
+        position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+        params = list(na.rm = na.rm,level=level,lty=lty,fill=fill,invert=invert, ...)
+    )
 }
 
 

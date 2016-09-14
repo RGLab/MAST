@@ -126,7 +126,7 @@ makeChiSqTable <- function(lambda, df, test){
     dfC <- setNames(Combine(df, Sum(df)), c('cont', 'disc', 'hurdle'))
     pchi <- Flatten(pchisq(as.matrix(lambdaC), df=as.matrix(dfC), lower.tail=FALSE))
     tab <- Glue(lambda=lambdaC,
-               df=dfC, 'Pr(>Chisq)'=ifelse(dfC>0,pchi,1))
+                df=dfC, 'Pr(>Chisq)'=ifelse(dfC>0,pchi,1))
     structure(tab, test=test)
 }
 
@@ -184,9 +184,9 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='CoefficientHypoth
 #'@describeIn LMlike Wald test of contrast specified by contrast matrix \code{hypothesis}
 setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), function(object, hypothesis){
     .waldTest(coef(object, 'C', singular=TRUE),
-                coef(object, 'D', singular=TRUE),
-                vcov(object, 'C', singular=TRUE),
-                vcov(object, 'D', singular=TRUE),
+              coef(object, 'D', singular=TRUE),
+              vcov(object, 'C', singular=TRUE),
+              vcov(object, 'D', singular=TRUE),
               hypothesis,
               object@fitted)
 })
@@ -210,13 +210,13 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), functio
 
 #'@describeIn LMlike Likelihood ratio test dropping entire term specified by \code{character} \code{hypothesis} naming a term in the symbolic formula.
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
-    F <- update.formula(object@formula, formula(sprintf(' ~. - %s', hypothesis)))
-    U <- update(object, F)
+    Formula <- update.formula(object@formula, formula(sprintf(' ~. - %s', hypothesis)))
+    U <- update(object, Formula)
     .lrTest(object, U@modelMatrix)
 })
 
 .rotateMM <- function(object, contrast){
-      ## from glmLRT in edgeR
+    ## from glmLRT in edgeR
     qrc <- qr(contrast)
     ncontrasts <- qrc$rank
     if(ncontrasts==0) stop("contrasts are all zero")
@@ -253,7 +253,7 @@ setMethod('lrTest', signature=c(object='LMlike', hypothesis='matrix'), function(
     testIdx <- attr(MM, 'testIdx')
     .lrTest(object, MM[,-testIdx,drop=FALSE])
     ## drop tested contrast
-    })
+})
 
 setMethod('residuals', signature=c(object='LMlike'), function(object, type='response', which, ...){
     which <- match.arg(which, c('Discrete', 'Continuous', 'Marginal'))

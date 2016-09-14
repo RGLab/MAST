@@ -80,9 +80,9 @@ setClass('FluidigmAssay', contains='SingleCellAssay', prototype=list(cmap=Fluidi
 ##' @seealso logLik
 setClass('LMlike',
          slots=c(design='ANY', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
-             ## this speeds construction of coef and vcov, which is a pinch point in zlm
-             defaultCoef='numeric',
-             defaultVcov='matrix'),
+                 ## this speeds construction of coef and vcov, which is a pinch point in zlm
+                 defaultCoef='numeric',
+                 defaultVcov='matrix'),
          prototype=list(fitted =c(C=FALSE, D=FALSE), formula=formula(0~0),modelMatrix=matrix(nrow=0, ncol=0), priorVar=0, priorDOF=0), validity=function(object){
              stopifnot( all(c("C", "D") %in% names(object@fitted)))
              if(length(object@response)>0){
@@ -117,7 +117,7 @@ defaultPrior <- function(names){
     names <- setdiff(names, '(Intercept)')
     p <- length(names)
     ar <- array(rep(c(0, 2.5, 1), times=2*p), dim=c(3, 2,p), dimnames=list(metric=c('loc', 'scale', 'df'), comp=c('C', 'D'), names))
-    #if(p>0)     ar['scale',,names=='(Intercept)'] <- 10
+                                        #if(p>0)     ar['scale',,names=='(Intercept)'] <- 10
     ar
 }
 
@@ -134,7 +134,7 @@ setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array', useConti
              TRUE
          })
 setClass('BayesGLMlikeWeight', contains='BayesGLMlike')
-                                                                                      
+
 
 ##' Wrapper for lmer/glmer
 ##'
@@ -146,7 +146,7 @@ setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity
         stopifnot(nrow(object@pseudoMM)==length(object@response))
     }
     if(object@priorDOF!=0) stop('Empirical bayes shrinkage not implemented for lmer/glmer.')
-    })
+})
 
 setClass('ConstrainedGLMlike', contains='LMlike')
 setClass('RidgeBGLMlike',contains="BayesGLMlike",slots=c(lambda='numeric'),prototype = list(lambda=0.1) )

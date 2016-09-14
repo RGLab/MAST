@@ -8,7 +8,7 @@ collectSummaries <- function(listOfSummaries){
     summaries[['df.null']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'df.null'))
     summaries[['deviance']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'deviance'))
     summaries[['dispersion']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersion'))
-summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersionNoshrink'))
+    summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersionNoshrink'))
     summaries[['converged']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'converged'))
     summaries[['loglik']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'loglik'))
     summaries[['coefD']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'coefD'))
@@ -99,11 +99,11 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='matrix'), functi
     converged <- object@converged
     genes <- rownames(coefC)
     tests <- aaply(seq_along(genes), 1, function(i){
-         .waldTest(coefC[i,],
-                coefD[i,],
-                vcovC[,,i],
-                vcovD[,,i],
-                hypothesis, converged[i,])
+        .waldTest(coefC[i,],
+                  coefD[i,],
+                  vcovC[,,i],
+                  vcovD[,,i],
+                  hypothesis, converged[i,])
     }, .drop=FALSE)
     dimnames(tests)[[1]] <- genes
     names(dimnames(tests)) <- c('primerid', 'test.type', 'metric')
@@ -209,7 +209,7 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
     setkey(dt, primerid, contrast)
     stouffer <- dt[,list(z=sum(z)/sqrt(sum(!is.na(z))), component='S'), keyby=list(primerid, contrast)]
     dt <- rbind(dt, stouffer, fill=TRUE)
- 
+    
     if(is.logical(logFC) && logFC){
         message("Calculating log-fold changes")
         logFC <- getLogFC(zlmfit=object)
@@ -246,10 +246,10 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
 })
 
 if(getRversion() >= "2.15.1") globalVariables(c(
-                  'contrast',
-                 'metric', 
-                  '.',
-                  'value'))
+                                  'contrast',
+                                  'metric', 
+                                  '.',
+                                  'value'))
 
 ##' Print summary of a ZlmFit
 ##'
@@ -270,7 +270,7 @@ print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
         by <- 'D'
     }
     dt[,metric:=ifelse(is.na(z), 0, -abs(z))]
-     describe <- switch(by, logFC='log fold change Z-score', D='Wald Z-scores on discrete', C='Wald Z-scores tests on continuous')
+    describe <- switch(by, logFC='log fold change Z-score', D='Wald Z-scores on discrete', C='Wald Z-scores tests on continuous')
     
     ## if('Pr(>Chisq)' %in% names(dt)){
     ##     keyv <- 'contrast'

@@ -124,109 +124,109 @@ melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     m <- cbind( featdata[rep(seq_len(nrow(featdata)), nrow(celldata)),,drop=FALSE],
                celldata[rep(seq_len(nrow(celldata)), each=nrow(featdata)),,drop=FALSE], exprs)
 
-  
-  return(m)
+    
+    return(m)
 }
 
 
 mkunique<-function(x,G){
     cbind(x,primerid.unk=make.unique(as.character(get(G,x))))
-     }
+}
 
 
 check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
-  if( any(cellvars %in% featurevars))
-    stop("'cellvars', 'idvars' must be disjoint from 'featurevars', 'primerid', 'geneid'")
-  cvars.in <- cellvars %in% names(dataframe)
-  fvars.in <- featurevars %in% names(dataframe)
-  if( !all(cvars.in)) stop(cellvars[!cvars.in][1], ' not found')
-  if( !all(fvars.in)) stop(featurevars[!fvars.in][1], ' not found')
-  nuniquef<-nrow(uniqueModNA(dataframe[,featurevars,with=FALSE], 'primerid'))
-  nuniquec<-nrow(uniqueModNA(dataframe[,cellvars,with=FALSE], 'wellKey'))  
-  if(nuniquef != nc)
-    stop("'featurevars' must be keyed by 'primerid'")
-  if(nuniquec != nr)
-    stop("'cellvars' must be keyed by 'idvars'")
+    if( any(cellvars %in% featurevars))
+        stop("'cellvars', 'idvars' must be disjoint from 'featurevars', 'primerid', 'geneid'")
+    cvars.in <- cellvars %in% names(dataframe)
+    fvars.in <- featurevars %in% names(dataframe)
+    if( !all(cvars.in)) stop(cellvars[!cvars.in][1], ' not found')
+    if( !all(fvars.in)) stop(featurevars[!fvars.in][1], ' not found')
+    nuniquef<-nrow(uniqueModNA(dataframe[,featurevars,with=FALSE], 'primerid'))
+    nuniquec<-nrow(uniqueModNA(dataframe[,cellvars,with=FALSE], 'wellKey'))  
+    if(nuniquef != nc)
+        stop("'featurevars' must be keyed by 'primerid'")
+    if(nuniquec != nr)
+        stop("'cellvars' must be keyed by 'idvars'")
 }
 
 if(getRversion() >= "2.15.1") globalVariables(c(
-                  'primerid.orig',
-                 'wellKey')) #fixdf
+                                  'primerid.orig',
+                                  'wellKey')) #fixdf
 
 ## might have bad complexity, but could construct one at time, then glue cheaply
 ## Not too bad except for deduplication.. will use data.table
 ## Output is sorted by primerid then wellKey
 ##' @importFrom data.table melt  :=  setkey  setkeyv  set %like%  dcast  data.table  rbindlist  setDT  CJ  .SD  melt  like  setorder  setnames  .N  setDF key setorderv dcast.data.table melt.data.table setattr as.data.table
 fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
-  df<-data.table(df)
-  cn_df<-colnames(df)
-  if(!is(df,"data.frame")){
-    stop("Argument `dataframe` should be a data.frame.")
-  }
-  if(!all(idvars %in% cn_df)){
-    stop("Invalid idvars column name. Not in data.frame")
-  }
-  if(!all(primerid %in% cn_df)){
-    stop("Invalid primerid column name. Not in data.frame")
-  }
-  if(!all(measurement %in% cn_df)){
-    stop("Invalid measurement column name. Not in data.frame")
-  }
-  ## FIXME: should check if cmap and fmap are in df and throw intelligible error
-
-  bothMap <- c(cmap, fmap)
-  for(nm in names(bothMap)){
-    if(nm %in% cn_df && bothMap[[nm]] != nm){
-        warning("renaming column ", nm)
-      setnames(df,cn_df,make.unique(c(nm, colnames(df)))[-1])
+    df<-data.table(df)
+    cn_df<-colnames(df)
+    if(!is(df,"data.frame")){
+        stop("Argument `dataframe` should be a data.frame.")
     }
-      if(!all(bothMap[[nm]] %in% names(df))){
-        stop('could not find column named ', bothMap[[nm]], ' in dataframe')
-      }
-    set(df, j=nm, value=df[,bothMap[[nm]], with=FALSE])
-    #setnames(df, bothMap[[nm]],nm)
-  }
+    if(!all(idvars %in% cn_df)){
+        stop("Invalid idvars column name. Not in data.frame")
+    }
+    if(!all(primerid %in% cn_df)){
+        stop("Invalid primerid column name. Not in data.frame")
+    }
+    if(!all(measurement %in% cn_df)){
+        stop("Invalid measurement column name. Not in data.frame")
+    }
+    ## FIXME: should check if cmap and fmap are in df and throw intelligible error
 
-  wk <- do.call(paste, df[,idvars,with=FALSE])
-  pid <- do.call(paste, df[,primerid, with=FALSE])
-  if(any(is.na(wk))) warning('Dropping NAs from wellKey')
-  if(any(is.na(pid))) warning('Dropping NAs from primerid')
-      
-  #df[,'wellKey'] <- wk
-  df[,wellKey:=wk]
-  #df[,'primerid'] <- pid
-  df[,primerid:=pid]
-  dupPrimers <- table(df$wellKey, df$primerid) #cross tab of primerid x wellKey
-  duped.primers <- apply(dupPrimers>1, 2, which)
-  duped.primers <- duped.primers[sapply(duped.primers, length)>0]
-  incomplete <- any(dupPrimers==0)
-  if(length(duped.primers)>0){
-    warning("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
-    #dt$primer.orig <- dt$primerid
-    df[,primerid.orig:=primerid]
-    df[,primerid:=make.unique(.SD$primerid.orig),by='wellKey']
-#    df <- ddply(df,'wellKey',mkunique,G='primerid')
-#    df[,'primerid.orig'] <- df[,'primerid']
-#    df[,'primerid'] <- df[,'primerid.unk']
-#    df[,'primerid.unk'] <- NULL
-    fmap['primerid.orig'] <- 'primerid.orig'
-  }
-  
-  if(incomplete){
-    message("dataframe appears incomplete, attempting to complete it with NAs")
-    skeleton <- data.table((expand.grid(unique(df[,primerid]), unique(df[, wellKey]),stringsAsFactors=FALSE)))
-    setnames(skeleton,c("primerid","wellKey"))
-    setkey(skeleton,primerid,wellKey);
-    setkey(df,primerid,wellKey);
-    df<-df[skeleton]
-  }
+    bothMap <- c(cmap, fmap)
+    for(nm in names(bothMap)){
+        if(nm %in% cn_df && bothMap[[nm]] != nm){
+            warning("renaming column ", nm)
+            setnames(df,cn_df,make.unique(c(nm, colnames(df)))[-1])
+        }
+        if(!all(bothMap[[nm]] %in% names(df))){
+            stop('could not find column named ', bothMap[[nm]], ' in dataframe')
+        }
+        set(df, j=nm, value=df[,bothMap[[nm]], with=FALSE])
+                                        #setnames(df, bothMap[[nm]],nm)
+    }
 
-  #ord <- do.call(order, df[, c("primerid", "wellKey")])
-  #df <- df[ord,]
-  keynames <- c('primerid', 'wellKey')
-  keynames <- union(keynames, colnames(df))
-  setkeyv(df,keynames)
-  list(df=(df), rn=unique(df$wellKey), cn=unique(df$primerid), fmap=fmap, cmap=cmap)
+    wk <- do.call(paste, df[,idvars,with=FALSE])
+    pid <- do.call(paste, df[,primerid, with=FALSE])
+    if(any(is.na(wk))) warning('Dropping NAs from wellKey')
+    if(any(is.na(pid))) warning('Dropping NAs from primerid')
+    
+                                        #df[,'wellKey'] <- wk
+    df[,wellKey:=wk]
+                                        #df[,'primerid'] <- pid
+    df[,primerid:=pid]
+    dupPrimers <- table(df$wellKey, df$primerid) #cross tab of primerid x wellKey
+    duped.primers <- apply(dupPrimers>1, 2, which)
+    duped.primers <- duped.primers[sapply(duped.primers, length)>0]
+    incomplete <- any(dupPrimers==0)
+    if(length(duped.primers)>0){
+        warning("Primerid ", names(duped.primers)[1], " appears be duplicated.\n I will attempt to make it unique, but this may fail if the order of the primers is inconsistent in the dataframe.")
+                                        #dt$primer.orig <- dt$primerid
+        df[,primerid.orig:=primerid]
+        df[,primerid:=make.unique(.SD$primerid.orig),by='wellKey']
+                                        #    df <- ddply(df,'wellKey',mkunique,G='primerid')
+                                        #    df[,'primerid.orig'] <- df[,'primerid']
+                                        #    df[,'primerid'] <- df[,'primerid.unk']
+                                        #    df[,'primerid.unk'] <- NULL
+        fmap['primerid.orig'] <- 'primerid.orig'
+    }
+    
+    if(incomplete){
+        message("dataframe appears incomplete, attempting to complete it with NAs")
+        skeleton <- data.table((expand.grid(unique(df[,primerid]), unique(df[, wellKey]),stringsAsFactors=FALSE)))
+        setnames(skeleton,c("primerid","wellKey"))
+        setkey(skeleton,primerid,wellKey);
+        setkey(df,primerid,wellKey);
+        df<-df[skeleton]
+    }
+
+                                        #ord <- do.call(order, df[, c("primerid", "wellKey")])
+                                        #df <- df[ord,]
+    keynames <- c('primerid', 'wellKey')
+    keynames <- union(keynames, colnames(df))
+    setkeyv(df,keynames)
+    list(df=(df), rn=unique(df$wellKey), cn=unique(df$primerid), fmap=fmap, cmap=cmap)
 }
 
 ##' Construct a SingleCellAssay (or derived subclass) from a `flat` (melted) data.frame/data.table
@@ -312,15 +312,15 @@ FluidigmAssay <- SingleCellAssay <- function(...){
 }
 
 uniqueModNA.old <- function(df, exclude){
-  #browser()
-  df <- as.data.frame(df)
-  w.include <- names(df)
-  if(ncol(df)>1){
-  w.include <- setdiff(w.include, exclude)
-}
-  u <- unique(df)
-  allNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
-  u[!allNa,,drop=FALSE]
+                                        #browser()
+    df <- as.data.frame(df)
+    w.include <- names(df)
+    if(ncol(df)>1){
+        w.include <- setdiff(w.include, exclude)
+    }
+    u <- unique(df)
+    allNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
+    u[!allNa,,drop=FALSE]
 }
 
 ## Get unique rows in data.frame, only counting NAs as distinct for
@@ -337,7 +337,7 @@ uniqueModNA <- function(df, include){
     w.exclude <- names(df)
     if(ncol(df)>1){
         w.exclude <- setdiff(w.exclude, include)
-}
+    }
     ##u <- unique(df)
     ##anyNa <- apply(is.na(u)[,w.include, drop=FALSE], 1, all)
     ##u[!anyNa,,drop=FALSE]
@@ -370,12 +370,12 @@ setMethod('subset', 'SingleCellAssay', function(x, ...){
     e <- substitute(...)
     asBool <- try(eval(e, colData(x), parent.frame(n=1)), silent=TRUE)
     if(is(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
-  #this is a special case of "subset", not of the "[[" method, so..
-  if(isTRUE(asBool)){
-          x 
-      }else{
-          x[,asBool]
-      }
+                                        #this is a special case of "subset", not of the "[[" method, so..
+    if(isTRUE(asBool)){
+        x 
+    }else{
+        x[,asBool]
+    }
 })
 
 
@@ -448,7 +448,7 @@ setMethod('split', signature(x='SingleCellAssay', f='character'),
                   f <- as.factor(f)
               }
               split(x, f, drop=drop)
-})
+          })
 
 setMethod('split', signature(x='SingleCellAssay', f='factor'), function(x, f, drop=FALSE, ...){
     split(x, list(f))
@@ -499,7 +499,7 @@ setMethod('combine', signature(x='SingleCellAssay', y='ANY'), function(x, y,  ..
 
 ## obsolete
 getMapping <- function(x, map){
-  stop('Obsolete')
+    stop('Obsolete')
 }
 
 
@@ -507,9 +507,9 @@ getMapping <- function(x, map){
 
 
 if(getRversion() >= "2.15.1") globalVariables(c(
-                  'wellKey',
-                 'primerid', 
-                  'variable')) #setAs('SingleCellAssay', 'data.table')
+                                  'wellKey',
+                                  'primerid', 
+                                  'variable')) #setAs('SingleCellAssay', 'data.table')
 
 setAs('SingleCellAssay', 'data.table', function(from){
     melt.SingleCellAssay(from)

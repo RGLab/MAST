@@ -48,7 +48,7 @@ setGeneric("cData<-", function(sc, value) standardGeneric("cData<-"))
 ##' @name fData
 ##' @aliases fData,SingleCellAssay-method
 ##' @importMethodsFrom Biobase fData
-#setGeneric('fData', function(sc) standardGeneric('fData'))
+                                        #setGeneric('fData', function(sc) standardGeneric('fData'))
 NULL
 
 ##' Accessor for featureData \code{AnnotatedDataFrame}
@@ -61,7 +61,7 @@ NULL
 ##' @name featureData
 ##' @aliases featureData,SingleCellAssay-method
 ##' @importMethodsFrom Biobase featureData
-#setGeneric('featureData', function(object) standardGeneric('featureData'))
+                                        #setGeneric('featureData', function(object) standardGeneric('featureData'))
 NULL
 
 ##' Subsetting Vectors, Matrices and Data Frames

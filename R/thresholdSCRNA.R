@@ -87,7 +87,7 @@ between_interval<-function (x, interval)
 apply_by<-function(x,by_idx,fun,...){
     res<-sapply(unique(by_idx),function(a){
         apply(x[,by_idx==a],1,fun,...)}
-    )
+        )
     return(res)
 }
 
@@ -111,16 +111,16 @@ apply_by<-function(x,by_idx,fun,...){
 #'@importFrom plyr ldply
 #'@export
 thresholdSCRNACountMatrix <-function( data_all              ,
-                                      conditions  = NULL    ,
-                                      cutbins     = NULL    ,
-                                      nbins       = 10      ,
-                                      bin_by      = "median",
-                                      qt          = 0.975,
-                                      min_per_bin = 50      ,
-                                      absolute_min= 0.0     ,
-                                      data_log  = TRUE,
-                                      adj = 1
-                                    )
+                                     conditions  = NULL    ,
+                                     cutbins     = NULL    ,
+                                     nbins       = 10      ,
+                                     bin_by      = "median",
+                                     qt          = 0.975,
+                                     min_per_bin = 50      ,
+                                     absolute_min= 0.0     ,
+                                     data_log  = TRUE,
+                                     adj = 1
+                                     )
 {
 
                                         # when there is no condition to stratefy
@@ -145,7 +145,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     if( arg == "median" ){
         cond_stat <- apply_by( log_data, conditions, function( x ) if( all( x <= 0.0 ) ){ 0 } else { median( x[x>0.0]) })
     } else if( arg == "mean" ){
-        # mean is taken on the original scale than loged
+                                        # mean is taken on the original scale than loged
         cond_stat <- apply_by( data, conditions, function( x ) if( all(x <= 0.0 ) ){ 0 } else { log( mean( x[x>0.0])+1, base = log_base) } )
     } else if( arg == "proportion" ){
         cond_stat <- apply_by( data > 0, conditions, mean )
@@ -157,10 +157,10 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         stop("choose bin_by from c('proportion', 'mean', 'median' )")
     }
     rprop     <- range( unlist(cond_stat) )
-    # log bin
+                                        # log bin
     if( is.null(cutbins) ){
         rprop     <- range( cond_stat )
-        # log bin
+                                        # log bin
         cutbins   <- exp( seq( log( rprop[1] + 1 ),log( rprop[2] + 1 ),length.out = nbins + 1 ) ) - 1
         cutbins[1]                  <- min( cutbins[1], rprop[1] - 1e-10 )
         cutbins[ length( cutbins ) ]<- max( cutbins[length( cutbins )], rprop[2] + 1e-10 )
@@ -174,7 +174,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     cond_stat_bins_array             <- array( cond_stat_bins, dim( cond_stat ) )
     dimnames( cond_stat_bins_array ) <- dimnames( cond_stat )
 
-    # make sure each bin has at least min_per_bin genes
+                                        # make sure each bin has at least min_per_bin genes
     while( any( t_prop_bins < min_per_bin ) ){
         i <- which.min( t_prop_bins )
         if( i == 1 & t_prop_bins[ i ] < min_per_bin ){
@@ -190,7 +190,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     cond_stat_bins_array<-array(cond_stat_bins, dim(cond_stat))
     dimnames(cond_stat_bins_array)<-dimnames(cond_stat)
 
-    # convert data into a list
+                                        # convert data into a list
     log_data_list <- vector("list", length(levels(cond_stat_bins)))
     names(log_data_list) <- levels(cond_stat_bins)
     for( i in levels(cond_stat_bins)){
@@ -201,15 +201,15 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         }
 
     }
-    #dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
-    #peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
-    #valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 1 ) )
+                                        #dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
+                                        #peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
+                                        #valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 1 ) )
     dens   <- lapply( log_data_list, function( x )  { if(length(x)>2){ density( x, adjust = adj ) } else{ NULL } })
     peaks  <- lapply(          dens, function( dd ) { if( is.null(dd) ){ data.frame( x=0, y=0 ) }else{ find_peaks( dd$x,dd$y, adjust = adj )}} ) 
     valleys<- lapply(          dens, function( dd ) { if( is.null(dd) ){ list(0)} else{find_valleys( dd$x,dd$y, adjust = adj ) } })
 
     single_modes<-do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,1]))))<1|(lapply(list(do.call(c,lapply(peaks,function(x)abs(diff(x[1:2,2]))))),function(x)(x-median(na.omit(x)))/mad(na.omit(x)))[[1]]>2)
-    #Check for single peaks found
+                                        #Check for single peaks found
     singles <- ldply( lapply( peaks,nrow ),function( x ) x == 1 )[,2]
     single_modes[singles] <- TRUE
 
@@ -220,13 +220,13 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     cutpoints       <- lapply( cutpoints, function(x) ifelse( length( x )==0, NA, max( x ) ) )
     names(cutpoints)<- names( peaks )
 
-    #Check if all cutpoints are NA
+                                        #Check if all cutpoints are NA
     if( all( is.na( ldply( cutpoints )[,2] ) ) ){
         for( i in 1:length( cutpoints ) ){
             cutpoints[[i]] <- 0.0 #0
         }
     } else {
-        #impute cutpoints if NA
+                                        #impute cutpoints if NA
         for(i in 1:length( cutpoints ) ){
             if( is.na( cutpoints[[i]] ) ){
                 if( i != length( cutpoints ) ){
@@ -237,8 +237,8 @@ thresholdSCRNACountMatrix <-function( data_all              ,
             }
         }
     }
-    # ensure cutpoints are increasing and decreasing from the 75% of bins with 2 modes.
-    # could be improved. 
+                                        # ensure cutpoints are increasing and decreasing from the 75% of bins with 2 modes.
+                                        # could be improved. 
     vals2    <- unlist(valleys[which(unlist(lapply(peaks,nrow))==2)])
     midindex <- which(names(peaks)==names(which.min(abs(vals2-quantile(vals2,c(0.75),na.rm=TRUE)))))
     if( length(midindex) > 0 ){
@@ -262,15 +262,15 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     }
     cutpoints <- lapply( cutpoints, function(x) max( absolute_min ,x ) )
     if(data_log){
-         data_threshold <- log_data
+        data_threshold <- log_data
     } else {
-         data_threshold <- data#log_data
+        data_threshold <- data#log_data
     }
-   
+    
     for( j in uni_cond ){
         for( i in levels(cond_stat_bins) ){
             if(any(cond_stat_bins_array[,j]==i))
-            data_threshold[cond_stat_bins_array[,j]==i,conditions==j][log_data[cond_stat_bins_array[,j]==i,conditions==j]<cutpoints[i]]<-0
+                data_threshold[cond_stat_bins_array[,j]==i,conditions==j][log_data[cond_stat_bins_array[,j]==i,conditions==j]<cutpoints[i]]<-0
         }
     }
     nms                <- names(  cutpoints )
@@ -278,7 +278,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     names( cutpoints ) <- nms
     print( cutpoints )
     data_threshold_all                  <- data_all*0
-    #data_threshold_all[comp_zero_idx, ] <- 0
+                                        #data_threshold_all[comp_zero_idx, ] <- 0
     data_threshold_all[!comp_zero_idx,] <- data_threshold #2^( data_threshold ) - 1
     bin_all       <- factor(cond_stat_bins_array)
     dim(bin_all)  <- dim(cond_stat_bins_array)
@@ -288,7 +288,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                           bin               =  bin_all,
                           conditions        = conditions,
                           density           = dens 
-                          ,peaks             = peaks, valleys= valleys)
+                         ,peaks             = peaks, valleys= valleys)
     class( res_obj )<- c( "list", "thresholdSCRNACountMatrix" )
     return( res_obj )
 
@@ -362,7 +362,7 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
     })
     shapiro <- lapply(object[c('original_data', 'counts_threshold')], function(o){
         apply(o, 2, function(x){
-           
+            
         })
     })
     out <- list(zeros=zeros, vars=vars, shapiro=shapiro)

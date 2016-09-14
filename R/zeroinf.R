@@ -4,9 +4,9 @@ methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm','ridge'),
 
 
 if(getRversion() >= "2.15.1") globalVariables(c(
-                  'keyword',
-                 'lmMethod', 
-                  'implementsEbayes')) #zlm, zlm.SingleCellAssay
+                                  'keyword',
+                                  'lmMethod', 
+                                  'implementsEbayes')) #zlm, zlm.SingleCellAssay
 
 
 residualsHook <- function(fit){
@@ -34,7 +34,7 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ## for each column in exprMat, fit obj and return an environment containing the init summaries
 ## exprMat should have column names containing the names of the genes
 ## hook is an (optional) function called on each fitted object
-                      
+
 
 ##' Convenience function for running a zero-inflated regression
 ##'
@@ -79,10 +79,10 @@ zlm <- function(formula, data, method='bayesglm',silent=TRUE, ...){
 }
 
 summary.zlm <- function(out){
-  summary(out$cont)
-  summary(out$disc)
+    summary(out$cont)
+    summary(out$disc)
 }
- 
+
 ##' Zero-inflated regression for SingleCellAssay 
 ##'
 ##' For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
@@ -152,9 +152,9 @@ zlm.SingleCellAssay <- function(formula, sca, method='bayesglm', silent=TRUE, eb
         if(!missing(formula)) warning("Ignoring formula and using model defined in 'objLMLike'")
         if(!inherits(LMlike, 'LMlike')) stop("'LMlike' must inherit from class 'LMlike'")
         ## update design matrix with possibly new/permuted colData
-                                        ##obj <- update(LMlike, design=colData(sca))
+        ##obj <- update(LMlike, design=colData(sca))
         obj <- LMlike
-       }
+    }
     
     ## avoiding repeated calls to the S4 object speeds calls on large sca
     ## due to overzealous copying semantics on R's part
@@ -199,14 +199,14 @@ zlm.SingleCellAssay <- function(formula, sca, method='bayesglm', silent=TRUE, eb
     if(!parallel || getOption('mc.cores', 1L)==1){
         listOfSummaries <- lapply(listEE, .fitGeneSet)
     } else{
-    listOfSummaries <- parallel::mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
-}
+        listOfSummaries <- parallel::mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
+    }
 
     if(onlyCoef){
         out <- do.call(abind, c(listOfSummaries, rev.along=0))
         return(aperm(out, c(3,1,2)))
     }
-        
+    
     ## test for try-errors
     cls <- sapply(listOfSummaries, function(x) class(x))
     complain <- if(force) warning else stop

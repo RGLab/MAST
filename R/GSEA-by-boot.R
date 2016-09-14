@@ -92,7 +92,6 @@ Drop <- function(x, d){
 ##' @param control list of control parameters.  See details.
 ##' @return Object of class \code{GSEATests}, containing slots \code{tests},  4D array and \code{bootR}, the number of boostrap replicates.
 ##' @import abind
-##' @importFrom plyr aaply
 ##' @export
 ##' @seealso calcZ
 ##' @seealso summary,GSEATests-method
@@ -240,7 +239,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
             return(rbind(vstat[-2,,drop=FALSE], dof=dof))
         }
     }
-        
+    
 
     ## define the method to calculate the variance
     if(var_est=='modelbased'){
@@ -294,7 +293,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     ss <- sum(s^2)
     ## scale of approximation
     scale <- sqrt( (nu-2)/(nu) / #expected variance of t approx
-                      ss) #variance of sum
+                   ss) #variance of sum
     list(W=1/s, nu=nu, scale=scale)
 }
 
@@ -395,4 +394,4 @@ setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
     t_stat_comb[,combined_adj:=p.adjust(combined_P,"fdr")]
     setorder(t_stat_comb,combined_adj)
     t_stat_comb
-    })
+})

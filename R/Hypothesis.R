@@ -39,9 +39,9 @@ generateHypothesis <- function(h, terms){
     if(class(h) =='Hypothesis'){
         ## makeContrasts can't handle non-syntactic names :-/
         ## So we'll use this instead
-       cm <- makeContrasts2(contrasts=h@.Data, levels=terms)
-       rownames(cm) <- terms        
-       sd <- setdiff(rownames(cm), terms)
+        cm <- makeContrasts2(contrasts=h@.Data, levels=terms)
+        rownames(cm) <- terms        
+        sd <- setdiff(rownames(cm), terms)
     } else {                             #CoefficientHypothesis
         index <- match(h@.Data, terms)
         sd <- setdiff(h@.Data, terms)
@@ -96,7 +96,7 @@ makeContrasts2 <- function (contrasts = NULL, levels, warn=TRUE)
         e <- as.character(contrasts)
         ne <- length(e)
         cm <- matrix(0, n, ne, dimnames = list(Levels = levels, 
-            Contrasts = e))
+                                               Contrasts = e))
         if (ne == 0) 
             return(cm)
         for (j in 1:ne) {

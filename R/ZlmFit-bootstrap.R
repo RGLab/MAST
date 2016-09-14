@@ -22,7 +22,7 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
         LMlike <- update(LMlike, design=colData(newsca))
         zlm.SingleCellAssay(sca = newsca, LMlike = LMlike, onlyCoef=TRUE)
     })
-  
+    
     d<-dim(coef(zlmfit,"D"))
     manyvc<-aperm(array(manyvc,c(d,2,R)),c(4,1,2,3))
     dimnames(manyvc)<-c(list(NULL),dimnames(coef(zlmfit,"D")),list(c("C","D")))
@@ -48,7 +48,7 @@ bootVcov1 <- function(zlmfit, R=99){
         zlm.SingleCellAssay(sca=newsca, LMlike=LMlike, onlyCoef=TRUE)
     })
 
-   manyvc
+    manyvc
     
 }
 

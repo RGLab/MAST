@@ -10,7 +10,7 @@
 ##' @export computeEtFromCt
 ##' @aliases computeEtFromCt
 computeEtFromCt<-function(df,column='Ct',Cmax=40){
-  within.data.frame(df, {Et <- Cmax-get(column); Et <- ifelse(is.na(Et), 0, Et)})
+    within.data.frame(df, {Et <- Cmax-get(column); Et <- ifelse(is.na(Et), 0, Et)})
 }
 
 #'Convert a pair of character names to a list that can be placed into a data.table
@@ -19,7 +19,7 @@ computeEtFromCt<-function(df,column='Ct',Cmax=40){
 #'@return a call that can be evaluated
 #'@export
 todt<-function(v){
-  as.call(c(list,sapply(v,as.name)))
+    as.call(c(list,sapply(v,as.name)))
 }
 
 reraise <- function(err, convertToWarning=FALSE, silent=FALSE){

@@ -123,9 +123,9 @@ genewiseMult <- function(rowvec, rowMajorMatrix){
 }
 
 if(getRversion() >= "2.15.1") globalVariables(c(
-                  'primerid',
-                 'z', 
-                  'varLogFC')) #getLogFC
+                                  'primerid',
+                                  'z', 
+                                  'varLogFC')) #getLogFC
 
 ##' @describeIn logFC Return results as a perhaps friendlier \code{data.table}
 ##' @export
