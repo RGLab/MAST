@@ -75,3 +75,4 @@ Collate:
     'zlmHooks.R'
 RoxygenNote: 5.0.1
 LazyData: true
+biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment, RNASeq
