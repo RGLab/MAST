@@ -18,7 +18,9 @@ Imports:
     abind,
     methods,
     parallel,
-    reshape2
+    reshape2,
+    stats,
+    graphics
 Depends:
     SummarizedExperiment,
     R(>= 2.10)
