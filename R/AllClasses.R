@@ -1,6 +1,4 @@
 ##' @import Biobase
-##' @import stats
-##' @import graphics
 ##' @importFrom plyr rbind.fill
 ##' @import methods
 ##' @include AllGenerics.R
