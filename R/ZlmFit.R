@@ -280,10 +280,10 @@ print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
     ## } else
     dt <- dt[component==by,]
     setkey(dt, contrast, metric)
-    pid <- dt[,.(primerid=primerid[ns]),by=contrast]
+    pid <- dt[,list(primerid=primerid[ns]),by=contrast]
     setkey(dt, primerid)
     setkey(pid, primerid, contrast)
-    dts <- dt[unique(pid[,.(primerid)]), .(contrast=contrast, primerid=primerid, z=z)]
+    dts <- dt[unique(pid[,list(primerid)]), list(contrast=contrast, primerid=primerid, z=z)]
     setkey(dts, primerid, contrast)
     dts[pid,value:=sprintf('%6.1f*',  z)]
     dts[!pid,value:=sprintf('%6.1f ',  z)]

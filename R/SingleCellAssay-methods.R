@@ -151,7 +151,7 @@ check.vars <- function(cellvars, featurevars, phenovars, dataframe, nc, nr){
 
 if(getRversion() >= "2.15.1") globalVariables(c(
                                   'primerid.orig',
-                                  'wellKey')) #fixdf
+                                  'wellKey', 'id')) #fixdf
 
 ## might have bad complexity, but could construct one at time, then glue cheaply
 ## Not too bad except for deduplication.. will use data.table
