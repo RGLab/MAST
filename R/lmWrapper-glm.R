@@ -97,6 +97,7 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     object
 })
 
+##' @export
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
     L <- c(C=0, D=0)
     if(object@fitted['C']){

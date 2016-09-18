@@ -1,6 +1,12 @@
 ## from ARM version 1.7-7 (2015-04-07)
 ## code originally by Gelman and Su
 ## http://cran.r-project.org/web/packages/arm/index.html
+##' @importFrom stats .checkMFClasses as.formula binomial contrasts<- cov2cor delete.response deviance
+##' @importFrom stats df.residual dt ecdf family fitted formula gaussian glm.control glm.fit lm.fit
+##' @importFrom stats median model.frame model.matrix.default na.pass napredict naresid nobs offset optim
+##' @importFrom stats optimize p.adjust pchisq predict pt qnorm qt quantile relevel setNames sigma t.test
+##' @importFrom stats terms terms.formula update update.formula weighted.residuals
+
 
 .bayesglm.fit <- function (x, y, weights = rep(1, nobs), start = NULL,
                            etastart = NULL, mustart = NULL, offset = rep(0, nobs),

@@ -9,8 +9,8 @@ ncells <- 'Number.of.Cells'
 
 ## Currently needed because devtools 1.11.0 has broken data()
 ## See https://github.com/mlr-org/mlr/pull/835
-load(system.file('data/vbeta.RData', package='MAST'))
-data(vbeta)
+## try(load(system.file('data/vbeta.RData', package='MAST')))
+data(vbeta,package='MAST', envir = environment())
 
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
 
