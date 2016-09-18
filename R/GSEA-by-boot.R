@@ -395,3 +395,5 @@ setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
     setorder(t_stat_comb,combined_adj)
     t_stat_comb
 })
+
+if(getRversion() >= "2.15.1") globalVariables(c('combined_P', 'combined_adj', 'component'))

@@ -370,6 +370,9 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
     out
 }
 
+if(getRversion() >= "2.15.1") globalVariables(c('L2', 'bin', 'cutpoint'))
+
+
 ##' @describeIn summary.thresholdSCRNACountMatrix prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
 ##' @param x a \code{summaryThresholdSCRNA} object, ie output from \code{summary.thresholdSCRNACountMatrix}
 ##' @export

@@ -131,6 +131,7 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
     concord
 }
 
+if(getRversion() >= "2.15.1") globalVariables(c('et.ref', 'et.comp'))
 
 ##' @describeIn getrc the sum of squares, weighted by nexp
 ##' @param nexp number of expressed cells per row in \code{concord}

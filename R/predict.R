@@ -36,6 +36,7 @@ predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL, ...){
 }
 
 
+if(getRversion() >= "2.15.1") globalVariables(c('muC', 'muD', 'seC'))
 #' impute missing continuous expression for plotting
 #' 
 #' If there are no positive observations for a contrast, it is generally not estimible.
