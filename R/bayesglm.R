@@ -6,7 +6,7 @@
 ##' @importFrom stats median  na.pass napredict naresid nobs offset optim
 ##' @importFrom stats optimize p.adjust pchisq predict pt qnorm qt quantile relevel setNames sigma t.test
 ##' @importFrom stats terms terms.formula  weighted.residuals
-## family fitted formula gaussian glm.control glm.fit lm.fit update update.formula model.frame model.matrix.default
+##' @importFrom stats family fitted formula gaussian glm.control glm.fit lm.fit update.formula model.frame model.matrix.default
 
 
 .bayesglm.fit <- function (x, y, weights = rep(1, nobs), start = NULL,

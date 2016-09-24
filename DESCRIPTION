@@ -20,6 +20,7 @@ Imports:
     parallel,
     reshape2,
     stats,
+    stats4,
     graphics
 Depends:
     SummarizedExperiment,
@@ -75,3 +76,4 @@ Collate:
     'zlmHooks.R'
 RoxygenNote: 5.0.1
 LazyData: true
+biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment, RNASeq, Transcriptomics, SingleCell

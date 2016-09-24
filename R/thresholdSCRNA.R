@@ -304,7 +304,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 ##' @param ... further arguments passed to \code{plot}
 ##' @return displays plots
 ##' @export
-##' @importFrom graphics plot
+##' @importFrom graphics plot abline arrows lines par points rug text
 plot.thresholdSCRNACountMatrix<-function(x, ask=FALSE, wait.time=0, type='bin', indices=NULL, ...)
 {
     type <- match.arg(type, c('bin', 'gene'), several.ok=TRUE)
@@ -370,7 +370,7 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
     out
 }
 
-if(getRversion() >= "2.15.1") globalVariables(c('L2', 'bin', 'cutpoint'))
+if(getRversion() >= "2.15.1") globalVariables(c('L2', 'bin', 'cutpoint', 'original_data'))
 
 
 ##' @describeIn summary.thresholdSCRNACountMatrix prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
