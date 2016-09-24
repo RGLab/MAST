@@ -32,16 +32,17 @@ test_that('zlm accepts expressions in formulae', {
   fd2 <- fd[1:20,]
 
 if(require('lme4')){
-    skip_on_cran()
   m <- melt.SingleCellAssay(fd2)
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
   test_that('zlm can run lmer', {
+      skip_on_cran()
     lrout2 <- suppressWarnings(zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, method='lmer'))
     expect_is(lrout2$cont, c('mer','lmerMod','glmerMod'))
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
     test_that('zlm.SingleCellAssay can run lmer', {
+        skip_on_cran()
         hushWarning(z <- zlm.SingleCellAssay(~Population + (1|Subject.ID), fd2, method='lmer', ebayes=FALSE), 'gradient|singular|multiple')
         expect_is(z, 'ZlmFit')
         expect_equal(nrow(z@df.null), 20)
