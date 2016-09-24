@@ -13,6 +13,7 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 #' @param object \code{GLMlike}
 #' @param which \code{character}, one of 'C', 'D'.
 #' @param ... ignored
+#' @export
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov
@@ -70,6 +71,7 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     object
 }
 
+if(getRversion() >= "2.15.1") globalVariables(c('pos'))
 setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){
@@ -98,6 +100,8 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
 })
 
 ##' @export
+##' @importMethodsFrom stats4 logLik
+##' @describeIn LMlike return the log-likelihood of a fitted model
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
     L <- c(C=0, D=0)
     if(object@fitted['C']){

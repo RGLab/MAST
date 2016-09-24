@@ -40,10 +40,17 @@ toAdditiveFormula <- function(string){
     string <- as.formula(toAdditiveString(string))
 }
 
-setMethod('update', signature=c(object='LMERlike'), function(object, formula., ...){
+##' @export
+##' @describeIn LMERlike update the formula or design matrix
+##' @param formula. \code{formula}
+##' @param design  something coercible to a \code{data.frame}
+setMethod('update', signature=c(object='LMERlike'), function(object, formula., design, ...){
     object@formula <- update.formula(object@formula, formula.)
     reComponents <- getREvars(object@formula)
-    model.matrix(object) <- model.matrix(as.formula(paste0('~', reComponents$FEform)), object@design)
+    if(!missing(design)){
+        object@design <- as(design, 'data.frame')
+    }
+    model.matrix(object) <- model.matrix(as.formula(paste0('~', reComponents$FEform)), object@design, ...)
     object@fitC <- object@fitD <- numeric(0)
     object@fitted <- c(C=FALSE, D=FALSE)
     object
@@ -217,7 +224,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
 #' @describeIn LMERlike return the variance/covariance of component \code{which}
 #' @param object \code{LMERlike}
 #' @param which \code{character}, one of 'C', 'D'.
-#' @param ... ignored
+#' @param ... In the case of \code{vcov}, ignored.  In the case of \code{update}, passed to \code{model.matrix}.
 setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov
@@ -236,6 +243,7 @@ setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     vc
 })
 
+if(getRversion() >= "2.15.1") globalVariables(c('fixef', 'lmer', 'glmer'))
 #' @describeIn LMERlike return the coefficients.  The horrendous hack is attempted to be undone.
 #' @param singular \code{logical}. Should NA coefficients be returned?
 setMethod('coef', signature=c(object='LMERlike'), function(object, which, singular=TRUE, ...){
@@ -253,6 +261,7 @@ setMethod('coef', signature=c(object='LMERlike'), function(object, which, singul
     co
 })
 
+##' @describeIn LMERlike return the log-likelihood
 setMethod('logLik', signature=c(object='LMERlike'), function(object){
     L <- c(C=0, D=0)
     if(object@fitted['C']) L['C'] <- logLik(object@fitC)

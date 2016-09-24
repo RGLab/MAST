@@ -34,8 +34,8 @@ setMethod('show',  signature=c(object='LMlike'), function(object){
 setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, quick=FALSE, ...){
     object@response <- response
     dargs <- list(...)
-    if('fitArgsC' %in% names(dargs)) object@fitArgsC <- fitArgsC
-    if('fitArgsD' %in% names(dargs)) object@fitArgsD <- fitArgsD
+    if('fitArgsC' %in% names(dargs)) object@fitArgsC <- dargs$fitArgsC
+    if('fitArgsD' %in% names(dargs)) object@fitArgsD <- dargs$fitArgsD
     object@fitted <- c(C=FALSE, D=FALSE)
     object@fitC <- NULL
     object@fitD <- NULL
@@ -75,6 +75,12 @@ setMethod('summary', signature=c(object='LMlike'), function(object){
 })
 
 
+##' @export
+##' @describeIn LMlike update the formula or design from which the \code{model.matrix} is constructed
+##' @param formula. \code{formula}
+##' @param design something coercible to a \code{data.frame}
+##' @param ... passed to \code{model.matrix}
+##' @importFrom stats4 update
 setMethod('update', signature=c(object='LMlike'), function(object, formula., design, ...){
     if(!missing(formula.)){
         object@formula <- update.formula(object@formula, formula.)

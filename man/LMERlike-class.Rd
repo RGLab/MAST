@@ -4,19 +4,29 @@
 \name{LMERlike-class}
 \alias{LMERlike-class}
 \alias{coef,LMERlike-method}
+\alias{logLik,LMERlike-method}
+\alias{update,LMERlike-method}
 \alias{vcov,LMERlike-method}
 \title{Wrapper for lmer/glmer}
 \usage{
+\S4method{update}{LMERlike}(object, formula., design, ...)
+
 \S4method{vcov}{LMERlike}(object, which, ...)
 
 \S4method{coef}{LMERlike}(object, which, singular = TRUE, ...)
+
+\S4method{logLik}{LMERlike}(object)
 }
 \arguments{
 \item{object}{\code{LMERlike}}
 
-\item{which}{\code{character}, one of 'C', 'D'.}
+\item{formula.}{\code{formula}}
 
-\item{...}{ignored}
+\item{design}{something coercible to a \code{data.frame}}
+
+\item{...}{In the case of \code{vcov}, ignored.  In the case of \code{update}, passed to \code{model.matrix}.}
+
+\item{which}{\code{character}, one of 'C', 'D'.}
 
 \item{singular}{\code{logical}. Should NA coefficients be returned?}
 }
@@ -26,9 +36,13 @@ This is necessary because there is no (easy) way to specify an arbitrary fixed-e
 }
 \section{Methods (by generic)}{
 \itemize{
+\item \code{update}: update the formula or design matrix
+
 \item \code{vcov}: return the variance/covariance of component \code{which}
 
 \item \code{coef}: return the coefficients.  The horrendous hack is attempted to be undone.
+
+\item \code{logLik}: return the log-likelihood
 }}
 \section{Slots}{
 
