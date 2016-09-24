@@ -140,7 +140,7 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
     retme<-subset(m, test.type=='comb')
     return(dcast(rename(retme,c(metric="variable")), formula=...~variable))
 }
-if(getRversion() >= "2.15.1") globalVariables(c('test.type'))
+if(getRversion() >= "2.15.1") globalVariables(c('test.type', 'gene'))
 
 ##' Plot a likelihood ratio test object
 ##'
@@ -153,12 +153,11 @@ if(getRversion() >= "2.15.1") globalVariables(c('test.type'))
 ##' @param groups \code{character} grouping value.  If provided, must match groups argument passed to lrtest.  Plots done separately for each group.
 ##' @return Constructs a dotplot
 ##' @author andrew
-##' @export
 plotlrt <- function(lr, adjust='fdr', thres=.1, trunc=1e-6, groups=NULL){
     lr$adj <- p.adjust(lr$p.value, method=adjust)
     posgene <- suppressMessages(reshape2::dcast(lr[, c('gene', 'adj')], gene ~ ., fun.aggregate=function(x) any(x<thres)))
     posgene <- posgene[posgene[,2],]
-    pvalue <- with(lr, pmin(p.value, trunc))
+    pvalue <-  pmax(lr$p.value, trunc)
     if(length(posgene)>0){
         lattice::dotplot(gene ~ -log10(pvalue)*direction, lr, auto.key=TRUE, subset=gene %in% posgene$gene)
     } else{
