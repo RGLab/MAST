@@ -87,3 +87,6 @@ test_that('combining coefficients works',{
               expect_gt(cor(abs(ZnF[,'Z']), -log(ZnF[,'P'])), .85)
           })
 
+test_that('Summary method works', {
+    s <- summary(gseaClass)
+    })

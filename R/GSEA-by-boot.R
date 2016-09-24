@@ -385,7 +385,7 @@ setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
     setnames(effect_size_wide, c('disc', 'cont'), c('disc_effect', 'cont_effect'))
     
     t_stat_wide <- dcast(t_stat, set ~ comp + metric)
-    pvalArr <- calcZ(gsea, combined = "stouffer", ...)
+    pvalArr <- calcZ(object, combined = "stouffer", ...)
     pvals <- data.table(pvalArr)
     setnames(pvals, c('P', 'Z'), c('combined_P', 'combined_Z'))
     pvals$set <- rownames(pvalArr)
