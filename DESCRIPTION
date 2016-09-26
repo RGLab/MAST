@@ -21,7 +21,8 @@ Imports:
     reshape2,
     stats,
     stats4,
-    graphics
+    graphics,
+    utils
 Depends:
     SummarizedExperiment,
     R(>= 2.10)

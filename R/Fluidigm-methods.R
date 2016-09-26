@@ -94,7 +94,8 @@ numexp <- function(sc){
 ##' @param fun.cycle inverse function of fun.natural
 ##' @return concordance between two assays
 ##' @author Andrew McDavid
-##' @export getConcordance
+##' @seealso plotSCAConcordance
+##' @export 
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
     ## vector of groups over which we should aggregate
     if(!(is(singleCellRef, 'FluidigmAssay') && is(singleCellcomp, 'FluidigmAssay'))){
@@ -192,9 +193,9 @@ getrc <- function(concord){
 ##' was.filtered <- filter(vbetaFA, apply_filter=FALSE)
 ##' ## Wells filtered for being discrete outliers
 ##' head(subset(was.filtered, pctout))
-##' @export filter
+##' @export
 filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
-    default_filt <- list(filter=T, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL, K=1.48)
+    default_filt <- list(filter=TRUE, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL, K=1.48)
     if (is.null(filt_control)){
         filt_control <- list()
     }
@@ -241,18 +242,18 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
                                         #rows are cells, columns are genes
                                         #exprs is a matrix of cells x genes for the strata in which the filtering should occur
                                         #filter optionally return a logical vector or the statistics
-.internalfilter <- function(exprs, filter=T, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL,K=1.48){
+.internalfilter <- function(exprs, filter=TRUE, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL,K=1.48){
     exprs[exprs==0]<-NA
-    medianC = apply(exprs, 2, median, na.rm=T)
-    medianDev = apply(t(abs(t(exprs) - medianC)), 2, median,na.rm=T)
+    medianC = apply(exprs, 2, median, na.rm=TRUE)
+    medianDev = apply(t(abs(t(exprs) - medianC)), 2, median,na.rm=TRUE)
     z.exprs = t((t(exprs) - medianC)/(medianDev*K+.001))
 
-    ztot =apply(abs(z.exprs)>sigmaContinuous, 1, sum, na.rm=T)
+    ztot =apply(abs(z.exprs)>sigmaContinuous, 1, sum, na.rm=TRUE)
 
     outlier = ztot >= nOutlier
 
     if(!is.null(sigmaSum) && !is.na(sigmaSum)){
-        zsum <- apply(abs(z.exprs), 1, sum, na.rm=T)
+        zsum <- apply(abs(z.exprs), 1, sum, na.rm=TRUE)
         outlier <- zsum > sigmaSum
     }
 
@@ -279,8 +280,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 
 #' Average within duplicated genes/primers
 #'
-#' 
-#'@export
+#' \emph{This is broken at the moment (transposition errors)}.
 #' @param fd \code{SingleCellAssay} or subclass 
 #' @param geneGroups \code{character} naming a column in the \code{featureData} that keys the duplicates
 #' @param fun.natural transformation to be used to collapse the duplicate expression values
@@ -292,7 +292,7 @@ primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift
     fdOrder <- order(unlist(lapply(geneset, min)))
     geneset <- geneset[fdOrder]           #maintain order of genes from original
     genefirst <- unlist(lapply(geneset, function(x) x[1]))
-    skeleton <- fd[[TRUE,genefirst]]       #make smaller version of fd, then we'll replace exprs with the mean per geneset
+    skeleton <- fd[genefirst,]       #make smaller version of fd, then we'll replace exprs with the mean per geneset
 
     exprs.orig <- exprs(fd)
     exprs.new <- lapply(geneset, function(colidx){

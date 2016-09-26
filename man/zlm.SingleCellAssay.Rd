@@ -52,15 +52,14 @@ method MOM uses a method-of-moments estimator, while MLE using the marginal like
 H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 }
 \examples{
-\dontrun{
 data(vbetaFA)
-zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1))
+zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:10,])
 slotNames(zlmVbeta)
-coef(zlmVbeta, 'D')['CD27',]
-
-vcov(zlmVbeta, 'D')[,,'CD27']
+#A matrix of coefficients
+coef(zlmVbeta, 'D')['CCL2',]
+#An array of covariance matrices
+vcov(zlmVbeta, 'D')[,,'CCL2']
 waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
-}
 }
 \seealso{
 ebayes, glmlike-class, ZlmFit-class, BayesGLMlike-class

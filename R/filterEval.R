@@ -1,11 +1,8 @@
-#'Burden of filtering
-#'
-#'what proportions of wells are filtered due to different criteria
-#'
-#'@param sc SingleCellAssay or derived class
-#'@param groups the groups by which to filter
-#'@param byGroup logical indicating whether to filter by group
-#'@param filt_control a list of control parameters.
+#' @describeIn filter plot the proportions of wells are filtered due to different criteria
+#' @param byGroup in the case of \code{burdenOfFiltering} should the filter be stratified by groups, or only the plotting.
+#' @examples
+#' burdenOfFiltering(vbetaFA, groups='ncells', byGroup=TRUE)
+#' burdenOfFiltering(vbetaFA, groups='ncells')
 #'@export
 burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
     checkGroups(sc, groups)
@@ -22,20 +19,31 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
 
 #'Concordance plots of filtered single vs n-cell assays
 #'
-#'This will generate the types of plots shown in the bioinformatics manuscript
+#'Plot the average expression value of two subsets of the data.
+#' Generally these might be 1 cell and multiple-cell replicates,
+#' in which case if the \code{mcols} column \code{ncells} is
+#' set then the averages will be adjusted accordingly.
+#' But it could be any grouping.
 #'@param SCellAssay is a FluidigmAssay for the 1-cell per well assay
 #'@param NCellAssay is a FluidigmAssay for the n-cell per well assay
 #'@param filterCriteria is a list of filtering criteria to apply to the SCellAssay and NCellAssay
 #'@param groups is a character vector naming the group within which to perform filtering. NULL by default.
+#' @param ... passed to \code{getConcordance}
+#' @seealso getConcordance
+#'@examples
+#' data(vbetaFA)
+#' sca1 <- subset(vbetaFA, ncells==1)
+#' sca100 <- subset(vbetaFA, ncells==100)
+#' plotSCAConcordance(sca1, sca100)
 #'@export
-plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlier = 2, sigmaContinuous = 9,sigmaProportion = 9), groups=NULL){
+plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlier = 2, sigmaContinuous = 9,sigmaProportion = 9), groups=NULL, ...){
     if(!(is(SCellAssay,"SingleCellAssay")&is(NCellAssay,"SingleCellAssay"))){
         stop("SCellAssay and NCellAssay must inherit from SingleCellAssay");
     }
     filtered.sc<-filter(SCellAssay,filt_control=filterCriteria,groups=groups)
     filtered.hc<-filter(NCellAssay,filt_control=filterCriteria, groups=groups)
-    concord.unfiltered<-getConcordance(SCellAssay,NCellAssay)
-    concord.filtered<-getConcordance(filtered.sc,filtered.hc)
+    concord.unfiltered<-getConcordance(SCellAssay,NCellAssay, groups=groups, ...)
+    concord.filtered<-getConcordance(filtered.sc,filtered.hc, groups=groups, ...)
     toplot<-rbind(concord.filtered,concord.unfiltered)
     toplot<-data.frame(toplot,filter=c(rep("filtered",nrow(concord.filtered)),rep("unfiltered",nrow(concord.unfiltered))))
     

@@ -5,7 +5,7 @@
 \title{Concordance plots of filtered single vs n-cell assays}
 \usage{
 plotSCAConcordance(SCellAssay, NCellAssay, filterCriteria = list(nOutlier = 2,
-  sigmaContinuous = 9, sigmaProportion = 9), groups = NULL)
+  sigmaContinuous = 9, sigmaProportion = 9), groups = NULL, ...)
 }
 \arguments{
 \item{SCellAssay}{is a FluidigmAssay for the 1-cell per well assay}
@@ -15,8 +15,23 @@ plotSCAConcordance(SCellAssay, NCellAssay, filterCriteria = list(nOutlier = 2,
 \item{filterCriteria}{is a list of filtering criteria to apply to the SCellAssay and NCellAssay}
 
 \item{groups}{is a character vector naming the group within which to perform filtering. NULL by default.}
+
+\item{...}{passed to \code{getConcordance}}
 }
 \description{
-This will generate the types of plots shown in the bioinformatics manuscript
+Plot the average expression value of two subsets of the data.
+Generally these might be 1 cell and multiple-cell replicates,
+in which case if the \code{mcols} column \code{ncells} is
+set then the averages will be adjusted accordingly.
+But it could be any grouping.
+}
+\examples{
+data(vbetaFA)
+sca1 <- subset(vbetaFA, ncells==1)
+sca100 <- subset(vbetaFA, ncells==100)
+plotSCAConcordance(sca1, sca100)
+}
+\seealso{
+getConcordance
 }
 

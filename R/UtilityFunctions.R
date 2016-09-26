@@ -8,7 +8,6 @@
 #' @param N number of variables with longest \code{dim[1]} or \code{dim[2]} projections to display
 #' @param dims \code{numeric} vector of length 2 indicating which PCs to plot
 #' @param ... passed to plot
-#' @export
 myBiplot <- function(pc,colorfactor,scaling=100,nudge=1.2,N=10,dims=1:2,...){
     o <- unique(c(order(abs(pc$rotation[,dims[1]]),decreasing=TRUE)[1:N],order(abs(pc$rotation[,dims[2]]),decreasing=TRUE)[1:N]))
     colors <- colorfactor

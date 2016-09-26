@@ -5,7 +5,6 @@
 ##' @param zlmfit class \code{ZlmFit}
 ##' @param R number of bootstrap replicates
 ##' @return array of bootstrapped coefficients
-##' @export
 pbootVcov1<-function (cl,zlmfit, R = 99)
 {
     sca <- zlmfit@sca
@@ -36,6 +35,11 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
 ##' @param R number of bootstrap replicates
 ##' @return array of bootstrapped coefficients
 ##' @importFrom plyr raply
+##' @examples
+##' data(vbetaFA)
+##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:5,])
+##' #Only run 3 boot straps, which you wouldn't ever want to do in practice...
+##' bootVcov1(zlmVbeta, R=3)
 ##' @export
 bootVcov1 <- function(zlmfit, R=99){
     sca <- zlmfit@sca

@@ -114,15 +114,14 @@ summary.zlm <- function(out){
 ##' @export
 ##' @seealso ebayes, glmlike-class, ZlmFit-class, BayesGLMlike-class
 ##' @examples
-##' \dontrun{
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1))
+##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:10,])
 ##' slotNames(zlmVbeta)
-##' coef(zlmVbeta, 'D')['CD27',]
-##' 
-##' vcov(zlmVbeta, 'D')[,,'CD27']
+##' #A matrix of coefficients
+##' coef(zlmVbeta, 'D')['CCL2',]
+##' #An array of covariance matrices
+##' vcov(zlmVbeta, 'D')[,,'CCL2']
 ##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
-##' }
 zlm.SingleCellAssay <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
     ## Default call
     if(missing(LMlike)){

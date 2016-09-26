@@ -43,9 +43,9 @@ A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete
 \examples{
 data(vbetaFA)
 vb1 = subset(vbetaFA, ncells==1)
-vb1 = vb1[,freq(vb1)>.1]
+vb1 = vb1[,freq(vb1)>.1][1:15,]
 zf = zlm.SingleCellAssay(~Stim.Condition, vb1)
-boots = bootVcov1(zf, 10)
+boots = bootVcov1(zf, 5)
 sets=list(A=1:5, B=3:10, C=15, D=1:5)
 gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))
 dimnames(gsea@tests)
