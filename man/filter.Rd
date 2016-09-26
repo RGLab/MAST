@@ -18,7 +18,7 @@ burdenOfFiltering(sc, groups, byGroup = FALSE, filt_control = NULL)
 
 \item{apply_filter}{\code{logical} should the filter be applied, or should a matrix of booleans giving if a well would be subject to a filtering criteria be returned?}
 
-\item{bygroup}{in the case of \code{burdenOfFiltering} should the filter be stratified by groups, or only the plotting.}
+\item{byGroup}{in the case of \code{burdenOfFiltering} should the filter be stratified by groups, or only the plotting.}
 }
 \value{
 A filtered result

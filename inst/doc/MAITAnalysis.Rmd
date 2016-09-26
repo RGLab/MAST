@@ -167,9 +167,11 @@ When we plot the threshold vs genes binned by median expression value, we can se
 ```{r assignThresh}
 assays(sca) <- list(thresh=thres$counts_threshold, tpm=assay(sca))
 expressed_genes <- freq(sca) > freq_expressed
-sca <- sca[expressed_genes,]
+expressed_genes_sample <- sample(which(expressed_genes), 2000)
+sca <- sca[expressed_genes_sample,]
 ```
 We'll limit ourselves to genes that are found in at least `r freq_expressed` of the sample (since we won't have any power to conclude much about less frequent transcripts).
+We will also downsample to 1000 genes to keep this vignette from running too slowly.
 
 ### Exercises on thresholding
 
@@ -326,20 +328,20 @@ We use a competitive gene set enrichment test, in which a contrast (hurdle model
 To estimate the intergene correlation of the contrast, we use bootstrapping.
 Cells (columns in `sca`) are sampled with replacement a number of times and we refit the model.
 At some point, we may implement a GEE-like method to estimate the intergene correlation through asymptotic calculations.
-But in the meantime, the bootstrapping can be a bit slow, although is pleasingly parallelizable.
-To avoid setting the server farm alight, the result of such a bootstrap has been pre-calculated.
-```{r boots, eval=FALSE}
-#bootstrap
-boots <- bootVcov1(zlmCond, 50)
-saveRDS(boots, '../inst/extdata/bootstraps.rds')
-```
+But in the meantime, the bootstrapping can be slow, although is pleasingly parallelizable.
+To avoid setting the server farm alight, we will work with only a subset of the genes, and only calculate 5 bootstrap replicates.
+This would be completely inadequate if you wanted to report these results.
 
+```{r boots, eval=TRUE}
+# bootstrap, resampling cells
+# R should be set to >50 if you were doing this for real.
+boots <- bootVcov1(zlmCond, R=4)
+```
 
 ```{r setupBTM, dependson="data;zlm;boots",results='hide'}
 module <- "BTM"
 min_gene_in_module <- 5
 packageExt <- system.file("extdata", package='MAST')
-boots <- readRDS(file.path(packageExt, 'bootstraps.rds'))
 module_file <- list.files(packageExt, pattern = module, full.names = TRUE)
 gene_set <- getGmt(module_file)
 gene_ids <- geneIds(gene_set)
@@ -352,9 +354,10 @@ sets_indices <- sets_indices[sapply(sets_indices, length) >= min_gene_in_module]
 We will use the Blood Transcriptional Modules of [Li, et al](www.nature.com/ni/journal/v15/n2/full/ni.2789.html) and select named modules not relating to B-cell functionality.
 
 
+
 ```{r gsea}
 gsea <- gseaAfterBoot(zlmCond, boots, sets_indices, CoefficientHypothesis("conditionStim")) 
-z_stat_comb <- summary(gsea)
+z_stat_comb <- summary(gsea, testType='normal')
 ```
 The `summary` method returns a `data.table` with columns giving discrete and continuous Z-scores (`disc_Z` and `cont_Z`) and P-values testing if the average coefficient in the gene set differs from the average coefficient outside the set.
 A combined P-value (using Stouffer's method) is given in column `combined_P`.

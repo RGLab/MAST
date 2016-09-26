@@ -87,7 +87,8 @@ plot(thres)
 ## ----assignThresh--------------------------------------------------------
 assays(sca) <- list(thresh=thres$counts_threshold, tpm=assay(sca))
 expressed_genes <- freq(sca) > freq_expressed
-sca <- sca[expressed_genes,]
+expressed_genes_sample <- sample(which(expressed_genes), 2000)
+sca <- sca[expressed_genes_sample,]
 
 ## ----zlm-----------------------------------------------------------------
 cond<-factor(colData(sca)$condition)
@@ -176,16 +177,15 @@ scaResidFlat[1:4,]
 ggplot(scaResidFlat, aes(x=ngeneson, y=resid))+geom_point(aes(col=condition))+geom_smooth()+facet_wrap(~symbolid)
 
 
-## ----boots, eval=FALSE---------------------------------------------------
-#  #bootstrap
-#  boots <- bootVcov1(zlmCond, 50)
-#  saveRDS(boots, '../inst/extdata/bootstraps.rds')
+## ----boots, eval=TRUE----------------------------------------------------
+# bootstrap, resampling cells
+# R should be set to >50 if you were doing this for real.
+boots <- bootVcov1(zlmCond, R=4)
 
 ## ----setupBTM, dependson="data;zlm;boots",results='hide'-----------------
 module <- "BTM"
 min_gene_in_module <- 5
 packageExt <- system.file("extdata", package='MAST')
-boots <- readRDS(file.path(packageExt, 'bootstraps.rds'))
 module_file <- list.files(packageExt, pattern = module, full.names = TRUE)
 gene_set <- getGmt(module_file)
 gene_ids <- geneIds(gene_set)
@@ -197,7 +197,7 @@ sets_indices <- sets_indices[sapply(sets_indices, length) >= min_gene_in_module]
 
 ## ----gsea----------------------------------------------------------------
 gsea <- gseaAfterBoot(zlmCond, boots, sets_indices, CoefficientHypothesis("conditionStim")) 
-z_stat_comb <- summary(gsea)
+z_stat_comb <- summary(gsea, testType='normal')
 
 ## ----gseaView------------------------------------------------------------
 sigModules <- z_stat_comb[combined_adj<.01]
