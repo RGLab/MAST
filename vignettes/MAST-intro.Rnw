@@ -6,6 +6,9 @@
 \usepackage[cm]{fullpage}
 \usepackage[usenames,dvipsnames]{xcolor}
 \usepackage{comment}
+\usepackage{doi}
+\usepackage{hyperref}
+\usepackage{amsmath}
 %\usepackage[authoryear]{natbib}
 
 %\makeatletter
@@ -14,7 +17,8 @@
 
 %\makeatother
 \newcommand{\future}[1]{TODO: {\color{gray} #1}}
-\newcommand{\sca}{\texttt{MAST}}
+\newcommand{\sca}{\texttt{SingleCellAssay}}
+\newcommand{\mast}{\texttt{MAST}}
 \input{symbols.tex}
 \begin{document}
 \title{An Introduction to MAST}
@@ -24,7 +28,7 @@
 
 \maketitle
 \section{Philosophy}
- \sca is an R/Bioconductor package for managing and analyzing qPCR and sequencing-based single--cell gene expression
+ \mast is an R/Bioconductor package for managing and analyzing qPCR and sequencing-based single--cell gene expression
  data, as well as data from other types of single--cell assays. 
 Our goal is to support assays that have multiple \emph{features} (genes,
 markers, etc) per \emph{well} (cell, etc) in a flexible manner.
@@ -62,15 +66,10 @@ For the Fluidigm/qPCR single cell expression functions to work as expected, we
 must use the \emph{expression threshold}, defined as $et = c_{\mbox{max}} - \ct$, which is proportional to the log-expression.
 
 Below, we load the package and the data, then compute the expression threshold from the $\ct$, and construct a \texttt{FluidigmAssay}.
-<<long-example,warning=FALSE, echo=-c(1,2,3, 4, 5)>>=
-suppressPackageStartupMessages(library(Biobase))
-library(knitr)
-library(SummarizedExperiment)
-opts_chunk$set(error=FALSE)
+<<long-example,warning=FALSE, echo=-1>>=
+knitr::opts_chunk$set(error=FALSE)
 library(MAST)
-#load_all('..')
 library(data.table)
-library(plyr)
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
@@ -109,7 +108,7 @@ id, the stimulation it was subjected to, and the timepoint for the experiment
 this cell was part of). The wellKey are concatenated idvars columns, helping to
 ensure consistency when splitting and merging \sca objects. 
 \subsection{Importing Matrix Data}
-Data can also be imported in matrix format.  
+Data can also be imported in matrix format using command \texttt{FromMatrix}, and passing a matrix of expression values and \texttt{DataFrame} coercible cell and feature data.
 
 \subsection{Subsetting, splitting, combining, melting}
 It's possible to subset \sca objects by wells and features.
@@ -159,7 +158,7 @@ plotSCAConcordance(vbeta.split[[1]],vbeta.split[[2]],
                        sigmaProportion = 9))
 @
 
-The filtering function has several other options, including whether the filter shuld be applied (thus returning a new SingleCellAssay object) or returned as a matrix of boolean values.
+The filtering function has several other options, including whether the filter shuld be applied (thus returning a new \sca object) or returned as a matrix of boolean values.
 
 <<otherFiltering, warning=FALSE>>=
 vbeta.fa
@@ -177,8 +176,6 @@ There's also some functionality for visualizing the filtering.
 burdenOfFiltering(vbeta.fa, 'ncells', byGroup=TRUE)
 @
 
-\subsection{Thresholding}
-TBD
 
 \section{Significance testing under the Hurdle model}
 There are two frameworks available in the package.  The first framework \texttt{zlm} offers a full linear model to allow arbitrary comparisons and adjustment for covariates. The second framework \texttt{LRT} can be considered essentially performing t-tests (respecting the discrete/continuous nature of the data) between pairs of groups.  \texttt{LRT} is subsumed by the first framework, but might be simpler for some users, so has been kept in the package.
@@ -196,10 +193,7 @@ In each gene, we'll fit a Hurdle model with a separate intercept for each popula
 A an S4 object of class ``ZlmFit'' is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
 <<zlmExample, warning=FALSE, message=FALSE, fig.width=6, fig.height=6>>=
 library(ggplot2)
-library(reshape2)
-library(abind)
-zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1, method='glm',
-                                  ebayes=TRUE)
+zlm.output <- zlm(~ Population + Subject.ID, vbeta.1,)
 show(zlm.output)
 
 ## returns a data.table with a summary of the fit
@@ -211,12 +205,12 @@ ggplot(coefAndCI, aes(x=contrast, y=coef, ymin=ci.lo, ymax=ci.hi, col=component)
     theme(axis.text.x=element_text(angle=45, hjust=1)) + coord_cartesian(ylim=c(-3, 3))
 
 @
-Try \verb|?ZlmFit-class| or \verb|showMethods(classes='ZlmFit')| to see a full list of methods.
+Try \verb|?ZlmFit-class| or \verb|showMethods(classes='ZlmFit')| to see a full list of methods. Multicore support is offered by setting \texttt{options(mc.cores=4)}, or however many cores your system has.
 
 The combined test for differences in proportion expression/average expression is found by calling a likelihood ratio test on the fitted object.
 An array of genes, metrics and test types is returned.
 We'll plot the -log10 P values by gene and test type.
-<<tests>>=
+<<tests, fig.width=4, fig.height=5>>=
 zlm.lr <- lrTest(zlm.output, 'Population')
 dimnames(zlm.lr)
 pvalue <- ggplot(melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+
@@ -224,12 +218,36 @@ pvalue <- ggplot(melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))
 print(pvalue)
 @
 
-In fact, the \texttt{zlm} framework is quite general, and has wrappers for a variety of  modeling functions that accept \texttt{glm}-like arguments to be used, such as mixed models (using \texttt{lme4}) and Bayesian regression models (using \texttt{arm}).
-Multicore support is offered by setting \texttt{options(mc.cores=4)}, or however many cores your system has.
-<<lmerExample, warning=FALSE, message=FALSE, eval=TRUE>>=
+In fact, the \texttt{zlm} framework is quite general, and has wrappers for a variety of  modeling functions that accept \texttt{glm}-like arguments to be used, such as mixed models (using \texttt{lme4}).
+%This is not eval'd because of mysterious errors emanating from lme4 on the bioconductor machines that I am unable to reproduce.
+% Warning: failed to assign RegisteredNativeSymbol for deepcopy to deepcopy since deepcopy is already defined in the 'lme4' namespace
+% Quitting from lines 230-232 (MAST-intro.Rnw) 
+% Error: processing vignette 'MAST-intro.Rnw' failed with diagnostics:
+% first argument must be a string (of length 1) or native symbol reference
+% Execution halted
+<<lmerExample, warning=FALSE, message=FALSE, eval=FALSE>>=
 library(lme4)
-lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer', ebayes=FALSE)
+lmer.output <- zlm(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer', ebayes=FALSE)
 @
+
+By default, we employ Bayesian logistic regression, which imposes a Cauchy prior of the regression coefficients, for the discrete component.  This provides reasonable inference under linear separation.
+We default to regular least squares for the continuous component with an empirical Bayes' adjustment for the dispersion (variance) estimate.
+However, the prior can be adjusted (see \texttt{defaultPrior}) or eliminated entirely by setting \texttt{method='glm'} in \texttt{zlm}.
+It is also possible to use Bayesian linear regression for the continuous component by setting \texttt{useContinuousBayes=TRUE} in \texttt{zlm}.
+For example:
+<<advancedArmExample, fig.width=4, fig.height=4, message=FALSE, warning=FALSE>>=
+ orig_results <- zlm(~Stim.Condition, vbeta.1)
+ dp <- defaultPrior('Stim.ConditionUnstim')
+ new_results <-  zlm(~Stim.Condition, vbeta.1, useContinuousBayes=TRUE,coefPrior=dp)
+ qplot(x=coef(orig_results, 'C')[, 'Stim.ConditionUnstim'],
+       y=coef(new_results, 'C')[, 'Stim.ConditionUnstim'],
+       color=coef(new_results, 'D')[,'(Intercept)']) +
+     xlab('Default prior') + ylab('Informative Prior') +
+     geom_abline(slope=1, lty=2) + scale_color_continuous('Baseline\nlog odds\nof expression')
+@
+After applying a prior to the continuous component, its estimates are shrunken towards zero, with the amount of shrinkage inversely depending on the number of expressing cells in the gene.
+
+
 
 \subsection{Two-sample Likelihood Ratio Test}
   Another way to test for differential expression is available through
@@ -252,7 +270,7 @@ returned (\texttt{returnall=TRUE}) and if the testing should be
 stratified by a character vector naming columns in \texttt{colData} 
 containing grouping variables (\texttt{groups}).
 
-These tests have been subsumed by \texttt{zlm.SingleCellAssay} but
+These tests have been subsumed by \texttt{zlm} but
 remain in the package for user convenience.
 
 \section{Use with single cell RNA-sequencing data}
@@ -268,22 +286,7 @@ An example of this use is provided in a vignette.  Type \texttt{vignette('MAITAn
   There are several fundamental new object types provided by the
   package.  \texttt{SummarizedExperiment} is the base class, which is
   provides an array-like object to store tabular data that might have
-  multiple derived representations.  A \texttt{SingleCellAssay} object
-  contains a \texttt{DataLayer}, plus cell and feature data.  New
-  types of single cell assays can be incorportated by extending
-  \texttt{SingleCellAssay}.
-
-  Different derived classes of \sca require different fields to be
-  present in the \texttt{cellData} and \texttt{featureData} These
-  requirements are set for each class by the slots \texttt{cmap} and
-  \texttt{fmap}, giving required columns in cell and feature data,
-  respectively.
-
-  We have found it useful to enforce naming conventions to reduce
-  confusion when combining data across projects, so the constructor
-  will rename the fields the user provides to match the values
-  specifed in \texttt{cmap} and \texttt{fmap}.
-
+  multiple derived representations. 
   On construction of a \texttt{SingleCellAssay} object, the package
   tests for completeness, and will fill in the missing data (with NA)
   if it is not, so assays with lots of missing data can make reading
