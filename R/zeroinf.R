@@ -9,29 +9,6 @@ if(getRversion() >= "2.15.1") globalVariables(c(
                                   'implementsEbayes')) #zlm, zlm.SingleCellAssay
 
 
-residualsHook <- function(fit){
-    residuals(fit, which='Marginal')
-}
-
-revealHook <- function(zlm){
-    return(attr(zlm, 'hookOut'))
-}
-
-##' @importFrom plyr laply
-##' @export
-collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
-    if(any(newLayerBool <- assayNames(sca) %in% newLayerName)){
-        warning('Overwriting layer', newLayerName)
-        i <- which(newLayerBool)
-    } else{
-        i <- length(assays(sca))+1
-    }
-    mat <- laply(revealHook(zlm), function(x) x)
-    assay(sca, i) <- mat
-    assayNames(sca, i) <- newLayerName
-    sca
-}
-
 ## for each column in exprMat, fit obj and return an environment containing the init summaries
 ## exprMat should have column names containing the names of the genes
 ## hook is an (optional) function called on each fitted object

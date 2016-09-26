@@ -103,10 +103,12 @@ Drop <- function(x, d){
 ##' boots = bootVcov1(zf, 5)
 ##' sets=list(A=1:5, B=3:10, C=15, D=1:5)
 ##' gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))
-##' dimnames(gsea@tests)
+##' calcZ(gsea)
 ##' summary(gsea)
+##' \dontshow{
 ##' stopifnot(all.equal(gsea@tests['A',,,],gsea@tests['D',,,]))
 ##' stopifnot(all.equal(gsea@tests['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
+##' }
 gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=Inf, var_estimate='bootall')){
 
     ## Basic idea is to average statistics (based on coefficients defined in Zfit) and find the variance of that average using the bootstraps
@@ -309,8 +311,11 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
 ##' @param testType either 'normal' or 't'.  The 't' test adjusts for excess kurtosis due to the finite number of bootstrap replicates used to estimate the variance of the statistics.  This will result in more conservative inference.
 ##' @param combined \code{character} one of 'none', 'fisher' or 'stouffer'
 ##' @return 3D array with dimensions set (modules) comp ('cont'inuous or 'disc'rete) and metric ('Z' stat and two sided 'P' value that P(z>|Z|)) if \code{combined='no'}, otherwise just a matrix.
-##' @export
 ##' @seealso gseaAfterBoot
+##' @examples
+##' ## See the examples in gseaAfterBoot
+##' example(gseaAfterBoot)
+##' @export
 calcZ <- function(gseaObj, testType='t', combined='none'){
     if(!inherits(gseaObj, 'GSEATests')) stop('`gseaObj` must inherit from `GSEAtests`')
     tests <- gseaObj@tests
@@ -377,6 +382,9 @@ calcZ <- function(gseaObj, testType='t', combined='none'){
 ##' @param ... passed to \code{calcZ}
 ##' @return \code{data.table}
 ##' @seealso gseaAfterBoot
+##' @examples
+##' ## See the examples in gseaAfterBoot
+##' example(gseaAfterBoot)
 ##' @export
 setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
     t_stat <- as.data.table(reshape2::melt(calcZ(object, combined='none', ...)))

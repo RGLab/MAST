@@ -110,8 +110,9 @@ setMethod('fData', 'SingleCellAssay', function(object){
 ##' @param value.name name of 'values' column containing the measurement
 ##' @return A \code{data.frame} typically, with the cartesian product of the
 ##' row and column attributes and the values from the rectangular array
-##' 
-##' @export melt.SingleCellAssay
+##' @examples
+##' data(vbetaFA)
+##' as(vbetaFA[1:10,], 'data.table')
 melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     featdata <- as.data.table(mcols(data))
     celldata <- as.data.table(colData(data))
@@ -364,7 +365,9 @@ setMethod('cData', 'SingleCellAssay', function(sc){
 ##' @param x \code{SingleCellAssay}
 ##' @param ... expression
 ##' @return \code{SingleCellAssay}
-##' @rdname subset
+##' @examples
+##' data(vbetaFA)
+##' subset(vbetaFA, ncells==1)
 ##' @export
 setMethod('subset', 'SingleCellAssay', function(x, ...){
     e <- substitute(...)

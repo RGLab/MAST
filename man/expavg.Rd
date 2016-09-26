@@ -16,4 +16,8 @@ expavg(x)
 Puts log transformed values onto natural scale and takes mean of vector.
 Calculates mean(2^x - 1)
 }
+\examples{
+x <- 1:10
+logmean(expavg(x))
+}
 

@@ -4,6 +4,9 @@
 ##' Calculates mean(2^x - 1)
 ##' @param x \code{numeric}
 ##' @return \code{numeric}
+##' @examples
+##' x <- 1:10
+##' logmean(expavg(x))
 ##' @export
 expavg <- function(x) mean(2^x-1)
 
@@ -14,6 +17,9 @@ expavg <- function(x) mean(2^x-1)
 ##' Calculates log2(mean(x) + 1)
 ##' @param x \code{numeric}
 ##' @return \code{numeric}
+##' @examples
+##' x <- 1:10
+##' expavg(logmean(x))
 ##' @export
 logmean <- function(x) log2(mean(x)+1)
 
@@ -37,6 +43,9 @@ checkGroups <- function(sc, groups){
 ##' @param sc SingleCellAssay
 ##' @param na.rm should NAs be removed, or carried through?
 ##' @return vector of proportions
+##' @examples
+##' data(vbetaFA)
+##' freq(vbetaFA)
 ##' @export
 freq <- function(sc, na.rm=TRUE){
     stopifnot(is(sc, 'SingleCellAssay'))
@@ -48,6 +57,9 @@ freq <- function(sc, na.rm=TRUE){
 ##' NAs are always removed
 ##' @param sc SingleCellAssay
 ##' @return vector of means
+##' @examples
+##' data(vbetaFA)
+##' condmean(vbetaFA)
 ##' @export
 condmean <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
@@ -61,7 +73,6 @@ condmean <- function(sc){
 ##' NAs are always removed
 ##' @param sc SingleCellAssay
 ##' @return vector of standard deviations
-##' @export
 condSd <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
     exprsNA <- exprs(sc)
@@ -74,7 +85,6 @@ condSd <- function(sc){
 ##' NAs are removed
 ##' @param sc \code{SingleCellAssay}
 ##' @return \code{numeric} vector
-##' @export
 numexp <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
     apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
@@ -95,6 +105,13 @@ numexp <- function(sc){
 ##' @return concordance between two assays
 ##' @author Andrew McDavid
 ##' @seealso plotSCAConcordance
+##' @examples
+##' data(vbetaFA)
+##' sca1 <- subset(vbetaFA, ncells==1)
+##' sca100 <- subset(vbetaFA, ncells==100)
+##' concord <- getConcordance(sca1, sca100)
+##' getss(concord)
+##' getrc(concord)
 ##' @export 
 getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natural=expavg, fun.cycle=logmean){
     ## vector of groups over which we should aggregate
@@ -128,23 +145,20 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
         castL[[i]] <- plyr::rename(castL[[i]], renamestr)
         castL[[i]] <- cbind(castL[[i]], nexp=nexp[['.']])
     }
-    concord <- merge(castL[[1]], castL[[2]], by=c(groups, 'primerid'), suffixes=c(".ref", ".comp"), all=T)
+    concord <- merge(castL[[1]], castL[[2]], by=c(groups, 'primerid'), suffixes=c(".ref", ".comp"), all=TRUE)
     concord
 }
 
 if(getRversion() >= "2.15.1") globalVariables(c('et.ref', 'et.comp'))
 
-##' @describeIn getrc the sum of squares, weighted by nexp
+##' @describeIn getConcordance getrc the sum of squares, weighted by nexp
 ##' @param nexp number of expressed cells per row in \code{concord}
 ##' @export
 getwss <- function(concord, nexp){
-    mean((concord$et.ref - concord$et.comp)^2*nexp, na.rm=TRUE)
-                                        #    log2(mean(((2^concord$et.ref-1)-(2^concord$et.comp-1))^2*nexp,na.rm=TRUE))
-    ##another WSS function that takes into account the disagreement between wells.
-                                        #mean(with(concord,{a<-(et.ref>0);b<-(et.comp>0);a*b*(et.ref-et.comp)^2+a*(1-b)+b*(1-a)}),na.rm=TRUE)
+    mean((concord$et.ref - concord$et.comp)^2*concord$nexp.ref, na.rm=TRUE)
 }
 
-##' @describeIn getrc the sum of squares
+##' @describeIn getConcordance return the sum of squares
 ##' @export
 getss <- function(concord){
     mean((concord$et.ref - concord$et.comp)^2, na.rm=TRUE)
@@ -153,11 +167,8 @@ getss <- function(concord){
 
 }
 
-##' Concordance correlation coefficient lin 1989
-##'
-##' Return's Lin's intraclass correlation coefficient for concordance
+##' @describeIn getConcordance Return Lin's (1989) concordance correlation coefficient
 ##' @param concord data.frame returned by getConcordance
-##' @return numeric
 ##' @export
 getrc <- function(concord){
     with(concord, {foo<-na.omit(cbind(et.ref=et.ref,et.comp=et.comp));2*cov(foo[,"et.ref"], foo[,"et.comp"])/(var(foo[,"et.ref"])+var(foo[,"et.comp"])+(mean(foo[,"et.ref"])-mean(foo[,"et.comp"]))^2)})

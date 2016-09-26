@@ -24,4 +24,8 @@ row and column attributes and the values from the rectangular array
 \description{
 Return a molten (flat) representation of a rectangular array
 }
+\examples{
+data(vbetaFA)
+as(vbetaFA[1:10,], 'data.table')
+}
 

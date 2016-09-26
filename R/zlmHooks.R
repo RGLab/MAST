@@ -1,6 +1,64 @@
-#' Hook to get the continuous residuals
-#'
-#' @param x the ZLMFit
+
+residualsHook <- function(fit){
+    residuals(fit, which='Marginal')
+}
+
+revealHook <- function(zlm){
+    return(attr(zlm, 'hookOut'))
+}
+
+##' Residual hooks and collection methods
+##'
+##' After each gene is fit, a hook function can optionally be run and the output saved.
+##' This allows extended computations to be done using the fitted model, without keeping it in memory.
+##' Here this is used to calculate various residuals, though in some cases they can be done using only the information contained in the \code{ZlmFit}-class.
+##' @importFrom plyr laply
+##' @export
+##' @param x \code{ZlmFit}-class
+##' @param sca \code{SingleCellAssay} object to which the residuals should be added
+##' @param newLayerName \code{character} name of the assay layer
+##' @seealso zlm.SingleCellAssay
+##' @section Total residual types:
+##' Each component of the model contributes several flavors of residual, which can be combined in various fashions.
+##' The discrete residual can be on the response scale (thus subtracting the predicted probability of expression from the 0/1 expression value).
+##' Or it can be a deviance residual, revealing something about the log-likelihood.
+##' 
+##' @section Partial residuals:
+##' It's also possible to consider partial residuals, in which the contribution of a particular covariate is added back into the model.
+##' @examples
+##' data(vbetaFA)
+##' svbeta <- subset(vbetaFA, ncells==1)
+##' svbeta <- svbeta[freq(svbeta)>.4,]
+##' window <- function(x1) lapply(assays(x1), function(x2) x2[1:3, 1:6])
+##' #total residuals of the response
+##' z1 <- zlm.SingleCellAssay(~ Stim.Condition, svbeta, hook=discrete_residuals_hook)
+##' window(collectResiduals(z1, svbeta))
+##' z2 <- zlm.SingleCellAssay(~ Stim.Condition, svbeta, hook=continuous_residuals_hook)
+##' window(collectResiduals(z2, svbeta))
+##' z3 <- zlm.SingleCellAssay(~ Stim.Condition, svbeta, hook=combined_residuals_hook)
+##' window(collectResiduals(z3, svbeta))
+##' #total deviance residuals
+##' z4 <- zlm.SingleCellAssay(~ Stim.Condition, svbeta, hook=deviance_residuals_hook)
+##' window(collectResiduals(z4, svbeta))
+##' #partial residuals
+##' colData(svbeta)$ngeneson <- colMeans(assay(svbeta)>0)
+##' z5 <- zlm.SingleCellAssay(~ Stim.Condition + ngeneson, svbeta)
+##' partialScore(z5, 'Stim.Condition')
+collectResiduals <- function(x, sca, newLayerName='Residuals'){
+    if(any(newLayerBool <- assayNames(sca) %in% newLayerName)){
+        warning('Overwriting layer', newLayerName)
+        i <- which(newLayerBool)
+    } else{
+        i <- length(assays(sca))+1
+    }
+    mat <- laply(revealHook(x), function(x) x)
+    assay(sca, i) <- mat
+    assayNames(sca, i) <- newLayerName
+    sca
+}
+
+
+#' @describeIn collectResiduals Hook to get the discrete residuals, ie, difference between expected probability of expression and observed
 #' @export
 discrete_residuals_hook<- function(x){
     if(all(x@fitted["D"])){
@@ -10,9 +68,7 @@ discrete_residuals_hook<- function(x){
     }
 }
 
-#' Hook to get the discrete residuals
-#'
-#' @param x the ZLMFit
+#' @describeIn collectResiduals Hook to get the continuous residuals, ie, residuals for conditionally positive observations.  If an observation is zero, it's residual is defined to be zero as well.
 #' @export
 continuous_residuals_hook<- function(x){
     if(all(x@fitted["C"])){
@@ -27,9 +83,7 @@ continuous_residuals_hook<- function(x){
     }
 }
 
-#' Hook to get the combined residuals
-#' @param x the ZLMFit
-#'
+#' @describeIn collectResiduals Hook to get the combined residuals, ie, Y-E(U)*E(V)
 #' @export
 combined_residuals_hook<- function(x){
     if(all(x@fitted)){
@@ -102,7 +156,6 @@ bayesglm.influence <-  function(model, do.coef = do.coef, ...)
 #'
 #' The influence function
 #' @importFrom stats influence
-#' @export
 #' @param model \code{bayesglm}
 #' @param do.coef see \link{influence.glm}
 #' @param ... ignored
@@ -125,7 +178,6 @@ influence.bayesglm <- function (model, do.coef = TRUE, ...)
 #' @param infl see \link{rstandard}
 #' @param type see \link{rstandard}
 #' @param ... ignored
-#' @export
 rstandard.bayesglm <- function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", "pearson"), ...)
 {
     type <- match.arg(type)
@@ -135,10 +187,7 @@ rstandard.bayesglm <- function (model, infl = influence(model, do.coef = FALSE),
     res
 }
 
-#' Standardized deviance residuals hook
-#' 
-#' Computes the average of the standardized deviance residuals for the discrete and continuous models
-#' @param x the ZLMFit
+#' @describeIn collectResiduals Standardized deviance residuals hook. Computes the sum of the standardized deviance residuals for the discrete and continuous models (scaled to have unit variance).  If the observation is zero then only the discrete component is used.
 #' @export
 deviance_residuals_hook<-function (x) 
 {
@@ -150,46 +199,22 @@ deviance_residuals_hook<-function (x)
         cont.resid<-data.table(id=names(x@fitC$y),cont.resid)
         disc.resid<-data.table(id=names(x@fitD$y),disc.resid)
         resid<-merge(cont.resid,disc.resid,by="id",all=TRUE)
-        resid<-data.frame(
-            melt(resid, id='id')[,list(resid=mean(value,na.rm=TRUE)),id]
-        )
-        rownames(resid)<-resid[,"id"]
-        resid<-resid[,-1,drop=FALSE]
-        resid<-resid[rownames(x@modelMatrix),] #ensure consistent ordering
-        resid
+        namean <- function(x, y){
+            nax <- is.na(x)
+            nay <- is.na(y)
+            (ifelse(nax, 0, x)+ifelse(nay,0, y))/sqrt((!nax)*1+(!nay)*1)
+        }
+        resid[, comb:=namean(cont.resid, disc.resid)]
+        resid <- resid[data.table(id=rownames(x@modelMatrix)),,on='id']
+        return(setNames(resid[,comb], resid[,id]))
     }
 }
 
-#' Used to compute module "scores"
-#'
-#' Hook to compute \eqn{ y_i-E(V_i)-\beta_{ngeneson} ng_i} for \eqn{y_i>0} and \eqn{E(U_i)(E(V_i)-\beta_{ngeneson} \times ng_i)} for \eqn{y_i=0}
-#' @param x the ZLMFit
-#' @export
-score_hook <- function(x) {
-    if (all(x@fitted)) {
-        class(x@fitC) <- c("glm","lm")
-        class(x@fitD) <- c("bayesglm","glm","lm")
-        wh <- !colnames(x@modelMatrix) %like% "cngeneson"
-        wh2 <- !names(coef(x@fitC)) %like% "cngeneson"
-        fc <-
-            x@modelMatrix[,!wh,drop = FALSE] %*% coef(x@fitC)[!wh2,drop = FALSE] #continuous CDR effect
-        fd <- invlogit(x@modelMatrix[,c("(Intercept)","cngeneson"),drop = FALSE] %*%
-                       coef(x@fitD)[c("(Intercept)","cngeneson"),drop = FALSE]) #discrete CDR effect
-        R <-
-            matrix((x@response - fc * fd),nrow = 1) #residuals corrected for ngeneson in the continuous part
-        colnames(R) <- names(residuals(x@fitD))
-        R[x@response == 0] <- 0 - fd
-        R
-    }
-}
+if(getRversion() >= "2.15.1") globalVariables(c('comb'))
 
-
-#' Hook to return p_hat from the model
-#'
-#' Used to weight the unobserved values in a module score calculation analogous to what is done in Shalek et.al.
-#' @param x the ZLMFit
+#' @describeIn collectResiduals Hook to return p_hat, the predicted probability of expression.
 #' @export
-shalek_weights <- function(x){
+fitted_phat <- function(x){
     if(all(x@fitted)){
         class(x@fitC) <- c("glm","lm")
         class(x@fitD) <- c("bayesglm","glm","lm")
@@ -200,58 +225,24 @@ shalek_weights <- function(x){
 
 
 
-#' Hook to compute the combined residuals with treatment effects added back.
-#'
-#' @param x the ZLMFit
-#' @export
-score_2_hook <- function(x){
-    if(all(x@fitted)){
-        class(x@fitC) <- c("glm","lm")
-        class(x@fitD) <- c("bayesglm","glm","lm")
-        wh <- !colnames(x@modelMatrix)%like%"cngeneson"
-        wh2 <- !names(coef(x@fitC))%like%"cngeneson"
-        correction <- x@modelMatrix[,wh,drop=FALSE]%*%coef(x@fitC)[wh2,drop=FALSE] #treatment effect
-        fc <- x@modelMatrix%*%coef(x@fitC)-correction #fitted minus treatment effect
-        fd <- fitted(x@fitD) #discrete fitted effect
-        R <- matrix((x@response-fc*fd),nrow=1) #residuals corrected for ngeneson in the continuous part
-        colnames(R) <- names(residuals(x@fitD))
-        R
-    }
+safeCP <- function(x, y){
+    cx <- complexifyNA(x)
+    cy <- complexifyNA(y)
+    res <- crossprod(cx, cy)
+    uncomplexify(res)
 }
 
-## # as with score_2 but we correct the discrete part for ngeneson
-## score_2_discrete_hook <- function(x){
-##     if(all(x@fitted)){
-##         class(x@fitC) <- c("glm","lm")
-##         class(x@fitD) <- c("bayesglm","glm","lm")
-##         wh <- !colnames(x@modelMatrix)%like%"cngeneson"
-##         wh2 <- !names(coef(x@fitD))%like%"cngeneson"
-##         correction <- x@modelMatrix[,wh,drop=FALSE]%*%coef(x@fitD)[wh2,drop=FALSE]
-##         fd <- x@modelMatrix%*%coef(x@fitD)-correction #remove only ngeneson effect
-##         R <- matrix(((x@response>0)-invlogit(fd)),nrow=1)
-##         colnames(R) <- names(residuals(x@fitD))
-##         R
-##     }
-## }
-
-## ngeneson_hook_D<- function(x){
-##     if(all(x@fitted)){
-##         class(x@fitC) <- c("glm","lm")
-##         class(x@fitD) <- c("bayesglm","glm","lm")
-##         wh <- colnames(x@modelMatrix)%like%"cngeneson"
-##         wh2 <- names(coef(x@fitD))%like%"cngeneson"
-##         ngd <- (x@modelMatrix[,wh,drop=FALSE]%*%coef(x@fitD)[wh2,drop=FALSE])
-##         return(t(ngd))
-##     }
-## }
-
-## ngeneson_hook_C<- function(x){
-##     if(all(x@fitted)){
-##         class(x@fitC) <- c("glm","lm")
-##         class(x@fitD) <- c("bayesglm","glm","lm")
-##         wh <- colnames(x@modelMatrix)%like%"cngeneson"
-##         wh2 <- names(coef(x@fitC))%like%"cngeneson"
-##         ngc <- x@modelMatrix[,wh,drop=FALSE]%*%coef(x@fitC)[wh2,drop=FALSE]
-##         return(t(ngc))
-##     }
-## }
+#' @export
+#' @describeIn collectResiduals Compute \eqn{Y_i-E(V_i|X_i, Z_0)E(U|X_i, Z_0)}, where \eqn{Z_0} is a  treatment effect (being left in) and \eqn{X_i} is a nuisance effect (being regressed out).
+#' @param effectRegex a regular expression naming columns of the design corresponding to \eqn{Z_0}.
+#' Generally these should be the treatment effects of interest.
+partialScore <- function(x, effectRegex){
+    MMall <- x@LMlike@modelMatrix
+    effects <- colnames(MMall) %like% effectRegex
+    MM <- MMall[,!effects,drop=FALSE]
+    coefD <- coef(x, 'D')[,!effects, drop=FALSE]
+    coefC <- coef(x, 'C')[,!effects,drop=FALSE]
+    predC <- safeCP(t(coefC), t(MM))
+    predD <- safeCP(t(coefD), t(MM))
+    res <- assay(x@sca)-predC * invlogit(predD)
+}

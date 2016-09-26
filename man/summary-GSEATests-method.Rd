@@ -31,6 +31,10 @@ This \code{data.table} contains columns:
 \item{combined_adj}{FDR adjusted combined P value}
 }
 }
+\examples{
+## See the examples in gseaAfterBoot
+example(gseaAfterBoot)
+}
 \seealso{
 gseaAfterBoot
 }

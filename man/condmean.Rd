@@ -15,4 +15,8 @@ vector of means
 \description{
 NAs are always removed
 }
+\examples{
+data(vbetaFA)
+condmean(vbetaFA)
+}
 

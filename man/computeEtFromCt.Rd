@@ -2,7 +2,7 @@
 % Please edit documentation in R/helper-methods.R
 \name{computeEtFromCt}
 \alias{computeEtFromCt}
-\title{computeEtFromCt}
+\title{Compute the Et from the Ct}
 \usage{
 computeEtFromCt(df, column = "Ct", Cmax = 40)
 }
@@ -17,10 +17,11 @@ computeEtFromCt(df, column = "Ct", Cmax = 40)
 A copy of \code{df} with the 'Et' column appended
 }
 \description{
-Compute the Et from the Ct
-}
-\details{
 Computes the Et value from the Ct value in an existing data frame and returns a new data frame with the Et column appended
+}
+\examples{
+data(vbeta)
+vbeta <- computeEtFromCt(vbeta)
 }
 \author{
 Greg Finak

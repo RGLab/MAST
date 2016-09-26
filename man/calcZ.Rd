@@ -24,6 +24,10 @@ The "Z" score returned by Stouffer when \code{testType='normal'} is the sum of t
 When \code{testType='t'} it is a weighted combination of the Z scores, with weights correponding to the degrees of freedom in each of the t statistics.
 A t-approximation to this sum of t-variables is derived by matching moments.  It seems to be fairly accurate in practice.
 }
+\examples{
+## See the examples in gseaAfterBoot
+example(gseaAfterBoot)
+}
 \seealso{
 gseaAfterBoot
 }

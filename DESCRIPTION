@@ -1,11 +1,11 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 0.99.1
+Version: 0.99.2
 Date: 2016-09-27
-Author: Andrew McDavid <amcdavid@fredhutch.org>, Greg Finak
+Author: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>, Greg Finak
     <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
-Maintainer: Greg Finak <gfinak@fredhutch.org>
+Maintainer: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>
 VignetteBuilder: knitr
 Imports:
     Biobase,
@@ -43,8 +43,7 @@ Suggests:
     rsvd,
     limma,
     RColorBrewer
-Description: Core data structures and methods for handling single cell assay
-    data.
+Description: Methods and models for handling zero-inflated single cell assay data.
 License: GPL(>= 2)
 Collate:
     'AllGenerics.R'
