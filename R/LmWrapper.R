@@ -80,7 +80,7 @@ setMethod('summary', signature=c(object='LMlike'), function(object){
 ##' @param formula. \code{formula}
 ##' @param design something coercible to a \code{data.frame}
 ##' @param ... passed to \code{model.matrix}
-##' @importFrom stats4 update
+##' @importMethodsFrom stats4 update coef vcov summary
 setMethod('update', signature=c(object='LMlike'), function(object, formula., design, ...){
     if(!missing(formula.)){
         object@formula <- update.formula(object@formula, formula.)

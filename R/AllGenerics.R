@@ -64,13 +64,8 @@ NULL
                                         #setGeneric('featureData', function(object) standardGeneric('featureData'))
 NULL
 
-##' Subsetting Vectors, Matrices and Data Frames
-##'
-##' Return subsets of vectors, matrices or data frames which meet conditions.
-##' @export
-setGeneric('subset', function(x, ...) standardGeneric('subset'))
-
 ##' @import BiocGenerics
+##' @importMethodsFrom BiocGenerics subset
 NULL
 
 ###############################
@@ -97,18 +92,6 @@ setGeneric('fit', function(object, response, ...) standardGeneric('fit'))
 ##' @return vector or matrix
 setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
 
-##' Coefficients of zero-inflated
-##'
-##' Given a fitted LMlike, return the coefficients from discrete or continuous.
-##' Methods expect an argument \code{which}, a \code{character} of length one, one of "C" (continuous) or "D" (discrete) specifying which component should be returned.
-##' @param object LMlike
-##' @param ... passed to methods
-##' @return numeric vector
-##' @aliases coef,LMlike-method
-##' @aliases coef,LMERlike-method
-##' @aliases coef,ZlmFit-method
-##' @export
-setGeneric('coef', function(object, ...) standardGeneric('coef'))
 
 ##' Run a likelihood-ratio test
 ##'
@@ -136,16 +119,6 @@ setGeneric('lrTest', function(object, hypothesis) standardGeneric('lrTest'))
 ##' @seealso lrTest
 ##' @seealso lht
 setGeneric('waldTest', function(object, hypothesis) standardGeneric('waldTest'))
-
-##' Variance-covariance matrix for zero inflated
-##'
-##' Given a fitted LMlike, return the variance-covariance from discrete or continuous.
-##' \code{which}, a \code{character}, one of "C" (continuous) or "D" (discrete) must be specified, giving which component should be returned.
-##' @param object LMlike
-##' @param ... Additional parameters, namely \code{which}
-##' @return \code{matrix}
-##' @export
-setGeneric('vcov', function(object) standardGeneric('vcov'))
 
 ##' Degrees of freedom of Zero inflated model
 ##'
@@ -176,15 +149,6 @@ setGeneric('model.matrix<-', function(object, value) standardGeneric('model.matr
 ##' @param ... other arguments
 ##' @return list of parameters characterizing fit
 setGeneric('summarize', function(object, ...) standardGeneric('summarize'))
-
-##' Return a human-readable summary
-##'
-##' @param object some object to be summarized
-##' @param ... additional arguments passed to methods.
-##' @return a summary, possibly printed
-##' @export
-setGeneric('summary', function(object, ...) standardGeneric('summary'))
-
 
 
 ###############################
