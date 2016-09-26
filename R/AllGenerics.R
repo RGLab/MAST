@@ -2,92 +2,25 @@
 ## Base
 ###############################
 
-##' Accessor for cellData \code{data.frame}
+##' Deprecated cell/feature data accessors/mutators
 ##'
+##' These functions are now all deprecated and will be removed in a future release.
+##'
+##' @section Replacements Functions:
+##' You should transition to use the following replacements:
+##' \describe{
+##'   \item{\code{cData}}{\link{colData}}
+##'   \item{\code{fData}}{\link{mcols}}
+##'   \item{\code{exprs}}{\link{assay}}
+##'   \item{\code{combine}}{\link{cbind2} or \link{rbind2}}
+##' }
 ##' @param sc An object with \code{cellData}
-##' @return \code{data.frame}
+##' @return \code{DataFrame} or modifies the \code{SingleCellAssay} object in place
 ##' @details \code{cData(sc)}: Return the \code{cellData} \code{data.frame}.
+##' @seealso exprs
+##' @rdname cData
 ##' @export
 setGeneric('cData', function(sc) standardGeneric('cData'))
-
-##' Do two objects conform in dimension and type?
-##'
-##' Returns false if:
-##' other does not inherit from Matrix
-##' Otherwise returns a bitmask, which is the sum of:
-##' 1: objects have same number of rows
-##' 2: objects have same number of columns
-##' 4: objects have same number of layers
-##' @param dl DataLayer
-##' @param other Another object
-##' @return bitmask containing number of dimensions that agree
-setGeneric('conform', function(dl, other) standardGeneric('conform'))
-
-
-##' How many layers does a DataLayer have?
-##'
-##' @param x DataLayer
-##' @return numeric, number of layers
-##' @export nlayer
-##' @seealso addlayer
-setGeneric('nlayer', function(x) standardGeneric('nlayer'))
-
-
-##' Which layer is active?
-##'
-##' @param x DataLayer
-##' @return numeric, active layer
-##' @export layer
-##' @seealso addlayer
-setGeneric('layer', function(x) standardGeneric('layer'))
-
-##' Set active layer
-##'
-##' @param x DataLayer
-##' @param value identifier of layer
-##' @return DataLayer with new active layer
-##' @export layer<-
-##' @seealso addlayer
-setGeneric('layer<-', function(x, value) standardGeneric('layer<-'))
-
-##' Layer management methods
-##'
-##' A layer is a "slice" of a 3d array.  \code{SingleCellAssay} objects are stateful, in that a layer can be set, and then various routines will operate on that layer.
-##' @section Methods:
-##' @param x a \code{SingleCellAssay} or derived
-##' @param name a \code{code} character
-##' @export
-##' @examples
-##' data(vbetaFA)
-##' vbetaFA <- addlayer(vbetaFA, 'expressed')
-##' layername(vbetaFA)
-##' ee <- exprs(vbetaFA)
-##' layer(vbetaFA) <- 'expressed'
-##' exprs(vbetaFA) <- (ee>0)*1
-##' layer(vbetaFA) <- 'Et'
-##' layername(vbetaFA) <- 'et'
-##' layername(vbetaFA)
-##' nlayer(vbetaFA)
-##' @export
-##' @rdname addlayer
-setGeneric('addlayer', function(x, name) standardGeneric('addlayer'))
-
-##' Get name of active layer
-##'
-##' @param x DataLayer 
-##' @return character
-##' @export layername
-##' @seealso addlayer
-setGeneric('layername', function(x) standardGeneric('layername'))
-
-##' Set name of active layer
-##'
-##' @param x DataLayer
-##' @param value character
-##' @return DataLayer
-##' @export
-##' @seealso addlayer
-setGeneric('layername<-', function(x, value) standardGeneric('layername<-'))
 
 ##' Accessor for wellKey
 ##'
@@ -98,19 +31,10 @@ setGeneric('layername<-', function(x, value) standardGeneric('layername<-'))
 ##' @export
 setGeneric('getwellKey', function(sc) standardGeneric('getwellKey'))
 
-##' Accessor for cellData \code{AnnotatedDataFrame}
-##'
-##' Returns the \code{cellData}.
-##' @param sc An object with \code{cellData}
-##' @return \code{AnnotatedDataFrame}
-##' @aliases cellData,SingleCellAssay-method
-##' @export
-setGeneric('cellData', function(sc) standardGeneric('cellData'))
-
 ##' @export
 ##' @rdname cData
-##' @param value Replacement, one of \code{AnnotatedDataFrame} or \code{data.frame}
 ##' @details \code{cData(sc)<-value}: Replace the cellData with \code{value}, which can be either an \code{AnnotatedDataFrame} or \code{data.frame}.  The replacement is checked that it has mandatory fields defined by its class.
+##' @param value replacement value
 setGeneric("cData<-", function(sc, value) standardGeneric("cData<-"))
 
 ##' Accessor for featureData \code{data.frame}
@@ -124,7 +48,7 @@ setGeneric("cData<-", function(sc, value) standardGeneric("cData<-"))
 ##' @name fData
 ##' @aliases fData,SingleCellAssay-method
 ##' @importMethodsFrom Biobase fData
-#setGeneric('fData', function(sc) standardGeneric('fData'))
+                                        #setGeneric('fData', function(sc) standardGeneric('fData'))
 NULL
 
 ##' Accessor for featureData \code{AnnotatedDataFrame}
@@ -137,12 +61,14 @@ NULL
 ##' @name featureData
 ##' @aliases featureData,SingleCellAssay-method
 ##' @importMethodsFrom Biobase featureData
-#setGeneric('featureData', function(object) standardGeneric('featureData'))
+                                        #setGeneric('featureData', function(object) standardGeneric('featureData'))
 NULL
 
-##' @rdname subset
+##' Subsetting Vectors, Matrices and Data Frames
+##'
+##' Return subsets of vectors, matrices or data frames which meet conditions.
 ##' @export
-setGeneric('subset')
+setGeneric('subset', function(x, ...) standardGeneric('subset'))
 
 ##' @import BiocGenerics
 NULL
@@ -162,6 +88,13 @@ NULL
 ##' @aliases fit,BayesGLMlike,missing-method
 setGeneric('fit', function(object, response, ...) standardGeneric('fit'))
 
+##' Return coefficient standard errors
+##'
+##' Given a fitted model, return the standard errors of the coefficient
+##' @param object a model implementing \code{vcov}
+##' @param ... passed to methods
+##' @seealso ZlmFit-class
+##' @return vector or matrix
 setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
 
 ##' Coefficients of zero-inflated
@@ -240,6 +173,7 @@ setGeneric('model.matrix<-', function(object, value) standardGeneric('model.matr
 ##' Return programmatically useful summary of a fit
 ##'
 ##' @param object LMlike or subclass
+##' @param ... other arguments
 ##' @return list of parameters characterizing fit
 setGeneric('summarize', function(object, ...) standardGeneric('summarize'))
 
@@ -268,12 +202,3 @@ setGeneric('summary', function(object, ...) standardGeneric('summary'))
 ##' @export
 setGeneric("LRT",function(sca,comparison,...) standardGeneric("LRT"))
 
-###############################
-## Nanostring
-###############################
-##' thresholds for positive expression
-##'
-##' @param nsa NanostringAssay object
-##' @return modified nsa
-##' @export
-setGeneric('thresholdNanoString', function(nsa, ...) standardGeneric('thresholdNanoString'))

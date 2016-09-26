@@ -1,4 +1,9 @@
- ## Invariants:
+## This is a horrible hack, and should be rewritten to use the lmer internals.
+## But in the meantime: we make the fixed effects model matrix, then call the formula method for lmer/glmer
+## This is to allow us to do arbitrary LRT tests and add/drop columns of the design
+
+## Details:
+## Invariants:
 ## 1. model.matrix contains fixed effects--so whenever we set the model.matrix, we'll delete the random effects
 ## 2. formula contains full model (fixed and random), so we can update it normally
 ## 3. Random portion of the model will be parsed off
@@ -35,10 +40,17 @@ toAdditiveFormula <- function(string){
     string <- as.formula(toAdditiveString(string))
 }
 
-setMethod('update', signature=c(object='LMERlike'), function(object, formula., ...){
+##' @export
+##' @describeIn LMERlike update the formula or design matrix
+##' @param formula. \code{formula}
+##' @param design  something coercible to a \code{data.frame}
+setMethod('update', signature=c(object='LMERlike'), function(object, formula., design, ...){
     object@formula <- update.formula(object@formula, formula.)
     reComponents <- getREvars(object@formula)
-    model.matrix(object) <- model.matrix(as.formula(paste0('~', reComponents$FEform)), object@design)
+    if(!missing(design)){
+        object@design <- as(design, 'data.frame')
+    }
+    model.matrix(object) <- model.matrix(as.formula(paste0('~', reComponents$FEform)), object@design, ...)
     object@fitC <- object@fitD <- numeric(0)
     object@fitted <- c(C=FALSE, D=FALSE)
     object
@@ -171,8 +183,10 @@ setReplaceMethod('model.matrix', signature=c(object='LMERlike'), function(object
 ## }
 
 
-##' ##' @include AllClasses.R
+##' @include AllClasses.R
 ##' @include AllGenerics.R
+##' @param silent mute some warnings emitted from the underlying modeling functions
+##' @rdname fit
 setMethod('fit', signature=c(object='LMERlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){
@@ -196,7 +210,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
     if(any(pos)){
         datpos <- dat[pos,]
         object@fitC <- do.call(lmer, c(list(formula=formC, data=quote(datpos), REML=FALSE), fitArgsC))
-}
+    }
     if(!all(pos)){
         object@fitD <- do.call(glmer, c(list(formula=formD, data=quote(dat), family=binomial()), fitArgsD))
         object@fitted['D'] <- length(object@fitD@optinfo$conv$lme)==0
@@ -210,7 +224,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
 #' @describeIn LMERlike return the variance/covariance of component \code{which}
 #' @param object \code{LMERlike}
 #' @param which \code{character}, one of 'C', 'D'.
-#' @param ... ignored
+#' @param ... In the case of \code{vcov}, ignored.  In the case of \code{update}, passed to \code{model.matrix}.
 setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov
@@ -229,6 +243,7 @@ setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     vc
 })
 
+if(getRversion() >= "2.15.1") globalVariables(c('fixef', 'lmer', 'glmer'))
 #' @describeIn LMERlike return the coefficients.  The horrendous hack is attempted to be undone.
 #' @param singular \code{logical}. Should NA coefficients be returned?
 setMethod('coef', signature=c(object='LMERlike'), function(object, which, singular=TRUE, ...){
@@ -246,9 +261,10 @@ setMethod('coef', signature=c(object='LMERlike'), function(object, which, singul
     co
 })
 
+##' @describeIn LMERlike return the log-likelihood
 setMethod('logLik', signature=c(object='LMERlike'), function(object){
     L <- c(C=0, D=0)
-     if(object@fitted['C']) L['C'] <- logLik(object@fitC)
+    if(object@fitted['C']) L['C'] <- logLik(object@fitC)
     if(object@fitted['D']) L['D'] <- logLik(object@fitD)
     L
 })

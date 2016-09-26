@@ -2,7 +2,7 @@
 % Please edit documentation in R/zlmHooks.R
 \name{discrete_residuals_hook}
 \alias{discrete_residuals_hook}
-\title{hHook to get the continuous residuals}
+\title{Hook to get the continuous residuals}
 \usage{
 discrete_residuals_hook(x)
 }
@@ -10,6 +10,6 @@ discrete_residuals_hook(x)
 \item{x}{the ZLMFit}
 }
 \description{
-hHook to get the continuous residuals
+Hook to get the continuous residuals
 }
 

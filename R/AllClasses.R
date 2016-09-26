@@ -4,69 +4,13 @@
 ##' @include AllGenerics.R
 NULL
 
-##' DataLayer class
-##' 
-##' DataLayer is a 3-D array, wrapped to make it look like a matrix.
-##' It is used to hold matrix-like expression data, for which we might want to keep several representations (transformations) around.
-##' The number of matrix "layers" is given by the trailing dimension.
-##' Dimensions 1 and 2 correspond to the "rows" and "columns" of the matrix.
-##' The layer that is active can be set, and additional layers created (concatenated).
-##' }
-##' \section{Slots}{
-##' DataLayer extends array, and has the following additional slots
-##' \describe{
-##'   \item{.Data}{the underlying array}
-##'   \item{valid}{a \code{logical} that may optionally indicate the freshness of derived layers (if the underlying data changes).  Not currently used.}
-##'   \item{layer}{which 'slice' of the array is being used}
-##' }}
-##' \section{Methods}{
-##' \describe{
-##' \item{addlayer}{Concatentate another slice onto the object}
-##' \item{layername}{Return the name of the current slice}
-##' \item{layer}{Return the active layer}
-##' \item{layer<-}{Set the active layer}
-##' \item{exprs}{Return the matrix representation of the active layer}
-##' \item{exprs<-}{Replace the matrix on the current layer.}
-##' }
-##' @examples
-##' ar <- array(1:10, dim=c(2, 5, 1))
-##' dl <- new('DataLayer', .Data=ar)
-##' nrow(dl) #2
-##' ncol(dl) #5
-##' layer(dl)
-##' dl <- addlayer(dl, 'negative')
-##' ex <- exprs(dl)
-##' layer(dl) <- 'negative' #or could use 2
-##' exprs(dl)<- -ex
-##' exprs(dl)
-##' @name DataLayer-class
-##' @docType class 
-##' @aliases DataLayer
-##' @seealso \code{\link{SingleCellAssay}}, \code{\link{SingleCellAssay-class}}
-setClass('DataLayer', contains='array', representation=representation(layer='numeric', valid='logical'), prototype=prototype(array(NA, dim=c(0, 0, 1)), layer=1L, valid=TRUE), validity=function(object){
-  #cat('DL dim ', dim(object@.Data), '\n')
-  length(dim(object@.Data))==3
-  })
-
-setClass('Mapping', contains='list')
-setMethod('initialize', 'Mapping', function(.Object, keys=NULL, values=NULL, ...){
-  .Object <- callNextMethod(.Object, ...)
-  if(!is.null(keys)){
-    if(!is.null(values)) values <- rep(NA, length(keys))
-    if(!is.character(keys)) stop('keys must be character')
-    .Object@.Data <- vector(mode='list', length=length(keys))
-    names(.Object@.Data) <- keys
-    for(i in seq_along(.Object@.Data)) .Object@.Data[[i]] <- values[[i]]
-  }
-  
-  .Object
-})
-
-##' @describeIn show
-setMethod('show', 'Mapping', function(object){
-  cat(class(object), ' containing : ', names(object), '\n')
-})
-
+##' MAST: Model-based Analysis of Single- cell Transcriptomics
+##'
+##' Methods for analysing single cell assay data using hurdle models.
+##'
+##' This packages provides data structures and functions for statistical analysis of single-cell assay data such as Fluidigm single cell gene expression assays.
+##' @references Finak, et al.  MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data.  Genome Biology (2015).
+"_PACKAGE"
 
 ##' Vbeta Data Set
 ##' @docType data
@@ -82,135 +26,34 @@ NULL
 ##' @name vbetaFA
 ##' @rdname vbetaFA-dataset
 ##' @format a \code{FluidigmAssay} of the vbeta data set.
-##' @seealso \code{\link{vbeta}}, \code{\link{FluidigmAssay}}
+##' @seealso \code{\link{vbeta}}, \code{\link{FromFlatDF}}
 NULL
 
-Mandatory_Featurevars <- NULL#c('primerid')
-Mandatory_Cellvars <- NULL#c('wellKey')
+
+##' MAITs data set, RNASeq
+##' @docType data
+##' @name maits
+##' @rdname maits-dataset
+##' @format a \code{list} containing an expression matrix (\code{expressionmat}), cell \code{cdat} and feature \code{fdat}.
+##' @seealso \code{\link{FromMatrix}}
+NULL
 
 
+Mandatory_Featurevars <- character()
+Mandatory_Cellvars <- character()
 
-SingleCellAssayValidity <- function(object){
-  ##message('SingleCellAssayValidity') #DEBUG
-  if(nrow(cData(object))==0 || nrow(fData(object) == 0)) return(TRUE)
-  if(nrow(object)!=nrow(cData(object))){
-    message('dimension mismatch between cData and nrows')
-    return(FALSE)
-    }
-  if(ncol(object)!=nrow(fData(object))){
-    message('dimension mismatch between fData and ncols')
-    return(FALSE)
-  }
+##' @import SummarizedExperiment
+##' @import S4Vectors
+##' @importMethodsFrom S4Vectors mcols
+##' @importMethodsFrom SummarizedExperiment colData assays assay
+setClass('SingleCellAssay', contains='SummarizedExperiment0',
+         slots=list(cmap='character', fmap='character'),
+         prototype=list(cmap=Mandatory_Cellvars,
+                        fmap=Mandatory_Featurevars))
 
-  if(!all(fData(object)$primerid == colnames(object))){
-    message("'DataLayer' column names mismatch featureData 'primerid' field")
-    return(FALSE)
-  }
-  
-  if(!all(cData(object)$wellKey == row.names(object))){
-    message("'DataLayer' row names mismatch cellData 'wellKey' field")
-    return(FALSE)
-  }
-  
-  if(!all(names(object@cmap) %in% names(cData(object)))){
-    message('some expected fields in cData are missing')
-    return(FALSE)
-  }
-  if(!all(names(object@fmap) %in% names(fData(object)))){
-    message('some expected fields in fData are missing')
-    return(FALSE)
-  }
-  TRUE                                  #this stuff might not belong in the validity, it's getting called too early when subclasses of SingleCellAssay are constructed
-}
-                                          
+Fluidigm_Cellvars <- c(Mandatory_Cellvars, ncells='ncells')
+setClass('FluidigmAssay', contains='SingleCellAssay', prototype=list(cmap=Fluidigm_Cellvars))
 
-##' SingleCellAssay class
-##' 
-##' SingleCellAssay represents an arbitrary single cell assay
-##' It is meant to be flexible and is subclassed to represent specific assay
-##' types like Fluidigm and NanoString. It should be constructed using the \code{SingleCellAssay}, \code{SCASet} or subclass constructors.
-##' mapNames for the SingleCellAssay class are in the object \code{MAST:::Mandatory_Cellvars}
-##' mapNames for the FluidigmAssay class are in the object \code{MAST:::FluidigmMapNames}
-##' }
-##' \section{Slots}{
-##' SingleCellAssay extends class \code{\link{DataLayer}}, so inherits its slots and methods.  It also contains the following additional slots:
-##' \describe{
-##'   \item{featureData}{an \code{AnnotatedDataFrame} that describes feature-level metadata (i.e. genes)}
-##'   \item{phenoData}{an \code{AnnotatedDataFrame} that describes the phenotype-level metadata (i.e. subject or experimental unit)} (not yet implemented)
-##'   \item{cellData}{an \code{AnnotatedDataFrame} that describes the cell-level metadata (i.e. per individual cell)}
-##'   \item{description}{a \code{data.frame}}
-##'   \item{id}{a vector of type \code{character} that identifies the set of columns acting as a primary key to uniquely identify a single-cell or single-well across all wells / cells / assays / subjects / conditions in the data set.}
-##' }
-##' @name SingleCellAssay-class
-##' @docType class 
-##' @aliases SingleCellAssay-class
-##' @aliases FluidigmAssay-class
-##' @aliases NanoStringAssay-class
-##' @aliases show,SingleCellAssay-method
-##' @rdname SingleCellAssay-class
-##' @seealso \code{\link{SingleCellAssay}}, \code{\link{NanoStringAssay}}, \code{\link{FluidigmAssay}}, \code{\link{DataLayer}}
-setClass("SingleCellAssay",contains="DataLayer",
-         representation=representation(featureData="AnnotatedDataFrame",
-           phenoData="AnnotatedDataFrame",
-           cellData="AnnotatedDataFrame",
-           description='data.frame',
-           id="ANY",
-           cmap='Mapping', fmap='Mapping',
-           keep.names='logical'),
-         prototype=prototype(phenoData=new("AnnotatedDataFrame"),
-           featureData=new("AnnotatedDataFrame"),
-           cellData=new("AnnotatedDataFrame"),
-           description=data.frame(),
-           id=numeric(0),
-           cmap=new('Mapping', keys=Mandatory_Cellvars),
-           fmap=new('Mapping', keys=Mandatory_Featurevars),
-           keep.names=TRUE),
-         validity=SingleCellAssayValidity)
-
-
-## Same as SingleCellAssay, but with additional mapNames
-FluidigmMapNames <- c(Mandatory_Cellvars, 'ncells')
-
-setClass('FluidigmAssay', contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping', keys=FluidigmMapNames)),validity=SingleCellAssayValidity)
-
-#Could write a constructor that takes a post-processing function...
-setClass('NanoStringAssay', contains='FluidigmAssay',validity=SingleCellAssayValidity)
-
-
-##'Holds output and diagnostics from thresholdNanoString
-##'Not intended to be called by the user.
-##' 
-##' @section Slots:
-##' \describe{
-##' \item{melted}{A \code{data.frame} containing a melted version of \code{nsa}, plus the columns 'ps', giving the probability that a measurement belongs to the signal cluster, 'clusterID' the inferred cluster}
-##' \item{nsa}{The thresholded \code{NanoStringAssay} with the thresholded expression in layer \code{et}}
-##' \item{densities}{A \code{list} of length \code{ncol(nsa)} of marginal (mixture model) densities of each gene.}
-##' \item{means}{A \code{matrix} dimension \code{ncol(nsa)} \eqn{\times} 2 given the posterior mean of each cluster.}
-##' \item{props}{A \code{matrix} dimension \code{ncol(nsa)} \eqn{\times} 2 given the posterior probability of each cluster.}
-##' \item{startLayer}{A \code{character} giving the initial layer that was used to generate the thresholding}
-##' }
-##' @seealso thresholdNanoString
-##' @docType class
-setClass('ThresholdedNanoString', representation=representation(melted='data.frame', nsa='NanoStringAssay', densities='list', means='matrix', props='matrix', startLayer='character'))
-
-
-
-##'RNASeqAssay class. Doesn't require ncells
-##'@exportClass RNASeqAssay
-setClass('RNASeqAssay',contains='SingleCellAssay', prototype=prototype(cmap=new('Mapping',keys=Mandatory_Cellvars)),validity=SingleCellAssayValidity)
-
-##'SCASet is a set of SingleCellAssay objects or objects of its subclasses (i.e. FluidigmAssay)
-##'The constructor \code{SCASet} should be used to make objects of this class.
-##' @slot set: A \code{list} of \code{SingleCellAssays} or its subclasses
-##' @seealso SCASet
-setClass("SCASet",
-         representation=list(set="list"),validity=function(object){
-           if(all(names(object@set)!=unlist(lapply(object@set,function(x) x@id),use.names=FALSE))){
-             warning("Names of the SCASet don't match the SingleCellAssay id's. Plese use the SingleCellAssay() constructor.")
-             return(FALSE)
-           }
-           return(TRUE)
-         })
 
 
 ## Classes
@@ -236,10 +79,10 @@ setClass("SCASet",
 ##' @seealso vcov
 ##' @seealso logLik
 setClass('LMlike',
-         slots=c(design='data.frame', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
-             ## this speeds construction of coef and vcov, which is a pinch point in zlm
-             defaultCoef='numeric',
-             defaultVcov='matrix'),
+         slots=c(design='ANY', modelMatrix='matrix', fitC='ANY', fitD='ANY', response='ANY', fitted='logical', formula='formula', fitArgsD='list', fitArgsC='list', priorVar='numeric', priorDOF='numeric',
+                 ## this speeds construction of coef and vcov, which is a pinch point in zlm
+                 defaultCoef='numeric',
+                 defaultVcov='matrix'),
          prototype=list(fitted =c(C=FALSE, D=FALSE), formula=formula(0~0),modelMatrix=matrix(nrow=0, ncol=0), priorVar=0, priorDOF=0), validity=function(object){
              stopifnot( all(c("C", "D") %in% names(object@fitted)))
              if(length(object@response)>0){
@@ -262,7 +105,7 @@ setClass('GLMlike', contains='LMlike', slots=c(weightFun='function'), prototype=
 ##' @return 3d array, with leading dimension giving the prior 'loc'ation, 'scale' and degrees of freedom (df),
 ##' second dimension giving the component ('C'ontinuous or 'D'iscrete)
 ##' and trailing dimension giving the coefficient to which the prior applies.
-##' The location is initialized to be 0, the scale to 2, and degrees of freedom of 1, following the default of \link{bayesglm}
+##' The location is initialized to be 0, the scale to 2, and degrees of freedom of 1, following the default of bayesglm.
 ##' @export
 ##' @examples
 ##' dp <- defaultPrior('Stim.ConditionUnstim')
@@ -274,7 +117,7 @@ defaultPrior <- function(names){
     names <- setdiff(names, '(Intercept)')
     p <- length(names)
     ar <- array(rep(c(0, 2.5, 1), times=2*p), dim=c(3, 2,p), dimnames=list(metric=c('loc', 'scale', 'df'), comp=c('C', 'D'), names))
-    #if(p>0)     ar['scale',,names=='(Intercept)'] <- 10
+                                        #if(p>0)     ar['scale',,names=='(Intercept)'] <- 10
     ar
 }
 
@@ -291,7 +134,7 @@ setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array', useConti
              TRUE
          })
 setClass('BayesGLMlikeWeight', contains='BayesGLMlike')
-                                                                                      
+
 
 ##' Wrapper for lmer/glmer
 ##'
@@ -303,7 +146,7 @@ setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity
         stopifnot(nrow(object@pseudoMM)==length(object@response))
     }
     if(object@priorDOF!=0) stop('Empirical bayes shrinkage not implemented for lmer/glmer.')
-    })
+})
 
 setClass('ConstrainedGLMlike', contains='LMlike')
 setClass('RidgeBGLMlike',contains="BayesGLMlike",slots=c(lambda='numeric'),prototype = list(lambda=0.1) )
@@ -315,193 +158,32 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' An S4 class to hold the output of a call to zlm
 ##'
 ##' This holds output from a call to zlm.SingleCellAssay.  Many methods are defined to operate on it.  See below.
-##' @slot coefC
-##' @slot coefD matrices of coefficients
-##' @slot vcovC
+##' @slot coefC matrix of continuous coefficients
+##' @slot coefD matrix of discrete coefficients
+##' @slot vcovC array of variance/covariance matrices for coefficients
 ##' @slot vcovD array of variance/covariance matrices for coefficients
 ##' @slot LMlike the LmWrapper object used
 ##' @slot sca the \code{SingleCellAssay} object used
-##' @slot deviance
-##' @slot loglik
-##' @slot df.null
-##' @slot df.resid
-##' @slot dispersion
-##' @slot dispersionNoShrink
-##' @slot priorDOF
-##' @slot priorVar
+##' @slot deviance matrix of deviances
+##' @slot loglik matrix of loglikelihoods
+##' @slot df.null matrix of null (intercept only) degrees of freedom
+##' @slot df.resid matrix of residual DOF
+##' @slot dispersion matrix of dispersions (after shrinkage)
+##' @slot dispersionNoShrink matrix of dispersion (before shrinkage)
+##' @slot priorDOF shrinkage weight in terms of number of psuedo-obs
+##' @slot priorVar shrinkage target
 ##' @slot converged output that may optionally be set by the underlying modeling function
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
 ##' @seealso zlm.SingleCellAssay summary,ZlmFit-method
-setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellAssay', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
+setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SummarizedExperiment0', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
-##' SingleCellAssay: A constructor for an object of type SingleCellAssay.
+##' An S4 class for Gene Set Enrichment output
 ##'
-##' This is the constructor for the class. This class intends to ease the analysis of single cell assays, in which multiple, exchangeable, cells from an experimental unit (patient, or organism) are assayed along several (or many) dimensions, such as genes. A few examples of this might be Fluidigm gene expression chips, or single cell sequencing experiments.  The chief functionality is to make it easy to keep cellular-level metadata linked to the measurements through \code{cellData} and \code{phenoData}.  There are also subsetting and splitting measures to coerce between a SingleCellAssay, and a \link{SCASet}.
-##' @param dataframe A 'flattened' \code{data.frame} or \code{data.table} containing columns giving cell and feature identifiers and  a measurement column
-##' @param idvars character vector naming columns that uniquely identify a cell
-##' @param primerid character vector of length 1 that names the column that identifies what feature (i.e. gene) was measured
-##' @param measurement character vector of length 1 that names the column containing the measurement 
-##' @param id An identifier (eg, experiment name) for the resulting object
-##' @param cellvars Character vector naming columns containing additional cellular metadata
-##' @param featurevars Character vector naming columns containing additional feature metadata
-##' @param phenovars Character vector naming columns containing additional phenotype metadata
-##' @param ... additional arguments are ignored
-##' @export SingleCellAssay
-##' @aliases SingleCellAssay
-##' @name SingleCellAssay
-##' @seealso \code{\link{FluidigmAssay}}
-##' @docType methods
-##' @examples
-##' ## See FluidigmAssay for examples
-##' \dontrun{example(FluidigmAssay)}
-##' @return SingleCellAssay object
-SingleCellAssay<-function(dataframe=NULL,idvars=NULL,primerid=NULL,measurement=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  new('SingleCellAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars)
-}
-
-checkArrayNames <- function(exprsArray, cData, fData){
-    if(!is.numeric(exprsArray)) stop('`exprsArray` must be numeric')
-    if(length(dim(exprsArray))<2) stop('`exprsArray` must be matrix or array')
-    dn <- dimnames(exprsArray)[1:2]
-    noDimnames <- is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])
-    if(length(dim(exprsArray))<3){
-        dim(exprsArray) <- c(dim(exprsArray), 1)
-    }
-    dl <- new('DataLayer', .Data=exprsArray)
-
-    pidDefault <- if(is.null(dn[[2]])) sprintf('p%0*d', ceiling(log10(ncol(dl)+1)), seq_len(ncol(dl))) else dn[[2]]
-    wkDefault <- if(is.null(dn[[1]])) sprintf('wk%0*d', ceiling(log10(nrow(dl)+1)), seq_len(nrow(dl))) else dn[[1]]
-    
-    if(missing(fData)) fData <- data.frame(primerid=pidDefault, stringsAsFactors=FALSE)
-    if(missing(cData)) cData <- data.frame(wellKey=wkDefault,  stringsAsFactors=FALSE)
-    
-    
-    if(nrow(dl) != nrow(cData)) stop('`cData` must contain as many rows as `exprsArray`')
-    if(ncol(dl) != nrow(fData)) stop('`fData` must contain as many columns as `exprsArray`')
-
-    if(!('primerid' %in% names(fData))){
-        warning("`fData` has no primerid.  I'll make something up.")
-        fData$primerid <- pidDefault
-    } else{
-        fData$primerid <- as.character(fData$primerid)
-    }
-    row.names(fData) <- fData$primerid
-
-    if(!('wellKey' %in% names(cData))){
-        warning("`cData` has no wellKey.  I'll make something up.")
-        cData$wellKey <- wkDefault
-    } else{
-        cData$wellKey <- as.character(cData$wellKey)
-    }
-    row.names(cData) <- cData$wellKey
-    
-
-    if(noDimnames){
-        message('No dimnames in `exprsArray`, assuming `fData` and `cData` are sorted according to `exprsArray`')
-        dn <- list(wellkey=row.names(cData), primerid=row.names(fData), measure='et')  
-    }
-    
-    if(!isTRUE(all.equal(dn[[1]], cData$wellKey))) stop('Order of `exprsArray` and `cData` doesn\'t match')
-    if(!isTRUE(all.equal(dn[[2]], fData$primerid))) stop('Order of `exprsArray` and `fData` doesn\'t match')
-    dimnames(dl) <- dn
-    fData <- as(fData, 'AnnotatedDataFrame')
-    cData <- as(cData, 'AnnotatedDataFrame')
-    list(exprsArray=dl, cData=cData, fData=fData)
-}
-
-##' Construct a SingleCellAssay from a matrix or array of expression
-##'
-##' If the gene expression measurements are already in a rectangular form,
-##' then this function allows an easy way to construct a SingleCellAssay object while
-##' still doing some sanity checking of inputs.
-##' @param class What class of object are we constructing?
-##' @param exprsArray matrix or array, rows are cells, columns are genes
-##' @param cData cellData data.frame or AnnotatedDataFrame
-##' @param fData featureData data.frame or AnnotatedDataFrame
-##' @return an object of class \code{class}
-##' @export
-##' @examples
-##' ncells <- 10
-##' ngenes <- 5
-##' fData <- data.frame(primerid=LETTERS[1:ngenes])
-##' cData <- data.frame(wellKey=seq_len(ncells))
-##' mat <- matrix(rnorm(ncells*ngenes), ncol=ngenes)
-##' sca <- FromMatrix('SingleCellAssay', mat, cData, fData)
-##' stopifnot(inherits(sca, 'SingleCellAssay'))
-##' ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
-##' cData$ncells <- 1
-##' fd <- FromMatrix('FluidigmAssay', mat, cData, fData)
-##' stopifnot(inherits(fd, 'FluidigmAssay'))
-FromMatrix <- function(class, exprsArray, cData, fData){
-    can <- checkArrayNames(exprsArray, cData, fData)
-    dl <- can$exprsArray
-    cData <- can$cData
-    fData <- can$fData
-    obj <- new(class, .Data=dl, cellData=cData, featureData=fData, sort=FALSE)
-    validObject(obj)
-    obj
-}
-
-##' Constructor for a FluidigmAssay
-##'
-##' Constructs a FluidigmAssay object. Differs little from the SingleCellAssay constructor. Only the \code{ncells} parameter is additionally required.
-##' @inheritParams SingleCellAssay
-##' @param ncells A \code{character} specifying the column which gives the number of cells per well
-##' @param geneid An optional \code{character} alternate id for primers.
-##' @return A FluidigmAssay object
-##' @author Andrew McDavid and Greg Finak
-##' @examples
-##' data(vbeta)
-##' colnames(vbeta)
-##' vbeta <- computeEtFromCt(vbeta)
-##' vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
-##' primerid='Gene', measurement='Et', ncells='Number.of.Cells',
-##' geneid="Gene",cellvars=c('Number.of.Cells', 'Population'),
-##' phenovars=c('Stim.Condition','Time'), id='vbeta all')
-##' show(vbeta.fa)
-##' nrow(vbeta.fa)
-##' ncol(vbeta.fa)
-##' head(fData(vbeta.fa)$primerid)
-##' table(cData(vbeta.fa)$Subject.ID)
-##' vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
-##' show(vbeta.sub)
-##' @export
-FluidigmAssay<-function(dataframe=NULL,idvars,primerid,measurement, ncells, geneid=NULL,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, ...){
-  cmap <- new('Mapping', .Data=list('ncells'=ncells))
-    new('FluidigmAssay', dataframe=dataframe, idvars=idvars, primerid=primerid, measurement=measurement, id=id, cellvars=cellvars, featurevars=featurevars, phenovars=phenovars, cmap=cmap)
-}
-
-##' Constructs a SCASet
-##'
-##' An SCASet is a list of SingleCellAssays or objects inheriting from SingleCellAssay. The type of constructor called is determined by the value of contentClass, which should be the class of the SCA inheriting object contained in this SCASet. Both the class and the constructor should exist and have the same name. The code dynamically looks to see if the a function with the same name exists, and ASSUMES it is the constructor for the class.
-##' @param dataframe flat data.frame ala SingleCellAssay
-##' @param splitby either a character vector naming columns or a factor or a list of factors used to split dataframe into SingleCellAssays
-##' @param idvars character vector naming columns that uniquely identify a cell
-##' @param primerid character vector of length 1 that names the column that containing what feature was measured
-##' @param measurement character vector of length 1 that names the column containing the measurement
-##' @param contentClass a character, the name of the class being constructed within this SCASet. Defaults to SingleCellAssay. Other methods may pass in other classes, i.e. FluidigmAssay.
-##' @param ... passed up to SingleCellAssay or other dynamically called constructor.
-##' @return SCASet
-##' @note The dynamic lookup of the constructor could be made more robust. 
-##' @export 
-SCASet<-function(dataframe,splitby,idvars=NULL,primerid=NULL,measurement=NULL,contentClass="SingleCellAssay",...){
-  if(is.character(splitby) && all(splitby %in% names(dataframe))){
-  spl<-split(dataframe,dataframe[, splitby])
-} else if(is.factor(splitby) || is.list(splitby) || is.character(splitby)){
-  spl <- split(dataframe, splitby)
-} else{
-  stop("Invalid 'splitby' specification")
-}
- 
-  set<-vector("list",length(spl))
-  names(set)<-names(spl)
-  for(i in seq_along(set)){
-    ##construct a call using contentClass
-    F <- try(getFunction(contentClass),silent=TRUE)
-    if(is(F,"try-error"))
-      message("Can't construct a class of type ",contentClass[[1]],". Constructor of this name doesn't exist")
-      cl<-as.call(list(as.name(contentClass[[1]]),dataframe=spl[[i]],idvars=idvars,primerid=primerid,id=names(spl)[[i]], measurement=measurement,...))
-    set[[i]]<-eval(cl)
-  }
-  new("SCASet",set=set)
-}
+##' This holds output from a call to gseaAfterBoot.
+##' It primarily provides a summary method.
+##' @slot tests array: gene sets X {discrete,continuous} X {stat, variance, degrees of freedom, avg correlation} X {test, null}
+##' @slot bootR number of bootstrap replicates
+##' @seealso gseaAfterBoot
+##' @seealso calcZ
+##' @seealso summary,GSEATests-method
+setClass('GSEATests', slots=list(tests='array', bootR='numeric'))

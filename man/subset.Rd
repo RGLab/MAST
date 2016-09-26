@@ -4,22 +4,23 @@
 \name{subset}
 \alias{subset}
 \alias{subset,SingleCellAssay-method}
-\title{Subset a SingleCellAssay by data in cellData}
+\title{Subsetting Vectors, Matrices and Data Frames}
 \usage{
 subset(x, ...)
 
-\S4method{subset}{SingleCellAssay}(x, thesubset, ...)
+\S4method{subset}{SingleCellAssay}(x, ...)
 }
 \arguments{
-\item{x}{SingleCellAssay}
+\item{x}{\code{SingleCellAssay}}
 
-\item{thesubset}{expression, which when evaluated in cellData environment which returns a logical}
+\item{...}{expression}
+}
+\value{
+\code{SingleCellAssay}
 }
 \description{
-Subset a SingleCellAssay by data in cellData
-}
-\examples{
-data(vbetaFA)
-subset(vbetaFA, ncells==1)
+Return subsets of vectors, matrices or data frames which meet conditions.
+
+Evaluates the expression in \code{...} in the context of \code{colData(x)} and returns a subsetted version of \code{x}
 }
 

@@ -1,4 +1,4 @@
-#' hHook to get the continuous residuals
+#' Hook to get the continuous residuals
 #'
 #' @param x the ZLMFit
 #' @export
@@ -21,7 +21,7 @@ continuous_residuals_hook<- function(x){
         R <- residuals(x@fitC,type="response")
         Rd <- residuals(x@fitD,type="response")
         Rd[names(R)] <- R
-        #keep zeros as zeros
+                                        #keep zeros as zeros
         Rd[setdiff(names(Rd),names(R))] <- 0
         Rd
     }
@@ -45,88 +45,95 @@ combined_residuals_hook<- function(x){
 
 .getQRlm<-function (x, ...) 
 {
-  if (is.null(r <- x$qr)) 
-    stop("lm object does not have a proper 'qr' component.\n Rank zero or should not have used lm(.., qr=FALSE).")
-  r
+    if (is.null(r <- x$qr)) 
+        stop("lm object does not have a proper 'qr' component.\n Rank zero or should not have used lm(.., qr=FALSE).")
+    r
 }
 
-#bayesglm.influence called from influence.bayesglm
+                                        #bayesglm.influence called from influence.bayesglm
 bayesglm.influence <-  function(model, do.coef = do.coef, ...)
 {
-  wt.res <- weighted.residuals(model)
-  e <- na.omit(wt.res)
-  if (model$rank == 0) {
-    n <- length(wt.res)
-    sigma <- sqrt(deviance(model)/df.residual(model))
-    res <- list(hat = rep(0, n), coefficients = matrix(0, 
-                                                       n, 0), sigma = rep(sigma, n), wt.res = e)
-  }
-  else {
-    e[abs(e) < 100 * .Machine$double.eps * median(abs(e))] <- 0
-    mqr <- .getQRlm(model)
-    mqr$qr<-mqr$qr[!rownames(mqr$qr)%in%"",]
-    n <- as.integer(nrow(mqr$qr))
-    if (is.na(n)) 
-      stop("invalid model QR matrix")
-    if (NROW(e) != n) 
-      stop("non-NA residual length does not match cases used in fitting")
-    do.coef <- as.logical(do.coef)
-    tol <- 10 * .Machine$double.eps
-    C_infl<-get("C_influence",getNamespace("stats"))
-    res <- .Call(C_infl, mqr, do.coef, e, tol)
-    if (!is.null(model$na.action)) {
-      hat <- naresid(model$na.action, res$hat)
-      hat[is.na(hat)] <- 0
-      res$hat <- hat
-      if (do.coef) {
-        coefficients <- naresid(model$na.action, res$coefficients)
-        coefficients[is.na(coefficients)] <- 0
-        res$coefficients <- coefficients
-      }
-      sigma <- naresid(model$na.action, res$sigma)
-      sigma[is.na(sigma)] <- sqrt(deviance(model)/df.residual(model))
-      res$sigma <- sigma
+    wt.res <- weighted.residuals(model)
+    e <- na.omit(wt.res)
+    if (model$rank == 0) {
+        n <- length(wt.res)
+        sigma <- sqrt(deviance(model)/df.residual(model))
+        res <- list(hat = rep(0, n), coefficients = matrix(0, 
+                                                           n, 0), sigma = rep(sigma, n), wt.res = e)
     }
-  }
-  res$wt.res <- naresid(model$na.action, res$wt.res)
-  res$hat[res$hat > 1 - 10 * .Machine$double.eps] <- 1
-  names(res$hat) <- names(res$sigma) <- names(res$wt.res)
-  if (do.coef) {
-    rownames(res$coefficients) <- names(res$wt.res)
-    colnames(res$coefficients) <- names(coef(model))[!is.na(coef(model))]
-  }
-  res
+    else {
+        e[abs(e) < 100 * .Machine$double.eps * median(abs(e))] <- 0
+        mqr <- .getQRlm(model)
+        mqr$qr<-mqr$qr[!rownames(mqr$qr)%in%"",]
+        n <- as.integer(nrow(mqr$qr))
+        if (is.na(n)) 
+            stop("invalid model QR matrix")
+        if (NROW(e) != n) 
+            stop("non-NA residual length does not match cases used in fitting")
+        do.coef <- as.logical(do.coef)
+        tol <- 10 * .Machine$double.eps
+        C_infl<-get("C_influence",getNamespace("stats"))
+        res <- .Call(C_infl, mqr, do.coef, e, tol)
+        if (!is.null(model$na.action)) {
+            hat <- naresid(model$na.action, res$hat)
+            hat[is.na(hat)] <- 0
+            res$hat <- hat
+            if (do.coef) {
+                coefficients <- naresid(model$na.action, res$coefficients)
+                coefficients[is.na(coefficients)] <- 0
+                res$coefficients <- coefficients
+            }
+            sigma <- naresid(model$na.action, res$sigma)
+            sigma[is.na(sigma)] <- sqrt(deviance(model)/df.residual(model))
+            res$sigma <- sigma
+        }
+    }
+    res$wt.res <- naresid(model$na.action, res$wt.res)
+    res$hat[res$hat > 1 - 10 * .Machine$double.eps] <- 1
+    names(res$hat) <- names(res$sigma) <- names(res$wt.res)
+    if (do.coef) {
+        rownames(res$coefficients) <- names(res$wt.res)
+        colnames(res$coefficients) <- names(coef(model))[!is.na(coef(model))]
+    }
+    res
 }
 
-#' influence bayesglm object S3 method
+#' Influence bayesglm object
+#'
+#' The influence function
 #' @importFrom stats influence
-#' @name influence.bayesglm
-#' @title influence for bayesglm objects.
 #' @export
-R.methodsS3::setMethodS3("influence","bayesglm",definition=function (model, do.coef = TRUE, ...) 
+#' @param model \code{bayesglm}
+#' @param do.coef see \link{influence.glm}
+#' @param ... ignored
+#' @return see \link{influence.glm}
+influence.bayesglm <- function (model, do.coef = TRUE, ...) 
 {
-  res <- bayesglm.influence(model, do.coef = do.coef, ...)
-  pRes <- na.omit(residuals(model, type = "pearson"))[model$prior.weights != 
+    res <- bayesglm.influence(model, do.coef = do.coef, ...)
+    pRes <- na.omit(residuals(model, type = "pearson"))[model$prior.weights != 
                                                         0]
-  pRes <- naresid(model$na.action, pRes)
-  names(res)[names(res) == "wt.res"] <- "dev.res"
-  c(res, list(pear.res = pRes))
-})
+    pRes <- naresid(model$na.action, pRes)
+    names(res)[names(res) == "wt.res"] <- "dev.res"
+    c(res, list(pear.res = pRes))
+}
 
+#' rstandard for bayesglm objects.
+#'
 #' rstandard bayesglm object S3 method
 #' @importFrom stats rstandard
-#' @name rstandard.bayesglm
-#' @title rstandard for bayesglm objects.
+#' @param model \code{bayesglm}
+#' @param infl see \link{rstandard}
+#' @param type see \link{rstandard}
+#' @param ... ignored
 #' @export
-R.methodsS3::setMethodS3("rstandard","bayesglm",definition=function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", 
-                                                                                                                                "pearson"), ...) 
+rstandard.bayesglm <- function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", "pearson"), ...)
 {
-  type <- match.arg(type)
-  res <- switch(type, pearson = infl$pear.res, infl$dev.res)
-  res <- res/sqrt(summary(model)$dispersion * (1 - infl$hat))
-  res[is.infinite(res)] <- NaN
-  res
-})
+    type <- match.arg(type)
+    res <- switch(type, pearson = infl$pear.res, infl$dev.res)
+    res <- res/sqrt(summary(model)$dispersion * (1 - infl$hat))
+    res[is.infinite(res)] <- NaN
+    res
+}
 
 #' Standardized deviance residuals hook
 #' 
@@ -135,20 +142,22 @@ R.methodsS3::setMethodS3("rstandard","bayesglm",definition=function (model, infl
 #' @export
 deviance_residuals_hook<-function (x) 
 {
-  if (all(x@fitted)) {
-    class(x@fitC) <- c("glm", "lm")
-    class(x@fitD) <- c("bayesglm", "glm", "lm")
-    cont.resid<-rstandard(x@fitC,type="deviance")
-    disc.resid<-rstandard(x@fitD,type="deviance")
-    cont.resid<-data.frame(id=names(x@fitC$y),cont.resid)
-    disc.resid<-data.frame(id=names(x@fitD$y),disc.resid)
-    resid<-merge(cont.resid,disc.resid,by="id",all=TRUE)
-    resid<-data.frame(data.table(melt(resid))[,list(resid=mean(value,na.rm=TRUE)),id])
-    rownames(resid)<-resid[,"id"]
-    resid<-resid[,-1,drop=FALSE]
-    resid<-resid[rownames(x@modelMatrix),] #ensure consistent ordering
-    resid
-  }
+    if (all(x@fitted)) {
+        class(x@fitC) <- c("glm", "lm")
+        class(x@fitD) <- c("bayesglm", "glm", "lm")
+        cont.resid<-rstandard(x@fitC,type="deviance")
+        disc.resid<-rstandard(x@fitD,type="deviance")
+        cont.resid<-data.table(id=names(x@fitC$y),cont.resid)
+        disc.resid<-data.table(id=names(x@fitD$y),disc.resid)
+        resid<-merge(cont.resid,disc.resid,by="id",all=TRUE)
+        resid<-data.frame(
+            melt(resid, id='id')[,list(resid=mean(value,na.rm=TRUE)),id]
+        )
+        rownames(resid)<-resid[,"id"]
+        resid<-resid[,-1,drop=FALSE]
+        resid<-resid[rownames(x@modelMatrix),] #ensure consistent ordering
+        resid
+    }
 }
 
 #' Used to compute module "scores"
@@ -157,21 +166,21 @@ deviance_residuals_hook<-function (x)
 #' @param x the ZLMFit
 #' @export
 score_hook <- function(x) {
-  if (all(x@fitted)) {
-    class(x@fitC) <- c("glm","lm")
-    class(x@fitD) <- c("bayesglm","glm","lm")
-    wh <- !colnames(x@modelMatrix) %like% "cngeneson"
-    wh2 <- !names(coef(x@fitC)) %like% "cngeneson"
-    fc <-
-      x@modelMatrix[,!wh,drop = FALSE] %*% coef(x@fitC)[!wh2,drop = FALSE] #continuous CDR effect
-    fd <- invlogit(x@modelMatrix[,c("(Intercept)","cngeneson"),drop = FALSE] %*%
-                      coef(x@fitD)[c("(Intercept)","cngeneson"),drop = FALSE]) #discrete CDR effect
-    R <-
-      matrix((x@response - fc * fd),nrow = 1) #residuals corrected for ngeneson in the continuous part
-    colnames(R) <- names(residuals(x@fitD))
-    R[x@response == 0] <- 0 - fd
-    R
-  }
+    if (all(x@fitted)) {
+        class(x@fitC) <- c("glm","lm")
+        class(x@fitD) <- c("bayesglm","glm","lm")
+        wh <- !colnames(x@modelMatrix) %like% "cngeneson"
+        wh2 <- !names(coef(x@fitC)) %like% "cngeneson"
+        fc <-
+            x@modelMatrix[,!wh,drop = FALSE] %*% coef(x@fitC)[!wh2,drop = FALSE] #continuous CDR effect
+        fd <- invlogit(x@modelMatrix[,c("(Intercept)","cngeneson"),drop = FALSE] %*%
+                       coef(x@fitD)[c("(Intercept)","cngeneson"),drop = FALSE]) #discrete CDR effect
+        R <-
+            matrix((x@response - fc * fd),nrow = 1) #residuals corrected for ngeneson in the continuous part
+        colnames(R) <- names(residuals(x@fitD))
+        R[x@response == 0] <- 0 - fd
+        R
+    }
 }
 
 

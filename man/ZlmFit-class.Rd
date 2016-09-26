@@ -4,6 +4,7 @@
 \name{ZlmFit-class}
 \alias{ZlmFit-class}
 \alias{coef,ZlmFit-method}
+\alias{lrTest,ZlmFit,CoefficientHypothesis-method}
 \alias{lrTest,ZlmFit,Hypothesis-method}
 \alias{lrTest,ZlmFit,matrix-method}
 \alias{se.coef,ZlmFit-method}
@@ -12,6 +13,8 @@
 \alias{waldTest,ZlmFit,Hypothesis-method}
 \title{An S4 class to hold the output of a call to zlm}
 \usage{
+\S4method{lrTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis)
+
 \S4method{lrTest}{ZlmFit,Hypothesis}(object, hypothesis)
 
 \S4method{lrTest}{ZlmFit,matrix}(object, hypothesis)
@@ -27,6 +30,8 @@
 \S4method{se.coef}{ZlmFit}(object, which, ...)
 }
 \arguments{
+\item{object}{\code{ZlmFit}}
+
 \item{hypothesis}{call to \link{Hypothesis} or \link{CoefficientHypothesis} or a matrix giving such contrasts.}
 
 \item{which}{character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned}
@@ -38,6 +43,8 @@ This holds output from a call to zlm.SingleCellAssay.  Many methods are defined 
 }
 \section{Methods (by generic)}{
 \itemize{
+\item \code{lrTest}: Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
+
 \item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a \link{Hypothesis}.
 
 \item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a contrast \code{matrix}.
@@ -55,13 +62,33 @@ This holds output from a call to zlm.SingleCellAssay.  Many methods are defined 
 \section{Slots}{
 
 \describe{
-\item{\code{coefD}}{matrices of coefficients}
+\item{\code{coefC}}{matrix of continuous coefficients}
+
+\item{\code{coefD}}{matrix of discrete coefficients}
+
+\item{\code{vcovC}}{array of variance/covariance matrices for coefficients}
 
 \item{\code{vcovD}}{array of variance/covariance matrices for coefficients}
 
 \item{\code{LMlike}}{the LmWrapper object used}
 
 \item{\code{sca}}{the \code{SingleCellAssay} object used}
+
+\item{\code{deviance}}{matrix of deviances}
+
+\item{\code{loglik}}{matrix of loglikelihoods}
+
+\item{\code{df.null}}{matrix of null (intercept only) degrees of freedom}
+
+\item{\code{df.resid}}{matrix of residual DOF}
+
+\item{\code{dispersion}}{matrix of dispersions (after shrinkage)}
+
+\item{\code{dispersionNoShrink}}{matrix of dispersion (before shrinkage)}
+
+\item{\code{priorDOF}}{shrinkage weight in terms of number of psuedo-obs}
+
+\item{\code{priorVar}}{shrinkage target}
 
 \item{\code{converged}}{output that may optionally be set by the underlying modeling function}
 

@@ -1,6 +1,12 @@
 ## Methods for LMlike
-##' @describeIn show
+##' Display info
+##'
+##' Prints information on a LMlike object
 ##' @export
+##' @param object an object of some type
+##' @rdname show
+##' @title show
+##' @return side effect of printing to console
 setMethod('show',  signature=c(object='LMlike'), function(object){
     if(all(object@fitted)){
         cat('Fitted Continuous and discrete')
@@ -28,13 +34,19 @@ setMethod('show',  signature=c(object='LMlike'), function(object){
 setMethod('fit', signature=c(object='LMlike', response='vector'), function(object, response, silent=TRUE, quick=FALSE, ...){
     object@response <- response
     dargs <- list(...)
-    if('fitArgsC' %in% names(dargs)) object@fitArgsC <- fitArgsC
-    if('fitArgsD' %in% names(dargs)) object@fitArgsD <- fitArgsD
+    if('fitArgsC' %in% names(dargs)) object@fitArgsC <- dargs$fitArgsC
+    if('fitArgsD' %in% names(dargs)) object@fitArgsD <- dargs$fitArgsD
     object@fitted <- c(C=FALSE, D=FALSE)
     object@fitC <- NULL
     object@fitD <- NULL
     if(!quick) validObject(object)      #save time in inner loop in zlm.SingleCellAssay
     fit(object, silent=silent, start=start, ...)
+})
+
+setMethod('initialize', 'LMlike', function(.Object, ..., design=data.frame()){
+    .Object@design <- as(design, 'data.frame')
+    .Object <- callNextMethod()
+    .Object
 })
 
 
@@ -63,12 +75,18 @@ setMethod('summary', signature=c(object='LMlike'), function(object){
 })
 
 
+##' @export
+##' @describeIn LMlike update the formula or design from which the \code{model.matrix} is constructed
+##' @param formula. \code{formula}
+##' @param design something coercible to a \code{data.frame}
+##' @param ... passed to \code{model.matrix}
+##' @importFrom stats4 update
 setMethod('update', signature=c(object='LMlike'), function(object, formula., design, ...){
     if(!missing(formula.)){
         object@formula <- update.formula(object@formula, formula.)
     }
     if(!missing(design)){
-        object@design <- design
+        object@design <- as(design, 'data.frame')
     }
     model.matrix(object) <- model.matrix(object@formula, object@design, ...)
     object@fitC <- object@fitD <- numeric(0)
@@ -77,7 +95,8 @@ setMethod('update', signature=c(object='LMlike'), function(object, formula., des
 })
 
 #' @describeIn model.matrix return the \code{model.matrix}
-setMethod('model.matrix', signature=c(object='LMlike'), function(object){
+#' @param ... ignored
+setMethod('model.matrix', signature=c(object='LMlike'), function(object, ...){
     object@modelMatrix
 })
 
@@ -113,7 +132,7 @@ makeChiSqTable <- function(lambda, df, test){
     dfC <- setNames(Combine(df, Sum(df)), c('cont', 'disc', 'hurdle'))
     pchi <- Flatten(pchisq(as.matrix(lambdaC), df=as.matrix(dfC), lower.tail=FALSE))
     tab <- Glue(lambda=lambdaC,
-               df=dfC, 'Pr(>Chisq)'=ifelse(dfC>0,pchi,1))
+                df=dfC, 'Pr(>Chisq)'=ifelse(dfC>0,pchi,1))
     structure(tab, test=test)
 }
 
@@ -171,9 +190,9 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='CoefficientHypoth
 #'@describeIn LMlike Wald test of contrast specified by contrast matrix \code{hypothesis}
 setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), function(object, hypothesis){
     .waldTest(coef(object, 'C', singular=TRUE),
-                coef(object, 'D', singular=TRUE),
-                vcov(object, 'C', singular=TRUE),
-                vcov(object, 'D', singular=TRUE),
+              coef(object, 'D', singular=TRUE),
+              vcov(object, 'C', singular=TRUE),
+              vcov(object, 'D', singular=TRUE),
               hypothesis,
               object@fitted)
 })
@@ -197,13 +216,13 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), functio
 
 #'@describeIn LMlike Likelihood ratio test dropping entire term specified by \code{character} \code{hypothesis} naming a term in the symbolic formula.
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
-    F <- update.formula(object@formula, formula(sprintf(' ~. - %s', hypothesis)))
-    U <- update(object, F)
+    Formula <- update.formula(object@formula, formula(sprintf(' ~. - %s', hypothesis)))
+    U <- update(object, Formula)
     .lrTest(object, U@modelMatrix)
 })
 
 .rotateMM <- function(object, contrast){
-      ## from glmLRT in edgeR
+    ## from glmLRT in edgeR
     qrc <- qr(contrast)
     ncontrasts <- qrc$rank
     if(ncontrasts==0) stop("contrasts are all zero")
@@ -240,7 +259,7 @@ setMethod('lrTest', signature=c(object='LMlike', hypothesis='matrix'), function(
     testIdx <- attr(MM, 'testIdx')
     .lrTest(object, MM[,-testIdx,drop=FALSE])
     ## drop tested contrast
-    })
+})
 
 setMethod('residuals', signature=c(object='LMlike'), function(object, type='response', which, ...){
     which <- match.arg(which, c('Discrete', 'Continuous', 'Marginal'))

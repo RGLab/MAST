@@ -14,10 +14,10 @@ setMethod('fit', signature=c(object='BayesGLMlike', response='missing'), functio
         fitArgsD$prior.scale <- object@coefPrior['scale', 'D',]
         fitArgsD$prior.df <- object@coefPrior['df', 'D', ]
         if(object@useContinuousBayes){
-                 fitArgsC$prior.mean <- object@coefPrior['loc', 'C',]
-                 fitArgsC$prior.scale <- object@coefPrior['scale', 'C',]
-                 fitArgsC$prior.df <- object@coefPrior['df', 'C', ]
-             }
+            fitArgsC$prior.mean <- object@coefPrior['loc', 'C',]
+            fitArgsC$prior.scale <- object@coefPrior['scale', 'C',]
+            fitArgsC$prior.df <- object@coefPrior['df', 'C', ]
+        }
     }
     
     contFit <- if(object@useContinuousBayes) .bayesglm.fit else glm.fit

@@ -4,19 +4,24 @@
 \alias{melt.SingleCellAssay}
 \title{Melt a rectangular array}
 \usage{
-\method{melt}{SingleCellAssay}(data, ...)
+\method{melt}{SingleCellAssay}(data, ..., na.rm = FALSE,
+  value.name = "value")
 }
 \arguments{
 \item{data}{A rectangular array, with attributes attached to its rows and
 columns}
 
 \item{...}{ignored}
+
+\item{na.rm}{ignored}
+
+\item{value.name}{name of 'values' column containing the measurement}
 }
 \value{
 A \code{data.frame} typically, with the cartesian product of the
 row and column attributes and the values from the rectangular array
 }
 \description{
-Return a 'molten' (flat) representation of a rectangular array
+Return a molten (flat) representation of a rectangular array
 }
 

@@ -1,10 +1,11 @@
 %\VignetteIndexEntry{MAST-intro}
 %\VignetteEngine{knitr::knitr}
 \documentclass{article}
-\usepackage{url, graphicx}
+\usepackage{url, graphicx, hyperref}
 \usepackage{color}
 \usepackage[cm]{fullpage}
 \usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{comment}
 %\usepackage[authoryear]{natbib}
 
 %\makeatletter
@@ -31,15 +32,16 @@ Assays are assumed to be  mostly \emph{complete} in the sense that most \emph{we
 contain measurements for all features.
 
 \subsection{Internals}
-A \texttt{SingleCellAssay} object can be manipulated as a matrix, with rows giving wells and columns giving features.
+A \texttt{SingleCellAssay} object can be manipulated as a matrix, with rows giving features and columns giving cells.
+It derives from \href{http://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{\texttt{SummarizedExperiment}}.
 
 \subsection{Statistical Testing}
 Apart from reading and storing single--cell assay data, the package also
-provides functionality for significance testing of differential expression
-using a combined binomial and normal--theory likelihood ratio test, as well as
-filtering of individual outlier wells. These methods are described our papers. 
-% Add citations
+provides functionality for significance testing of differential expression using a Hurdle model, gene set enrichment, facilities for visualizing patterns in residuals indicative of differential expression, and power calculations (soon).
 
+There is also some facilities for inferring background thresholds, and filtering of individual outlier wells/libraries. 
+These methods are described our papers. 
+% Add citations
 
 \section{Examples}
 
@@ -52,9 +54,6 @@ which are undocumented, and likely subject-to-change) or some derived,
 annotated format,  or in ``long'' (melted) format, in which each row is a
 measurement, so if there are $N$ wells and $M$ cells, then the
 \texttt{data.frame} should contain $N \times M$ rows.
-The use of key--value mappings makes the reading of various input formats very
-flexible, provided that they contain the minimal required information expected
-by the package.
 
 For example, the following data set was provided in as a comma-separated value file.
 It has the cycle threshold ($\ct$) recorded. 
@@ -63,21 +62,22 @@ For the Fluidigm/qPCR single cell expression functions to work as expected, we
 must use the \emph{expression threshold}, defined as $et = c_{\mbox{max}} - \ct$, which is proportional to the log-expression.
 
 Below, we load the package and the data, then compute the expression threshold from the $\ct$, and construct a \texttt{FluidigmAssay}.
-<<long-example,warning=FALSE, echo=-c(1,2,3, 4)>>=
+<<long-example,warning=FALSE, echo=-c(1,2,3, 4, 5)>>=
 suppressPackageStartupMessages(library(Biobase))
 library(knitr)
+library(SummarizedExperiment)
 opts_chunk$set(error=FALSE)
-#load_all('..')
 library(MAST)
+#load_all('..')
 library(data.table)
 library(plyr)
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
-vbeta.fa <- FluidigmAssay(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
+vbeta.fa <- FromFlatDF(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
                           primerid='Gene', measurement='Et', ncells='Number.of.Cells',
                           geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'),
-                          phenovars=c('Stim.Condition','Time'), id='vbeta all')
+                          phenovars=c('Stim.Condition','Time'), id='vbeta all', class='FluidigmAssay')
 show(vbeta.fa)
 @
 
@@ -91,15 +91,15 @@ normalizing factor) for the well.
 \texttt{geneid}, \texttt{cellvars}, \texttt{phenovars} all specify additional
 columns to be included in the \texttt{featureData}, \texttt{phenoData}  and
 \texttt{cellData} (\future{wellData}). The output is a \texttt{FluidigmAssay}
-object with \Sexpr{nrow(cData(vbeta.fa))} wells and \Sexpr{nrow(fData(vbeta.fa))} features. 
+object with \Sexpr{nrow(colData(vbeta.fa))} wells and \Sexpr{nrow(mcols(vbeta.fa))} features. 
 
 
 We can access the feature--level metadata and the cell--level metadata using
-the \texttt{fData} and \texttt{cData} accessors.
+the \texttt{mcols} and \texttt{colData} accessors.
 
 <<examineMeta>>=
-head(fData(vbeta.fa),3)
-head(cData(vbeta.fa),3)
+head(mcols(vbeta.fa),3)
+head(colData(vbeta.fa),3)
 @ 
 
 We see this gives us the set of genes measured in the assay, or the cell-level
@@ -108,55 +108,43 @@ cell belongs to, the subject it came from, the chip it was run on, the well
 id, the stimulation it was subjected to, and the timepoint for the experiment
 this cell was part of). The wellKey are concatenated idvars columns, helping to
 ensure consistency when splitting and merging \sca objects. 
-\future{Some of this ``cell--level'' information could
-  arguably be part of the \texttt{@phenoData} slot of the object. This
-  functionality is forthcoming but doesn't limit what can be done with the
-  package at this stage}.
+\subsection{Importing Matrix Data}
+Data can also be imported in matrix format.  
 
-\subsection{Subsetting, splitting, combining}
+\subsection{Subsetting, splitting, combining, melting}
 It's possible to subset \sca objects by wells and features.
 Square brackets (``['') will index on
-the first index and by features on the second index. 
+the first index (features) and by features on the second index (cells).
 Integer and boolean and indices may be used, as well as character vectors
-naming the cellKey or the feature (via the primerid).
-There is also a \texttt{subset} method, which will evaluate its argument in the frame of the \texttt{cData}, hence will subset by wells.
+naming the wellKey or the feature (via the primerid).
+There is also a \texttt{subset} method, which will evaluate its argument in the frame of the \texttt{colData}, hence will subset by wells.
 <<subsets,warning=FALSE>>=
-sub1 <- vbeta.fa[1:10,]
+sub1 <- vbeta.fa[,1:10]
 show(sub1)
 sub2 <- subset(vbeta.fa, Well=='A01')
 show(sub2)
-sub3 <- vbeta.fa[1:10,6:10]
+sub3 <- vbeta.fa[6:10, 1:10]
 show(sub3)
-cellData(sub3)
-featureData(sub3)
+colData(sub3)
+mcols(sub3)
 @
 The cellData and featureData \texttt{AnnotatedDataFrames} are subset
 accordingly as well.
 
-A \sca may be split into a list of \sca, which is known as an
-\texttt{SCASet}. The split method takes an argument which names the column
+A \sca may be split into a list of \sca. 
+The split method takes an argument which names the column
 (factor) on which to split the data. Each level of the factor will be placed
-in its own \sca within the SCASet.
+in its own \sca within the list.
 <<split,warning=FALSE>>=
 sp1 <- split(vbeta.fa, 'Subject.ID')
 show(sp1)
 @
 The splitting variable can either be a character vector naming column(s) of the \sca, or may be a \texttt{factor} or \texttt{list} of \texttt{factor}s.
 
-It's possible to combine \sca objects or an \texttt{SCASet} with the \texttt{combine} method.
+It's possible to combine \sca objects with the \texttt{cbind} method.
 <<combine,warning=FALSE, echo=-1>>=
-##unloadNamespace("gplots")
-combine(x=sp1[[1]],y=sp1[[2]])
-combine(sp1)
+cbind(sp1[[1]],sp1[[2]])
 @ 
-
-\subsubsection{Modifying the cellData or featureData}
-Combine also can take a \texttt{vector} or \texttt{data.frame} or \texttt{AnnotatedDataFrame} and append it to the cellData or featureData.  The number of rows must match the number of wells or number of features, and determines to which component the argument will be appended.
-<<combineDF>>=
-newData <- data.frame(otherVariable=rnorm(nrow(vbeta.fa)))
-vbetaWithNewData <- combine(vbeta.fa, newData)
-head(cData(vbetaWithNewData))
-@
 
 \subsection{Filtering}
 We can filter and perform some significance tests on the \sca.
@@ -189,16 +177,18 @@ There's also some functionality for visualizing the filtering.
 burdenOfFiltering(vbeta.fa, 'ncells', byGroup=TRUE)
 @
 
-\subsection{Significance testing under the Hurdle model}
+\subsection{Thresholding}
+TBD
+
+\section{Significance testing under the Hurdle model}
 There are two frameworks available in the package.  The first framework \texttt{zlm} offers a full linear model to allow arbitrary comparisons and adjustment for covariates. The second framework \texttt{LRT} can be considered essentially performing t-tests (respecting the discrete/continuous nature of the data) between pairs of groups.  \texttt{LRT} is subsumed by the first framework, but might be simpler for some users, so has been kept in the package.
 
 We'll describe \texttt{zlm}.  Models are specified in terms of the variable used as the measure and covariates present in the \texttt{cellData} using symbolic notation, just as the \texttt{lm} function in R.
 <<zlmArgs>>=
 vbeta.1 <- subset(vbeta.fa, ncells==1)
 ## Consider the first 20 genes
-vbeta.1 <- vbeta.1[,1:20] 
-layername(vbeta.1)
-head(cData(vbeta.1))
+vbeta.1 <- vbeta.1[1:20,] 
+head(colData(vbeta.1))
 @
 Now, for each gene, we can regress on \texttt{Et} the factors \texttt{Population} and \texttt{Subject.ID}.
 
@@ -206,14 +196,14 @@ In each gene, we'll fit a Hurdle model with a separate intercept for each popula
 A an S4 object of class ``ZlmFit'' is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
 <<zlmExample, warning=FALSE, message=FALSE, fig.width=6, fig.height=6>>=
 library(ggplot2)
-library(reshape)
+library(reshape2)
 library(abind)
 zlm.output <- zlm.SingleCellAssay(~ Population + Subject.ID, vbeta.1, method='glm',
                                   ebayes=TRUE)
 show(zlm.output)
 
 ## returns a data.table with a summary of the fit
-coefAndCI <- summary(zlm.output, logFC=FALSE)
+coefAndCI <- summary(zlm.output, logFC=FALSE)$datatable
 coefAndCI <- coefAndCI[contrast != '(Intercept)',]
 coefAndCI[,contrast:=abbreviate(contrast)]
 ggplot(coefAndCI, aes(x=contrast, y=coef, ymin=ci.lo, ymax=ci.hi, col=component))+
@@ -238,54 +228,65 @@ In fact, the \texttt{zlm} framework is quite general, and has wrappers for a var
 Multicore support is offered by setting \texttt{options(mc.cores=4)}, or however many cores your system has.
 <<lmerExample, warning=FALSE, message=FALSE, eval=TRUE>>=
 library(lme4)
-
-lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1,
-                                   method='glmer')
+lmer.output <- zlm.SingleCellAssay(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer', ebayes=FALSE)
 @
 
 \subsection{Two-sample Likelihood Ratio Test}
-Another way to test for differential expression is available through the \texttt{LRT} function, which is analogous to two-sample T tests.
-<<LRTexample, echo=-1>>=
-library(car)
+  Another way to test for differential expression is available through
+  the \texttt{LRT} function, which is analogous to two-sample T tests.
+<<LRTexample, eval=TRUE, error=TRUE>>=
 two.sample <- LRT(vbeta.1, 'Population', referent='CD154+VbetaResponsive')
-car::some(two.sample)
+head(two.sample) 
 @
-Here we compare each population (\Sexpr{unique(cData(vbeta.1)$Population)[-1]}) to \Sexpr{unique(cData(vbeta.1)$Population)[1]}.  
-The \texttt{Population} column shows which population is being compared, while \texttt{test.type} is \texttt{comb} for the combined normal theory/binomial test.  Column \texttt{primerid} gives the gene being tested, \texttt{direction} shows if the comparison group mean is greater (1) or less (-1) than the referent group, and \texttt{lrtstat} and \texttt{p.value} give the test statistic and $\chi^2$ p-value (two degrees of freedom).
 
-Other options are whether additional information about the tests are returned (\texttt{returnall=TRUE}) and if the testing should be stratified by a character vector naming columns in \texttt{cData} containing grouping variables (\texttt{groups}).
+Here we compare each population (\texttt{CD154-VbetaResponsive, CD154-VbetaUnresponsive CD154+VbetaUnresponsive, VbetaResponsive, VbetaUnresponsive}) to the \texttt{CD154+VbetaResponsive} population.
+  The \texttt{Population} column shows which population is being
+  compared, while \texttt{test.type} is \texttt{comb} for the combined
+  normal theory/binomial test.  Column \texttt{primerid} gives the
+  gene being tested, \texttt{direction} shows if the comparison group
+  mean is greater (1) or less (-1) than the referent group, and
+  \texttt{lrtstat} and \texttt{p.value} give the test statistic and
+  $\chi^2$ p-value (two degrees of freedom).
+Other options are whether additional information about the tests are
+returned (\texttt{returnall=TRUE}) and if the testing should be
+stratified by a character vector naming columns in \texttt{colData} 
+containing grouping variables (\texttt{groups}).
 
-These tests have been subsumed by \texttt{zlm.SingleCellAssay} but remain in the package for user convenience.
+These tests have been subsumed by \texttt{zlm.SingleCellAssay} but
+remain in the package for user convenience.
 
 \section{Use with single cell RNA-sequencing data}
 In RNA-sequencing data is essentially no different than qPCR-based single cell gene expression, once it has been aligned and mapped, if one is willing to reduce the experiment to counts or count-like data for a fixed set of genes/features.  
-We assume that suitable tools (eg, SAMseq or TopHat) have been applied to do this.
+We assume that suitable tools (eg, RSEM, Kallisto or TopHat) have been applied to do this.
 
-**More details on convenience functions for RNAseq data**
+An example of this use is provided in a vignette.  Type \texttt{vignette('MAITAnalysis')} to view.
+\begin{comment}
+  \section{Implementation Details}
+  Here we provide some background on the implementation of the
+  package.
 
-\section{Implementation Details}
-Here we provide some background on the implementation of the package. 
+  There are several fundamental new object types provided by the
+  package.  \texttt{SummarizedExperiment} is the base class, which is
+  provides an array-like object to store tabular data that might have
+  multiple derived representations.  A \texttt{SingleCellAssay} object
+  contains a \texttt{DataLayer}, plus cell and feature data.  New
+  types of single cell assays can be incorportated by extending
+  \texttt{SingleCellAssay}.
 
-There are several fundamental new object types provided by the package.
-\texttt{DataLayer} is the base class, which is provides an array-like object to store tabular data that might have multiple derived representations.
-A \texttt{SingleCellAssay} object contains a \texttt{DataLayer}, plus cell and feature data.
-New types of single cell assays can be incorportated by extending
-\texttt{SingleCellAssay}.
+  Different derived classes of \sca require different fields to be
+  present in the \texttt{cellData} and \texttt{featureData} These
+  requirements are set for each class by the slots \texttt{cmap} and
+  \texttt{fmap}, giving required columns in cell and feature data,
+  respectively.
 
-Different derived classes of \sca require different fields to be present in the \texttt{cellData} and \texttt{featureData}
-These requirements are set for each class by the slots \texttt{cmap} and \texttt{fmap}, giving required columns in cell and feature data, respectively.
+  We have found it useful to enforce naming conventions to reduce
+  confusion when combining data across projects, so the constructor
+  will rename the fields the user provides to match the values
+  specifed in \texttt{cmap} and \texttt{fmap}.
 
-We have found it useful to enforce naming conventions to reduce confusion when combining data across projects, so the constructor will rename the fields the user provides to match the values specifed in \texttt{cmap} and \texttt{fmap}.
-
-Sets of single cell assays are stored in the \texttt{SCASet} class. A
-constructor for SCASet is provided to construct an SCASet directly from a data
-frame. 
-Alternatively, a SingleCellAssay or derived class can be \texttt{split}
-on an arbitray variable 
-to produce an SCASet.
-
-On construction of a \texttt{SingleCellAssay} object, the package tests for
-completeness, and will fill in the missing data (with NA) if it is not, so
-assays with lots of missing data can make reading marginally slower. 
-
+  On construction of a \texttt{SingleCellAssay} object, the package
+  tests for completeness, and will fill in the missing data (with NA)
+  if it is not, so assays with lots of missing data can make reading
+  marginally slower.
+\end{comment}
 \end{document}

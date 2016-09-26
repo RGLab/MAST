@@ -33,4 +33,7 @@ A \code{data.frame} with one row per gene-\code{groups} is returned with some ad
 \author{
 Andrew McDavid
 }
+\seealso{
+plotSCAConcordance
+}
 

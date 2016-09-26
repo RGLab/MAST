@@ -13,7 +13,7 @@ defaultPrior(names)
 3d array, with leading dimension giving the prior 'loc'ation, 'scale' and degrees of freedom (df),
 second dimension giving the component ('C'ontinuous or 'D'iscrete)
 and trailing dimension giving the coefficient to which the prior applies.
-The location is initialized to be 0, the scale to 2, and degrees of freedom of 1, following the default of \link{bayesglm}
+The location is initialized to be 0, the scale to 2, and degrees of freedom of 1, following the default of bayesglm.
 }
 \description{
 Initialize a prior to be used a prior for BayeGLMlike/BayesGLMlike2

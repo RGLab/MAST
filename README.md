@@ -13,12 +13,14 @@ MAST supports:
 *  Gene set enrichment analysis, corrected for covariates and gene-gene correlations
 *  Exploration of gene-gene correlations and co-expression
 
-A [range of examples](https://github.com/RGLab/MASTdata/tree/master/vignettes) are available from the paper published in [Genome Biology](http://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0844-5).
-A vignette (in need of updating) is also available in the package via `vignette('MAST-intro')`.
+
+Vignettes are available in the package via `vignette('MAITAnalysis')` or `vignette('MAST-intro')`.
 
 New Features and announcements
 ------------
-- MAST will soon be ported to use `SummarizedExperiment` under the hood, and submitted to Bioconductor.  See the summarizedExpt branch.
+- MAST has been ported to use `SummarizedExperiment` under the hood, and will be submitted shortly Bioconductor.
+The main difference is that the data container is now transposed to follow bioconductor standards.
+The older version will remain accessible under branch *MASTClassic*
 
 Installation Instructions
 ------------
@@ -30,11 +32,9 @@ Then you may install or update `MAST` with:
 
      install.packages('devtools')
      library(devtools)
-     install_github('RGLab/MAST')
+     install_github('RGLab/MAST)
      # *or* if you don't have a working latex setup
-     install_github(RGLab/'MAST', build_vignettes=FALSE)
+     install_github('RGLab/MAST, build_vignettes=FALSE)
      vignette('MAST-intro')
+     vignette('MAITAnalysis')
 
-
-
-![doi/10.5281/zendoo.9810](http://zenodo.org/badge/doi/10.5281/zenodo.9810.png)

@@ -4,9 +4,9 @@ methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm','ridge'),
 
 
 if(getRversion() >= "2.15.1") globalVariables(c(
-                  'keyword',
-                 'lmMethod', 
-                  'implementsEbayes')) #zlm, zlm.SingleCellAssay
+                                  'keyword',
+                                  'lmMethod', 
+                                  'implementsEbayes')) #zlm, zlm.SingleCellAssay
 
 
 residualsHook <- function(fit){
@@ -18,19 +18,24 @@ revealHook <- function(zlm){
 }
 
 ##' @importFrom plyr laply
-#'@ export collectResiduals
+##' @export
 collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
-    if(newLayerName %in% dimnames(sca)[[3]]) warning('Overwriting layer', newLayerName) else     sca <- addlayer(sca, newLayerName)
-    layer(sca) <- newLayerName
-    mat <- t(laply(revealHook(zlm), function(x) x))
-    exprs(sca) <- mat
+    if(any(newLayerBool <- assayNames(sca) %in% newLayerName)){
+        warning('Overwriting layer', newLayerName)
+        i <- which(newLayerBool)
+    } else{
+        i <- length(assays(sca))+1
+    }
+    mat <- laply(revealHook(zlm), function(x) x)
+    assay(sca, i) <- mat
+    assayNames(sca, i) <- newLayerName
     sca
 }
 
 ## for each column in exprMat, fit obj and return an environment containing the init summaries
 ## exprMat should have column names containing the names of the genes
 ## hook is an (optional) function called on each fitted object
-                      
+
 
 ##' Convenience function for running a zero-inflated regression
 ##'
@@ -39,7 +44,7 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##' and (conditional on the the response being >0), the continuous process is Gaussian, ie, a linear regression.
 ##' @param formula model formula
 ##' @param data a data.frame, list, environment or SingleCellAssay in which formula is evaluated
-##' @param method one of 'glm' or 'glmer'.  See SingleCellAssay:::methodDict for other possibilities.
+##' @param method one of 'glm', 'glmer' or 'bayesglm'.  See MAST:::methodDict for other possibilities.
 ##' @param silent if TRUE suppress common errors from fitting continuous part
 ##' @param ... passed to \code{fit}, and eventually to the linear model fitting function
 ##' @return list with "disc"rete part and "cont"inuous part 
@@ -54,9 +59,9 @@ collectResiduals <- function(zlm, sca, newLayerName='Residuals'){
 ##' summary.glm(fit$disc)
 ##' summary.glm(fit$cont)
 ##'
-##' @seealso GLMlike, LMERlike
+##' @seealso GLMlike, LMERlike, BayesGLMlike
 ##' @import stringr
-zlm <- function(formula, data, method='glm',silent=TRUE, ...){
+zlm <- function(formula, data, method='bayesglm',silent=TRUE, ...){
     ## perhaps we should be generic, but since we are dispatching on second argument, which might be an S3 class, let's just do this instead.
     if(inherits(data, 'SingleCellAssay')){
         return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, ...))
@@ -75,16 +80,17 @@ zlm <- function(formula, data, method='glm',silent=TRUE, ...){
 }
 
 summary.zlm <- function(out){
-  summary(out$cont)
-  summary(out$disc)
+    summary(out$cont)
+    summary(out$disc)
 }
- 
+
 ##' Zero-inflated regression for SingleCellAssay 
 ##'
 ##' For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
 ##' Return an object of class \code{ZlmFit} containing slots giving the coefficients, variance-covariance matrices, etc.
 ##' After each gene, optionally run the function on the fit named by 'hook'
-##' 
+##'
+##' @section Empirical Bayes variance regularization:
 ##' The empirical bayes regularization of the gene variance assumes that the precision (1/variance) is drawn from a
 ##' gamma distribution with unknown parameters.
 ##' These parameters are estimated by considering the distribution of sample variances over all genes.
@@ -93,7 +99,7 @@ summary.zlm <- function(out){
 ##' method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
 ##' H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 ##'
-##' @param formula a formula with the measurement variable on the LHS and predictors present in cData on the RHS
+##' @param formula a formula with the measurement variable on the LHS and predictors present in colData on the RHS
 ##' @param sca SingleCellAssay object
 ##' @param method character vector, either 'glm', 'glmer' or 'bayesglm'
 ##' @param silent Silence common problems with fitting some genes
@@ -107,18 +113,17 @@ summary.zlm <- function(out){
 ##' @param ... arguments passed to the S4 model object upon construction.  For example, \code{fitArgsC} and \code{fitArgsD}, or \code{coefPrior}.
 ##' @return a object of class \code{ZlmFit} with methods to extract coefficients, etc.
 ##' @export
-##' @seealso ebayes, glmlike-class, ZlmFit-class
+##' @seealso ebayes, glmlike-class, ZlmFit-class, BayesGLMlike-class
 ##' @examples
-##' \dontrun{
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1))
+##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:10,])
 ##' slotNames(zlmVbeta)
-##' coef(zlmVbeta, 'D')['CD27',]
-##' 
-##' vcov(zlmVbeta, 'D')[,,'CD27']
+##' #A matrix of coefficients
+##' coef(zlmVbeta, 'D')['CCL2',]
+##' #An array of covariance matrices
+##' vcov(zlmVbeta, 'D')[,,'CCL2']
 ##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
-##' }
-zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=FALSE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
+zlm.SingleCellAssay <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
     ## Default call
     if(missing(LMlike)){
         ## Which class are we using for the fits...look it up by keyword
@@ -135,21 +140,21 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
         if(ebayes){
             if(!methodDict[lmMethod==method,implementsEbayes]) stop('Method', method, ' does not implement empirical bayes variance shrinkage.')
             ebparm <- ebayes(sca, ebayesControl, Formula)
-            priorVar <- ebparm['v']
-            priorDOF <- ebparm['df']
+            priorVar <- ebparm[['v']]
+            priorDOF <- ebparm[['df']]
             stopifnot(all(!is.na(ebparm)))
         }
         ## initial value of priorVar, priorDOF default to no shrinkage
-        obj <- new(method, design=cData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
+        obj <- new(method, design=colData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
         ## End Default Call
     } else{
         ## Refitting
         if(!missing(formula)) warning("Ignoring formula and using model defined in 'objLMLike'")
         if(!inherits(LMlike, 'LMlike')) stop("'LMlike' must inherit from class 'LMlike'")
-        ## update design matrix with possibly new/permuted cData
-                                        ##obj <- update(LMlike, design=cData(sca))
+        ## update design matrix with possibly new/permuted colData
+        ##obj <- update(LMlike, design=colData(sca))
         obj <- LMlike
-       }
+    }
     
     ## avoiding repeated calls to the S4 object speeds calls on large sca
     ## due to overzealous copying semantics on R's part
@@ -194,14 +199,14 @@ zlm.SingleCellAssay <- function(formula, sca, method='glm', silent=TRUE, ebayes=
     if(!parallel || getOption('mc.cores', 1L)==1){
         listOfSummaries <- lapply(listEE, .fitGeneSet)
     } else{
-    listOfSummaries <- parallel::mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
-}
+        listOfSummaries <- parallel::mclapply(listEE, .fitGeneSet, mc.preschedule=TRUE, mc.silent=silent)
+    }
 
     if(onlyCoef){
         out <- do.call(abind, c(listOfSummaries, rev.along=0))
         return(aperm(out, c(3,1,2)))
     }
-        
+    
     ## test for try-errors
     cls <- sapply(listOfSummaries, function(x) class(x))
     complain <- if(force) warning else stop
