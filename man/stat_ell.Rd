@@ -51,6 +51,7 @@ plt <- ggplot(predicted)+aes(x=invlogit(muD),y=muC,xse=seD,yse=seC,col=sample)+
    geom_point(size=0.5)+scale_x_continuous("Proportion expression")+
    scale_y_continuous("Estimated Mean")+
    stat_ell(aes(x=muD,y=muC),level=0.95, invert='x')
+## plot with inverse logit transformed x-axis
 print(plt)
 # doesn't do anything in this case because there are no inestimable coefficients
 predictI <- impute(predicted, groupby='primerid')

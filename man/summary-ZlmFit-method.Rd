@@ -19,6 +19,9 @@
 
 \item{...}{ignored}
 }
+\value{
+\code{data.table}
+}
 \description{
 Returns a \code{data.table} with a special print method that shows the top 2 most significant genes by contrast.
 This \code{data.table} contains columns: 
