@@ -18,6 +18,9 @@ plotSCAConcordance(SCellAssay, NCellAssay, filterCriteria = list(nOutlier = 2,
 
 \item{...}{passed to \code{getConcordance}}
 }
+\value{
+printed plot
+}
 \description{
 Plot the average expression value of two subsets of the data.
 Generally these might be 1 cell and multiple-cell replicates,

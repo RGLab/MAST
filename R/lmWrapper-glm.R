@@ -13,6 +13,7 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 #' @param object \code{GLMlike}
 #' @param which \code{character}, one of 'C', 'D'.
 #' @param ... ignored
+#' @return covariance matrix
 #' @export
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))

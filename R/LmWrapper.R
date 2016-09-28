@@ -215,6 +215,7 @@ setMethod('waldTest', signature=c(object='LMlike', hypothesis='matrix'), functio
 }
 
 #'@describeIn LMlike Likelihood ratio test dropping entire term specified by \code{character} \code{hypothesis} naming a term in the symbolic formula.
+#' @return see section "Methods (by generic)"
 setMethod('lrTest', signature=c(object='LMlike', hypothesis='character'), function(object, hypothesis){
     Formula <- update.formula(object@formula, formula(sprintf(' ~. - %s', hypothesis)))
     U <- update(object, Formula)

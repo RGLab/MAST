@@ -38,6 +38,9 @@
 
 \item{...}{ignored}
 }
+\value{
+see "Methods (by generic)"
+}
 \description{
 This holds output from a call to zlm.SingleCellAssay.  Many methods are defined to operate on it.  See below.
 }
@@ -94,6 +97,22 @@ This holds output from a call to zlm.SingleCellAssay.  Many methods are defined 
 
 \item{\code{hookOut}}{a list of length ngenes containing output from a hook function, if \code{zlm} was called with one}
 }}
+\examples{
+data(vbetaFA)
+zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
+#Coefficients and standard errors
+coef(zlmVbeta, 'D')
+coef(zlmVbeta, 'C')
+se.coef(zlmVbeta, 'C')
+#Test for a Population effect by dropping the whole term (a 5 degree of freedom test)
+lrTest(zlmVbeta, 'Population')
+#Test only if the VbetaResponsive cells differ from the baseline group
+lrTest(zlmVbeta, CoefficientHypothesis('PopulationVbetaResponsive'))
+#Test if there is a difference between CD154+/Unresponsive and CD154-/Unresponsive.
+#Note that because we parse the expression, that the columns must be enclosed in backquotes to protect the \\quote{+} and \\quote{-} characters.
+lrTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
+waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
+}
 \seealso{
 zlm.SingleCellAssay summary,ZlmFit-method
 }

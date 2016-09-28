@@ -2,7 +2,7 @@
 % Please edit documentation in R/stat_ell.R
 \name{stat_ell}
 \alias{stat_ell}
-\title{Plot confidence ellipse in 2D.}
+\title{Plot confidence ellipse in 2D}
 \usage{
 stat_ell(mapping = NULL, data = NULL, geom = "polygon",
   position = "identity", na.rm = FALSE, show.legend = NA,
@@ -34,7 +34,25 @@ stat_ell(mapping = NULL, data = NULL, geom = "polygon",
 
 \item{...}{other arguments passed on to layer. These are often aesthetics, used to set an aesthetic to a fixed value, like color = "red" or size = 3. They may also be parameters to the paired geom/stat.}
 }
+\value{
+ggplot \code{layer}
+}
 \description{
-Plot confidence ellipse in 2D.
+The focus of the ellipse will be the point (x, y) and semi-major axes aligned with the coordinate axes and scaled by xse, yse and the level.
+}
+\examples{
+data(vbetaFA)
+library(ggplot2)
+zlmCond <- zlm(~Stim.Condition, vbetaFA[1:10,])
+MM <- model.matrix(~Stim.Condition,unique(colData(vbetaFA)[,c("Stim.Condition"),drop=FALSE]))
+predicted <- predict(zlmCond,modelmatrix=MM)
+plt <- ggplot(predicted)+aes(x=invlogit(muD),y=muC,xse=seD,yse=seC,col=sample)+
+   facet_wrap(~primerid,scales="free_y")+theme_linedraw()+
+   geom_point(size=0.5)+scale_x_continuous("Proportion expression")+
+   scale_y_continuous("Estimated Mean")+
+   stat_ell(aes(x=muD,y=muC),level=0.95, invert='x')
+print(plt)
+# doesn't do anything in this case because there are no inestimable coefficients
+predictI <- impute(predicted, groupby='primerid')
 }
 

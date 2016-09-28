@@ -30,6 +30,9 @@
 
 \item{singular}{\code{logical}. Should NA coefficients be returned?}
 }
+\value{
+see the section "Methods (by generic)"
+}
 \description{
 A horrendous hack is employed in order to do arbitrary likelihood ratio tests: the model matrix is built, the names possibly mangled, then fed in as a symbolic formula to glmer/lmer.
 This is necessary because there is no (easy) way to specify an arbitrary fixed-effect model matrix in glmer.

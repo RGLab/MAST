@@ -61,6 +61,7 @@ setClass('FluidigmAssay', contains='SingleCellAssay', prototype=list(cmap=Fluidi
 ##'
 ##' Wrapper around modeling function to make them behave enough alike that Wald tests and Likelihood ratio are easy to do.
 ##' To implement a new type of zero-inflated model, extend this class.
+##' Depending on how different the method is, you will definitely need to override the \code{fit} method, and possibly the \code{model.matrix}, \code{model.matrix<-}, \code{update}, \code{coef}, \code{vcov}, and \code{logLik} methods.
 ##'
 ##' @section Slots:
 ##' \describe{
@@ -68,7 +69,7 @@ setClass('FluidigmAssay', contains='SingleCellAssay', prototype=list(cmap=Fluidi
 ##' \item{fitC}{The continuous fit}
 ##' \item{fitD}{The discrete fit}
 ##' \item{response}{The left hand side of the regression}
-##' \item{fitted}{A \code{logical} with components "C" and "D", TRUE if the respective component has converge}
+##' \item{fitted}{A \code{logical} with components "C" and "D", TRUE if the respective component has converged}
 ##' \item{formula}{A \code{formula} for the regression}
 ##' \item{fitArgsC}{}
 ##' \item{fitArgsD}{Both \code{list}s giving arguments that will be passed to the fitter (such as convergence criteria or case weights)}
@@ -94,7 +95,7 @@ setClass('LMlike',
 
 ##' Wrapper for regular glm/lm
 ##'
-##' @slot weightFun function to map expression values to probabilities of expression
+##' @slot weightFun function to map expression values to probabilities of expression.  Currently unused.
 setClass('GLMlike', contains='LMlike', slots=c(weightFun='function'), prototype=list(weightFun=function(x){
     ifelse(x>0, 1, 0)
 }))
@@ -175,6 +176,21 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @slot converged output that may optionally be set by the underlying modeling function
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
 ##' @seealso zlm.SingleCellAssay summary,ZlmFit-method
+##' @examples
+##' data(vbetaFA)
+##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
+##' #Coefficients and standard errors
+##' coef(zlmVbeta, 'D')
+##' coef(zlmVbeta, 'C')
+##' se.coef(zlmVbeta, 'C')
+##' #Test for a Population effect by dropping the whole term (a 5 degree of freedom test)
+##' lrTest(zlmVbeta, 'Population')
+##' #Test only if the VbetaResponsive cells differ from the baseline group
+##' lrTest(zlmVbeta, CoefficientHypothesis('PopulationVbetaResponsive'))
+##' #Test if there is a difference between CD154+/Unresponsive and CD154-/Unresponsive.
+##' #Note that because we parse the expression, that the columns must be enclosed in backquotes to protect the \quote{+} and \quote{-} characters.
+##' lrTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
+##' waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
 setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SummarizedExperiment0', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
 ##' An S4 class for Gene Set Enrichment output

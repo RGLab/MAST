@@ -34,6 +34,9 @@ partialScore(x, effectRegex)
 \item{effectRegex}{a regular expression naming columns of the design corresponding to \eqn{Z_0}.
 Generally these should be the treatment effects of interest.}
 }
+\value{
+copy of \code{sca} with new layer
+}
 \description{
 After each gene is fit, a hook function can optionally be run and the output saved.
 This allows extended computations to be done using the fitted model, without keeping it in memory.

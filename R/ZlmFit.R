@@ -65,6 +65,7 @@ setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), funct
 })
 
 ##' @describeIn ZlmFit Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
+##' @return see "Methods (by generic)"
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
     testIdx <- h@index
@@ -190,6 +191,7 @@ normalci <- function(center, se, level){
 ##' @param doLRT if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.
 ##' @param level what level of confidence coefficient to return.  Defaults to 95 percent. 
 ##' @param ... ignored
+##' @return \code{data.table}
 ##' @seealso print.summaryZlmFit
 ##' @examples
 ##' data(vbetaFA)
@@ -268,6 +270,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ##' @param n number of genes to show
 ##' @param by one of 'C' , 'D' or 'logFC' for continuous, discrete and log fold change z-scores for each contrast
 ##' @param ... ignored
+##' @return prints a pretty table and invisibly returns a \code{data.table} representing the table.
 ##' @seealso summary,ZlmFit-method
 ##' @export
 print.summaryZlmFit <- function(x, n=2, by='logFC', ...){

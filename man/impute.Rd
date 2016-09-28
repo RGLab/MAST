@@ -12,10 +12,14 @@ impute(object, groupby)
 \item{groupby}{Variables (column names in predict) to group by for imputation (facets of the plot)}
 }
 \value{
-data.table with missing con
+data.table
 }
 \description{
 If there are no positive observations for a contrast, it is generally not estimible.
 However, for the purposes of testing we can replace it with the least favorable value with respect to the contrasts that are defined.
+}
+\examples{
+##See stat_ell
+example(stat_ell)
 }
 

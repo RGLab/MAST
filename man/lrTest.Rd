@@ -18,6 +18,10 @@ array giving test statistics
 Compares the change in likelihood between the current model and one subject to contrasts tested in \code{hypothesis}.
 \code{hypothesis} can be one of a \code{character} giving complete factors or terms to be dropped from the model, \code{CoefficientHypothesis} giving names of  coefficients to be dropped, \code{Hypothesis} giving contrasts using the symbolically, or a contrast \code{matrix}, with one row for each coefficient in the full model, and one column for each contrast being tested.
 }
+\examples{
+#see ZlmFit-class for examples
+example('ZlmFit-class')
+}
 \seealso{
 fit
 

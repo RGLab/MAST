@@ -30,6 +30,7 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
 #'@param groups is a character vector naming the group within which to perform filtering. NULL by default.
 #' @param ... passed to \code{getConcordance}
 #' @seealso getConcordance
+#' @return printed plot
 #'@examples
 #' data(vbetaFA)
 #' sca1 <- subset(vbetaFA, ncells==1)

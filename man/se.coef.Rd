@@ -17,6 +17,10 @@ vector or matrix
 \description{
 Given a fitted model, return the standard errors of the coefficient
 }
+\examples{
+#see ZlmFit-class for examples
+example('ZlmFit-class')
+}
 \seealso{
 ZlmFit-class
 }

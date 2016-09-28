@@ -6,7 +6,9 @@
 #' @param ... ignored
 #' @return Predictions and standard errors.
 #' @export
-#'
+#' @examples
+#' ##See stat_ell
+#' example(stat_ell)
 predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL, ...){
     C = coef(object,"C")[,colnames(modelmatrix)]
     D = coef(object,"D")[,colnames(modelmatrix)]
@@ -44,8 +46,11 @@ if(getRversion() >= "2.15.1") globalVariables(c('muC', 'muD', 'seC'))
 #' @param object Output of predict
 #' @param groupby Variables (column names in predict) to group by for imputation (facets of the plot)
 #'
-#' @return data.table with missing con
+#' @return data.table
 #' @export
+#' @examples
+#' ##See stat_ell
+#' example(stat_ell)
 impute <- function(object,groupby){
     setDT(object)
     object[,missing:=any(is.na(muC))&!is.na(muD),eval(groupby)]

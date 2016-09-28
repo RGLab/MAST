@@ -25,6 +25,7 @@ revealHook <- function(zlm){
 ##' 
 ##' @section Partial residuals:
 ##' It's also possible to consider partial residuals, in which the contribution of a particular covariate is added back into the model.
+##' @return copy of \code{sca} with new layer
 ##' @examples
 ##' data(vbetaFA)
 ##' svbeta <- subset(vbetaFA, ncells==1)
@@ -178,6 +179,7 @@ influence.bayesglm <- function (model, do.coef = TRUE, ...)
 #' @param infl see \link{rstandard}
 #' @param type see \link{rstandard}
 #' @param ... ignored
+#' @return \code{numeric} residuals
 rstandard.bayesglm <- function (model, infl = influence(model, do.coef = FALSE), type = c("deviance", "pearson"), ...)
 {
     type <- match.arg(type)

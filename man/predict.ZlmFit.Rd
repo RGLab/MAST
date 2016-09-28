@@ -21,4 +21,8 @@ Predictions and standard errors.
 \description{
 Return predictions from a ZlmFit object.
 }
+\examples{
+##See stat_ell
+example(stat_ell)
+}
 

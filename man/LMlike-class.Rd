@@ -43,9 +43,13 @@
 
 \item{hypothesis}{one of a \code{CoefficientHypothesis}, \code{Hypothesis} or contrast \code{matrix}.}
 }
+\value{
+see section "Methods (by generic)"
+}
 \description{
 Wrapper around modeling function to make them behave enough alike that Wald tests and Likelihood ratio are easy to do.
 To implement a new type of zero-inflated model, extend this class.
+Depending on how different the method is, you will definitely need to override the \code{fit} method, and possibly the \code{model.matrix}, \code{model.matrix<-}, \code{update}, \code{coef}, \code{vcov}, and \code{logLik} methods.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -74,7 +78,7 @@ To implement a new type of zero-inflated model, extend this class.
 \item{fitC}{The continuous fit}
 \item{fitD}{The discrete fit}
 \item{response}{The left hand side of the regression}
-\item{fitted}{A \code{logical} with components "C" and "D", TRUE if the respective component has converge}
+\item{fitted}{A \code{logical} with components "C" and "D", TRUE if the respective component has converged}
 \item{formula}{A \code{formula} for the regression}
 \item{fitArgsC}{}
 \item{fitArgsD}{Both \code{list}s giving arguments that will be passed to the fitter (such as convergence criteria or case weights)}

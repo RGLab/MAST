@@ -225,6 +225,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
 #' @param object \code{LMERlike}
 #' @param which \code{character}, one of 'C', 'D'.
 #' @param ... In the case of \code{vcov}, ignored.  In the case of \code{update}, passed to \code{model.matrix}.
+#' @return see the section "Methods (by generic)"
 setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov

@@ -6,7 +6,7 @@
 ##'
 ##' These functions are now all deprecated and will be removed in a future release.
 ##'
-##' @section Replacements Functions:
+##' @section Replacement Functions:
 ##' You should transition to use the following replacements:
 ##' \describe{
 ##'   \item{\code{cData}}{\link{colData}}
@@ -19,6 +19,11 @@
 ##' @details \code{cData(sc)}: Return the \code{cellData} \code{data.frame}.
 ##' @seealso exprs
 ##' @rdname cData
+##' @examples
+##' data(vbetaFA)
+##' stopifnot(all.equal(hushWarning(cData(vbetaFA), 'deprecated'),colData(vbetaFA)))
+##' stopifnot(all.equal(hushWarning(fData(vbetaFA), 'deprecated'), mcols(vbetaFA)))
+##' stopifnot(all.equal(hushWarning(exprs(vbetaFA), 'deprecated'), t(assay(vbetaFA))))
 ##' @export
 setGeneric('cData', function(sc) standardGeneric('cData'))
 
@@ -28,6 +33,10 @@ setGeneric('cData', function(sc) standardGeneric('cData'))
 ##' @param sc An object with a \code{wellKey}
 ##' @return \code{integer} giving the unique id generated
 ##' @aliases getwellKey,SingleCellAssay-method
+##' @examples
+##' data(vbetaFA)
+##' getwellKey(vbetaFA)
+##' colData(vbetaFA)$wellKey
 ##' @export
 setGeneric('getwellKey', function(sc) standardGeneric('getwellKey'))
 
@@ -90,6 +99,10 @@ setGeneric('fit', function(object, response, ...) standardGeneric('fit'))
 ##' @param ... passed to methods
 ##' @seealso ZlmFit-class
 ##' @return vector or matrix
+##' 
+##' @examples
+##' #see ZlmFit-class for examples
+##' example('ZlmFit-class')
 setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
 
 
@@ -105,6 +118,10 @@ setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
 ##' @seealso waldTest
 ##' @seealso Hypothesis
 ##' @seealso CoefficientHypothesis
+##' 
+##' @examples
+##' #see ZlmFit-class for examples
+##' example('ZlmFit-class')
 setGeneric('lrTest', function(object, hypothesis) standardGeneric('lrTest'))
 
 ##' Run a Wald test
@@ -118,6 +135,9 @@ setGeneric('lrTest', function(object, hypothesis) standardGeneric('lrTest'))
 ##' @seealso fit
 ##' @seealso lrTest
 ##' @seealso lht
+##' @examples
+##' #see ZlmFit-class for examples
+##' example('ZlmFit-class')
 setGeneric('waldTest', function(object, hypothesis) standardGeneric('waldTest'))
 
 ##' Degrees of freedom of Zero inflated model

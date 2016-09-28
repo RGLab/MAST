@@ -10,9 +10,13 @@ invlogit(x)
 \item{x}{numeric}
 }
 \value{
-inverse
+numeric
 }
 \description{
 Inverse of logistic transformation
+}
+\examples{
+x <- 1:5
+invlogit(log(x/(1-x)))
 }
 

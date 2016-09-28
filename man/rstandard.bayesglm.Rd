@@ -16,6 +16,9 @@
 
 \item{...}{ignored}
 }
+\value{
+\code{numeric} residuals
+}
 \description{
 rstandard bayesglm object S3 method
 }

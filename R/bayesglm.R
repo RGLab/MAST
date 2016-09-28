@@ -1010,7 +1010,10 @@ logit <- function (x) {
 ##' 
 ##' @export
 ##' @param x numeric
-##' @return inverse
+##' @return numeric
+##' @examples
+##' x <- 1:5
+##' invlogit(log(x/(1-x)))
 invlogit <- function (x) {
     1/(1+exp(-x))
 }

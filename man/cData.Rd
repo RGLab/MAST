@@ -46,7 +46,7 @@ These functions are now all deprecated and will be removed in a future release.
 
 \code{combine(x, y, ...)}: Concatenate two experiments along rows/columns
 }
-\section{Replacements Functions}{
+\section{Replacement Functions}{
 
 You should transition to use the following replacements:
 \describe{
@@ -55,6 +55,12 @@ You should transition to use the following replacements:
   \item{\code{exprs}}{\link{assay}}
   \item{\code{combine}}{\link{cbind2} or \link{rbind2}}
 }
+}
+\examples{
+data(vbetaFA)
+stopifnot(all.equal(hushWarning(cData(vbetaFA), 'deprecated'),colData(vbetaFA)))
+stopifnot(all.equal(hushWarning(fData(vbetaFA), 'deprecated'), mcols(vbetaFA)))
+stopifnot(all.equal(hushWarning(exprs(vbetaFA), 'deprecated'), t(assay(vbetaFA))))
 }
 \seealso{
 exprs

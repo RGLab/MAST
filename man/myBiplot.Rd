@@ -22,6 +22,9 @@ myBiplot(pc, colorfactor, scaling = 100, nudge = 1.2, N = 10,
 
 \item{...}{passed to plot}
 }
+\value{
+printed plot
+}
 \description{
 Creates a custom BiPlot for visualizing the results of PCA
 }

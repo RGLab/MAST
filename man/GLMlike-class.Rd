@@ -15,6 +15,9 @@
 
 \item{...}{ignored}
 }
+\value{
+covariance matrix
+}
 \description{
 Wrapper for regular glm/lm
 }
@@ -25,6 +28,6 @@ Wrapper for regular glm/lm
 \section{Slots}{
 
 \describe{
-\item{\code{weightFun}}{function to map expression values to probabilities of expression}
+\item{\code{weightFun}}{function to map expression values to probabilities of expression.  Currently unused.}
 }}
 

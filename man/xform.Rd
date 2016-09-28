@@ -11,6 +11,9 @@ xform(mat, scale = FALSE)
 
 \item{scale}{should the columns also be scaled to have unit variance}
 }
+\value{
+\code{matrix}
+}
 \description{
 This centers each column of \code{mat} around the mean of its non-zero values.
 }
