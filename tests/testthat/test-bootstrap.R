@@ -39,7 +39,7 @@ test_that("Only return coef works", {
     expect_equal(dim(zzinit2)[1], nrow(fd2))
 })
 
-cl <- parallel::makeForkCluster(2)
+cl <- parallel::makeCluster(2)
 test_that("Bootstrap", {
     zf <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
     boot <- pbootVcov1(cl, zf, R=3)
