@@ -39,6 +39,8 @@ test_that("Only return coef works", {
     expect_equal(dim(zzinit2)[1], nrow(fd2))
 })
 
+#See https://github.com/hadley/testthat/issues/144
+Sys.setenv("R_TESTS" = "")
 cl <- parallel::makeCluster(2)
 test_that("Bootstrap", {
     zf <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
@@ -80,7 +82,7 @@ test_that('Continuous group coefficient is close to expected for high expression
         3.5*Y$cov[2,2] #expected covariance of groupB
         )
 })
-clusterEvalQ(cl, set.seed(12345))
+parallel::clusterEvalQ(cl, set.seed(12345))
 boot <- pbootVcov1(cl, zfit, R=50)
 bootmeans <- colMeans(boot, na.rm=TRUE, dims=1)
 
@@ -99,7 +101,7 @@ test_that('Bootstrap recovers covariance', {
     expect_lt(abs(log(mean(sub[upper.tri(sub)])/mean(esub[upper.tri(esub)]))), .4)
 })
 
-stopCluster(cl)
+parallel::stopCluster(cl)
 
 ## M <- melt(boot[,,'groupB','C'])
 ## ggplot(M, aes(x=value))+geom_density() + facet_wrap(~X2)
