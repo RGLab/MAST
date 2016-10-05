@@ -1,25 +1,18 @@
-library(testthat)
-library(devtools)
-library(Biobase)
-
 geneid="Gene"
 primerid='Gene'
 measurement='et'
-idvars=c('Subject.ID', 'Chip.Number', 'Stim.Condition', 'Population', 'Well')
-ncells <- 'Number.of.Cells'
+idvars=c('Subject.ID', 'Chip.Number', 'Stim.Condition', 'Population', 'Well', 'Number.of.Cells')
 phenovars=NULL
 cellvars='Experiment.Number'
 featurevars=NULL
+ncells <- 'Number.of.Cells'
 
-##Tests depending on vbeta
-data(vbeta)
-test_that("vbeta can be loaded",{
-  expect_that(vbeta,is_a("data.frame"))
-})
+## Currently needed because devtools 1.11.0 has broken data()
+## See https://github.com/mlr-org/mlr/pull/835
+## try(load(system.file('data/vbeta.RData', package='MAST')))
+data(vbeta,package='MAST', envir = environment())
 
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
-fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid)
-test_that('could create FluidigmAssay', {
-  expect_that(fd, is_a('SingleCellAssay'))
-    expect_that(fd, is_a('FluidigmAssay'))
-})
+
+
+fd <- FluidigmAssay(vbeta, idvars=idvars, primerid=primerid, measurement=measurement,cellvars=cellvars, geneid=geneid, ncells='Number.of.Cells')
