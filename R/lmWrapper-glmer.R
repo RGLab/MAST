@@ -207,15 +207,35 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
     formC <- as.formula(paste0('response ', protoForm))
     formD <- as.formula(paste0('response>0', protoForm))
     dat <- cbind(response=object@response, object@pseudoMM)
+    
+    if(inherits(object, 'bLMERlike')){
+        cfun <- blme::blmer
+        dfun <- blme::bglmer
+    } else{
+        cfun <- lme4::lmer
+        dfun <- lme4::glmer
+    }
+    
     if(any(pos)){
         datpos <- dat[pos,]
-        object@fitC <- do.call(lmer, c(list(formula=formC, data=quote(datpos), REML=FALSE), fitArgsC))
+        object@fitC <- do.call(cfun, c(list(formula=formC, data=quote(datpos), REML=FALSE), fitArgsC))
+        ok <- length(object@fitC@optinfo$conv$lme4)==0
+        object@fitted['C'] <- TRUE
+        if(!ok){
+            object@optimMsg['C'] <- object@fitC@optinfo$conv$lme4$messages[1]
+            object@fitted['C'] <- !object@strictConvergence
+        }
     }
     if(!all(pos)){
-        object@fitD <- do.call(glmer, c(list(formula=formD, data=quote(dat), family=binomial()), fitArgsD))
+        object@fitD <- do.call(dfun, c(list(formula=formD, data=quote(dat), family=binomial()), fitArgsD))
         object@fitted['D'] <- length(object@fitD@optinfo$conv$lme)==0
+        ok <- length(object@fitD@optinfo$conv$lme4)==0
+        object@fitted['D'] <- TRUE
+        if(!ok){
+            object@optimMsg['D'] <- object@fitD@optinfo$conv$lme4$messages[[1]]
+            object@fitted['D'] <- !object@strictConvergence
+        }
     } 
-    object@fitted['C'] <- length(object@fitC@optinfo$conv$lme)==0
     if(!silent & !all(object@fitted)) warning('At least one component failed to converge')
     object    
 

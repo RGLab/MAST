@@ -142,12 +142,21 @@ setClass('BayesGLMlikeWeight', contains='BayesGLMlike')
 ##' A horrendous hack is employed in order to do arbitrary likelihood ratio tests: the model matrix is built, the names possibly mangled, then fed in as a symbolic formula to glmer/lmer.
 ##' This is necessary because there is no (easy) way to specify an arbitrary fixed-effect model matrix in glmer.
 ##' @slot pseudoMM part of this horrendous hack.
-setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame'), validity=function(object){
+##' @slot strictConvergence \code{logical} return results even when the optimizer or *lmer complains about convergence
+##' @slot optimMsg \code{character} record warnings from lme.  \code{NA_character_} means no warnings.
+setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame',
+                                                optimMsg='character',
+                                                strictConvergence='logical'),
+         validity=function(object){
     if(length(object@response)>0 & nrow(object@pseudoMM)>0){
         stopifnot(nrow(object@pseudoMM)==length(object@response))
     }
     if(object@priorDOF!=0) stop('Empirical bayes shrinkage not implemented for lmer/glmer.')
-})
+    },
+    prototype=list(strictConvergence=TRUE, optimMsg=c(C=NA_character_, D=NA_character_))
+    )
+
+setClass('bLMERlike', contains='LMERlike')
 
 setClass('ConstrainedGLMlike', contains='LMlike')
 setClass('RidgeBGLMlike',contains="BayesGLMlike",slots=c(lambda='numeric'),prototype = list(lambda=0.1) )
