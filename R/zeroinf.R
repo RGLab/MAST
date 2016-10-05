@@ -1,6 +1,6 @@
-methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm','ridge'),
-                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike','RidgeBGLMlike'),
-                         implementsEbayes=c(TRUE, FALSE, FALSE, TRUE, TRUE))
+methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm','ridge', 'blmer'),
+                         lmMethod=c('GLMlike', 'LMERlike','LMERlike', 'BayesGLMlike','RidgeBGLMlike', 'bLMERlike'),
+                         implementsEbayes=c(TRUE, FALSE, FALSE, TRUE, TRUE, FALSE))
 
 
 if(getRversion() >= "2.15.1") globalVariables(c(
