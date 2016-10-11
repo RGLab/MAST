@@ -241,11 +241,11 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
     }
     if(!is.logical(doLRT)){
         message('Calculating likelihood ratio tests')
-        llrt <- lapply(doLRT, function(x) lrTest(object, CoefficientHypothesis(x))[,,'Pr(>Chisq)'])
+        llrt <- lapply(doLRT, function(x) waldTest(object, CoefficientHypothesis(x))[,,'Pr(>Chisq)'])
         names(llrt) <-  doLRT
         llrt <- data.table(melt(llrt))
         setnames(llrt, c('test.type', 'L1', 'value'), c('component', 'contrast', 'Pr(>Chisq)'))
-        llrt[,':='(component=c(disc='D', cont='C', hurdle='H')[component],
+        llrt[,':='(component=c(cont='C', disc='D', hurdle='H')[component],
                    primerid=as.character(primerid))]
         setkey(llrt, primerid, component, contrast)
         setkey(dt, primerid, component, contrast)
