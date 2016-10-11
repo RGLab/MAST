@@ -386,6 +386,8 @@ calcZ <- function(gseaObj, testType='t', combined='none'){
 ##' ## See the examples in gseaAfterBoot
 ##' example(gseaAfterBoot)
 ##' @export
+## The following was added only to get the package to pass BiocCheck and can be deleted hopefully in the next version
+##' @importFrom reshape2 colsplit
 setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
     t_stat <- as.data.table(reshape2::melt(calcZ(object, combined='none', ...)))
     effect_size <- as.data.table(reshape2::melt(object@tests[,,'stat','test']-object@tests[,,'stat','null']))

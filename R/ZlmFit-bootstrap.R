@@ -5,6 +5,8 @@
 ##' @param zlmfit class \code{ZlmFit}
 ##' @param R number of bootstrap replicates
 ##' @return array of bootstrapped coefficients
+## Needed due to false positives in BiocCheck, can delete in next version
+##' @importFrom parallel detectCores
 pbootVcov1<-function (cl,zlmfit, R = 99)
 {
     sca <- zlmfit@sca
