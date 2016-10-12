@@ -1,0 +1,9 @@
+#inst/extdata
+.Rproj.user
+.Rhistory
+.DS_Store
+*~
+\#*\#
+.emacs.desktop*
+vignettes/MAITAnalysis_cache/
+vignettes/MAITAnalysis_files/

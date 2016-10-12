@@ -1,0 +1,3 @@
+# NEWS #
+## 0.99.0 ##
+Port `SingleCellAssay` to use `SummarizedExperiment` under the hood.
