@@ -18,9 +18,8 @@ Vignettes are available in the package via `vignette('MAITAnalysis')` or `vignet
 
 New Features and announcements
 ------------
-- MAST has been ported to use `SummarizedExperiment` under the hood, and will be submitted shortly Bioconductor.
-The main difference is that the data container is now transposed to follow bioconductor standards.
-The older version will remain accessible under branch *MASTClassic*
+- MAST has been ported to use `SummarizedExperiment` under the hood. The main difference is that the data container is now transposed to follow bioconductor standards.
+- The older version will remain accessible on github under branch *MASTClassic*
 
 Installation Instructions
 ------------
@@ -30,11 +29,5 @@ If you have previously installed the package `SingleCellAssay` you will want to 
 
 Then you may install or update `MAST` with:
 
-     install.packages('devtools')
-     library(devtools)
-     install_github('RGLab/MAST)
-     # *or* if you don't have a working latex setup
-     install_github('RGLab/MAST, build_vignettes=FALSE)
-     vignette('MAST-intro')
-     vignette('MAITAnalysis')
-
+    source("https://bioconductor.org/biocLite.R")
+    biocLite("MAST")

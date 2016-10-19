@@ -1,7 +1,7 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.0.0
+Version: 1.0.1
 Date: 2016-10-10
 Author: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>, Greg Finak
         <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
@@ -30,3 +30,5 @@ RoxygenNote: 5.0.1
 LazyData: true
 biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
         RNASeq, Transcriptomics, SingleCell
+BugReports: https://github.com/RGLab/MAST/issues
+URL: https://github.com/RGLab/MAST/
