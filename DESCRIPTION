@@ -1,79 +1,32 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 0.99.5
+Version: 1.0.0
 Date: 2016-10-10
 Author: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>, Greg Finak
-    <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
+        <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
 Maintainer: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>
 VignetteBuilder: knitr
-Imports:
-    Biobase,
-    BiocGenerics,
-    S4Vectors,
-    data.table,
-    ggplot2,
-    plyr,
-    stringr,
-    abind,
-    methods,
-    parallel,
-    reshape2,
-    stats,
-    stats4,
-    graphics,
-    utils
-Depends:
-    SummarizedExperiment,
-    R(>= 3.3)
-Suggests:
-    knitr,
-    rmarkdown,
-    testthat,
-    lme4(>= 1.0),
-    roxygen2(> 4.0.0),
-    numDeriv,
-    car,
-    gdata,
-    lattice,
-    GGally,
-    GSEABase,
-    NMF,
-    TxDb.Hsapiens.UCSC.hg19.knownGene,
-    rsvd,
-    limma,
-    RColorBrewer
-Description: Methods and models for handling zero-inflated single cell assay data.
+Imports: Biobase, BiocGenerics, S4Vectors, data.table, ggplot2, plyr,
+        stringr, abind, methods, parallel, reshape2, stats, stats4,
+        graphics, utils
+Depends: SummarizedExperiment, R(>= 3.3)
+Suggests: knitr, rmarkdown, testthat, lme4(>= 1.0), roxygen2(> 4.0.0),
+        numDeriv, car, gdata, lattice, GGally, GSEABase, NMF,
+        TxDb.Hsapiens.UCSC.hg19.knownGene, rsvd, limma, RColorBrewer
+Description: Methods and models for handling zero-inflated single cell
+        assay data.
 License: GPL(>= 2)
-Collate:
-    'AllGenerics.R'
-    'AllClasses.R'
-    'Fluidigm-methods.R'
-    'GSEA-by-boot.R'
-    'Hypothesis.R'
-    'LmWrapper.R'
-    'MultidimensionalScaling.R'
-    'RNASeqAssay-methods.R'
-    'Readers.R'
-    'SingleCellAssay-methods.R'
-    'UtilityFunctions.R'
-    'ZlmFit-bootstrap.R'
-    'ZlmFit-logFC.R'
-    'ZlmFit.R'
-    'bayesglm.R'
-    'ebayes-helpers.R'
-    'filterEval.R'
-    'helper-methods.R'
-    'lmWrapper-bayesglm.R'
-    'lmWrapper-glm.R'
-    'lmWrapper-glmer.R'
-    'lmWrapper-ridge.R'
-    'lrtest.R'
-    'predict.R'
-    'stat_ell.R'
-    'thresholdSCRNA.R'
-    'zeroinf.R'
-    'zlmHooks.R'
+Collate: 'AllGenerics.R' 'AllClasses.R' 'Fluidigm-methods.R'
+        'GSEA-by-boot.R' 'Hypothesis.R' 'LmWrapper.R'
+        'MultidimensionalScaling.R' 'RNASeqAssay-methods.R' 'Readers.R'
+        'SingleCellAssay-methods.R' 'UtilityFunctions.R'
+        'ZlmFit-bootstrap.R' 'ZlmFit-logFC.R' 'ZlmFit.R' 'bayesglm.R'
+        'ebayes-helpers.R' 'filterEval.R' 'helper-methods.R'
+        'lmWrapper-bayesglm.R' 'lmWrapper-glm.R' 'lmWrapper-glmer.R'
+        'lmWrapper-ridge.R' 'lrtest.R' 'predict.R' 'stat_ell.R'
+        'thresholdSCRNA.R' 'zeroinf.R' 'zlmHooks.R'
 RoxygenNote: 5.0.1
 LazyData: true
-biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment, RNASeq, Transcriptomics, SingleCell
+biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
+        RNASeq, Transcriptomics, SingleCell
