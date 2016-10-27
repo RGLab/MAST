@@ -12,6 +12,11 @@
 \item{n}{number of genes to show}
 
 \item{by}{one of 'C' , 'D' or 'logFC' for continuous, discrete and log fold change z-scores for each contrast}
+
+\item{...}{ignored}
+}
+\value{
+prints a pretty table and invisibly returns a \code{data.table} representing the table.
 }
 \description{
 Shows the top `n` genes by z score on `by`

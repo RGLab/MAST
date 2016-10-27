@@ -1,8 +1,25 @@
-MAST (GPL >= 2.0)
+MAST: Model-based Analysis of Single-cell Transcriptomics
 ===============
+MAST fits two-part, generalized linear models that are specially adapted for bimodal and/or zero-inflated single cell gene expression data.
 
-Model-based Analysis of Single-cell Transcriptomics
+Examples and vignettes
+------------
+MAST supports:
 
+*  Easy importing, subsetting and manipulation of expression matrices
+*  Filtering of low-quality cells
+*  Adaptive thresholding of background noise
+*  Tests for univariate differential expression, with adjustment for covariates
+*  Gene set enrichment analysis, corrected for covariates and gene-gene correlations
+*  Exploration of gene-gene correlations and co-expression
+
+
+Vignettes are available in the package via `vignette('MAITAnalysis')` or `vignette('MAST-intro')`.
+
+New Features and announcements
+------------
+- MAST has been ported to use `SummarizedExperiment` under the hood. The main difference is that the data container is now transposed to follow bioconductor standards.
+- The older version will remain accessible on github under branch *MASTClassic*
 
 Installation Instructions
 ------------
@@ -12,17 +29,5 @@ If you have previously installed the package `SingleCellAssay` you will want to 
 
 Then you may install or update `MAST` with:
 
-     install.packages('devtools')
-     library(devtools)
-     install_github('RGLab/MAST')
-     # *or* if you don't have a working latex setup
-     install_github(RGLab/'MAST', build_vignettes=FALSE)
-     vignette('MAST-intro')
-
-
-New Features 
-------------
-- `gseaAfterBoot` for competitive geneset analysis under variance inflation
-- Support tests of arbitrary contrasts using LRT/zlm.SingleCellAssay
-
-![doi/10.5281/zendoo.9810](http://zenodo.org/badge/doi/10.5281/zenodo.9810.png)
+    source("https://bioconductor.org/biocLite.R")
+    biocLite("MAST")

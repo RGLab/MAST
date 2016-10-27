@@ -1,25 +1,17 @@
 ##' Compute the Et from the Ct
 ##'
 ##' Computes the Et value from the Ct value in an existing data frame and returns a new data frame with the Et column appended
-##' @title computeEtFromCt
 ##' @param df a \code{data.frame}
 ##' @param column The name of the \code{Ct} column. A \code{character}. 'Ct' by default.
 ##' @param Cmax the maximum number of cycles performed. 40 by default.
 ##' @return A copy of \code{df} with the 'Et' column appended
 ##' @author Greg Finak
-##' @export computeEtFromCt
-##' @aliases computeEtFromCt
+##' @export
+##' @examples
+##' data(vbeta)
+##' vbeta <- computeEtFromCt(vbeta)
 computeEtFromCt<-function(df,column='Ct',Cmax=40){
-  within.data.frame(df, {Et <- Cmax-get(column); Et <- ifelse(is.na(Et), 0, Et)})
-}
-
-#'Convert a pair of character names to a list that can be placed into a data.table
-#'
-#'@param v a character vector
-#'@return a call that can be evaluated
-#'@export
-todt<-function(v){
-  as.call(c(list,sapply(v,as.name)))
+    within.data.frame(df, {Et <- Cmax-get(column); Et <- ifelse(is.na(Et), 0, Et)})
 }
 
 reraise <- function(err, convertToWarning=FALSE, silent=FALSE){
@@ -37,6 +29,9 @@ reraise <- function(err, convertToWarning=FALSE, silent=FALSE){
 ##' @param expr an expression
 ##' @param regexp a regexp to be matched (with str_detect)
 ##' @return the result of expr
+##' @examples
+##' hushWarning(warning('Beware the rabbit'), 'rabbit')
+##' hushWarning(warning('Beware the rabbit'), 'hedgehog')
 ##' @export
 hushWarning <- function(expr, regexp){
     withCallingHandlers(expr, warning=function(w){

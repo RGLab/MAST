@@ -4,21 +4,34 @@
 \name{LMERlike-class}
 \alias{LMERlike-class}
 \alias{coef,LMERlike-method}
+\alias{logLik,LMERlike-method}
+\alias{update,LMERlike-method}
 \alias{vcov,LMERlike-method}
 \title{Wrapper for lmer/glmer}
 \usage{
+\S4method{update}{LMERlike}(object, formula., design, ...)
+
 \S4method{vcov}{LMERlike}(object, which, ...)
 
 \S4method{coef}{LMERlike}(object, which, singular = TRUE, ...)
+
+\S4method{logLik}{LMERlike}(object)
 }
 \arguments{
 \item{object}{\code{LMERlike}}
 
+\item{formula.}{\code{formula}}
+
+\item{design}{something coercible to a \code{data.frame}}
+
+\item{...}{In the case of \code{vcov}, ignored.  In the case of \code{update}, passed to \code{model.matrix}.}
+
 \item{which}{\code{character}, one of 'C', 'D'.}
 
-\item{...}{ignored}
-
 \item{singular}{\code{logical}. Should NA coefficients be returned?}
+}
+\value{
+see the section "Methods (by generic)"
 }
 \description{
 A horrendous hack is employed in order to do arbitrary likelihood ratio tests: the model matrix is built, the names possibly mangled, then fed in as a symbolic formula to glmer/lmer.
@@ -26,13 +39,21 @@ This is necessary because there is no (easy) way to specify an arbitrary fixed-e
 }
 \section{Methods (by generic)}{
 \itemize{
+\item \code{update}: update the formula or design matrix
+
 \item \code{vcov}: return the variance/covariance of component \code{which}
 
 \item \code{coef}: return the coefficients.  The horrendous hack is attempted to be undone.
+
+\item \code{logLik}: return the log-likelihood
 }}
 \section{Slots}{
 
 \describe{
 \item{\code{pseudoMM}}{part of this horrendous hack.}
+
+\item{\code{strictConvergence}}{\code{logical} return results even when the optimizer or *lmer complains about convergence}
+
+\item{\code{optimMsg}}{\code{character} record warnings from lme.  \code{NA_character_} means no warnings.}
 }}
 

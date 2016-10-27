@@ -8,10 +8,12 @@
 \usage{
 model.matrix(object, ...)
 
-\S4method{model.matrix}{LMlike}(object)
+\S4method{model.matrix}{LMlike}(object, ...)
 }
 \arguments{
 \item{object}{LMlike or subclass}
+
+\item{...}{ignored}
 }
 \value{
 model.matrix if present

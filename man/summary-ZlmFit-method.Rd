@@ -19,6 +19,9 @@
 
 \item{...}{ignored}
 }
+\value{
+\code{data.table}
+}
 \description{
 Returns a \code{data.table} with a special print method that shows the top 2 most significant genes by contrast.
 This \code{data.table} contains columns: 
@@ -36,12 +39,12 @@ Some of these columns will contain NAs if they are not applicable for a particul
 }
 \examples{
 data(vbetaFA)
-z <- zlm(~Stim.Condition, vbetaFA[,1:5])
+z <- zlm(~Stim.Condition, vbetaFA[1:5,])
 zs <- summary(z)
 names(zs)
 print(zs)
-##remove summaryZlmFit class to get normal print method (or call data.table:::print.data.table) 
-data.table::setattr(zs, 'class', class(zs)[-1])
+##Select `datatable` copmonent to get normal print method
+zs$datatable
 }
 \seealso{
 print.summaryZlmFit

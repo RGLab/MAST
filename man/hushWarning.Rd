@@ -17,4 +17,8 @@ the result of expr
 \description{
 Selectively muffle warnings based on output
 }
+\examples{
+hushWarning(warning('Beware the rabbit'), 'rabbit')
+hushWarning(warning('Beware the rabbit'), 'hedgehog')
+}
 

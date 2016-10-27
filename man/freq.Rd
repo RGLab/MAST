@@ -17,4 +17,8 @@ vector of proportions
 \description{
 NAs can be optionally removed
 }
+\examples{
+data(vbetaFA)
+freq(vbetaFA)
+}
 

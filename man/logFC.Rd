@@ -36,7 +36,7 @@ An approximation of the variance of \code{logFC} (applying the delta method to  
 }}
 \examples{
 data(vbetaFA)
-zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[,1:5])
+zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[1:5,])
 ##log-fold changes in terms of intercept (which is Stim(SEB) and CD154+VbetaResponsive)
 lfcStim <- logFC(zz)
 ##If we want to compare against unstim, we can try the following

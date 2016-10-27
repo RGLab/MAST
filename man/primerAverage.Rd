@@ -19,6 +19,6 @@ primerAverage(fd, geneGroups, fun.natural = expavg, fun.cycle = logshift)
 collapsed version of \code{fd}.
 }
 \description{
-Average within duplicated genes/primers
+\emph{This is broken at the moment (transposition errors)}.
 }
 

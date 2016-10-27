@@ -6,10 +6,10 @@
 \usage{
 thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
   nbins = 10, bin_by = "median", qt = 0.975, min_per_bin = 50,
-  absolute_min = 0, return_log = TRUE, adj = 1)
+  absolute_min = 0, data_log = TRUE, adj = 1)
 }
 \arguments{
-\item{data_all}{\code{matrix} of counts.  Rows are cells and columns are genes.}
+\item{data_all}{\code{matrix} of (possibly log-transformed) counts or TPM.  Rows are genes and columns are cells.}
 
 \item{conditions}{Bins are be determined per gene and per condition.  Typically contrasts of interest should be specified.}
 
@@ -25,7 +25,9 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 
 \item{absolute_min}{\code{numeric} giving a hard threshold below which everything is assumed to be noise}
 
-\item{return_log}{return the logged expression matrix or not.  By default, returned expression matrix will be logged ( base 2 ).}
+\item{data_log}{is \code{data_all} log+1 transformed?  If so, it will be returned on the (log+1)-scale as well.}
+
+\item{adj}{bandwith adjustment, passed to \code{density}}
 }
 \value{
 \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data

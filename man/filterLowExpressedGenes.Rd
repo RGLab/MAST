@@ -11,7 +11,14 @@ filterLowExpressedGenes(assay, threshold = 0.1)
 
 \item{threshold}{a \code{numeric} between 0, and 1, specifying the threshold frequency below which genes will be filtered out}
 }
+\value{
+\code{SingleCellAssay}
+}
 \description{
 Filter out genes that have less than some percent threshold expression across all libraries
+}
+\examples{
+data(vbetaFA)
+filterLowExpressedGenes(vbetaFA)
 }
 

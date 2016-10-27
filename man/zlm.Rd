@@ -4,14 +4,14 @@
 \alias{zlm}
 \title{Convenience function for running a zero-inflated regression}
 \usage{
-zlm(formula, data, method = "glm", silent = TRUE, ...)
+zlm(formula, data, method = "bayesglm", silent = TRUE, ...)
 }
 \arguments{
 \item{formula}{model formula}
 
 \item{data}{a data.frame, list, environment or SingleCellAssay in which formula is evaluated}
 
-\item{method}{one of 'glm' or 'glmer'.  See SingleCellAssay:::methodDict for other possibilities.}
+\item{method}{one of 'glm', 'glmer' or 'bayesglm'.  See MAST:::methodDict for other possibilities.}
 
 \item{silent}{if TRUE suppress common errors from fitting continuous part}
 
@@ -37,6 +37,6 @@ summary.glm(fit$cont)
 
 }
 \seealso{
-GLMlike, LMERlike
+GLMlike, LMERlike, BayesGLMlike
 }
 

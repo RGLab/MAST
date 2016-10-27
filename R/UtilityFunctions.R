@@ -5,8 +5,10 @@
 #' @param colorfactor a \code{factor} the same length as \code{nrow(pc$x)} to color the points
 #' @param scaling \code{integer} to scale the vectors showing loadings
 #' @param nudge \code{numeric} to offset labels for loadings
+#' @param N number of variables with longest \code{dim[1]} or \code{dim[2]} projections to display
 #' @param dims \code{numeric} vector of length 2 indicating which PCs to plot
-#' @export
+#' @param ... passed to plot
+#' @return printed plot
 myBiplot <- function(pc,colorfactor,scaling=100,nudge=1.2,N=10,dims=1:2,...){
     o <- unique(c(order(abs(pc$rotation[,dims[1]]),decreasing=TRUE)[1:N],order(abs(pc$rotation[,dims[2]]),decreasing=TRUE)[1:N]))
     colors <- colorfactor

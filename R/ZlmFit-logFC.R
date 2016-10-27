@@ -25,7 +25,7 @@ safeContrastQF <- function(contrast, vc) uncomplexify(tcrossprod(contrast, compl
 ##' @return list of matrices `logFC` and `varLogFC`, giving the log-fold-changes for each contrast (columns) and genes (rows) and the estimated sampling variance thereof
 ##' @examples
 ##' data(vbetaFA)
-##' zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[,1:5])
+##' zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[1:5,])
 ##' ##log-fold changes in terms of intercept (which is Stim(SEB) and CD154+VbetaResponsive)
 ##' lfcStim <- logFC(zz)
 ##' ##If we want to compare against unstim, we can try the following
@@ -123,16 +123,15 @@ genewiseMult <- function(rowvec, rowMajorMatrix){
 }
 
 if(getRversion() >= "2.15.1") globalVariables(c(
-                  'primerid',
-                 'z', 
-                  'varLogFC')) #getLogFC
+                                  'primerid',
+                                  'z', 
+                                  'varLogFC')) #getLogFC
 
-##' @import data.table
 ##' @describeIn logFC Return results as a perhaps friendlier \code{data.table}
 ##' @export
 getLogFC <- function(zlmfit, contrast0, contrast1){
     lfc <- logFC(zlmfit, contrast0, contrast1)
-    logFC <- dcast.data.table(data.table(melt(lfc)), primerid + contrast ~ L1)
+    logFC <- dcast.data.table(data.table(melt(lfc)), primerid + contrast ~ L1, fun.aggregate=mean, na.rm=TRUE)
     logFC[,primerid:=as.character(primerid)]
     logFC[,z:=logFC/sqrt(varLogFC)]
     setkey(logFC,primerid)

@@ -17,4 +17,8 @@ Takes mean of natural scaled values and then logrithm
 Approximately the inverse operation of \code{\link{expavg}}
 Calculates log2(mean(x) + 1)
 }
+\examples{
+x <- 1:10
+expavg(logmean(x))
+}
 
