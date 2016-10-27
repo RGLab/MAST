@@ -19,6 +19,7 @@
 ##' @param betaD discrete coefficient vector
 ##' @param sigmaC sd of continuous component
 ##' @return vector of observations y
+##' @importFrom stats rnorm runif uniroot weighted.mean
 simulate1Unit <- function(x, betaC, betaD, sigmaC){
     etaC <- x %*% betaC    
     etaD <- x %*% betaD
@@ -55,7 +56,7 @@ getLambda <- function(nsim, thetafun, Xframe, XFormula, Formula, contrasts, zlma
         design <- if(is.function(Xframe)) Xframe(theta) else Xframe
         X <- model.matrix(XFormula, design)
         Y <- as.matrix(simulate1Unit(X, theta$C, theta$D, theta$sigmaC))
-        sca <- suppressMessages(hushWarning(FromMatrix('SingleCellAssay', Y, design), 'no wellKey'))
+        sca <- suppressMessages(hushWarning(FromMatrix(t(Y), design), 'no wellKey'))
         tt <- try({
         zlmfit <- suppressMessages(do.call(zlm.SingleCellAssay, c(list(formula=Formula, sca=sca), zlmargs)))
         lrt <- suppressMessages(lrTest(zlmfit, contrasts))
