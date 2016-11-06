@@ -131,7 +131,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     	if(maybelogged){
     		warning("Data may already be log transformed! Should you set `data_log=TRUE`?")
     	}
-        log_data      <- log( data + 1, base = log_base )
+        log_data      <- log( data_all+ 1, base = log_base )
     } else{
     	if(!maybelogged){
     		warning("Data may not have been log transformed! Should you set `data_log=FALSE`?")
@@ -252,6 +252,9 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                         # ensure cutpoints are increasing and decreasing from the 75% of bins with 2 modes.
                                         # could be improved. 
     vals2    <- unlist(valleys[which(unlist(lapply(peaks,nrow))==2)])
+    if(is.null(vals2)){
+        stop('No bimodal bins.  Try decreasing `min_per_bin` and/or increasing `num_bins`.')
+    }
     #index of valley closest to 75% of double-peaked valleys
     midindex <- which(names(peaks)==names(which.min(abs(vals2-quantile(vals2,c(0.75),na.rm=TRUE)))))
     if( length(midindex) > 0 ){
