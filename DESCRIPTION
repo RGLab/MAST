@@ -1,8 +1,8 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.0.2
-Date: 2016-10-10
+Version: 1.0.3
+Date: 2016-11-04
 Author: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>, Greg Finak
     <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
 Maintainer: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>
