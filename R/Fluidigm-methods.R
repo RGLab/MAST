@@ -291,12 +291,13 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 
 #' Average within duplicated genes/primers
 #'
-#' \emph{This is broken at the moment (transposition errors)}.
+#' .
 #' @param fd \code{SingleCellAssay} or subclass 
 #' @param geneGroups \code{character} naming a column in the \code{featureData} that keys the duplicates
 #' @param fun.natural transformation to be used to collapse the duplicate expression values
 #' @param fun.cycle transformation to be used after collapsing
 #' @return collapsed version of \code{fd}.
+#' @export
 primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift){
     fVars <- mcols(fd)[, geneGroups, drop=FALSE]
     geneset <- split(1:nrow(fVars), fVars)
@@ -305,16 +306,18 @@ primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift
     genefirst <- unlist(lapply(geneset, function(x) x[1]))
     skeleton <- fd[genefirst,]       #make smaller version of fd, then we'll replace exprs with the mean per geneset
 
-    exprs.orig <- exprs(fd)
-    exprs.new <- lapply(geneset, function(colidx){
-        cols <- exprs.orig[,colidx, drop=FALSE]
-        if(ncol(cols)>1){
-            return(fun.cycle(apply(cols, 1,fun.natural)))
+    exprs.orig <- assay(fd)
+    exprs.new <- lapply(geneset, function(rowidx){
+        rows <- exprs.orig[rowidx,, drop=FALSE]
+        if(nrow(rows)>1){
+            return(fun.cycle(apply(rows, 2,fun.natural)))
         }
-        return(cols)
+        return(rows)
     })
-    exprs.new <- do.call(cbind, exprs.new)
-    exprs(skeleton) <- exprs.new
-    skeleton@featureData$primerid <- mcols(skeleton)[,geneGroups]
-    skeleton <- sort(skeleton,rows=FALSE)
+    exprs.new <- do.call(rbind, exprs.new)
+    dimnames(skeleton) = dimnames(exprs.new)
+    assay(skeleton) <- exprs.new
+    rowData(skeleton)$primerid <- mcols(skeleton)[,geneGroups]
+    # skeleton <- sort(skeleton,rows=FALSE)
+    return(skeleton)
 }
