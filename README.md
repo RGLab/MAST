@@ -31,3 +31,11 @@ Then you may install or update `MAST` with:
 
     source("https://bioconductor.org/biocLite.R")
     biocLite("MAST")
+
+Converting old MASTClassic SingleCellAssay objects
+--------
+
+If you have data analyzed using MASTClassic, starting with MAST package version 1.0.4 you can convert
+objects from MASTClassic format to the new format based on SummarizedExperiment using
+`convertMastClassicToSingleCellAssay()`.
+
