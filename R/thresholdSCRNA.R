@@ -123,22 +123,18 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                      )
 {
 
-                                        # when there is no condition to stratefy
+                                        # when there is no condition to stratify
     log_base <- 2
     #we naively check the range of the data to determine if it may be logged or not. This is so we emit a meaningful warning.
-    if(max(range(data_all))<30){
-    	maybelogged=TRUE
-    }else{
-    	maybelogged=FALSE
-    }
+    maybelogged <- max(range(data_all))<30
     if(!data_log){
     	if(maybelogged){
-    		warning("Data may already be log transformed!")
+    		warning("Data may already be log transformed! Should you set `data_log=TRUE`?")
     	}
         log_data      <- log( data + 1, base = log_base )
     } else{
     	if(!maybelogged){
-    		warning("Data may not have been log transformed!")
+    		warning("Data may not have been log transformed! Should you set `data_log=FALSE`?")
     	}
         log_data <- data_all
     }
