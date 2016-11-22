@@ -108,8 +108,10 @@ se.coef(zlmVbeta, 'C')
 lrTest(zlmVbeta, 'Population')
 #Test only if the VbetaResponsive cells differ from the baseline group
 lrTest(zlmVbeta, CoefficientHypothesis('PopulationVbetaResponsive'))
-#Test if there is a difference between CD154+/Unresponsive and CD154-/Unresponsive.
-#Note that because we parse the expression, that the columns must be enclosed in backquotes to protect the \\quote{+} and \\quote{-} characters.
+# Test if there is a difference between CD154+/Unresponsive and CD154-/Unresponsive.
+# Note that because we parse the expression
+# the columns must be enclosed in backquotes
+# to protect the \\quote{+} and \\quote{-} characters.
 lrTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
 waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
 }

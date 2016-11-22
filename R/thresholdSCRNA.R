@@ -109,6 +109,15 @@ apply_by<-function(x,by_idx,fun,...){
 #' @param adj bandwith adjustment, passed to \code{density}
 #'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data
 #'@importFrom plyr ldply
+#' @examples
+#' data(maits,package='MAST', envir = environment())
+#' sca <- FromMatrix(t(maits$expressionmat[,1:1000]), maits$cdat, maits$fdat[1:1000,])
+#' tt <- thresholdSCRNACountMatrix(assay(sca))
+#' tt <- thresholdSCRNACountMatrix(2^assay(sca)-1, data_log=FALSE)
+#' opar <- par()
+#' on.exit(par(opar))
+#' par(mfrow=c(4,2))
+#' plot(tt)
 #'@export
 thresholdSCRNACountMatrix <-function( data_all              ,
                                      conditions  = NULL    ,
@@ -325,6 +334,9 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 ##' @return displays plots
 ##' @export
 ##' @importFrom graphics plot abline arrows lines par points rug text
+##' @examples
+##' ## See thresholdSCRNACountMatrix
+##' example(thresholdSCRNACountMatrix)
 plot.thresholdSCRNACountMatrix<-function(x, ask=FALSE, wait.time=0, type='bin', indices=NULL, ...)
 {
     type <- match.arg(type, c('bin', 'gene'), several.ok=TRUE)

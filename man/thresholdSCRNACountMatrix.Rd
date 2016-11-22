@@ -37,4 +37,14 @@ An adaptive threshold is calculated from the conditional mean of expression, bas
 of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
 binned data.
 }
+\examples{
+data(maits,package='MAST', envir = environment())
+sca <- FromMatrix(t(maits$expressionmat[,1:1000]), maits$cdat, maits$fdat[1:1000,])
+tt <- thresholdSCRNACountMatrix(assay(sca))
+tt <- thresholdSCRNACountMatrix(2^assay(sca)-1, data_log=FALSE)
+opar <- par()
+on.exit(par(opar))
+par(mfrow=c(4,2))
+plot(tt)
+}
 

@@ -26,4 +26,8 @@ displays plots
 \description{
 Plot cutpoints and densities for thresholding
 }
+\examples{
+## See thresholdSCRNACountMatrix
+example(thresholdSCRNACountMatrix)
+}
 
