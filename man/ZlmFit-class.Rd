@@ -112,8 +112,10 @@ lrTest(zlmVbeta, CoefficientHypothesis('PopulationVbetaResponsive'))
 # Note that because we parse the expression
 # the columns must be enclosed in backquotes
 # to protect the \\quote{+} and \\quote{-} characters.
-lrTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
-waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
+lrTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
+        `PopulationCD154-VbetaUnresponsive`'))
+waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
+        `PopulationCD154-VbetaUnresponsive`'))
 }
 \seealso{
 zlm.SingleCellAssay summary,ZlmFit-method

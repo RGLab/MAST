@@ -37,6 +37,7 @@ StatEll <- ggproto("StatEll", Stat,
 #' @param fill A color or aesthetic mapping to fill color. Defaults to NA for empty ellipses.
 #' @param level The confidence level at which to draw an ellipse (default is level=0.95).
 #' @param lty The linetype to use. Can map to a variable. Defaults to 2 (dashed line)
+#' @param alpha transparency
 #' @param invert vector of length 1 that should either be \code{"x","y",or TRUE}. Specifies whether to plot the estimates from the discrete component on the inverse logit scale. invert specifies which axis to invert.
 #' @param ... other arguments passed on to layer. These are often aesthetics, used to set an aesthetic to a fixed value, like color = "red" or size = 3. They may also be parameters to the paired geom/stat.
 #' @return ggplot \code{layer}
@@ -59,7 +60,6 @@ StatEll <- ggproto("StatEll", Stat,
 #' print(plt)
 #' # doesn't do anything in this case because there are no inestimable coefficients
 #' predictI <- impute(predicted, groupby='primerid')
-
 stat_ell = function(mapping = NULL, data = NULL, geom = "polygon", position = "identity", na.rm = FALSE, show.legend = NA,inherit.aes = TRUE,fill=NA, level=0.95,lty=2,invert=FALSE,alpha=1,...) {
     ggplot2::layer(
         stat = StatEll, data = data, mapping = mapping, geom = geom, 
