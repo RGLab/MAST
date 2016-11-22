@@ -11,7 +11,7 @@ ell <- function(x,xse,y,yse,segments=20,radius){
 }
 
 StatEll <- ggproto("StatEll", Stat,
-                   compute_group = function(data, scales,level=0.95,invert=FALSE) {
+                   compute_group = function(data, scales,level=0.95,invert=FALSE,alpha=1) {
                        e=ell(x=data$x, xse=data$xse,y=data$y,yse=data$yse,radius=sqrt(qchisq(level,df=2)))
                        if(invert==c("x")){
                            e[,1] =invlogit(e[,1])
@@ -60,11 +60,11 @@ StatEll <- ggproto("StatEll", Stat,
 #' # doesn't do anything in this case because there are no inestimable coefficients
 #' predictI <- impute(predicted, groupby='primerid')
 
-stat_ell = function(mapping = NULL, data = NULL, geom = "polygon", position = "identity", na.rm = FALSE, show.legend = NA,inherit.aes = TRUE,fill=NA, level=0.95,lty=2,invert=FALSE,...) {
+stat_ell = function(mapping = NULL, data = NULL, geom = "polygon", position = "identity", na.rm = FALSE, show.legend = NA,inherit.aes = TRUE,fill=NA, level=0.95,lty=2,invert=FALSE,alpha=1,...) {
     ggplot2::layer(
         stat = StatEll, data = data, mapping = mapping, geom = geom, 
         position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm,level=level,lty=lty,fill=fill,invert=invert, ...)
+        params = list(na.rm = na.rm,level=level,lty=lty,fill=fill,invert=invert, alpha=alpha, ...)
     )
 }
 
