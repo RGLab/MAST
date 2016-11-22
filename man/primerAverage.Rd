@@ -19,6 +19,6 @@ primerAverage(fd, geneGroups, fun.natural = expavg, fun.cycle = logshift)
 collapsed version of \code{fd}.
 }
 \description{
-\emph{This is broken at the moment (transposition errors)}.
+.
 }
 
