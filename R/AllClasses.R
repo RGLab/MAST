@@ -200,8 +200,10 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' # Note that because we parse the expression
 ##' # the columns must be enclosed in backquotes
 ##' # to protect the \quote{+} and \quote{-} characters.
-##' lrTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
-##' waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` - `PopulationCD154-VbetaUnresponsive`'))
+##' lrTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
+##'         `PopulationCD154-VbetaUnresponsive`'))
+##' waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
+##'         `PopulationCD154-VbetaUnresponsive`'))
 setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SummarizedExperiment0', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
 ##' An S4 class for Gene Set Enrichment output

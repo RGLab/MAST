@@ -7,7 +7,7 @@
 stat_ell(mapping = NULL, data = NULL, geom = "polygon",
   position = "identity", na.rm = FALSE, show.legend = NA,
   inherit.aes = TRUE, fill = NA, level = 0.95, lty = 2,
-  invert = FALSE, ...)
+  invert = FALSE, alpha = 1, ...)
 }
 \arguments{
 \item{mapping}{Set of aesthetic mappings created by aes or aes_. If specified and inherit.aes = TRUE (the default), it is combined with the default mapping at the top level of the plot. You must supply mapping if there is no plot mapping.}
@@ -31,6 +31,8 @@ stat_ell(mapping = NULL, data = NULL, geom = "polygon",
 \item{lty}{The linetype to use. Can map to a variable. Defaults to 2 (dashed line)}
 
 \item{invert}{vector of length 1 that should either be \code{"x","y",or TRUE}. Specifies whether to plot the estimates from the discrete component on the inverse logit scale. invert specifies which axis to invert.}
+
+\item{alpha}{transparency}
 
 \item{...}{other arguments passed on to layer. These are often aesthetics, used to set an aesthetic to a fixed value, like color = "red" or size = 3. They may also be parameters to the paired geom/stat.}
 }
