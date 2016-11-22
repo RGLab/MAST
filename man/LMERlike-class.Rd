@@ -51,5 +51,9 @@ This is necessary because there is no (easy) way to specify an arbitrary fixed-e
 
 \describe{
 \item{\code{pseudoMM}}{part of this horrendous hack.}
+
+\item{\code{strictConvergence}}{\code{logical} return results even when the optimizer or *lmer complains about convergence}
+
+\item{\code{optimMsg}}{\code{character} record warnings from lme.  \code{NA_character_} means no warnings.}
 }}
 
