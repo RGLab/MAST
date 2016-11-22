@@ -13,20 +13,19 @@
 #' data(vbetaFA)
 #' convertMASTClassicToSingleCellAssay(vbetaFA)
 convertMASTClassicToSingleCellAssay = function(object=NULL){
-	if(is.null(object)){stop("object must not be NULL")	}
-	if(!inherits(object,"SingleCellAssay")){stop("object must be a SingleCellAssay created by MASTClassic")}
-	if("elementMetadata"%in%names(attributes(vbetaFA))){message("object does not appear to be created by MASTClassic. Returning original.");return(object)}
-	attr(object,"class") = "array" #MASTClassic SingleCellAssay inherits from array
-	nassays = dim(object)[3] #How many assay layers we want to create.
-	phenodata = attr(object,"cellData") #this will be our phenoData
-	featuredata = attr(object,"featureData") #these will be our row data
-	message("Found ",nassays," layers in the old object.")
-	dim_attr = attr(object,"dim")
-	dimnames_attr = attr(object,"dimnames")
-	attributes(object)=NULL
-	attr(object,"dim")=dim_attr
-	attr(object,"dimnames")=dimnames_attr
-	object = aperm(object,c(2,1,3))
-	DataFrame(phenodata)
-	FromMatrix(exprsArray = object,cData = DataFrame(phenodata@data),fData = DataFrame(featuredata@data),class = "SingleCellAssay")
+    if(is.null(object)){stop("object must not be NULL")	}
+    if(!inherits(object,"SingleCellAssay")){stop("object must be a SingleCellAssay created by MASTClassic")}
+    if("elementMetadata"%in%names(attributes(object))){message("object does not appear to be created by MASTClassic. Returning original.");return(object)}
+    attr(object,"class") = "array" #MASTClassic SingleCellAssay inherits from array
+    nassays = dim(object)[3] #How many assay layers we want to create.
+    phenodata = attr(object,"cellData") #this will be our phenoData
+    featuredata = attr(object,"featureData") #these will be our row data
+    message("Found ",nassays," layers in the old object.")
+    dim_attr = attr(object,"dim")
+    dimnames_attr = attr(object,"dimnames")
+    attributes(object)=NULL
+    attr(object,"dim")=dim_attr
+    attr(object,"dimnames")=dimnames_attr
+    object = aperm(object,c(2,1,3))
+    FromMatrix(exprsArray = object,cData = DataFrame(phenodata@data),fData = DataFrame(featuredata@data),class = "SingleCellAssay")
 }
