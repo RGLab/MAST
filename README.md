@@ -30,11 +30,13 @@ If you have previously installed the package `SingleCellAssay` you will want to 
 
 Then you may install or update `MAST` with:
 
-     install.packages('devtools')
-     library(devtools)
-     install_github('RGLab/MAST)
-     # *or* if you don't have a working latex setup
-     install_github('RGLab/MAST, build_vignettes=FALSE)
-     vignette('MAST-intro')
-     vignette('MAITAnalysis')
+    source("https://bioconductor.org/biocLite.R")
+    biocLite("MAST")
+
+Converting old MASTClassic SingleCellAssay objects
+--------
+
+If you have data analyzed using MASTClassic, starting with MAST package version 1.0.4 you can convert
+objects from MASTClassic format to the new format based on SummarizedExperiment using
+`convertMastClassicToSingleCellAssay()`.
 
