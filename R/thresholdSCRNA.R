@@ -125,9 +125,21 @@ thresholdSCRNACountMatrix <-function( data_all              ,
 
                                         # when there is no condition to stratefy
     log_base <- 2
+    #we naively check the range of the data to determine if it may be logged or not. This is so we emit a meaningful warning.
+    if(max(range(data_all))<30){
+    	maybelogged=TRUE
+    }else{
+    	maybelogged=FALSE
+    }
     if(!data_log){
+    	if(maybelogged){
+    		warning("Data may already be log transformed!")
+    	}
         log_data      <- log( data + 1, base = log_base )
     } else{
+    	if(!maybelogged){
+    		warning("Data may not have been log transformed!")
+    	}
         log_data <- data_all
     }
     if( is.null( conditions ) ){ 
@@ -248,14 +260,18 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     midindex <- which(names(peaks)==names(which.min(abs(vals2-quantile(vals2,c(0.75),na.rm=TRUE)))))
     if( length(midindex) > 0 ){
         for( i in midindex:2 ){
+        	if(midindex>length(cutpoints)){
             if( cutpoints[[i-1]] > cutpoints[[i]] ){
                 cutpoints[[i-1]] <- cutpoints[[i]]
             }
+        	}
         }
         for( i in midindex:(length( cutpoints )-1) ){
+        	if(midindex<length(cutpoints)){
             if( cutpoints[[i+1]] <= cutpoints[[i]] ){
                 cutpoints[[i+1]] <- cutpoints[[i]]
             }
+        	}
         }
     } else { # when no clear 2 peaked distribution exists, start from the top
         for( i in length( cutpoints ):2 ){
