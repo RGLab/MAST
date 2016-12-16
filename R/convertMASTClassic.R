@@ -14,7 +14,7 @@
 #' convertMASTClassicToSingleCellAssay(vbetaFA)
 convertMASTClassicToSingleCellAssay = function(object=NULL){
     if(is.null(object)){stop("object must not be NULL")	}
-    if(!inherits(object,"SingleCellAssay")){stop("object must be a SingleCellAssay created by MASTClassic")}
+    if(!inherits(object,"SingleCellAssay")&!inherits(object,"RNASeqAssay")){stop("object must be a SingleCellAssay or RNASeqAssay created by MASTClassic")}
     if("elementMetadata"%in%names(attributes(object))){message("object does not appear to be created by MASTClassic. Returning original.");return(object)}
     attr(object,"class") = "array" #MASTClassic SingleCellAssay inherits from array
     nassays = dim(object)[3] #How many assay layers we want to create.
