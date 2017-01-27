@@ -8,7 +8,7 @@ collectSummaries <- function(listOfSummaries){
     summaries[['df.null']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'df.null'))
     summaries[['deviance']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'deviance'))
     summaries[['dispersion']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersion'))
-summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersionNoshrink'))
+    summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersionNoshrink'))
     summaries[['converged']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'converged'))
     summaries[['loglik']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'loglik'))
     summaries[['coefD']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'coefD'))
@@ -26,12 +26,13 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
     message('Refitting on reduced model...')
     o0 <- zlm.SingleCellAssay(sca=o1@sca, LMlike=LMlike)
     lambda <- -2*(o0@loglik-o1@loglik)
-    testable <- o0@df.resid > 1 & o1@df.resid > 1 & o0@converged & o1@converged
+    testable <- o0@converged & o1@converged
+    testable[,'C'] <-  testable[,'C'] & (o0@df.resid > 1 & o1@df.resid > 1)[,'C']
     lambda <- ifelse(testable, lambda, 0)
     df <- o0@df.resid-o1@df.resid
     df <- ifelse(testable, df, 0)
     cst <- makeChiSqTable(as.data.frame(lambda), as.data.frame(df), hString)
-    dimnames(cst) <- list(primerid=fData(zlmfit@sca)$primerid, test.type=dimnames(cst)[[2]], metric=dimnames(cst)[[3]])
+    dimnames(cst) <- list(primerid=mcols(zlmfit@sca)$primerid, test.type=dimnames(cst)[[2]], metric=dimnames(cst)[[3]])
     cst
 }
 
@@ -48,13 +49,23 @@ summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[['
 setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
     o1 <- object
     LMlike <- o1@LMlike
+    oldMM <- model.matrix(LMlike)
     newF <- update.formula(LMlike@formula, formula(sprintf(' ~. - %s', hypothesis)))
-    if(newF==LMlike@formula) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
     LMlike <- update(LMlike, newF)
+    newMM <- model.matrix(LMlike)
+
+    ##test if design matrix has different column space
+    ## Same if Q * Q^T X = X
+    ## (old MM lies in the projection onto the new MM)
+    ## There must be a better way to do this??
+    newq <- qr.Q(qr(newMM))
+    diff <- any(abs(newq %*% crossprod(newq, oldMM) - oldMM)>1e-6)
+    if(!diff) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
     .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
 })
 
-##'  @describeIn ZlmFit Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
+##' @describeIn ZlmFit Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
+##' @return see "Methods (by generic)"
 setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
     testIdx <- h@index
@@ -99,11 +110,11 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='matrix'), functi
     converged <- object@converged
     genes <- rownames(coefC)
     tests <- aaply(seq_along(genes), 1, function(i){
-         .waldTest(coefC[i,],
-                coefD[i,],
-                vcovC[,,i],
-                vcovD[,,i],
-                hypothesis, converged[i,])
+        .waldTest(coefC[i,],
+                  coefD[i,],
+                  vcovC[,,i],
+                  vcovD[,,i],
+                  hypothesis, converged[i,])
     }, .drop=FALSE)
     dimnames(tests)[[1]] <- genes
     names(dimnames(tests)) <- c('primerid', 'test.type', 'metric')
@@ -123,13 +134,14 @@ setMethod('waldTest',  signature=c(object='ZlmFit', hypothesis='Hypothesis'), fu
     waldTest(object, h@contrastMatrix)
 })
 
-##' @describeIn show
+##' @describeIn show print info on ZlmFit
 setMethod('show', signature=c(object='ZlmFit'), function(object){
-    cat('Fitted zlm on', ncol(object@sca), 'genes and', nrow(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
+    cat('Fitted zlm on', nrow(object@sca), 'genes and', ncol(object@sca), 'cells.\n Using', class(object@LMlike), as.character(object@LMlike@formula), '\n')
 })
 
 ##' @describeIn ZlmFit Returns the matrix of coefficients for component \code{which}.
 ##' @param ... ignored
+##' @param object \code{ZlmFit}
 setMethod('coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     if(which=='C') object@coefC else object@coefD
@@ -150,7 +162,7 @@ setMethod('se.coef', signature=c(object='ZlmFit'), function(object, which, ...){
     which <- match.arg(which, c('C', 'D'))
     vc <- if(which=='C') object@vcovC else object@vcovD
     se <- sqrt(aaply(vc, 3, diag))
-    rownames(se) <- fData(object@sca)$primerid
+    rownames(se) <- mcols(object@sca)$primerid
     se
 })
 
@@ -179,15 +191,16 @@ normalci <- function(center, se, level){
 ##' @param doLRT if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.
 ##' @param level what level of confidence coefficient to return.  Defaults to 95 percent. 
 ##' @param ... ignored
+##' @return \code{data.table}
 ##' @seealso print.summaryZlmFit
 ##' @examples
 ##' data(vbetaFA)
-##' z <- zlm(~Stim.Condition, vbetaFA[,1:5])
+##' z <- zlm(~Stim.Condition, vbetaFA[1:5,])
 ##' zs <- summary(z)
 ##' names(zs)
 ##' print(zs)
-##' ##remove summaryZlmFit class to get normal print method (or call data.table:::print.data.table) 
-##' data.table::setattr(zs, 'class', class(zs)[-1])
+##' ##Select `datatable` copmonent to get normal print method
+##' zs$datatable
 ##' @export
 setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE, level=.95, ...){
     message('Combining coefficients and standard errors')
@@ -208,7 +221,7 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
     setkey(dt, primerid, contrast)
     stouffer <- dt[,list(z=sum(z)/sqrt(sum(!is.na(z))), component='S'), keyby=list(primerid, contrast)]
     dt <- rbind(dt, stouffer, fill=TRUE)
- 
+    
     if(is.logical(logFC) && logFC){
         message("Calculating log-fold changes")
         logFC <- getLogFC(zlmfit=object)
@@ -232,22 +245,23 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
         names(llrt) <-  doLRT
         llrt <- data.table(melt(llrt))
         setnames(llrt, c('test.type', 'L1', 'value'), c('component', 'contrast', 'Pr(>Chisq)'))
-        llrt[,':='(component=c(disc='D', cont='C', hurdle='H')[component],
+        llrt[,':='(component=c(cont='C', disc='D', hurdle='H')[component],
                    primerid=as.character(primerid))]
         setkey(llrt, primerid, component, contrast)
         setkey(dt, primerid, component, contrast)
         dt <- merge(llrt, dt, all.x=TRUE, all.y=TRUE)
         dt[is.na(component), component :='H']
     }
-    setattr(dt, 'class', c('summaryZlmFit', class(dt)))
-    dt
+    out <- list(datatable=dt)
+    class(out) <- c('summaryZlmFit', 'list')
+    out
 })
 
 if(getRversion() >= "2.15.1") globalVariables(c(
-                  'contrast',
-                 'metric', 
-                  '.',
-                  'value'))
+                                  'contrast',
+                                  'metric', 
+                                  '.',
+                                  'value'))
 
 ##' Print summary of a ZlmFit
 ##'
@@ -255,10 +269,12 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ##' @param x output from summary(ZlmFit)
 ##' @param n number of genes to show
 ##' @param by one of 'C' , 'D' or 'logFC' for continuous, discrete and log fold change z-scores for each contrast
+##' @param ... ignored
+##' @return prints a pretty table and invisibly returns a \code{data.table} representing the table.
 ##' @seealso summary,ZlmFit-method
 ##' @export
 print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
-    class(x) <- class(x)[-1]
+    x <- x$datatable
     ns <- seq_len(n)
     dt <- x[contrast!='(Intercept)',]
     by <- match.arg(by, c('logFC', 'D', 'C'))
@@ -267,7 +283,7 @@ print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
         by <- 'D'
     }
     dt[,metric:=ifelse(is.na(z), 0, -abs(z))]
-     describe <- switch(by, logFC='log fold change Z-score', D='Wald Z-scores on discrete', C='Wald Z-scores tests on continuous')
+    describe <- switch(by, logFC='log fold change Z-score', D='Wald Z-scores on discrete', C='Wald Z-scores tests on continuous')
     
     ## if('Pr(>Chisq)' %in% names(dt)){
     ##     keyv <- 'contrast'
@@ -277,10 +293,10 @@ print.summaryZlmFit <- function(x, n=2, by='logFC', ...){
     ## } else
     dt <- dt[component==by,]
     setkey(dt, contrast, metric)
-    pid <- dt[,.(primerid=primerid[ns]),by=contrast]
+    pid <- dt[,list(primerid=primerid[ns]),by=contrast]
     setkey(dt, primerid)
     setkey(pid, primerid, contrast)
-    dts <- dt[unique(pid[,.(primerid)]), .(contrast=contrast, primerid=primerid, z=z)]
+    dts <- dt[unique(pid[,list(primerid)]), list(contrast=contrast, primerid=primerid, z=z)]
     setkey(dts, primerid, contrast)
     dts[pid,value:=sprintf('%6.1f*',  z)]
     dts[!pid,value:=sprintf('%6.1f ',  z)]

@@ -1,41 +1,54 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 0.931
-Date: 2015-05-28
-Author: Andrew McDavid <amcdavid@fredhutch.org>, Greg Finak
+Version: 1.0.5
+Date: 2016-11-04
+Author: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>, Greg Finak
     <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
-Maintainer: Greg Finak <gfinak@fredhutch.org>
+Maintainer: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>
 VignetteBuilder: knitr
 Imports:
     Biobase,
+    BiocGenerics,
+    S4Vectors,
     data.table,
-    lattice,
     ggplot2,
     plyr,
     stringr,
     abind,
     methods,
     parallel,
-    R.methodsS3,
-    BiocGenerics
+    reshape2,
+    stats,
+    stats4,
+    graphics,
+    utils
 Depends:
-    reshape
+    SummarizedExperiment,
+    R(>= 3.3)
 Suggests:
     knitr,
+    rmarkdown,
     testthat,
     lme4(>= 1.0),
     roxygen2(> 4.0.0),
     numDeriv,
     car,
-    gdata
-Description: Core data structures and methods for handling single cell assay
-    data.
+    gdata,
+    lattice,
+    GGally,
+    GSEABase,
+    NMF,
+    TxDb.Hsapiens.UCSC.hg19.knownGene,
+    rsvd,
+    limma,
+    RColorBrewer
+Description: Methods and models for handling zero-inflated single cell
+    assay data.
 License: GPL(>= 2)
 Collate:
     'AllGenerics.R'
     'AllClasses.R'
-    'DataLayer.R'
     'Fluidigm-methods.R'
     'GSEA-by-boot.R'
     'Hypothesis.R'
@@ -43,13 +56,13 @@ Collate:
     'MultidimensionalScaling.R'
     'RNASeqAssay-methods.R'
     'Readers.R'
-    'SCASet-methods.R'
     'SingleCellAssay-methods.R'
     'UtilityFunctions.R'
     'ZlmFit-bootstrap.R'
     'ZlmFit-logFC.R'
     'ZlmFit.R'
     'bayesglm.R'
+    'convertMASTClassic.R'
     'ebayes-helpers.R'
     'filterEval.R'
     'helper-methods.R'
@@ -57,7 +70,15 @@ Collate:
     'lmWrapper-glm.R'
     'lmWrapper-glmer.R'
     'lmWrapper-ridge.R'
-    'lrtest.r'
+    'lrtest.R'
+    'predict.R'
+    'stat_ell.R'
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
+RoxygenNote: 5.0.1
+LazyData: true
+biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
+    RNASeq, Transcriptomics, SingleCell
+BugReports: https://github.com/RGLab/MAST/issues
+URL: https://github.com/RGLab/MAST/

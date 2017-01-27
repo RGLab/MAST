@@ -41,19 +41,19 @@ solveMoM <- function(rNg, SSg){
 ##' @importFrom plyr aaply
 getSSg_rNg <- function(sca, mm){
     aaply(exprs(sca), 2, function(y){
-            SSg <- NA
-            rNg <- NA
-            try({
-                pos <- y>0
-                yp <- y[pos]
-                mp <- mm[pos,]
-                QR <- qr(mp)
-                resid <- qr.resid(QR, yp)
-                SSg <- crossprod(resid)
-                rNg <- length(yp)-QR$rank
-                   }, silent=TRUE)
-            return(c(SSg=SSg, rNg=rNg))
-        })
+        SSg <- NA
+        rNg <- NA
+        try({
+            pos <- y>0
+            yp <- y[pos]
+            mp <- mm[pos,]
+            QR <- qr(mp)
+            resid <- qr.resid(QR, yp)
+            SSg <- crossprod(resid)
+            rNg <- length(yp)-QR$rank
+        }, silent=TRUE)
+        return(c(SSg=SSg, rNg=rNg))
+    })
 }
 
 ##' Estimate hyperparameters for hierarchical variance model for continuous component
@@ -63,18 +63,18 @@ getSSg_rNg <- function(sca, mm){
 ##' H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 ##' @param sca \code{SingleCellAssay}
 ##' @param ebayesControl list with (optional) components 'method', 'model'.  See details.
-##' @param Formula a formula (using variables in \code{cData(sca)} used when \code{model='H1'}.
+##' @param Formula a formula (using variables in \code{colData(sca)} used when \code{model='H1'}.
 ##' @param truncate Genes with sample precisions exceeding this value are discarded when estimating the hyper parameters
 ##' @return \code{numeric} of length two, giving the hyperparameters in terms of a variance (\code{v}) and prior observations (\code{df}), inside a \code{structure}, with component \code{hess}, giving the Fisher Information of the hyperparameters.
 ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
-     ## Empirical bayes method
+    ## Empirical bayes method
     defaultCtl <- list(method='MLE', model='H0')
     if (is.null(ebayesControl)){
-    ebayesControl <- list()
-    nms <- ''
-  } else{
-      nms <- names(ebayesControl)
-  }
+        ebayesControl <- list()
+        nms <- ''
+    } else{
+        nms <- names(ebayesControl)
+    }
     missingControl <- setdiff(names(defaultCtl), nms)
     ebayesControl[missingControl] <- defaultCtl[missingControl]
     method <- match.arg(ebayesControl[['method']], c('MOM', 'MLE'))
@@ -92,7 +92,7 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
         rNg <- rNg[valid]
         SSg <- SSg[valid]
     } else if(model == 'H1'){
-        mm <- model.matrix(Formula, cData(sca))
+        mm <- model.matrix(Formula, colData(sca))
 
         allfits <- getSSg_rNg(sca, mm)
         valid <- apply(!is.na(allfits), 1, all) & allfits[, 'rNg']/allfits[, 'SSg']<truncate
@@ -106,7 +106,7 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
         grad <- getMarginalHyperLikelihood(rNg, SSg, deriv=TRUE)
         O <- optim(c(a0=1, b0=1), fn, gr=grad, method='L-BFGS', lower=.001, upper=Inf, control=list(fnscale=-1), hessian=TRUE)
         if(O$convergence!=0) stop('Hyper parameter estimation might have failed', O$message)
-        #O <- optim(c(a0=1, b0=1), fn, method='L-BFGS', lower=.001, upper=Inf, control=list(fnscale=-1))
+                                        #O <- optim(c(a0=1, b0=1), fn, method='L-BFGS', lower=.001, upper=Inf, control=list(fnscale=-1))
         th <- O$par
     } else if(method == 'MOM'){
         th <- solveMoM(rNg, SSg)

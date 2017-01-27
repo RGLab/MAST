@@ -1,0 +1,21 @@
+# NEWS #
+## 0.99.0 ##
+Port `SingleCellAssay` to use `SummarizedExperiment` under the hood.
+
+## 1.0.0 ##
+Release for Bioconductor 3.4
+
+## 1.0.1 ##
+Doc updates
+
+## 1.0.2 ##
+Fix a bug in which `summary,ZlmFit` was calculating waldTests rather than lrTest
+
+## 1.0.3 ##
+Improvements and bug fixes to `thresholdSCRNACountMatrix`
+
+## 1.0.4 ##
+Add `convertMASTClassicToSingleCellAssay` to convert objects from MAST versions <= 0.99.0
+
+## 1.0.5 ##
+Fixup `stat_ell` to deal with changes introduced in ggplot 2.2.1

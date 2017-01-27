@@ -13,6 +13,8 @@ setMethod('initialize', 'GLMlike', function(.Object, ...){
 #' @param object \code{GLMlike}
 #' @param which \code{character}, one of 'C', 'D'.
 #' @param ... ignored
+#' @return covariance matrix
+#' @export
 setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov
@@ -28,13 +30,13 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     vc
 })
 
-##
+## Degree of freedom calculations
 .glmDOF <- function(object, pos){
     npos <- sum(pos)
     ## bayesglm doesn't correctly set the residual DOF, and this won't hurt for regular glm
     object@fitC$df.residual <- max(npos - object@fitC$rank, 0)
     ## conservative estimate of residual df
-    object@fitD$df.residual <- max(min(npos, length(pos)-npos) - object@fitD$rank, 0)
+    object@fitD$df.residual <- min(npos, length(pos)-npos) - object@fitD$rank
     object@fitted <- c(C=object@fitC$converged &
                            object@fitC$df.residual>0, #kill unconverged or empty
                        D=object@fitD$converged)
@@ -70,6 +72,7 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     object
 }
 
+if(getRversion() >= "2.15.1") globalVariables(c('pos'))
 setMethod('fit', signature=c(object='GLMlike', response='missing'), function(object, response, silent=TRUE, ...){
     prefit <- .fit(object)
     if(!prefit){
@@ -97,6 +100,9 @@ setMethod('fit', signature=c(object='GLMlike', response='missing'), function(obj
     object
 })
 
+##' @export
+##' @importMethodsFrom stats4 logLik
+##' @describeIn LMlike return the log-likelihood of a fitted model
 setMethod('logLik', signature=c(object='GLMlike'), function(object){
     L <- c(C=0, D=0)
     if(object@fitted['C']){
@@ -107,8 +113,8 @@ setMethod('logLik', signature=c(object='GLMlike'), function(object){
     }
 
     if(object@fitted['D']){
-         dev <- object@fitD$deviance
-         L['D'] <- -dev/2
+        dev <- object@fitD$deviance
+        L['D'] <- -dev/2
     }
     return(L)
 })
@@ -141,20 +147,20 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
 rowm <- function(C, D){
     x <- c(C=NA, D=NA)
     try({if(is.null(C) | missing(C))
-        C <- NA
-    if(is.null(D) | missing(D))
-        D <- NA
-    x <- c(C=C, D=D)
-     }, silent=TRUE)
+             C <- NA
+             if(is.null(D) | missing(D))
+                 D <- NA
+             x <- c(C=C, D=D)
+    }, silent=TRUE)
     ## dim(x) <- c(1, length(x))
     ## colnames(x) <- c('C', 'D')
     x
 }
 
 torowm <- function(x){
-     ## dim(x) <- c(1, length(x))
-     ## colnames(x) <- c('C', 'D')
-     x
+    ## dim(x) <- c(1, length(x))
+    ## colnames(x) <- c('C', 'D')
+    x
 }
 
 setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
@@ -166,11 +172,11 @@ setMethod('summarize', signature=c(object='GLMlike'), function(object, ...){
     vcD <- vcov(object, 'D')
     
     list(coefC=coefC, vcovC=vcC,
-          deviance=rowm(C=object@fitC$deviance, D=object@fitD$deviance),
-          df.null=rowm(C=object@fitC$df.null, D=object@fitD$df.null),
-          df.resid=rowm(C=object@fitC$df.residual, D=object@fitD$df.residual),
-          dispersion=rowm(C=object@fitC$dispersionMLE, D=object@fitD$dispersion),
-          dispersionNoshrink=rowm(C=object@fitC$dispersionMLENoShrink, D=object@fitD$dispersion),
-          loglik=torowm(logLik(object)),
-          coefD=coefD, vcovD=vcD, converged=torowm(object@fitted))
-  })
+         deviance=rowm(C=object@fitC$deviance, D=object@fitD$deviance),
+         df.null=rowm(C=object@fitC$df.null, D=object@fitD$df.null),
+         df.resid=rowm(C=object@fitC$df.residual, D=object@fitD$df.residual),
+         dispersion=rowm(C=object@fitC$dispersionMLE, D=object@fitD$dispersion),
+         dispersionNoshrink=rowm(C=object@fitC$dispersionMLENoShrink, D=object@fitD$dispersion),
+         loglik=torowm(logLik(object)),
+         coefD=coefD, vcovD=vcD, converged=torowm(object@fitted))
+})
