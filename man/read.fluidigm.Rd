@@ -2,7 +2,7 @@
 % Please edit documentation in R/Readers.R
 \name{read.fluidigm}
 \alias{read.fluidigm}
-\title{read.fluidigm}
+\title{Reads a Fluidigm Biomark (c. 2011) raw data file (or set of files)}
 \usage{
 read.fluidigm(files = NULL, metadata = NULL, header.size = 2, skip = 8,
   cycle.threshold = 40, metadataColClasses = NULL, meta.key = NULL,
@@ -52,10 +52,8 @@ read.fluidigm(files = NULL, metadata = NULL, header.size = 2, skip = 8,
 list of \code{SingleCellAssay} holding the data.
 }
 \description{
-Reads a fluidigm raw data file (or set of files)
-}
-\details{
-This function reads a raw Fluidigm data file or set of files and constructs a SingleCellAssay (or FluigidmAssay) object.
+This function reads a raw Fluidigm Biomark data file or set of files and constructs a SingleCellAssay (or FluigidmAssay) object.
+This was written c. 2011 and has not been tested lately.  The Biomark format may have changed.
 }
 \author{
 Greg Finak

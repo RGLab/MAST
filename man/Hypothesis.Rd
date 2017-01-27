@@ -24,6 +24,6 @@ h <- Hypothesis('Stim.ConditionUnstim', c('(Intercept)', 'Stim.ConditionUnstim')
 h@contrastMatrix
 }
 \seealso{
-zlm.SingleCellAssay waldTest lrTest
+zlm waldTest lrTest
 }
 

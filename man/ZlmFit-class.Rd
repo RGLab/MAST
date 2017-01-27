@@ -42,7 +42,7 @@
 see "Methods (by generic)"
 }
 \description{
-This holds output from a call to zlm.SingleCellAssay.  Many methods are defined to operate on it.  See below.
+This holds output from a call to zlm.  Many methods are defined to operate on it.  See below.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -99,7 +99,7 @@ This holds output from a call to zlm.SingleCellAssay.  Many methods are defined 
 }}
 \examples{
 data(vbetaFA)
-zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
+zlmVbeta <- zlm(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
 #Coefficients and standard errors
 coef(zlmVbeta, 'D')
 coef(zlmVbeta, 'C')
@@ -118,6 +118,6 @@ waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
         `PopulationCD154-VbetaUnresponsive`'))
 }
 \seealso{
-zlm.SingleCellAssay summary,ZlmFit-method
+zlm summary,ZlmFit-method
 }
 

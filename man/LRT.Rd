@@ -40,6 +40,6 @@ data(vbetaFA)
 LRT(vbetaFA, 'Stim.Condition', 'Unstim')
 }
 \seealso{
-zlm.SingleCellAssay, ZlmFit
+zlm ZlmFit
 }
 

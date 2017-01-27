@@ -93,13 +93,13 @@ Drop <- function(x, d){
 ##' @return Object of class \code{GSEATests}, containing slots \code{tests},  4D array and \code{bootR}, the number of boostrap replicates.
 ##' @import abind
 ##' @export
-##' @seealso calcZ
+##' @seealso \link{calcZ}
 ##' @seealso summary,GSEATests-method
 ##' @examples
 ##' data(vbetaFA)
 ##' vb1 = subset(vbetaFA, ncells==1)
 ##' vb1 = vb1[,freq(vb1)>.1][1:15,]
-##' zf = zlm.SingleCellAssay(~Stim.Condition, vb1)
+##' zf = zlm(~Stim.Condition, vb1)
 ##' boots = bootVcov1(zf, 5)
 ##' sets=list(A=1:5, B=3:10, C=15, D=1:5)
 ##' gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))

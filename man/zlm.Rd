@@ -2,30 +2,68 @@
 % Please edit documentation in R/zeroinf.R
 \name{zlm}
 \alias{zlm}
-\title{Convenience function for running a zero-inflated regression}
+\alias{zlm.SingleCellAssay}
+\title{Zero-inflated regression for SingleCellAssay}
 \usage{
-zlm(formula, data, method = "bayesglm", silent = TRUE, ...)
+zlm(formula, sca, method = "bayesglm", silent = TRUE, ebayes = TRUE,
+  ebayesControl = NULL, force = FALSE, hook = NULL, parallel = TRUE,
+  LMlike, onlyCoef = FALSE, ...)
 }
 \arguments{
-\item{formula}{model formula}
+\item{formula}{a formula with the measurement variable on the LHS and predictors present in colData on the RHS}
 
-\item{data}{a data.frame, list, environment or SingleCellAssay in which formula is evaluated}
+\item{sca}{SingleCellAssay object}
 
-\item{method}{one of 'glm', 'glmer' or 'bayesglm'.  See MAST:::methodDict for other possibilities.}
+\item{method}{character vector, either 'glm', 'glmer' or 'bayesglm'}
 
-\item{silent}{if TRUE suppress common errors from fitting continuous part}
+\item{silent}{Silence common problems with fitting some genes}
 
-\item{...}{passed to \code{fit}, and eventually to the linear model fitting function}
+\item{ebayes}{if TRUE, regularize variance using empirical bayes method}
+
+\item{ebayesControl}{list with parameters for empirical bayes procedure.  See \link{ebayes}.}
+
+\item{force}{Should we continue testing genes even after many errors have occurred?}
+
+\item{hook}{a function called on the \code{fit} after each gene.}
+
+\item{parallel}{If TRUE and \code{option(mc.cores)>1} then multiple cores will be used in fitting.}
+
+\item{LMlike}{if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.}
+
+\item{onlyCoef}{If TRUE then only an array of model coefficients will be returned (probably only useful for bootstrapping).}
+
+\item{...}{arguments passed to the S4 model object upon construction.  For example, \code{fitArgsC} and \code{fitArgsD}, or \code{coefPrior}.}
 }
 \value{
-list with "disc"rete part and "cont"inuous part
+a object of class \code{ZlmFit} with methods to extract coefficients, etc. 
+OR, if data is a \code{data.frame} just a list of the discrete and continuous fits.
 }
 \description{
-Fits a hurdle model on zero-inflated continuous data in which the zero process
-is modeled as a logistic regression
-and (conditional on the the response being >0), the continuous process is Gaussian, ie, a linear regression.
+For each gene in sca, fits the hurdle model in \code{formula} (linear for et>0), logistic for et==0 vs et>0.
+Return an object of class \code{ZlmFit} containing slots giving the coefficients, variance-covariance matrices, etc.
+After each gene, optionally run the function on the fit named by 'hook'
+}
+\section{Empirical Bayes variance regularization}{
+
+The empirical bayes regularization of the gene variance assumes that the precision (1/variance) is drawn from a
+gamma distribution with unknown parameters.
+These parameters are estimated by considering the distribution of sample variances over all genes.
+The procedure used for this is determined from
+\code{ebayesControl}, a named list with components 'method' (one of 'MOM' or 'MLE') and 'model' (one of 'H0' or 'H1')
+method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
+H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 }
 \examples{
+data(vbetaFA)
+zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:10,])
+slotNames(zlmVbeta)
+#A matrix of coefficients
+coef(zlmVbeta, 'D')['CCL2',]
+#An array of covariance matrices
+vcov(zlmVbeta, 'D')[,,'CCL2']
+waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
+
+## Can also provide just a \\code{data.frame} instead
 data<- data.frame(x=rnorm(500), z=rbinom(500, 1, .3))
 logit.y <- with(data, x*2 + z*2); mu.y <- with(data, 10+10*x+10*z + rnorm(500))
 y <- (runif(500)<exp(logit.y)/(1+exp(logit.y)))*1
@@ -34,9 +72,8 @@ data$y <- y
 fit <- zlm(y ~ x+z, data)
 summary.glm(fit$disc)
 summary.glm(fit$cont)
-
 }
 \seealso{
-GLMlike, LMERlike, BayesGLMlike
+ZlmFit-class, ebayes, GLMlike-class, BayesGLMlike-class
 }
 
