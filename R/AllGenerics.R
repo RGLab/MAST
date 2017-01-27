@@ -181,7 +181,7 @@ setGeneric('summarize', function(object, ...) standardGeneric('summarize'))
 ##'
 ##' Combined Likelihood ratio test (binomial and normal) for SingleCellAssay and derived objects.
 ##' This function is deprecated, please use \link{lrTest} instead.
-##' @seealso zlm.SingleCellAssay, ZlmFit
+##' @seealso zlm ZlmFit
 ##' @param ... ignored
 ##' @export
 setGeneric("LRT",function(sca,comparison,...) standardGeneric("LRT"))
