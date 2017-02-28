@@ -36,6 +36,9 @@ thresholdSCRNACountMatrix(data_all, conditions = NULL, cutbins = NULL,
 An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
 of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
 binned data.
+These density estimates currently exclude the zeros due to complications with how the bandwidth is selected.
+(If the bandwith is too small, then extra peaks/modes are found and everything goes haywire).
+If the diagnostic plots don't reveal any bimodal bins, this is probably the reason, and you may not need to threshold since background in the data are exact zeros.
 }
 \examples{
 data(maits,package='MAST', envir = environment())

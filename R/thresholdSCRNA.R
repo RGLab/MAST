@@ -97,6 +97,9 @@ apply_by<-function(x,by_idx,fun,...){
 #'An adaptive threshold is calculated from the conditional mean of expression, based on 10 bins
 #'of the genes with similar expression levels. Thresholds are chosen by estimating cutpoints in the bimodal density estimates of the
 #'binned data.
+#' These density estimates currently exclude the zeros due to complications with how the bandwidth is selected.
+#' (If the bandwith is too small, then extra peaks/modes are found and everything goes haywire).
+#' If the diagnostic plots don't reveal any bimodal bins, this is probably the reason, and you may not need to threshold since background in the data are exact zeros.
 #' @param data_all \code{matrix} of (possibly log-transformed) counts or TPM.  Rows are genes and columns are cells.
 #' @param conditions Bins are be determined per gene and per condition.  Typically contrasts of interest should be specified.
 #' @param cutbins \code{vector} of cut points.
