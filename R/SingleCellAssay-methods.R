@@ -114,6 +114,7 @@ setMethod('fData', 'SingleCellAssay', function(object){
 ##' data(vbetaFA)
 ##' melt.SingleCellAssay(vbetaFA[1:10,])
 ##' as(vbetaFA[1:10,], 'data.table')
+##' @export melt.SingleCellAssay
 melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     featdata <- as.data.table(mcols(data))
     celldata <- as.data.table(colData(data))
