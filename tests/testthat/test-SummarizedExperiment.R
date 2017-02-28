@@ -9,7 +9,7 @@ colDataRn <- DataFrame(colData, row.names=LETTERS[1:NC])
 rData <- DataFrame(pid= 1:NF, row.names=paste('pid', 1:NF))
 test_that('Can create', {
     se <- suppressMessages(FromMatrix(assay, colData, rData))
-    expect_is(se, 'SummarizedExperiment0')
+    expect_is(se, 'SummarizedExperiment')
     expect_false(is.null(dimnames(se)[[1]]))
     expect_false(is.null(dimnames(se)[[2]]))
 })
