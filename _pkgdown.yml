@@ -1,0 +1,62 @@
+reference:
+    - title: "Loading, transforming and summarizing"
+      desc: "Functions to load data, add covariates or annotations, or provide high-level summaries."
+      contents: 
+        - starts_with("From")
+        - ends_with("Assay")
+        - freq
+        - getConcordance
+        - melt.SingleCellAssay
+        - read.fluidigm
+        - subset
+        - primerAverage
+        - filter
+    - title: "Thresholding"
+      desc: "Adaptive thresholding of background noise."
+      contents:
+        - thresholdSCRNACountMatrix
+        - print.summaryThresholdSCRNA
+        - summary.thresholdSCRNACountMatrix
+        - plot.thresholdSCRNACountMatrix
+    - title: "Differential Expression Testing with Hurdle Model"
+      desc: "Fit a Hurdle linear model to test for zero-inflated differential expression."
+      contents:
+        - zlm
+        - summary,ZlmFit-class
+        - LMERlike-class
+        - BayesGLMlike-class
+        - print.summaryZlmFit
+        - ebayes
+        - defaultPrior
+    - title: "Specifying hypothesis and contrasts to test"
+      desc: "Testing linear functions of coefficients."
+      contents:
+        - Hypothesis
+        - CoefficientHypothesis
+        - lrTest
+        - waldTest
+    - title: "Low-level manipulation of fitted hurdle models"
+      desc: "Return coefficients, standard errors, etc.  Calculate and return residuals from models."
+      contents: 
+        - coef
+        - vcov
+        - se.coef
+        - ZlmFit-class
+        - predict.ZlmFit
+        - getLogFC
+        - collectResiduals
+        - impute
+    - title: "Gene set enrichment testing"
+      desc: "Tests on the average differential expression effect in a gene set, accounting for gene-gene correlations.  Uses bootstraps to assess the gene-gene correlations."
+      contents:
+        - gseaAfterBoot
+        - bootVcov1
+        - pbootVcov1
+        - summary,GSEATests-method
+    - title: "Plotting methods"
+      desc: "Miscellaneous plotting methods. Concordance, PCA biplots, and effects plots for fitted hurdle models."
+      contents:
+        - myBiplot
+        - plotSCAConcordance
+        - stat_ell
+

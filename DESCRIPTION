@@ -2,10 +2,10 @@ Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
 Version: 1.1.6
-Date: 2016-12-01
-Author: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>, Greg Finak
-    <gfinak@fredhutch.org>, Masanao Yajima <myajima@fredhutch.org>
-Maintainer: Andrew McDavid <Andrew_McDavid@urmc.rochester.edu>
+Date: 2017-01-27
+Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
+            person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
+            person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))
 VignetteBuilder: knitr
 Imports:
     Biobase,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/Fluidigm-methods.R
 \name{primerAverage}
 \alias{primerAverage}
-\title{Average within duplicated genes/primers}
+\title{Average expression values for duplicated/redundant genes}
 \usage{
 primerAverage(fd, geneGroups, fun.natural = expavg, fun.cycle = logshift)
 }
@@ -16,9 +16,13 @@ primerAverage(fd, geneGroups, fun.natural = expavg, fun.cycle = logshift)
 \item{fun.cycle}{transformation to be used after collapsing}
 }
 \value{
-collapsed version of \code{fd}.
+averaged version of \code{fd}.
 }
 \description{
-.
+Takes an average, potentially on a different scale given by \code{fun.natural}
+of some genes. The average is then transformed with \code{fun.cycle}.
+}
+\note{
+This code needs to be tested more extensively after a refactoring.  Caveat calculator.
 }
 

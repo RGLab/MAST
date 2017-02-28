@@ -19,7 +19,7 @@ Sample cells with replacement to find bootstrapped distribution of coefficients
 }
 \examples{
 data(vbetaFA)
-zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:5,])
+zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:5,])
 #Only run 3 boot straps, which you wouldn't ever want to do in practice...
 bootVcov1(zlmVbeta, R=3)
 }

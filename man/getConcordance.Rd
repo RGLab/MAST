@@ -5,7 +5,7 @@
 \alias{getrc}
 \alias{getss}
 \alias{getwss}
-\title{getConcordance}
+\title{Get the concordance between two experiments}
 \usage{
 getConcordance(singleCellRef, singleCellcomp, groups = NULL,
   fun.natural = expavg, fun.cycle = logmean)
@@ -35,10 +35,7 @@ getrc(concord)
 concordance between two assays
 }
 \description{
-Get the concordance between two
-}
-\details{
-Return the concordance between two assays (i.e. single cell and hundred cell)
+Return the concordance between two assays (i.e. single cell and hundred cell).
 The "average" of \code{singleCellRef} (after adjusting for the number of cells) and
 \code{singleCellComp} are taken per gene, per \code{groups}.
 A \code{data.frame} with one row per gene-\code{groups} is returned with some additional columns.
@@ -63,6 +60,6 @@ getrc(concord)
 Andrew McDavid
 }
 \seealso{
-plotSCAConcordance
+\link{plotSCAConcordance}
 }
 

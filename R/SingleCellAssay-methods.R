@@ -99,19 +99,20 @@ setMethod('fData', 'SingleCellAssay', function(object){
 
 
 
-##' Melt a rectangular array
+##' "Melt" a \code{SingleCellAssay} matrix
 ##'
-##' Return a molten (flat) representation of a rectangular array
-##'
-##' @param data A rectangular array, with attributes attached to its rows and
-##' columns
+##' Return a molten (flat) representation, taking the
+##' cross-product of the expression values, the \code{colData} (column meta data),
+##' and the feature data (\code{mcols}).
+##' @param data \code{SingleCellAssay}
 ##' @param ... ignored
 ##' @param na.rm ignored
-##' @param value.name name of 'values' column containing the measurement
-##' @return A \code{data.frame} typically, with the cartesian product of the
-##' row and column attributes and the values from the rectangular array
+##' @param value.name name of 'values' column in returned value
+##' @return A \code{data.table}, with the cartesian product of the
+##' row and column attributes and the expression values
 ##' @examples
 ##' data(vbetaFA)
+##' melt.SingleCellAssay(vbetaFA[1:10,])
 ##' as(vbetaFA[1:10,], 'data.table')
 melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     featdata <- as.data.table(mcols(data))
