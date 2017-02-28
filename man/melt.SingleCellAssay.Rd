@@ -2,30 +2,32 @@
 % Please edit documentation in R/SingleCellAssay-methods.R
 \name{melt.SingleCellAssay}
 \alias{melt.SingleCellAssay}
-\title{Melt a rectangular array}
+\title{"Melt" a \code{SingleCellAssay} matrix}
 \usage{
 \method{melt}{SingleCellAssay}(data, ..., na.rm = FALSE,
   value.name = "value")
 }
 \arguments{
-\item{data}{A rectangular array, with attributes attached to its rows and
-columns}
+\item{data}{\code{SingleCellAssay}}
 
 \item{...}{ignored}
 
 \item{na.rm}{ignored}
 
-\item{value.name}{name of 'values' column containing the measurement}
+\item{value.name}{name of 'values' column in returned value}
 }
 \value{
-A \code{data.frame} typically, with the cartesian product of the
-row and column attributes and the values from the rectangular array
+A \code{data.table}, with the cartesian product of the
+row and column attributes and the expression values
 }
 \description{
-Return a molten (flat) representation of a rectangular array
+Return a molten (flat) representation, taking the
+cross-product of the expression values, the \code{colData} (column meta data),
+and the feature data (\code{mcols}).
 }
 \examples{
 data(vbetaFA)
+melt.SingleCellAssay(vbetaFA[1:10,])
 as(vbetaFA[1:10,], 'data.table')
 }
 

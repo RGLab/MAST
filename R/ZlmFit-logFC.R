@@ -18,14 +18,24 @@ safeContrastQF <- function(contrast, vc) uncomplexify(tcrossprod(contrast, compl
 ##' \deqn{u(contrast1)v(contrast1)-u(contrast0)v(contrast0).}
 ##' Note that for this to be a log-fold change, then the regression for u must have been fit on the log scale.  This is returned in the matrix \code{logFC}.
 ##' An approximation of the variance of \code{logFC} (applying the delta method to  formula defined above) is provided in \code{varLogFC}.
+##' 
+##' @section Caveats:
+##' 1.  When \code{method='bayesglm'} (the default), it's no longer necessarily true that the log fold change from condition A to B will be the inverse of the log fold change from B to A if the models are fit separately.
+##' This is due to the shrinkage in \code{bayesglm}.
+##' 
+##' 2.  The log fold change can be small, but the Hurdle p-value small and significant when the sign of the discrete and continuous model components are discordant 
+##' so that the marginal log fold change cancels out.
+##' The large sample sizes present in many single cell experiments also means that there is substantial power to detect even small changes.
+##' 
 ##' @param zlmfit ZlmFit output
 ##' @param contrast0 vector of coefficients giving baseline contrast, or a \code{\link{Hypothesis}}.  If missing, then the '(Intercept)' is used as baseline.
 ##' @param contrast1 matrix of coefficients giving comparison contrasts, or a \code{\link{Hypothesis}}.  If missing, then all non-(Intercept) coefficients are compared.
-##' @seealso Hypothesis
+##' @seealso \link{Hypothesis}
+##' @seealso \link{summary,ZlmFit-method}
 ##' @return list of matrices `logFC` and `varLogFC`, giving the log-fold-changes for each contrast (columns) and genes (rows) and the estimated sampling variance thereof
 ##' @examples
 ##' data(vbetaFA)
-##' zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[1:5,])
+##' zz <- zlm( ~ Stim.Condition+Population, vbetaFA[1:5,])
 ##' ##log-fold changes in terms of intercept (which is Stim(SEB) and CD154+VbetaResponsive)
 ##' lfcStim <- logFC(zz)
 ##' ##If we want to compare against unstim, we can try the following

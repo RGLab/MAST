@@ -24,7 +24,7 @@ collectSummaries <- function(listOfSummaries){
     LMlike <- o1@LMlike
     model.matrix(LMlike) <- newMM
     message('Refitting on reduced model...')
-    o0 <- zlm.SingleCellAssay(sca=o1@sca, LMlike=LMlike)
+    o0 <- zlm(sca=o1@sca, LMlike=LMlike)
     lambda <- -2*(o0@loglik-o1@loglik)
     testable <- o0@converged & o1@converged
     testable[,'C'] <-  testable[,'C'] & (o0@df.resid > 1 & o1@df.resid > 1)[,'C']

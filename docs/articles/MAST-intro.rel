@@ -1,0 +1,54 @@
+;; RefTeX parse info file
+;; File: /Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw
+;; User: andrew (Andrew)
+
+(set reftex-docstruct-symbol '(
+
+
+(xr nil "\\\\\\\\\\\\")
+
+(index-tags)
+
+(is-multi t)
+
+(bibview-cache)
+
+(master-dir . "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/")
+
+(label-numbers)
+
+(bof "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw")
+
+(bof "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/symbols.tex")
+
+(eof "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/symbols.tex")
+
+(toc "toc" "    1 Philosophy" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 2 "1" "\\section{Philosophy}" 621)
+
+(toc "toc" "      1.1 Internals" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 3 "1.1" "\\subsection{Internals}" 1086)
+
+(toc "toc" "      1.2 Statistical Testing" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 3 "1.2" "\\subsection{Statistical Testing}" 1360)
+
+(toc "toc" "    2 Examples" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 2 "2" "\\section{Examples}" 1883)
+
+(toc "toc" "      2.1 Reading Data" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 3 "2.1" "\\subsection{Reading Data}" 2025)
+
+(toc "toc" "      2.2 Importing Matrix Data" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 3 "2.2" "\\subsection{Importing Matrix Data}" 5020)
+
+(toc "toc" "      2.3 Subsetting, splitting, combining, melting" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 3 "2.3" "\\subsection{Subsetting, splitting, combining, melting}" 5102)
+
+(toc "toc" "      2.4 Filtering" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 3 "2.4" "\\subsection{Filtering}" 6497)
+
+(toc "toc" "      2.5 Thresholding" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 3 "2.5" "\\subsection{Thresholding}" 7971)
+
+(toc "toc" "    3 Significance testing under the Hurdle model" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 2 "3" "\\section{Significance testing under the Hurdle model}" 8002)
+
+(toc "toc" "      3.1 Two-sample Likelihood Ratio Test" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 3 "3.1" "\\subsection{Two-sample Likelihood Ratio Test}" 11069)
+
+(toc "toc" "    4 Use with single cell RNA-sequencing data" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 2 "4" "\\section{Use with single cell RNA-sequencing data}" 12382)
+
+(toc "toc" "    5 Implementation Details" "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw" nil 2 "5" "\\section{Implementation Details}" 12833)
+
+(eof "/Users/andrew/Dropbox/research/gottardo/fluidigm/MAST/vignettes/MAST-intro.Rnw")
+))
+

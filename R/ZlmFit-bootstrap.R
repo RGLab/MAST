@@ -21,7 +21,7 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
         s <- sample(N, replace = TRUE)
         newsca <- sca[, s]
         LMlike <- update(LMlike, design=colData(newsca))
-        zlm.SingleCellAssay(sca = newsca, LMlike = LMlike, onlyCoef=TRUE)
+        zlm(sca = newsca, LMlike = LMlike, onlyCoef=TRUE)
     })
     
     d<-dim(coef(zlmfit,"D"))
@@ -39,7 +39,7 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
 ##' @importFrom plyr raply
 ##' @examples
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:5,])
+##' zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:5,])
 ##' #Only run 3 boot straps, which you wouldn't ever want to do in practice...
 ##' bootVcov1(zlmVbeta, R=3)
 ##' @export
@@ -51,7 +51,7 @@ bootVcov1 <- function(zlmfit, R=99){
         s <- sample(N, replace=TRUE)
         newsca <- sca[,s]
         LMlike <- update(LMlike, design=colData(newsca))
-        zlm.SingleCellAssay(sca=newsca, LMlike=LMlike, onlyCoef=TRUE)
+        zlm(sca=newsca, LMlike=LMlike, onlyCoef=TRUE)
     })
 
     manyvc

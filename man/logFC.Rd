@@ -34,9 +34,18 @@ An approximation of the variance of \code{logFC} (applying the delta method to  
 \itemize{
 \item \code{getLogFC}: Return results as a perhaps friendlier \code{data.table}
 }}
+\section{Caveats}{
+
+1.  When \code{method='bayesglm'} (the default), it's no longer necessarily true that the log fold change from condition A to B will be the inverse of the log fold change from B to A if the models are fit separately.
+This is due to the shrinkage in \code{bayesglm}.
+
+2.  The log fold change can be small, but the Hurdle p-value small and significant when the sign of the discrete and continuous model components are discordant 
+so that the marginal log fold change cancels out.
+The large sample sizes present in many single cell experiments also means that there is substantial power to detect even small changes.
+}
 \examples{
 data(vbetaFA)
-zz <- zlm.SingleCellAssay( ~ Stim.Condition+Population, vbetaFA[1:5,])
+zz <- zlm( ~ Stim.Condition+Population, vbetaFA[1:5,])
 ##log-fold changes in terms of intercept (which is Stim(SEB) and CD154+VbetaResponsive)
 lfcStim <- logFC(zz)
 ##If we want to compare against unstim, we can try the following
@@ -55,6 +64,8 @@ stopifnot(all(lfcStim$logFC[,1]==(-lfcUnstim$logFC[,1])))
 getLogFC(zz)
 }
 \seealso{
-Hypothesis
+\link{Hypothesis}
+
+\link{summary,ZlmFit-method}
 }
 

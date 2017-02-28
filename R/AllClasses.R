@@ -112,7 +112,7 @@ setClass('GLMlike', contains='LMlike', slots=c(weightFun='function'), prototype=
 ##' dp <- defaultPrior('Stim.ConditionUnstim')
 ##' \dontrun{
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, vbeta.sc, method='bayesglm', coefPrior=dp)
+##' zlmVbeta <- zlm(~ Stim.Condition, vbeta.sc, method='bayesglm', coefPrior=dp)
 ##' }
 defaultPrior <- function(names){
     names <- setdiff(names, '(Intercept)')
@@ -167,7 +167,7 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 
 ##' An S4 class to hold the output of a call to zlm
 ##'
-##' This holds output from a call to zlm.SingleCellAssay.  Many methods are defined to operate on it.  See below.
+##' This holds output from a call to zlm.  Many methods are defined to operate on it.  See below.
 ##' @slot coefC matrix of continuous coefficients
 ##' @slot coefD matrix of discrete coefficients
 ##' @slot vcovC array of variance/covariance matrices for coefficients
@@ -184,10 +184,10 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @slot priorVar shrinkage target
 ##' @slot converged output that may optionally be set by the underlying modeling function
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
-##' @seealso zlm.SingleCellAssay summary,ZlmFit-method
+##' @seealso zlm summary,ZlmFit-method
 ##' @examples
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
+##' zlmVbeta <- zlm(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
 ##' #Coefficients and standard errors
 ##' coef(zlmVbeta, 'D')
 ##' coef(zlmVbeta, 'C')

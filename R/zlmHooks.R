@@ -17,7 +17,7 @@ revealHook <- function(zlm){
 ##' @param x \code{ZlmFit}-class
 ##' @param sca \code{SingleCellAssay} object to which the residuals should be added
 ##' @param newLayerName \code{character} name of the assay layer
-##' @seealso zlm.SingleCellAssay
+##' @seealso zlm
 ##' @section Total residual types:
 ##' Each component of the model contributes several flavors of residual, which can be combined in various fashions.
 ##' The discrete residual can be on the response scale (thus subtracting the predicted probability of expression from the 0/1 expression value).
@@ -32,18 +32,18 @@ revealHook <- function(zlm){
 ##' svbeta <- svbeta[freq(svbeta)>.4,]
 ##' window <- function(x1) lapply(assays(x1), function(x2) x2[1:3, 1:6])
 ##' #total residuals of the response
-##' z1 <- zlm.SingleCellAssay(~ Stim.Condition, svbeta, hook=discrete_residuals_hook)
+##' z1 <- zlm(~ Stim.Condition, svbeta, hook=discrete_residuals_hook)
 ##' window(collectResiduals(z1, svbeta))
-##' z2 <- zlm.SingleCellAssay(~ Stim.Condition, svbeta, hook=continuous_residuals_hook)
+##' z2 <- zlm(~ Stim.Condition, svbeta, hook=continuous_residuals_hook)
 ##' window(collectResiduals(z2, svbeta))
-##' z3 <- zlm.SingleCellAssay(~ Stim.Condition, svbeta, hook=combined_residuals_hook)
+##' z3 <- zlm(~ Stim.Condition, svbeta, hook=combined_residuals_hook)
 ##' window(collectResiduals(z3, svbeta))
 ##' #total deviance residuals
-##' z4 <- zlm.SingleCellAssay(~ Stim.Condition, svbeta, hook=deviance_residuals_hook)
+##' z4 <- zlm(~ Stim.Condition, svbeta, hook=deviance_residuals_hook)
 ##' window(collectResiduals(z4, svbeta))
 ##' #partial residuals
 ##' colData(svbeta)$ngeneson <- colMeans(assay(svbeta)>0)
-##' z5 <- zlm.SingleCellAssay(~ Stim.Condition + ngeneson, svbeta)
+##' z5 <- zlm(~ Stim.Condition + ngeneson, svbeta)
 ##' partialScore(z5, 'Stim.Condition')
 collectResiduals <- function(x, sca, newLayerName='Residuals'){
     if(any(newLayerBool <- assayNames(sca) %in% newLayerName)){

@@ -1,23 +1,7 @@
-##Function to read fluidigm data
-## files = character vector of files (csv or xls)
-## metadata: csv, maps to files
-## header.size: currently ignored
-## skip: currently ignored
-## cycle.threshold: max number of cycles?
-## metadataColClasses: used to infer datatypes in metadata (optional, then we guess datatypes)
-## meta.key: ??
-## idvars: vector of column names that uniquely identify a sample (conditional on splitby)
-## splitby: values in this column are used to split input (per file??) into distinct SCA objects ala split
-## unique.well.id: column name which identifies wells.  Must be unique within ???
-## raw: assume files follow 'raw' schema
-## assay:
-
-##Function to read fluidigm data
-##' Reads a fluidigm raw data file (or set of files)
+##' Reads a Fluidigm Biomark (c. 2011) raw data file (or set of files)
 ##'
-##' This function reads a raw Fluidigm data file or set of files and constructs a SingleCellAssay (or FluigidmAssay) object.
-##' @title read.fluidigm
-##' @name read.fluidigm
+##' This function reads a raw Fluidigm Biomark data file or set of files and constructs a SingleCellAssay (or FluigidmAssay) object.
+##' This was written c. 2011 and has not been tested lately.  The Biomark format may have changed.
 ##' @param files A \code{character} vector of files to read.
 ##' @param metadata A \code{character} path and filename of a CSV file containing additional metadata about the samples
 ##' @param header.size A \code{numeric} indicating the number of lines in the header (default 2)

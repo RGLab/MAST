@@ -17,7 +17,7 @@ callName <- function(n=1){
 ##' @examples
 ##' h <- Hypothesis('Stim.ConditionUnstim', c('(Intercept)', 'Stim.ConditionUnstim'))
 ##' h@@contrastMatrix
-##' @seealso zlm.SingleCellAssay waldTest lrTest
+##' @seealso zlm waldTest lrTest
 Hypothesis <- CoefficientHypothesis <- function(hypothesis, terms){
     whoami <- callName()
     h <- new(whoami, .Data=hypothesis)

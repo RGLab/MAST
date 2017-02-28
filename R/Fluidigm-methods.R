@@ -37,8 +37,9 @@ checkGroups <- function(sc, groups){
     invisible(TRUE)
 }
 
-##' Report the proportion of expression for each gene
+##' Summary statistics for genes in an experiment
 ##'
+##' \code{freq} returns the frequency of expression, i.e., the proportion of non-zero values in \code{sc}.
 ##' NAs can be optionally removed
 ##' @param sc SingleCellAssay
 ##' @param na.rm should NAs be removed, or carried through?
@@ -46,20 +47,14 @@ checkGroups <- function(sc, groups){
 ##' @examples
 ##' data(vbetaFA)
 ##' freq(vbetaFA)
+##' condmean(vbetaFA)
 ##' @export
 freq <- function(sc, na.rm=TRUE){
     stopifnot(is(sc, 'SingleCellAssay'))
     apply(exprs(sc)>0, 2, mean, na.rm=na.rm)
 }
 
-##' Report the mean et value for each gene
-##'
-##' NAs are always removed
-##' @param sc SingleCellAssay
-##' @return vector of means
-##' @examples
-##' data(vbetaFA)
-##' condmean(vbetaFA)
+##' @describeIn freq Report the mean non-zero expression value for each gene. NAs are always removed.
 ##' @export
 condmean <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
@@ -68,11 +63,8 @@ condmean <- function(sc){
     apply(exprsNA, 2, mean, na.rm=TRUE)
 }
 
-##' Report standard deviation of et, for positive et for each gene
-##'
-##' NAs are always removed
-##' @param sc SingleCellAssay
-##' @return vector of standard deviations
+##' @describeIn freq Report standard deviation of expression, for positive et for each gene. NAs are always removed.
+##' @export
 condSd <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
     exprsNA <- exprs(sc)
@@ -80,23 +72,19 @@ condSd <- function(sc){
     sqrt(apply(exprsNA, 2, var, na.rm=TRUE))
 }
 
-##' Report number of expressing cells per gene
-##'
-##' NAs are removed
-##' @param sc \code{SingleCellAssay}
-##' @return \code{numeric} vector
+##' @describeIn freq Report number of expressing cells ($>0$) per gene. NAs are removed.
+##' @export
 numexp <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
     apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
 }
 
-##' Get the concordance between two
+##' Get the concordance between two experiments
 ##'
-##' Return the concordance between two assays (i.e. single cell and hundred cell)
+##' Return the concordance between two assays (i.e. single cell and hundred cell).
 ##' The "average" of \code{singleCellRef} (after adjusting for the number of cells) and
 ##' \code{singleCellComp} are taken per gene, per \code{groups}.
 ##' A \code{data.frame} with one row per gene-\code{groups} is returned with some additional columns.
-##' @title getConcordance
 ##' @param singleCellRef "reference" SingleCellAssay
 ##' @param singleCellcomp "comparison" SingleCellAssay
 ##' @param groups character vector giving variable(s) on which the comparison is conditioned
@@ -104,7 +92,7 @@ numexp <- function(sc){
 ##' @param fun.cycle inverse function of fun.natural
 ##' @return concordance between two assays
 ##' @author Andrew McDavid
-##' @seealso plotSCAConcordance
+##' @seealso \link{plotSCAConcordance}
 ##' @examples
 ##' data(vbetaFA)
 ##' sca1 <- subset(vbetaFA, ncells==1)
@@ -289,14 +277,17 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 
 
 
-#' Average within duplicated genes/primers
+#' Average expression values for duplicated/redundant genes
 #'
-#' .
+#' Takes an average, potentially on a different scale given by \code{fun.natural}
+#' of some genes. The average is then transformed with \code{fun.cycle}.
+#' @note
+#' This code needs to be tested more extensively after a refactoring.  Caveat calculator.
 #' @param fd \code{SingleCellAssay} or subclass 
 #' @param geneGroups \code{character} naming a column in the \code{featureData} that keys the duplicates
 #' @param fun.natural transformation to be used to collapse the duplicate expression values
 #' @param fun.cycle transformation to be used after collapsing
-#' @return collapsed version of \code{fd}.
+#' @return averaged version of \code{fd}.
 #' @export
 primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift){
     fVars <- mcols(fd)[, geneGroups, drop=FALSE]
