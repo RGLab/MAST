@@ -6,44 +6,11 @@ methodDict <- data.table(keyword=c('glm', 'glmer', 'lmer', 'bayesglm','ridge', '
 if(getRversion() >= "2.15.1") globalVariables(c(
                                   'keyword',
                                   'lmMethod', 
-                                  'implementsEbayes')) #zlm, zlm.SingleCellAssay
+                                  'implementsEbayes')) #zlm
 
-
-## for each column in exprMat, fit obj and return an environment containing the init summaries
-## exprMat should have column names containing the names of the genes
-## hook is an (optional) function called on each fitted object
-
-
-##' Convenience function for running a zero-inflated regression
-##'
-##' Fits a hurdle model on zero-inflated continuous data in which the zero process
-##' is modeled as a logistic regression
-##' and (conditional on the the response being >0), the continuous process is Gaussian, ie, a linear regression.
-##' @param formula model formula
-##' @param data a data.frame, list, environment or SingleCellAssay in which formula is evaluated
-##' @param method one of 'glm', 'glmer' or 'bayesglm'.  See MAST:::methodDict for other possibilities.
-##' @param silent if TRUE suppress common errors from fitting continuous part
-##' @param ... passed to \code{fit}, and eventually to the linear model fitting function
-##' @return list with "disc"rete part and "cont"inuous part 
-##' @export
-##' @examples
-##' data<- data.frame(x=rnorm(500), z=rbinom(500, 1, .3))
-##' logit.y <- with(data, x*2 + z*2); mu.y <- with(data, 10+10*x+10*z + rnorm(500))
-##' y <- (runif(500)<exp(logit.y)/(1+exp(logit.y)))*1
-##' y[y>0] <- mu.y[y>0]
-##' data$y <- y
-##' fit <- zlm(y ~ x+z, data)
-##' summary.glm(fit$disc)
-##' summary.glm(fit$cont)
-##'
-##' @seealso GLMlike, LMERlike, BayesGLMlike
 ##' @import stringr
-zlm <- function(formula, data, method='bayesglm',silent=TRUE, ...){
+.zlm <- function(formula, data, method='bayesglm',silent=TRUE, ...){
     ## perhaps we should be generic, but since we are dispatching on second argument, which might be an S3 class, let's just do this instead.
-    if(inherits(data, 'SingleCellAssay')){
-        return(zlm.SingleCellAssay(formula, sca=data, method=method, silent=silent, ...))
-    }
-    
     if(!inherits(data, 'data.frame')) stop("'data' must be data.frame, not matrix or array")
     if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
 
@@ -59,6 +26,12 @@ zlm <- function(formula, data, method='bayesglm',silent=TRUE, ...){
 summary.zlm <- function(out){
     summary(out$cont)
     summary(out$disc)
+}
+
+##' @export
+zlm.SingleCellAssay <- function(...){
+    .Deprecated('zlm')
+    zlm(...)
 }
 
 ##' Zero-inflated regression for SingleCellAssay 
@@ -88,19 +61,51 @@ summary.zlm <- function(out){
 ##' @param LMlike if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.
 ##' @param onlyCoef If TRUE then only an array of model coefficients will be returned (probably only useful for bootstrapping).
 ##' @param ... arguments passed to the S4 model object upon construction.  For example, \code{fitArgsC} and \code{fitArgsD}, or \code{coefPrior}.
-##' @return a object of class \code{ZlmFit} with methods to extract coefficients, etc.
-##' @export
-##' @seealso ebayes, glmlike-class, ZlmFit-class, BayesGLMlike-class
+##' @return a object of class \code{ZlmFit} with methods to extract coefficients, etc. 
+##' OR, if data is a \code{data.frame} just a list of the discrete and continuous fits.
+##' @seealso ZlmFit-class, ebayes, GLMlike-class, BayesGLMlike-class
+##' @aliases zlm.SingleCellAssay
 ##' @examples
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm.SingleCellAssay(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:10,])
+##' zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:10,])
 ##' slotNames(zlmVbeta)
 ##' #A matrix of coefficients
 ##' coef(zlmVbeta, 'D')['CCL2',]
 ##' #An array of covariance matrices
 ##' vcov(zlmVbeta, 'D')[,,'CCL2']
 ##' waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
-zlm.SingleCellAssay <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
+##' 
+##' ## Can also provide just a \code{data.frame} instead
+##' data<- data.frame(x=rnorm(500), z=rbinom(500, 1, .3))
+##' logit.y <- with(data, x*2 + z*2); mu.y <- with(data, 10+10*x+10*z + rnorm(500))
+##' y <- (runif(500)<exp(logit.y)/(1+exp(logit.y)))*1
+##' y[y>0] <- mu.y[y>0]
+##' data$y <- y
+##' fit <- zlm(y ~ x+z, data)
+##' summary.glm(fit$disc)
+##' summary.glm(fit$cont)
+##' @export
+zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
+    ## could also provide argument `data`
+    dotsdata = list(...)$data
+    if(!is.null(dotsdata)){
+        if(!missing(sca)) stop("Cannot provide both `sca` and `data`")
+        sca = dotsdata
+    }
+    
+    ## Are we just a data.frame? Call simplified method.
+    if(!inherits(sca, 'SingleCellAssay')){
+        if(inherits(sca, 'data.frame')){
+            if(!is.null(dotsdata)){
+                return(.zlm(formula, method=method, silent=silent, ...)   )
+            } else{
+                return(.zlm(formula, data=sca, method=method, silent=silent, ...)   )
+            }
+        } else{
+            stop('`sca` must inherit from `data.frame` or `SingleCellAssay`')   
+        }
+    } 
+
     ## Default call
     if(missing(LMlike)){
         ## Which class are we using for the fits...look it up by keyword

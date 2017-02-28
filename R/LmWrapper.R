@@ -39,7 +39,7 @@ setMethod('fit', signature=c(object='LMlike', response='vector'), function(objec
     object@fitted <- c(C=FALSE, D=FALSE)
     object@fitC <- NULL
     object@fitD <- NULL
-    if(!quick) validObject(object)      #save time in inner loop in zlm.SingleCellAssay
+    if(!quick) validObject(object)      #save time in inner loop in zlm
     fit(object, silent=silent, start=start, ...)
 })
 

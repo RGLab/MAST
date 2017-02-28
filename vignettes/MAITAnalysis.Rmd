@@ -186,7 +186,7 @@ In order to have more interpretable coefficients, we'll set the reference level 
 cond<-factor(colData(sca)$condition)
 cond<-relevel(cond,"Unstim")
 colData(sca)$condition<-cond
-zlmCond <- zlm.SingleCellAssay(~condition + cngeneson, sca)
+zlmCond <- zlm(~condition + cngeneson, sca)
 # The following are equivalent
 ## lrt <- lrTest(zlm, "condition")
 ## lrt <- lrTest(zlm, CoefficientHypothesis('conditionStim'))
@@ -304,7 +304,7 @@ You can get a form of [deviance residual](https://en.wikipedia.org/wiki/Deviance
 For example, in the subset of differentially expressed genes, we can refit the model and pull out the residual.
 ```{r residuals}
 scaDE <- sca[entrez_to_plot,]
-zlmResidDE <- zlm.SingleCellAssay(~condition + cngeneson, scaDE, hook=deviance_residuals_hook)
+zlmResidDE <- zlm(~condition + cngeneson, scaDE, hook=deviance_residuals_hook)
 residDE <- zlmResidDE@hookOut
 residDEMatrix <- do.call(rbind, residDE)
 ```

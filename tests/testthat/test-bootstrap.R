@@ -34,7 +34,7 @@ fd2 <- fd[1:20,]
 
 context("Bootstrap")
 test_that("Only return coef works", {
-    zzinit2 <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, onlyCoef=TRUE))
+    zzinit2 <- suppressWarnings(zlm( ~ Population*Stim.Condition, fd2, onlyCoef=TRUE))
     expect_that(zzinit2, is_a('array'))
     expect_equal(dim(zzinit2)[1], nrow(fd2))
 })
@@ -43,7 +43,7 @@ test_that("Only return coef works", {
 Sys.setenv("R_TESTS" = "")
 cl <- parallel::makeCluster(2)
 test_that("Bootstrap", {
-    zf <- suppressWarnings(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2))
+    zf <- suppressWarnings(zlm( ~ Population*Stim.Condition, fd2))
     boot <- pbootVcov1(cl, zf, R=3)
     expect_is(boot, 'array')
     ## rep, genes, coef, comp
@@ -64,7 +64,7 @@ Y <- simYs(m, X, beta, rho=2, sigma=1, p=pvec)
 
 cData <- data.frame(group=attr(X, 'group'))
 sca <- suppressMessages(suppressWarnings(FromMatrix(t(Y$Y), cData=cData)))
-zfit <- suppressWarnings(zlm.SingleCellAssay(~group, sca=sca))
+zfit <- suppressWarnings(zlm(~group, sca=sca))
 test_that('Expression frequencies are close to expectation', {
     expect_lt(mean((freq(sca)-pvec)^2), 1/(sqrt(N)*m))
 })

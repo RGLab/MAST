@@ -1,8 +1,8 @@
 fd2 <- fd[1:20,]
 
 context("ZlmFit")
-test_that('zlm.SingleCellAssay works', {
-  zzinit <<- hushWarning(zlm.SingleCellAssay( ~ Population*Stim.Condition, fd2, parallel=FALSE, method='glm', ebayes=FALSE), 'never estimible')
+test_that('zlm works', {
+  zzinit <<- hushWarning(zlm( ~ Population*Stim.Condition, fd2, parallel=FALSE, method='glm', ebayes=FALSE), 'never estimible')
   expect_that(zzinit, is_a('ZlmFit'))
 })
 
@@ -44,7 +44,7 @@ test_that('Three flavors of wald on ZlmFit', {
 
 context('Log fold change calcs')
 test_that('log fold changes match zero-inflated regression', {
-    zzsimple <<- zlm.SingleCellAssay( ~ Stim.Condition, fd2, method='glm', ebayes=FALSE)
+    zzsimple <<- zlm( ~ Stim.Condition, fd2, method='glm', ebayes=FALSE)
     lfc <- logFC(zzsimple)
     expect_equal(nrow(lfc$logFC), nrow(zzsimple@sca))
     expect_true(all(lfc$varLogFC>0, na.rm=TRUE))
