@@ -18,8 +18,16 @@ Vignettes are available in the package via `vignette('MAITAnalysis')` or `vignet
 
 New Features and announcements
 ------------
-- MAST has been ported to use `SummarizedExperiment` under the hood. The main difference is that the data container is now transposed to follow bioconductor standards.
-- The older version will remain accessible on github under branch *MASTClassic*
+- MAST has been ported to use `SummarizedExperiment` under the hood, and is in [Bioconductor](http://bioconductor.org/packages/release/bioc/html/MAST.html).
+The main difference is that the data container is now transposed to follow bioconductor standards.
+The older version will remain accessible under branch *MASTClassic*
+
+Getting Help
+----------------
+For bug reports (something seems broken): open a bug report [here](https://github.com/RGLab/MAST/issues).  For
+general questions, please submit a question to the [bioconductor support
+site](https://support.bioconductor.org/t/MAST/) so that others can benefit from the discussion.
+
 
 Installation Instructions
 ------------
