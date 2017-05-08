@@ -22,4 +22,3 @@
 \description{
 rstandard bayesglm object S3 method
 }
-

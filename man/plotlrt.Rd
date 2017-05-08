@@ -27,4 +27,3 @@ Constructs a forest-like plot of signed log10 p-values, possibly adjusted for mu
 \author{
 andrew
 }
-

@@ -22,4 +22,3 @@ However, for the purposes of testing we can replace it with the least favorable 
 ##See stat_ell
 example(stat_ell)
 }
-

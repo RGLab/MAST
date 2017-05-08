@@ -22,4 +22,3 @@ Evaluates the expression in \code{...} in the context of \code{colData(x)} and r
 data(vbetaFA)
 subset(vbetaFA, ncells==1)
 }
-

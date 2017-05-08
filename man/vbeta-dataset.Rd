@@ -9,4 +9,3 @@ Column \code{Ct} contains the cycle threshold, with NA denoting that the thresho
 \description{
 Vbeta Data Set
 }
-

@@ -31,4 +31,3 @@ example(gseaAfterBoot)
 \seealso{
 gseaAfterBoot
 }
-

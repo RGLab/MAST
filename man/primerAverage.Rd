@@ -25,4 +25,3 @@ of some genes. The average is then transformed with \code{fun.cycle}.
 \note{
 This code needs to be tested more extensively after a refactoring.  Caveat calculator.
 }
-

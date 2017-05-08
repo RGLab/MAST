@@ -30,4 +30,3 @@ Plot cutpoints and densities for thresholding
 ## See thresholdSCRNACountMatrix
 example(thresholdSCRNACountMatrix)
 }
-

@@ -24,4 +24,3 @@ example('ZlmFit-class')
 \seealso{
 ZlmFit-class
 }
-

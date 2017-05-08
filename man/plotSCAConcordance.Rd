@@ -37,4 +37,3 @@ plotSCAConcordance(sca1, sca100)
 \seealso{
 getConcordance
 }
-

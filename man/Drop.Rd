@@ -24,4 +24,3 @@ dx = MAST:::Drop(x, 1)
 stopifnot(all(dim(dx)==c(2,1,2)))
 
 }
-

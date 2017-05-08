@@ -25,4 +25,3 @@ Return predictions from a ZlmFit object.
 ##See stat_ell
 example(stat_ell)
 }
-

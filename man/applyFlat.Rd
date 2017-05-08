@@ -29,4 +29,3 @@ dim(y0) = c(1, 2)
 x1 = MAST:::applyFlat(x0,y0)
 stopifnot(rowMeans(x1)==0)
 }
-

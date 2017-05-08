@@ -20,4 +20,3 @@ Replace \code{colData} with a \code{DataFrame}.
 Checks to make sure that \code{row.names(value)} match \code{colnames{x}}, in contrast to the parent method
  Checks for a wellKey column, as well.
 }
-

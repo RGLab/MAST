@@ -11,4 +11,3 @@ MAITs data set, RNASeq
 \seealso{
 \code{\link{FromMatrix}}
 }
-

@@ -20,4 +20,3 @@ Calculates mean(2^x - 1)
 x <- 1:10
 logmean(expavg(x))
 }
-

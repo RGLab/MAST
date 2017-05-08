@@ -25,4 +25,3 @@ data(vbetaFA)
 zlmVbeta <- zlm(~ Stim.Condition, vbeta.sc, method='bayesglm', coefPrior=dp)
 }
 }
-

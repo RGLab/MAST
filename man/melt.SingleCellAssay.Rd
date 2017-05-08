@@ -30,4 +30,3 @@ data(vbetaFA)
 melt.SingleCellAssay(vbetaFA[1:10,])
 as(vbetaFA[1:10,], 'data.table')
 }
-

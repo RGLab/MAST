@@ -3,10 +3,10 @@
 \docType{class}
 \name{LMERlike-class}
 \alias{LMERlike-class}
-\alias{coef,LMERlike-method}
-\alias{logLik,LMERlike-method}
 \alias{update,LMERlike-method}
 \alias{vcov,LMERlike-method}
+\alias{coef,LMERlike-method}
+\alias{logLik,LMERlike-method}
 \title{Wrapper for lmer/glmer}
 \usage{
 \S4method{update}{LMERlike}(object, formula., design, ...)
@@ -47,6 +47,7 @@ This is necessary because there is no (easy) way to specify an arbitrary fixed-e
 
 \item \code{logLik}: return the log-likelihood
 }}
+
 \section{Slots}{
 
 \describe{

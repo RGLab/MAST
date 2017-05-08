@@ -27,4 +27,3 @@ LMlike or subclass
 Given a design and formula, fit the zero inflated regression, storing the fits in slots
 \code{fitC} and \code{fitD}
 }
-

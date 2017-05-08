@@ -49,4 +49,3 @@ zs$datatable
 \seealso{
 print.summaryZlmFit
 }
-

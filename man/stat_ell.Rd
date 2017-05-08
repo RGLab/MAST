@@ -58,4 +58,3 @@ print(plt)
 # doesn't do anything in this case because there are no inestimable coefficients
 predictI <- impute(predicted, groupby='primerid')
 }
-

@@ -19,4 +19,3 @@ see \link{influence.glm}
 \description{
 The influence function
 }
-

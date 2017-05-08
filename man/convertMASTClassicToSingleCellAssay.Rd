@@ -28,4 +28,3 @@ Type checking for old object is not performed.
 data(vbetaFA)
 convertMASTClassicToSingleCellAssay(vbetaFA)
 }
-

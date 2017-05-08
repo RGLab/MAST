@@ -24,4 +24,3 @@ Shows the top `n` genes by z score on `by`
 \seealso{
 summary,ZlmFit-method
 }
-

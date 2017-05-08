@@ -14,4 +14,3 @@
 \description{
 Returns the \code{featureData}.
 }
-

@@ -19,4 +19,3 @@ Inverse of logistic transformation
 x <- 1:5
 invlogit(log(x/(1-x)))
 }
-

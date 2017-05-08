@@ -22,10 +22,7 @@ LRT(sca, comparison, ...)
 
 \item{groups}{A optional \code{character} specifying a variable on which to stratify the test.  For each level of \code{groups}, there will be a separate likelihood ratio test.}
 
-\item{returnall}{A \code{logical} specifying if additional rows should be returned with information about the different components of the test.}
-}
-\value{
-\code{data.frame}
+\item{returnall}{A \code{logical} specifying if additional columns should be returned with information about the different components of the test.}
 }
 \description{
 Tests for a change in ET binomial proportion or mean of positive ET
@@ -35,11 +32,6 @@ Likelihood Ratio Test for SingleCellAssay objects
 Combined Likelihood ratio test (binomial and normal) for SingleCellAssay and derived objects.
 This function is deprecated, please use \link{lrTest} instead.
 }
-\examples{
-data(vbetaFA)
-LRT(vbetaFA, 'Stim.Condition', 'Unstim')
-}
 \seealso{
 zlm ZlmFit
 }
-

@@ -3,14 +3,14 @@
 \docType{class}
 \name{ZlmFit-class}
 \alias{ZlmFit-class}
-\alias{coef,ZlmFit-method}
 \alias{lrTest,ZlmFit,CoefficientHypothesis-method}
 \alias{lrTest,ZlmFit,Hypothesis-method}
 \alias{lrTest,ZlmFit,matrix-method}
-\alias{se.coef,ZlmFit-method}
-\alias{vcov,ZlmFit-method}
 \alias{waldTest,ZlmFit,CoefficientHypothesis-method}
 \alias{waldTest,ZlmFit,Hypothesis-method}
+\alias{coef,ZlmFit-method}
+\alias{vcov,ZlmFit-method}
+\alias{se.coef,ZlmFit-method}
 \title{An S4 class to hold the output of a call to zlm}
 \usage{
 \S4method{lrTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis)
@@ -62,6 +62,7 @@ This holds output from a call to zlm.  Many methods are defined to operate on it
 
 \item \code{se.coef}: Returns a matrix of standard error estimates for coefficients on component \code{which}.
 }}
+
 \section{Slots}{
 
 \describe{
@@ -97,6 +98,7 @@ This holds output from a call to zlm.  Many methods are defined to operate on it
 
 \item{\code{hookOut}}{a list of length ngenes containing output from a hook function, if \code{zlm} was called with one}
 }}
+
 \examples{
 data(vbetaFA)
 zlmVbeta <- zlm(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
@@ -120,4 +122,3 @@ waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
 \seealso{
 zlm summary,ZlmFit-method
 }
-

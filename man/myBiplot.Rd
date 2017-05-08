@@ -28,4 +28,3 @@ printed plot
 \description{
 Creates a custom BiPlot for visualizing the results of PCA
 }
-

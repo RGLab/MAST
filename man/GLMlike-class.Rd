@@ -25,6 +25,7 @@ Wrapper for regular glm/lm
 \itemize{
 \item \code{vcov}: return the variance/covariance of component \code{which}
 }}
+
 \section{Slots}{
 
 \describe{

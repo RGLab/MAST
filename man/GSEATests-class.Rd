@@ -15,6 +15,7 @@ It primarily provides a summary method.
 
 \item{\code{bootR}}{number of bootstrap replicates}
 }}
+
 \seealso{
 gseaAfterBoot
 
@@ -22,4 +23,3 @@ calcZ
 
 summary,GSEATests-method
 }
-
