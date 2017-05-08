@@ -91,6 +91,17 @@ apply_by<-function(x,by_idx,fun,...){
     return(res)
 }
 
+#set up cutpoints so that they are decreasing to the left of midindex and increasing to the right
+#midindex: trusted index
+#cutpoints: numeric
+orderCutpoints <- function(midindex, cutpoints) {
+    decreasingIdx <- midindex:1
+    increasingIdx <- (midindex:length(cutpoints))
+    cutpointsMonotone <- c(cummin(cutpoints[decreasingIdx]), #decreasing to the left of midindex
+                           cummax(cutpoints[increasingIdx])[-1]) #increasing to the right of midindex
+    stopifnot(length(cutpointsMonotone)==length(cutpoints))
+     cutpointsMonotone[c(decreasingIdx, increasingIdx[-1])]
+}
 
 #'Threshold a count matrix using an adaptive threshold.
 #'
@@ -221,9 +232,7 @@ thresholdSCRNACountMatrix <-function( data_all              ,
         }
 
     }
-                                        #dens   <- lapply( log_data_list, function( x )      density(         x, adjust = 1 ) )
-                                        #peaks  <- lapply(          dens, function( dd )  find_peaks( dd$x,dd$y, adjust = 1 ) )
-                                        #valleys<- lapply(          dens, function( dd )find_valleys( dd$x,dd$y, adjust = 1 ) )
+                                       
     dens   <- lapply( log_data_list, function( x )  { if(length(x)>2){ density( x, adjust = adj ) } else{ NULL } })
     peaks  <- lapply(          dens, function( dd ) { if( is.null(dd) ){ data.frame( x=0, y=0 ) }else{ find_peaks( dd$x,dd$y, adjust = adj )}} ) 
     valleys<- lapply(          dens, function( dd ) { if( is.null(dd) ){ list(0)} else{find_valleys( dd$x,dd$y, adjust = adj ) } })
@@ -264,35 +273,16 @@ thresholdSCRNACountMatrix <-function( data_all              ,
                                         # ensure cutpoints are increasing and decreasing from the 75% of bins with 2 modes.
                                         # could be improved. 
     vals2    <- unlist(valleys[which(unlist(lapply(peaks,nrow))==2)])
-    if(is.null(vals2)){
-        stop('No bimodal bins.  Try decreasing `min_per_bin` and/or increasing `num_bins`.')
-    }
-    #index of valley closest to 75% of double-peaked valleys
-    midindex <- which(names(peaks)==names(which.min(abs(vals2-quantile(vals2,c(0.75),na.rm=TRUE)))))
-    if( length(midindex) > 0 ){
-        for( i in midindex:2 ){
-        	if(midindex>length(cutpoints)){
-            if( cutpoints[[i-1]] > cutpoints[[i]] ){
-                cutpoints[[i-1]] <- cutpoints[[i]]
-            }
-        	}
-        }
-        for( i in midindex:(length( cutpoints )-1) ){
-        	if(midindex<length(cutpoints)){
-            if( cutpoints[[i+1]] <= cutpoints[[i]] ){
-                cutpoints[[i+1]] <- cutpoints[[i]]
-            }
-        	}
-        }
-    } else { # when no clear 2 peaked distribution exists, start from the top
-        for( i in length( cutpoints ):2 ){
-            if( cutpoints[[i-1]] > cutpoints[[i]] ){
-                cutpoints[[i-1]] <- cutpoints[[i]]
-            }
-        }
-
-    }
-    cutpoints <- lapply( cutpoints, function(x) max( absolute_min ,x ) )
+      
+      if( length(vals2) > 0 ){ #at least one double-peaked 
+          #index of valley closest to 75% of double-peaked valleys
+          midindex <- which(names(peaks)==names(which.min(abs(vals2-quantile(vals2,c(0.75),na.rm=TRUE)))))
+      } else{         # no double peaksed valleys
+          midindex <- length(cutpoints)
+      }
+      
+    cutpoints <- orderCutpoints(midindex, cutpoints)
+    cutpoints <- pmax(cutpoints, absolute_min)
     if(data_log){
         data_threshold <- log_data
     } else {

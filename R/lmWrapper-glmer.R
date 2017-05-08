@@ -45,7 +45,9 @@ toAdditiveFormula <- function(string){
 ##' @param formula. \code{formula}
 ##' @param design  something coercible to a \code{data.frame}
 setMethod('update', signature=c(object='LMERlike'), function(object, formula., design, ...){
-    object@formula <- update.formula(object@formula, formula.)
+    if(!missing(formula.)){
+        object@formula <- update.formula(object@formula, formula.)
+    }
     reComponents <- getREvars(object@formula)
     if(!missing(design)){
         object@design <- as(design, 'data.frame')
