@@ -40,6 +40,7 @@ You might try setting \code{var_estimate='modelbased'} to relax this requirement
 
 A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete or 'cont'inuous), "metric" ('stat' gives the average of the coefficient, 'var' gives the variance of that average, 'dof' gives the number of genes that were actually tested in the set), "group" ('test' for the genes in test-set, "null" for all genes outside the test-set).
 }
+
 \examples{
 data(vbetaFA)
 vb1 = subset(vbetaFA, ncells==1)
@@ -60,4 +61,3 @@ stopifnot(all.equal(gsea@tests['C','cont','stat','test'], coef(zf, 'C')[15,'Stim
 
 summary,GSEATests-method
 }
-

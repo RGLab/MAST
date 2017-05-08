@@ -23,4 +23,3 @@ ebayes(sca, ebayesControl, Formula, truncate = Inf)
 method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
 H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 }
-

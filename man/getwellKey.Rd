@@ -21,4 +21,3 @@ data(vbetaFA)
 getwellKey(vbetaFA)
 colData(vbetaFA)$wellKey
 }
-

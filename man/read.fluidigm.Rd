@@ -58,4 +58,3 @@ This was written c. 2011 and has not been tested lately.  The Biomark format may
 \author{
 Greg Finak
 }
-

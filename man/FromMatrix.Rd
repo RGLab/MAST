@@ -37,4 +37,3 @@ cData$ncells <- 1
 fd <- FromMatrix(mat, cData, fData)
 stopifnot(inherits(fd, 'SingleCellAssay'))
 }
-

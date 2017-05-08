@@ -21,4 +21,3 @@ Selectively muffle warnings based on output
 hushWarning(warning('Beware the rabbit'), 'rabbit')
 hushWarning(warning('Beware the rabbit'), 'hedgehog')
 }
-

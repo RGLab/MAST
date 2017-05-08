@@ -17,4 +17,3 @@ modify object
 \description{
 Replace model matrix
 }
-

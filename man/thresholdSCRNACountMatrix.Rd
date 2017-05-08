@@ -50,4 +50,3 @@ on.exit(par(opar))
 par(mfrow=c(4,2))
 plot(tt)
 }
-

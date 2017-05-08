@@ -14,4 +14,21 @@ This packages provides data structures and functions for statistical analysis of
 \references{
 Finak, et al.  MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data.  Genome Biology (2015).
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/RGLab/MAST/}
+  \item Report bugs at \url{https://github.com/RGLab/MAST/issues}
+}
 
+}
+\author{
+\strong{Maintainer}: Andrew McDavid \email{Andrew_McDavid@urmc.rochester.edu}
+
+Authors:
+\itemize{
+  \item Greg Finak \email{gfinak@fredhutch.org}
+  \item Masanao Yajima \email{myajima@fredhutch.org}
+}
+
+}

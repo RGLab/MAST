@@ -42,4 +42,3 @@ LRT(vbetaFA, 'Stim.Condition', 'Unstim')
 \seealso{
 zlm ZlmFit
 }
-

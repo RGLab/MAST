@@ -3,11 +3,11 @@
 \docType{methods}
 \name{cData}
 \alias{cData}
-\alias{cData,SingleCellAssay-method}
 \alias{cData<-}
+\alias{cData,SingleCellAssay-method}
 \alias{cData<-,SingleCellAssay-method}
-\alias{combine,SingleCellAssay,ANY-method}
 \alias{combine,SingleCellAssay,SingleCellAssay-method}
+\alias{combine,SingleCellAssay,ANY-method}
 \title{Deprecated cell/feature data accessors/mutators}
 \usage{
 cData(sc)
@@ -56,6 +56,7 @@ You should transition to use the following replacements:
   \item{\code{combine}}{\link{cbind2} or \link{rbind2}}
 }
 }
+
 \examples{
 data(vbetaFA)
 stopifnot(all.equal(hushWarning(cData(vbetaFA), 'deprecated'),colData(vbetaFA)))
@@ -65,4 +66,3 @@ stopifnot(all.equal(hushWarning(exprs(vbetaFA), 'deprecated'), t(assay(vbetaFA))
 \seealso{
 exprs
 }
-

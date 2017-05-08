@@ -17,4 +17,3 @@ list of parameters characterizing fit
 \description{
 Return programmatically useful summary of a fit
 }
-

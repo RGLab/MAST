@@ -3,15 +3,15 @@
 \docType{class}
 \name{LMlike-class}
 \alias{LMlike-class}
-\alias{logLik,GLMlike-method}
-\alias{lrTest,LMlike,CoefficientHypothesis-method}
-\alias{lrTest,LMlike,Hypothesis-method}
-\alias{lrTest,LMlike,character-method}
-\alias{lrTest,LMlike,matrix-method}
 \alias{summary,LMlike-method}
 \alias{update,LMlike-method}
 \alias{waldTest,LMlike,CoefficientHypothesis-method}
 \alias{waldTest,LMlike,matrix-method}
+\alias{lrTest,LMlike,character-method}
+\alias{lrTest,LMlike,CoefficientHypothesis-method}
+\alias{lrTest,LMlike,Hypothesis-method}
+\alias{lrTest,LMlike,matrix-method}
+\alias{logLik,GLMlike-method}
 \title{Linear Model-like Class}
 \usage{
 \S4method{summary}{LMlike}(object)
@@ -71,6 +71,7 @@ Depending on how different the method is, you will definitely need to override t
 
 \item \code{logLik}: return the log-likelihood of a fitted model
 }}
+
 \section{Slots}{
 
 \describe{
@@ -84,6 +85,7 @@ Depending on how different the method is, you will definitely need to override t
 \item{fitArgsD}{Both \code{list}s giving arguments that will be passed to the fitter (such as convergence criteria or case weights)}
 }
 }
+
 \seealso{
 coef
 
@@ -95,4 +97,3 @@ vcov
 
 logLik
 }
-

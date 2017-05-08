@@ -53,6 +53,7 @@ The procedure used for this is determined from
 method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
 H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
 }
+
 \examples{
 data(vbetaFA)
 zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:10,])
@@ -76,4 +77,3 @@ summary.glm(fit$cont)
 \seealso{
 ZlmFit-class, ebayes, GLMlike-class, BayesGLMlike-class
 }
-

@@ -17,4 +17,3 @@ xform(mat, scale = FALSE)
 \description{
 This centers each column of \code{mat} around the mean of its non-zero values.
 }
-

@@ -2,10 +2,10 @@
 % Please edit documentation in R/zlmHooks.R
 \name{collectResiduals}
 \alias{collectResiduals}
-\alias{combined_residuals_hook}
-\alias{continuous_residuals_hook}
-\alias{deviance_residuals_hook}
 \alias{discrete_residuals_hook}
+\alias{continuous_residuals_hook}
+\alias{combined_residuals_hook}
+\alias{deviance_residuals_hook}
 \alias{fitted_phat}
 \alias{partialScore}
 \title{Residual hooks and collection methods}
@@ -56,6 +56,7 @@ Here this is used to calculate various residuals, though in some cases they can 
 
 \item \code{partialScore}: Compute \eqn{Y_i-E(V_i|X_i, Z_0)E(U|X_i, Z_0)}, where \eqn{Z_0} is a  treatment effect (being left in) and \eqn{X_i} is a nuisance effect (being regressed out).
 }}
+
 \section{Total residual types}{
 
 Each component of the model contributes several flavors of residual, which can be combined in various fashions.
@@ -67,6 +68,7 @@ Or it can be a deviance residual, revealing something about the log-likelihood.
 
 It's also possible to consider partial residuals, in which the contribution of a particular covariate is added back into the model.
 }
+
 \examples{
 data(vbetaFA)
 svbeta <- subset(vbetaFA, ncells==1)
@@ -90,4 +92,3 @@ partialScore(z5, 'Stim.Condition')
 \seealso{
 zlm
 }
-

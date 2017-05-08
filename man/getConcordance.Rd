@@ -2,9 +2,9 @@
 % Please edit documentation in R/Fluidigm-methods.R
 \name{getConcordance}
 \alias{getConcordance}
-\alias{getrc}
-\alias{getss}
 \alias{getwss}
+\alias{getss}
+\alias{getrc}
 \title{Get the concordance between two experiments}
 \usage{
 getConcordance(singleCellRef, singleCellcomp, groups = NULL,
@@ -48,6 +48,7 @@ A \code{data.frame} with one row per gene-\code{groups} is returned with some ad
 
 \item \code{getrc}: Return Lin's (1989) concordance correlation coefficient
 }}
+
 \examples{
 data(vbetaFA)
 sca1 <- subset(vbetaFA, ncells==1)
@@ -56,10 +57,9 @@ concord <- getConcordance(sca1, sca100)
 getss(concord)
 getrc(concord)
 }
-\author{
-Andrew McDavid
-}
 \seealso{
 \link{plotSCAConcordance}
 }
-
+\author{
+Andrew McDavid
+}

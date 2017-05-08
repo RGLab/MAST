@@ -19,4 +19,3 @@ array of bootstrapped coefficients
 \description{
 Sample cells with replacement to find bootstrapped distribution of coefficients
 }
-

@@ -16,4 +16,3 @@ vector giving the model degrees of freedom for continuous and discrete
 \description{
 Degrees of freedom of Zero inflated model
 }
-

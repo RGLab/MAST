@@ -31,4 +31,3 @@ fa <- as.factor(colData(vbetaFA)$ncells)
 split(vbetaFA, fa)
 
 }
-

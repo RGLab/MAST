@@ -22,4 +22,3 @@ next dimension giving information about the test
 being the value of these quantities on the
 discrete, continuous and hurdle (combined) levels.
 }
-
