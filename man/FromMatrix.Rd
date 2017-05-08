@@ -31,7 +31,7 @@ cData <- data.frame(wellKey=seq_len(ncells))
 mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
 sca <- FromMatrix(mat, cData, fData)
 stopifnot(inherits(sca, 'SingleCellAssay'))
-stopifnot(inherits(sca, 'SummarizedExperiment0'))
+stopifnot(inherits(sca, 'SummarizedExperiment'))
 ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
 cData$ncells <- 1
 fd <- FromMatrix(mat, cData, fData)
