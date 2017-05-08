@@ -19,3 +19,6 @@ Add `convertMASTClassicToSingleCellAssay` to convert objects from MAST versions 
 
 ## 1.0.5 ##
 Fixup `stat_ell` to deal with changes introduced in ggplot 2.2.1
+
+## 1.1.6 ##
+Base class `SummarizedExperiment0` -> `SummarizedExperiment`

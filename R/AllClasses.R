@@ -46,7 +46,7 @@ Mandatory_Cellvars <- character()
 ##' @import S4Vectors
 ##' @importMethodsFrom S4Vectors mcols
 ##' @importMethodsFrom SummarizedExperiment colData assays assay
-setClass('SingleCellAssay', contains='SummarizedExperiment0',
+setClass('SingleCellAssay', contains='SummarizedExperiment',
          slots=list(cmap='character', fmap='character'),
          prototype=list(cmap=Mandatory_Cellvars,
                         fmap=Mandatory_Featurevars))
@@ -204,7 +204,7 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##'         `PopulationCD154-VbetaUnresponsive`'))
 ##' waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
 ##'         `PopulationCD154-VbetaUnresponsive`'))
-setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SummarizedExperiment0', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
+setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellAssay', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
 ##' An S4 class for Gene Set Enrichment output
 ##'
