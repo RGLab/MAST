@@ -17,7 +17,7 @@
 ##' mat <- matrix(rnorm(ncells*ngenes), nrow=ngenes)
 ##' sca <- FromMatrix(mat, cData, fData)
 ##' stopifnot(inherits(sca, 'SingleCellAssay'))
-##' stopifnot(inherits(sca, 'SummarizedExperiment0'))
+##' stopifnot(inherits(sca, 'SummarizedExperiment'))
 ##' ##If there are mandatory keywords expected by a class, you'll have to manually set them yourself
 ##' cData$ncells <- 1
 ##' fd <- FromMatrix(mat, cData, fData)
@@ -114,6 +114,7 @@ setMethod('fData', 'SingleCellAssay', function(object){
 ##' data(vbetaFA)
 ##' melt.SingleCellAssay(vbetaFA[1:10,])
 ##' as(vbetaFA[1:10,], 'data.table')
+##' @export melt.SingleCellAssay
 melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     featdata <- as.data.table(mcols(data))
     celldata <- as.data.table(colData(data))

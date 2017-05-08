@@ -268,10 +268,10 @@ smallsc <- FromFlatDF(doubleid, idvars=c('id1', 'id2'), primerid='f1', measureme
 test_that('combine works', {
     spl <- split(smallsc, 'id1')
     ## we'll keep the warnings here to remind us to remove combine in a later version
-    c1 <- combine(spl[[1]], spl[[2]])
+    c1 <- cbind(spl[[1]], spl[[2]])
     expect_that(c1, is_a('SingleCellAssay'))
     expect_equal(ncol(c1), 3)
-    c2 <- combine(spl[[1]], spl[[1]], spl[[2]])
+    c2 <- cbind(spl[[1]], spl[[1]], spl[[2]])
     expect_that(c2, is_a('SingleCellAssay'))
 })
 
