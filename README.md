@@ -22,7 +22,6 @@ New Features and announcements
 The main difference is that the data container is now transposed to follow bioconductor standards.
 The older version will remain accessible under branch *MASTClassic*
 
-
 Getting Help
 ----------------
 For bug reports (something seems broken): open a bug report [here](https://github.com/RGLab/MAST/issues).  For

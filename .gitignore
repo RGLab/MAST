@@ -5,8 +5,8 @@
 *~
 \#*\#
 .emacs.desktop*
-vignettes/MAITAnalysis_cache/
-vignettes/MAITAnalysis_files/
+MAITAnalysis_cache/
+MAITAnalysis_files/
 .Rbuildignore
 *.tar.gz
 *.Rproj
