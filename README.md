@@ -26,7 +26,16 @@ Getting Help
 ----------------
 For bug reports (something seems broken): open a bug report [here](https://github.com/RGLab/MAST/issues).  For
 general questions, please submit a question to the [bioconductor support
-site](https://support.bioconductor.org/t/MAST/) so that others can benefit from the discussion.
+site](https://support.bioconductor.org/t/MAST/) so that others can
+benefit from the discussion.
+
+Citation
+----------------
+If you find MAST useful in your work, please consider citing the
+paper: [MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-015-0844-5)
+G Finak, A McDavid, M Yajima, J Deng, V Gersuk, AK Shalek, CK Slichter
+et al
+Genome biology 16 (1), 278
 
 
 Installation Instructions
