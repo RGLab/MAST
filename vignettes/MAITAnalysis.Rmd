@@ -17,18 +17,6 @@ It is often helpful to synthesize from gene-level into module-level statements. 
 
 We will apply these methods to a data set of Mucosal Associated Invariant T cells (MAITs), measured on the Fluidigm C1.  Half of the cells have been cytokine stimulated.
 
-```{r eval=FALSE}
-library(devtools)
-library(BiocInstaller)
-useDevel()
-biocLite('SummarizedExperiment')
-biocValid()
-install_github('RGLab/MAST@summarizedExpt')
-```
-If you are running this at BioC, you should not need to run this chunk.
-Otherwise you will need to install the summarizedExpt branch and the devel (3.4) branch of Bioconductor.
-
-
 ```{r libraries,echo=FALSE, error=FALSE,echo=TRUE,results='hide',warning=FALSE}
 suppressPackageStartupMessages({
     library(ggplot2)
