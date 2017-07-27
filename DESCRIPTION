@@ -22,9 +22,10 @@ Imports:
     stats,
     stats4,
     graphics,
-    utils
+    utils,
+    SummarizedExperiment
 Depends:
-    SummarizedExperiment(>= 1.5.3),
+    SingleCellExperiment,
     R(>= 3.4)
 Suggests:
     knitr,

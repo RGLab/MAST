@@ -32,7 +32,7 @@ FromMatrix <- function(exprsArray, cData, fData, class='SingleCellAssay'){
         dimnames(assays[[i]]) <- dimnames(can$exprsArray)[-3]
     }
     names(assays) <- dimnames(can$exprsArray)[3]
-    obj <- SummarizedExperiment(assays=assays, colData=as(can$cData, 'DataFrame'))
+    obj <- SingleCellExperiment(assays=assays, colData=as(can$cData, 'DataFrame'))
     mcols(obj) <- as(can$fData, 'DataFrame')
     as(obj, class)
 }

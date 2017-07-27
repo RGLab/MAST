@@ -42,11 +42,11 @@ NULL
 Mandatory_Featurevars <- character()
 Mandatory_Cellvars <- character()
 
-##' @import SummarizedExperiment
+##' @import SingleCellExperiment
 ##' @import S4Vectors
 ##' @importMethodsFrom S4Vectors mcols
 ##' @importMethodsFrom SummarizedExperiment colData assays assay
-setClass('SingleCellAssay', contains='SummarizedExperiment',
+setClass('SingleCellAssay', contains='SingleCellExperiment',
          slots=list(cmap='character', fmap='character'),
          prototype=list(cmap=Mandatory_Cellvars,
                         fmap=Mandatory_Featurevars))
