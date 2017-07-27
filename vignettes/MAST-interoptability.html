@@ -14,7 +14,7 @@
 
 <meta name="date" content="2017-07-27" />
 
-<title>Interoptability between SingleCellExperiment-derived packages.</title>
+<title>Towards interoptability between SingleCellExperiment-derived packages.</title>
 
 
 
@@ -68,7 +68,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<h1 class="title toc-ignore">Interoptability between SingleCellExperiment-derived packages.</h1>
+<h1 class="title toc-ignore">Towards interoptability between SingleCellExperiment-derived packages.</h1>
 <h4 class="author"><em>Andrew McDavid</em></h4>
 <h4 class="date"><em>2017-07-27</em></h4>
 
@@ -79,13 +79,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## BiocInstaller::biocLite(c(&quot;drisso/SingleCellExperiment&quot;,
 ## &quot;RGLab/MAST@SingleCellExperiment&quot;,
 ## &quot;drisso/zinbwave@SCE&quot;))
-<span class="kw">library</span>(MAST)
+<span class="kw">suppressPackageStartupMessages</span>({<span class="kw">library</span>(MAST)
 <span class="kw">library</span>(zinbwave)
 <span class="kw">library</span>(magrittr)
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(GGally)
 <span class="kw">library</span>(dplyr)
 <span class="kw">library</span>(dtplyr)
+})
 
 knitr::opts_chunk$<span class="kw">set</span>(<span class="dt">cache =</span> <span class="ot">TRUE</span>, <span class="dt">message =</span> <span class="ot">FALSE</span>,<span class="dt">error =</span> <span class="ot">FALSE</span>,<span class="dt">warning =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p>Install some development packages.</p>

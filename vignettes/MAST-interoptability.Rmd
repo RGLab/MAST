@@ -11,17 +11,18 @@ vignette: >
 
 ## Install some devel packages, load data.
 
-```{r}
+```{r, results = 'hide'}
 ## BiocInstaller::biocLite(c("drisso/SingleCellExperiment",
 ## "RGLab/MAST@SingleCellExperiment",
 ## "drisso/zinbwave@SCE"))
-library(MAST)
+suppressPackageStartupMessages({library(MAST)
 library(zinbwave)
 library(magrittr)
 library(ggplot2)
 library(GGally)
 library(dplyr)
 library(dtplyr)
+})
 
 knitr::opts_chunk$set(cache = TRUE, message = FALSE,error = FALSE,warning = FALSE)
 ```
