@@ -10,3 +10,4 @@ MAITAnalysis_files/
 .Rbuildignore
 *.tar.gz
 *.Rproj
+.ignore

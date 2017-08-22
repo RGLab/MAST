@@ -1,4 +1,4 @@
-#' @describeIn filter plot the proportions of wells are filtered due to different criteria
+#' @describeIn mast_filter plot the proportions of wells are filtered due to different criteria
 #' @param byGroup in the case of \code{burdenOfFiltering} should the filter be stratified by groups, or only the plotting.
 #' @examples
 #' burdenOfFiltering(vbetaFA, groups='ncells', byGroup=TRUE)
@@ -8,7 +8,7 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
     checkGroups(sc, groups)
     conditionby <- NULL
     if(byGroup) conditionby <- groups
-    filt <- filter(sc, groups=conditionby, filt_control=filt_control, apply_filter=FALSE)
+    filt <- mast_filter(sc, groups=conditionby, filt_control=filt_control, apply_filter=FALSE)
     index <- apply(filt, 1, function(x){suppressWarnings(mx <- min(which(x))); if(!is.finite(mx)) mx <- 4; mx})
     outcome <- c(names(filt), 'none')[index]
     filt <- cbind(as.data.frame(colData(sc)), outcome=outcome)
@@ -41,8 +41,8 @@ plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlie
     if(!(is(SCellAssay,"SingleCellAssay")&is(NCellAssay,"SingleCellAssay"))){
         stop("SCellAssay and NCellAssay must inherit from SingleCellAssay");
     }
-    filtered.sc<-filter(SCellAssay,filt_control=filterCriteria,groups=groups)
-    filtered.hc<-filter(NCellAssay,filt_control=filterCriteria, groups=groups)
+    filtered.sc<-mast_filter(SCellAssay,filt_control=filterCriteria,groups=groups)
+    filtered.hc<-mast_filter(NCellAssay,filt_control=filterCriteria, groups=groups)
     concord.unfiltered<-getConcordance(SCellAssay,NCellAssay, groups=groups, ...)
     concord.filtered<-getConcordance(filtered.sc,filtered.hc, groups=groups, ...)
     toplot<-rbind(concord.filtered,concord.unfiltered)

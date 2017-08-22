@@ -27,5 +27,5 @@ convertMASTClassicToSingleCellAssay = function(object=NULL){
     attr(object,"dim")=dim_attr
     attr(object,"dimnames")=dimnames_attr
     object = aperm(object,c(2,1,3))
-    FromMatrix(exprsArray = object,cData = DataFrame(phenodata@data),fData = DataFrame(featuredata@data),class = "SingleCellAssay")
+    FromMatrix(exprsArray = object,cData = DataFrame(phenodata@data,check.names=FALSE),fData = DataFrame(featuredata@data,check.names=FALSE),class = "SingleCellAssay")
 }

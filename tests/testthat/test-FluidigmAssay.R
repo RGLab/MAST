@@ -6,13 +6,13 @@ test_that('ncells set', {
 
 context('Testing filtering')
 test_that('Can filter',{
-ff <- filter(fd.small, groups='ncells')
+ff <- mast_filter(fd.small, groups='ncells')
 expect_that(ff, is_a('FluidigmAssay'))
-ff2 <- filter(fd.small, groups='ncells', filt_control=list(nOutlier=1, sigmaContinuous=3)) #can't set sigmaContinuous to zero because we can't construct and empty object
+ff2 <- mast_filter(fd.small, groups='ncells', filt_control=list(nOutlier=1, sigmaContinuous=3)) #can't set sigmaContinuous to zero because we can't construct and empty object
 expect_true(ncol(ff2)<ncol(ff))
-ff2 <- filter(fd.small, groups='ncells', filt_control=list(nOutlier=1, sigmaContinuous=3, filter=FALSE), apply_filter=TRUE)
+ff2 <- mast_filter(fd.small, groups='ncells', filt_control=list(nOutlier=1, sigmaContinuous=3, filter=FALSE), apply_filter=TRUE)
 expect_that(ff2, is_a('list'))
-ff3 <- filter(fd.small, apply_filter=FALSE)
+ff3 <- mast_filter(fd.small, apply_filter=FALSE)
 expect_that(ff3, is_a('data.frame'))
 })
 

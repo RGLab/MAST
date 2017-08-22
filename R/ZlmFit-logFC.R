@@ -27,6 +27,12 @@ safeContrastQF <- function(contrast, vc) uncomplexify(tcrossprod(contrast, compl
 ##' so that the marginal log fold change cancels out.
 ##' The large sample sizes present in many single cell experiments also means that there is substantial power to detect even small changes.
 ##' 
+##' 3.  When there is no expression in a gene for a coefficient that is non-zero in either \code{condition0}
+##' or \code{condition1} we return \code{NA} because there is not any information
+##' to estimate the continuous component.  Technically we might return plus or minus infinity,
+##' but there is not a straightforward way to estimate a confidence interval in any case.
+##' See \url{https://support.bioconductor.org/p/99244/} for details
+##' 
 ##' @param zlmfit ZlmFit output
 ##' @param contrast0 vector of coefficients giving baseline contrast, or a \code{\link{Hypothesis}}.  If missing, then the '(Intercept)' is used as baseline.
 ##' @param contrast1 matrix of coefficients giving comparison contrasts, or a \code{\link{Hypothesis}}.  If missing, then all non-(Intercept) coefficients are compared.

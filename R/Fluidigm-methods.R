@@ -164,7 +164,11 @@ getrc <- function(concord){
                                         #    with(concord,{foo<-na.omit(2^cbind(et.ref,et.comp)-1);2*cov(foo[,"et.ref"],foo[,"et.comp"])/(var(foo[,"et.ref"])+var(foo[,"et.comp"])+(mean(foo[,"et.ref"])-mean(foo[,"et.comp"]))^2)})
 }
 
-
+##' @export
+filter <- function(...){
+    .Deprecated('mast_filter')
+    mast_filter(...)
+}
 
 ##' Filter a SingleCellAssay
 ##'
@@ -184,16 +188,17 @@ getrc <- function(concord){
 ##' @return A filtered result
 ##' @author Andrew McDavid
 ##' @seealso burdenOfFiltering
+##' @aliases filter
 ##' @examples
 ##' data(vbetaFA)
 ##' ## Split by 'ncells', apply to each component, then recombine
-##' vbeta.filtered <- filter(vbetaFA, groups='ncells')
+##' vbeta.filtered <- mast_filter(vbetaFA, groups='ncells')
 ##' ## Returned as boolean matrix
-##' was.filtered <- filter(vbetaFA, apply_filter=FALSE)
+##' was.filtered <- mast_filter(vbetaFA, apply_filter=FALSE)
 ##' ## Wells filtered for being discrete outliers
 ##' head(subset(was.filtered, pctout))
 ##' @export
-filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
+mast_filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
     default_filt <- list(filter=TRUE, nOutlier=2, sigmaContinuous=7, sigmaProportion=7, sigmaSum=NULL, K=1.48)
     if (is.null(filt_control)){
         filt_control <- list()
@@ -204,7 +209,7 @@ filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
     if (!is.null(groups)) {
         checkGroups(sc, groups)
         scL <- split(sc, groups)
-        lapp <- lapply(scL, filter, groups=NULL, filt_control=filt_control, apply_filter=apply_filter)
+        lapp <- lapply(scL, mast_filter, groups=NULL, filt_control=filt_control, apply_filter=apply_filter)
         ## Do various things with lapp:
         if(apply_filter && filt_control$filter){
             ## list of SingleCellAssays

@@ -42,7 +42,8 @@ Suggests:
     TxDb.Hsapiens.UCSC.hg19.knownGene,
     rsvd,
     limma,
-    RColorBrewer
+    RColorBrewer,
+    BiocStyle
 Description: Methods and models for handling zero-inflated single cell
     assay data.
 License: GPL(>= 2)
