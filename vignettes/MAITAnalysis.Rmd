@@ -1,8 +1,23 @@
 ---
 title: 'Using MAST with RNASeq: MAIT Analysis.'
-author: Greg Finak, Andrew McDavid, Masanao Yajima, Jingyuan Deng, Vivian Gersuk, Alex Shalek, Chloe K. Schlicter, Hannah W. Miller, M. Juliana McElrath, Martin  Prlic, Peter Linsley, Raphael Gottardo
+author:
+- Greg Finak
+- Andrew McDavid
+- Masanao Yajima
+- Jingyuan Deng
+- Vivian Gersuk
+- Alex Shalek
+- Chloe K. Schlicter
+- Hannah W. Miller
+- M. Juliana McElrath
+- Martin  Prlic
+- Peter Linsley
+- Raphael Gottardo
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+package: MAST
+output:
+  BiocStyle::html_document2:
+    toc_float: true
 vignette: >
   %\VignetteIndexEntry{Using MAST for filtering, differential expression and gene set enrichment in MAIT cells}
   %\VignetteEngine{knitr::rmarkdown}
@@ -70,11 +85,11 @@ There is also a constructor, `FromFlatDF` for flattened data where measurements,
 
 ## Exploratory Data Analysis
 Let's explore these data with a heatmap and some PCA.
-```{r heatmap}
+```{r heatmap, dpi = 36}
 aheatmap(assay(scaRaw[1:1000,]), labRow='', annCol=as.data.frame(colData(scaRaw)[,c('condition', 'ourfilter')]), distfun='spearman')
 ```
 
-```{r pca}
+```{r pca, dpi = 36}
 set.seed(123)
 plotPCA <- function(sca_obj){
     projection <- rpca(t(assay(sca_obj)), retx=TRUE, k=4)$x
@@ -119,7 +134,7 @@ colData(sca)$cngeneson <- scale(cdr2)
 ```
 
 ### PCA on filtered cells
-```{r pcaFilter}
+```{r pcaFilter, dpi = 36}
 plotPCA(sca)
 ```
 PC1 now primarily captures stimulation effects.
@@ -216,7 +231,7 @@ We see that there are `r nrow(fcHurdleSig)` genes significant at a FDR of 5\% an
 
 ### Visualization of 50 most differentially expressed genes
 
-```{r, fig.width=8,fig.height=8}
+```{r, fig.width=8,fig.height=8, dpi = 36}
 entrez_to_plot <- fcHurdleSig[1:50,primerid]
 symbols_to_plot <- fcHurdleSig[1:50,symbolid]
 flat_dat <- as(sca[entrez_to_plot,], 'data.table')
@@ -226,7 +241,7 @@ ggbase+geom_violin()
 Here is a standard violin plot showing how expression differs in each gene between stimulated and unstimulated cells.
 What could be improved about this visualization to make it more accurately reflect the model that's being fit?
 
-```{r}
+```{r, dpi = 36}
 flat_dat[,lmPred:=lm(thresh~cngeneson + condition)$fitted, key=symbolid]
 ggbase +aes(x=cngeneson) + geom_line(aes(y=lmPred), lty=1) + xlab('Standardized Cellular Detection Rate')
 
@@ -236,7 +251,7 @@ That is a little bit complicated to visualize, so we'll settle for just showing 
 Adding these fitted values is easy with `data.table` on the melted data.
 
 ### Visualizing both components
-```{r}
+```{r, dpi = 36}
 ## This is all rather kludgy at the moment
 MM <- model.matrix(~condition,unique(colData(sca)[,c("condition"),drop=FALSE]))
 rownames(MM) <- str_extract(rownames(MM), 'Stim|Unstim')
@@ -300,7 +315,7 @@ The `residDE` was a list of residuals (one per gene in `scaDE`).
 We concatenated them into a matrix.
 
 Now we can add `residDEMatrix` as another component of the "assay":
-```{r addResiduals}
+```{r addResiduals, dpi = 36}
 assays(scaDE) <- c(assays(scaDE), list(resid=residDEMatrix))
 scaResidFlat <- as(scaDE, 'data.table')
 scaResidFlat[1:4,]

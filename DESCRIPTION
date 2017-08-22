@@ -1,8 +1,8 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.3.0
-Date: 2017-01-27
+Version: 1.3.1
+Date: 2017-05-08
 Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
             person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))
@@ -23,7 +23,7 @@ Imports:
     stats4,
     graphics,
     utils,
-    SummarizedExperiment
+    SummarizedExperiment(>= 1.5.3)
 Depends:
     SingleCellExperiment,
     R(>= 3.4)
@@ -43,7 +43,8 @@ Suggests:
     TxDb.Hsapiens.UCSC.hg19.knownGene,
     rsvd,
     limma,
-    RColorBrewer
+    RColorBrewer,
+    BiocStyle
 Description: Methods and models for handling zero-inflated single cell
     assay data.
 License: GPL(>= 2)
