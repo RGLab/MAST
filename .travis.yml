@@ -5,13 +5,15 @@ r: bioc-devel
 dist: trusty
 
 r_binary_packages: BiocStyle
+install:
+- R -e 'devtools::install_deps(dep = T,type="binary")'
 
 cache: packages
 before_install:
   - tlmgr install index
   
 warnings_are_errors: true
-sudo: false
+sudo: required 
 
 bioc_required: true
 
