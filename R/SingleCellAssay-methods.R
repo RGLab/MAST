@@ -270,7 +270,7 @@ FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellva
         stop("Must supply all of 'idvars', 'primerid', 'measurement'  and 'dataframe'")
     }
     if(!is(dataframe,"data.table")){
-        dataframe<-data.table(dataframe)
+        dataframe<-data.table(dataframe,check.names=FALSE)
     }
     setkeyv(dataframe, colnames(dataframe))
     ## fixdf: make primerid unique, generate idvar column, rename columns according to cmap and fmap, complete df
@@ -298,11 +298,11 @@ FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellva
     cellvars <- unique(c(cellvars, names(fixed$cmap), idvars, phenovars, 'wellKey'))
     featurevars <- unique(c(names(fixed$fmap), primerid, featurevars, 'primerid'))
     check.vars(cellvars, featurevars, phenovars, fixed$df, length(fixed$cn), length(fixed$rn))
-    cell.adf<-DataFrame(uniqueModNA(fixed$df[,cellvars,with=FALSE], 'wellKey') )
+    cell.adf<-DataFrame(uniqueModNA(fixed$df[,cellvars,with=FALSE], 'wellKey') ,check.names=FALSE)
     row.names(cell.adf) <- unique(fixed$df$wellKey)
     ##pheno.adf <- new('AnnotatedDataFrame')
     ##need a phenokey into the melted data frame for this to make sense
-    f.adf <- DataFrame(uniqueModNA(fixed$df[,featurevars, with=FALSE], 'primerid'))
+    f.adf <- DataFrame(uniqueModNA(fixed$df[,featurevars, with=FALSE], 'primerid'),check.names=FALSE)
     row.names(f.adf) <- unique(fixed$df$primerid)
     FromMatrix(dl, cell.adf, f.adf, class)
 }
