@@ -2,6 +2,7 @@
 
 language: r
 r: bioc-devel
+dist: trusty
 
 cache: packages
 
