@@ -16,7 +16,7 @@ author:
 date: "`r Sys.Date()`"
 package: MAST
 output:
-  BiocStyle::html_document2:
+  BiocStyle::html_document:
     toc_float: true
 vignette: >
   %\VignetteIndexEntry{Using MAST for filtering, differential expression and gene set enrichment in MAIT cells}
