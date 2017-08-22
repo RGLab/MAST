@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/RGLab/MIMOSA.svg?branch=master)](https://travis-ci.org/RGLab/MIMOSA)
+
 MAST: Model-based Analysis of Single-cell Transcriptomics
 ===============
 MAST fits two-part, generalized linear models that are specially adapted for bimodal and/or zero-inflated single cell gene expression data.
