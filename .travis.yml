@@ -5,8 +5,12 @@ r: bioc-devel
 dist: trusty
 
 r_binary_packages: BiocStyle
+
+before_install:
+  - R -e 'install.packages("devtools")'
+
 install:
-- R -e 'devtools::install_deps(dep = T,type="binary")'
+  - R -e 'devtools::install_deps(dep = T,type="binary")'
 
 cache: packages
 before_install:
