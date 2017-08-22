@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/RGLab/MIMOSA.svg?branch=master)](https://travis-ci.org/RGLab/MIMOSA)
+[![Build Status](https://travis-ci.org/RGLab/MAST.svg?branch=master)](https://travis-ci.org/RGLab/MAST)
 
 MAST: Model-based Analysis of Single-cell Transcriptomics
 ===============
