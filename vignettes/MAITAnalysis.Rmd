@@ -50,7 +50,7 @@ suppressPackageStartupMessages({
 })
 #options(mc.cores = detectCores() - 1) #if you have multiple cores to spin
 options(mc.cores = 1)
-knitr::opts_chunk$set(message = FALSE,error = FALSE,warning = FALSE,cache = TRUE,fig.width=8,fig.height=6, auto.dep=TRUE)
+knitr::opts_chunk$set(message = FALSE,error = FALSE,warning = FALSE,cache = FALSE,fig.width=8,fig.height=6, auto.dep=TRUE)
 ```
 
 # Loading and transforming data
@@ -85,7 +85,7 @@ There is also a constructor, `FromFlatDF` for flattened data where measurements,
 
 ## Exploratory Data Analysis
 Let's explore these data with a heatmap and some PCA.
-```{r heatmap, dpi = 36}
+```{r heatmap, dpi = 36,dev="png"}
 aheatmap(assay(scaRaw[1:1000,]), labRow='', annCol=as.data.frame(colData(scaRaw)[,c('condition', 'ourfilter')]), distfun='spearman')
 ```
 

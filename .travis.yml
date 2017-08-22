@@ -4,6 +4,8 @@ language: r
 r: bioc-devel
 dist: trusty
 
+r_binary_packages: BiocStyle
+
 cache: packages
 
 warnings_are_errors: true
