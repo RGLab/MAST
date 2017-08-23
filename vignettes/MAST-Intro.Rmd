@@ -1,78 +1,68 @@
-%\VignetteIndexEntry{MAST-intro}
-%\VignetteEngine{knitr::knitr}
-\documentclass{article}
-<<style-knitr, eval=TRUE, echo=FALSE, results="asis">>=
-BiocStyle::latex2()
-@
-\usepackage{url}
-\usepackage{color}
-\usepackage[cm]{fullpage}
-\usepackage[usenames,dvipsnames]{xcolor}
-\usepackage{comment}
-\usepackage{doi}
-\usepackage{amsmath}
-%\usepackage[authoryear]{natbib}
+---
+title: "MAST Intro"
+author: 
+- Andrew McDavid
+- Greg Finak
+date: "8/23/2017"
+bibliography: mastintro.bib
+output:
+  BiocStyle::html_document:
+    toc_float: true
+vignette: >
+  %\VignetteIndexEntry{An Introduction to MAST}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
 
-%\makeatletter
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
-% \VignetteIndexEntry{An Introduction to SingleCellAssay}
+# Philosophy
 
-%\makeatother
-\newcommand{\future}[1]{TODO: {\color{gray} #1}}
-\newcommand{\sca}{\texttt{SingleCellAssay}}
-\newcommand{\mast}{\texttt{MAST}}
-\input{symbols.tex}
-
-\begin{document}
-\title{An Introduction to MAST}
-
-
-\author{Andrew McDavid and Greg Finak}
-
-\maketitle
-\section{Philosophy}
- \mast is an R/Bioconductor package for managing and analyzing qPCR and sequencing-based single--cell gene expression
- data, as well as data from other types of single--cell assays. 
-Our goal is to support assays that have multiple \emph{features} (genes,
-markers, etc) per \emph{well} (cell, etc) in a flexible manner.
-Assays are assumed to be  mostly \emph{complete} in the sense that most \emph{wells}
+MAST is an R/Bioconductor package for managing and analyzing qPCR and sequencing-based single-cell gene expression data, as well as data from other types of single-cell assays. 
+Our goal is to support assays that have multiple *features* (genes,
+markers, etc) per *well* (cell, etc) in a flexible manner.
+Assays are assumed to be  mostly *complete* in the sense that most *wells*
 contain measurements for all features.
 
-\subsection{Internals}
-A \texttt{SingleCellAssay} object can be manipulated as a matrix, with rows giving features and columns giving cells.
-It derives from \href{http://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html}{\texttt{SummarizedExperiment}}.
+## Internals
+A **SingleCellAssay** object can be manipulated as a matrix, with rows giving features and columns giving cells.
+It derives from [http://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html](**SummarizedExperiment**).
 
-\subsection{Statistical Testing}
-Apart from reading and storing single--cell assay data, the package also
+## Statistical Testing
+Apart from reading and storing single-cell assay data, the package also
 provides functionality for significance testing of differential expression using a Hurdle model, gene set enrichment, facilities for visualizing patterns in residuals indicative of differential expression, and power calculations (soon).
 
 There is also some facilities for inferring background thresholds, and filtering of individual outlier wells/libraries. 
-These methods are described our papers. 
-% Add citations
+These methods are described our papers, @McDavid2014-kr , @McDavid2013-mc , @Finak2015-uz , @McDavid2016-rm .
 
-\section{Examples}
+# Examples
 
 With the cursory background out of the way, we'll proceed with some examples
 to help understand how the package is used.
 
-\subsection{Reading Data}
+## Reading Data
 Data can be imported in a Fluidigm instrument-specific format (the details of
 which are undocumented, and likely subject-to-change) or some derived,
-annotated format,  or in ``long'' (melted) format, in which each row is a
+annotated format,  or in "long" (melted) format, in which each row is a
 measurement, so if there are $N$ wells and $M$ cells, then the
-\texttt{data.frame} should contain $N \times M$ rows.
+**data.frame** should contain $N \times M$ rows.
 
 For example, the following data set was provided in as a comma-separated value file.
-It has the cycle threshold ($\ct$) recorded. 
+It has the cycle threshold ($ct$) recorded. 
 Non-detected genes are recorded as NAs.
 For the Fluidigm/qPCR single cell expression functions to work as expected, we
-must use the \emph{expression threshold}, defined as $et = c_{\mbox{max}} - \ct$, which is proportional to the log-expression.
+must use the *expression threshold*, defined as $et = c_{\mbox{max}} - ct$, which is proportional to the log-expression.
 
-Below, we load the package and the data, then compute the expression threshold from the $\ct$, and construct a \texttt{FluidigmAssay}.
-<<long-example,warning=FALSE, echo=-1>>=
-knitr::opts_chunk$set(error=FALSE)
+Below, we load the package and the data, then compute the expression threshold from the $ct$, and construct a **FluidigmAssay**.
+
+
+```{r long-example, warning=FALSE, echo=FALSE}
+knitr::opts_chunk$set(error=FALSE, echo=TRUE)
+suppressPackageStartupMessages({
 library(MAST)
 library(data.table)
+})
+```
+
+```{r long-example2,warning=FALSE}
 data(vbeta)
 colnames(vbeta)
 vbeta <- computeEtFromCt(vbeta)
@@ -81,46 +71,48 @@ vbeta.fa <- FromFlatDF(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
                           geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'),
                           phenovars=c('Stim.Condition','Time'), id='vbeta all', class='FluidigmAssay')
 print(vbeta.fa)
-@
+```
 
-We see that the variable \texttt{vbeta} is a \texttt{data.frame} from which we
-construct the \texttt{FluidigmAssay} object. 
-The \texttt{idvars} is the set of column(s) in \texttt{vbeta} that uniquely
-identify a well (globally), the \texttt{primerid} is a column(s) that specify the feature measured at this well.
-The \texttt{measurement} gives the column name containing the log-expression
-measurement, \texttt{ncells} contains the number of cells (or other
+We see that the variable **vbeta** is a **data.frame** from which we
+construct the **FluidigmAssay** object. 
+The **idvars** is the set of column(s) in **vbeta** that uniquely
+identify a well (globally), the **primerid** is a column(s) that specify the feature measured at this well.
+The **measurement** gives the column name containing the log-expression
+measurement, **ncells** contains the number of cells (or other
 normalizing factor) for the well.
-\texttt{geneid}, \texttt{cellvars}, \texttt{phenovars} all specify additional
-columns to be included in the \texttt{featureData}, \texttt{phenoData}  and
-\texttt{cellData} (\future{wellData}). The output is a \texttt{FluidigmAssay}
+**geneid**, **cellvars**, **phenovars** all specify additional
+columns to be included in the **featureData**, **phenoData**  and
+**cellData** (\future{wellData}). The output is a **FluidigmAssay**
 object with \Sexpr{nrow(colData(vbeta.fa))} wells and \Sexpr{nrow(mcols(vbeta.fa))} features. 
 
 
-We can access the feature--level metadata and the cell--level metadata using
-the \texttt{mcols} and \texttt{colData} accessors.
+We can access the feature-level metadata and the cell-level metadata using
+the **mcols** and **colData** accessors.
 
-<<examineMeta>>=
+```{r examineMeta}
 head(mcols(vbeta.fa),3)
 head(colData(vbeta.fa),3)
-@ 
+```
+
 
 We see this gives us the set of genes measured in the assay, or the cell-level
 metadata (i.e. the number of cells measured in the well, the population this
 cell belongs to, the subject it came from, the chip it was run on, the well
 id, the stimulation it was subjected to, and the timepoint for the experiment
 this cell was part of). The wellKey are concatenated idvars columns, helping to
-ensure consistency when splitting and merging \sca objects. 
+ensure consistency when splitting and merging SCA objects. 
 \subsection{Importing Matrix Data}
-Data can also be imported in matrix format using command \texttt{FromMatrix}, and passing a matrix of expression values and \texttt{DataFrame} coercible cell and feature data.
+Data can also be imported in matrix format using command **FromMatrix**, and passing a matrix of expression values and **DataFrame** coercible cell and feature data.
 
 \subsection{Subsetting, splitting, combining, melting}
-It's possible to subset \sca objects by wells and features.
-Square brackets (``['') will index on
+It's possible to subset SingleCellAssay objects by wells and features.
+Square brackets ("[") will index on
 the first index (features) and by features on the second index (cells).
 Integer and boolean and indices may be used, as well as character vectors
 naming the wellKey or the feature (via the primerid).
-There is also a \texttt{subset} method, which will evaluate its argument in the frame of the \texttt{colData}, hence will subset by wells.
-<<subsets,warning=FALSE>>=
+There is also a **subset** method, which will evaluate its argument in the frame of the **colData**, hence will subset by wells.
+
+```{r subsets,warning=FALSE}
 sub1 <- vbeta.fa[,1:10]
 show(sub1)
 sub2 <- subset(vbeta.fa, Well=='A01')
@@ -129,41 +121,48 @@ sub3 <- vbeta.fa[6:10, 1:10]
 show(sub3)
 colData(sub3)
 mcols(sub3)
-@
-The cellData and featureData \texttt{AnnotatedDataFrames} are subset
+```
+
+The cellData and featureData **AnnotatedDataFrames** are subset
 accordingly as well.
 
-A \sca may be split into a list of \sca. 
+A SingleCellAssay may be split into a list of SingleCellAssay. 
 The split method takes an argument which names the column
 (factor) on which to split the data. Each level of the factor will be placed
-in its own \sca within the list.
-<<split,warning=FALSE>>=
+in its own SingleCellAssay within the list.
+
+```{r split, warning=FALSE}
 sp1 <- split(vbeta.fa, 'Subject.ID')
 show(sp1)
-@
-The splitting variable can either be a character vector naming column(s) of the \sca, or may be a \texttt{factor} or \texttt{list} of \texttt{factor}s.
+```
 
-It's possible to combine \sca objects with the \texttt{cbind} method.
-<<combine,warning=FALSE, echo=-1>>=
+The splitting variable can either be a character vector naming column(s) of the SingleCellAssay, or may be a **factor** or **list** of **factor**s.
+
+It's possible to combine SingleCellAssay objects with the **cbind** method.
+
+```{r combine,warning=FALSE,echo=FALSE}
 cbind(sp1[[1]],sp1[[2]])
-@ 
+```
 
-\subsection{Filtering}
-We can filter and perform some significance tests on the \sca.
+## Filtering
+We can filter and perform some significance tests on the SingleCellAssay.
 We may want to filter any wells with at least two outlier cells where the discrete and continuous parts of the signal are at least 9 standard deviations from the mean. This is a very conservative filtering criteria. We'll group the filtering by the number of cells.
 
 We'll split the assay by the number of cells and look at the concordance plot after filtering. 
-<<splitbyncells,warning=FALSE, fig.height=4, fig.width=4>>=
+
+```{r splitbyncells,warning=FALSE,fig.height=4, fig.width=4}
 vbeta.split<-split(vbeta.fa,"Number.of.Cells")
 #see default parameters for plotSCAConcordance
 plotSCAConcordance(vbeta.split[[1]],vbeta.split[[2]],
                    filterCriteria=list(nOutlier = 1, sigmaContinuous = 9,
                        sigmaProportion = 9))
-@
+```
 
-The filtering function has several other options, including whether the filter shuld be applied (thus returning a new \sca object) or returned as a matrix of boolean values.
 
-<<otherFiltering, warning=FALSE>>=
+The filtering function has several other options, including whether the filter shuld be applied (thus returning a new SingleCellAssay object) or returned as a matrix of boolean values.
+
+
+```{r otherFiltering, warning=FALSE}
 vbeta.fa
 ## Split by 'ncells', apply to each component, then recombine
 vbeta.filtered <- filter(vbeta.fa, groups='ncells')
@@ -171,34 +170,37 @@ vbeta.filtered <- filter(vbeta.fa, groups='ncells')
 was.filtered <- filter(vbeta.fa, apply_filter=FALSE)
 ## Wells filtered for being discrete outliers
 head(subset(was.filtered, pctout))
-@
+```
 
 There's also some functionality for visualizing the filtering.
 
-<<burdenOfFiltering, warning=FALSE, fig.width=4, fig.height=4>>=
+```{r burdenOfFiltering,warning=FALSE,fig.width=4,fig.height=4}
 burdenOfFiltering(vbeta.fa, 'ncells', byGroup=TRUE)
-@
+```
 
 
-\section{Significance testing under the Hurdle model}
-There are two frameworks available in the package.  The first framework \texttt{zlm} offers a full linear model to allow arbitrary comparisons and adjustment for covariates. The second framework \texttt{LRT} can be considered essentially performing t-tests (respecting the discrete/continuous nature of the data) between pairs of groups.  \texttt{LRT} is subsumed by the first framework, but might be simpler for some users, so has been kept in the package.
+# Significance testing under the Hurdle model
 
-We'll describe \texttt{zlm}.  Models are specified in terms of the variable used as the measure and covariates present in the \texttt{cellData} using symbolic notation, just as the \texttt{lm} function in R.
-<<zlmArgs>>=
+There are two frameworks available in the package.  The first framework **zlm** offers a full linear model to allow arbitrary comparisons and adjustment for covariates. The second framework **LRT** can be considered essentially performing t-tests (respecting the discrete/continuous nature of the data) between pairs of groups.  **LRT** is subsumed by the first framework, but might be simpler for some users, so has been kept in the package.
+
+We'll describe **zlm**.  Models are specified in terms of the variable used as the measure and covariates present in the **cellData** using symbolic notation, just as the **lm** function in R.
+
+```{r zlmArgs}
 vbeta.1 <- subset(vbeta.fa, ncells==1)
 ## Consider the first 20 genes
 vbeta.1 <- vbeta.1[1:20,] 
 head(colData(vbeta.1))
-@
-Now, for each gene, we can regress on \texttt{Et} the factors \texttt{Population} and \texttt{Subject.ID}.
+```
+
+Now, for each gene, we can regress on **Et** the factors **Population** and **Subject.ID**.
 
 In each gene, we'll fit a Hurdle model with a separate intercept for each population and subject.
-A an S4 object of class ``ZlmFit'' is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
-<<zlmExample, warning=FALSE, message=FALSE, fig.width=6, fig.height=6>>=
+A an S4 object of class "ZlmFit" is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
+
+```{r zlmExample, warning=FALSE, message=FALSE, fig.width=6, fig.height=6}
 library(ggplot2)
 zlm.output <- zlm(~ Population + Subject.ID, vbeta.1,)
 show(zlm.output)
-
 ## returns a data.table with a summary of the fit
 coefAndCI <- summary(zlm.output, logFC=FALSE)$datatable
 coefAndCI <- coefAndCI[contrast != '(Intercept)',]
@@ -206,39 +208,42 @@ coefAndCI[,contrast:=abbreviate(contrast)]
 ggplot(coefAndCI, aes(x=contrast, y=coef, ymin=ci.lo, ymax=ci.hi, col=component))+
     geom_pointrange(position=position_dodge(width=.5)) +facet_wrap(~primerid) +
     theme(axis.text.x=element_text(angle=45, hjust=1)) + coord_cartesian(ylim=c(-3, 3))
+```
 
-@
-Try \verb|?ZlmFit-class| or \verb|showMethods(classes='ZlmFit')| to see a full list of methods. Multicore support is offered by setting \texttt{options(mc.cores=4)}, or however many cores your system has.
+Try **?ZlmFit-class** or **showMethods(classes='ZlmFit')** to see a full list of methods. Multicore support is offered by setting **options(mc.cores=4)**, or however many cores your system has.
 
 The combined test for differences in proportion expression/average expression is found by calling a likelihood ratio test on the fitted object.
 An array of genes, metrics and test types is returned.
 We'll plot the -log10 P values by gene and test type.
-<<tests, fig.width=4, fig.height=5>>=
+
+```{r tests, fig.width=4, fig.height=5}
 zlm.lr <- lrTest(zlm.output, 'Population')
 dimnames(zlm.lr)
 pvalue <- ggplot(melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+
     geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
 print(pvalue)
-@
+```
 
-In fact, the \texttt{zlm} framework is quite general, and has wrappers for a variety of  modeling functions that accept \texttt{glm}-like arguments to be used, such as mixed models (using \texttt{lme4}).
+In fact, the **zlm** framework is quite general, and has wrappers for a variety of  modeling functions that accept **glm**-like arguments to be used, such as mixed models (using **lme4**).
 %This is not eval'd because of mysterious errors emanating from lme4 on the bioconductor machines that I am unable to reproduce.
 % Warning: failed to assign RegisteredNativeSymbol for deepcopy to deepcopy since deepcopy is already defined in the 'lme4' namespace
 % Quitting from lines 230-232 (MAST-intro.Rnw) 
 % Error: processing vignette 'MAST-intro.Rnw' failed with diagnostics:
 % first argument must be a string (of length 1) or native symbol reference
 % Execution halted
-<<lmerExample, warning=FALSE, message=FALSE, eval=FALSE>>=
+```{r lmerExample , warning=FALSE, message=FALSE, eval=FALSE}
 library(lme4)
 lmer.output <- zlm(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer', ebayes=FALSE)
-@
+```
+
 
 By default, we employ Bayesian logistic regression, which imposes a Cauchy prior of the regression coefficients, for the discrete component.  This provides reasonable inference under linear separation.
 We default to regular least squares for the continuous component with an empirical Bayes' adjustment for the dispersion (variance) estimate.
-However, the prior can be adjusted (see \texttt{defaultPrior}) or eliminated entirely by setting \texttt{method='glm'} in \texttt{zlm}.
-It is also possible to use Bayesian linear regression for the continuous component by setting \texttt{useContinuousBayes=TRUE} in \texttt{zlm}.
+However, the prior can be adjusted (see **defaultPrior**) or eliminated entirely by setting **method='glm'** in **zlm**.
+It is also possible to use Bayesian linear regression for the continuous component by setting **useContinuousBayes=TRUE** in **zlm**.
 For example:
-<<advancedArmExample, fig.width=4, fig.height=4, message=FALSE, warning=FALSE>>=
+
+```{r advancedArmExample, fig.width=4, fig.height=4, message=FALSE, warning=FALSE}
  orig_results <- zlm(~Stim.Condition, vbeta.1)
  dp <- defaultPrior('Stim.ConditionUnstim')
  new_results <-  zlm(~Stim.Condition, vbeta.1, useContinuousBayes=TRUE,coefPrior=dp)
@@ -247,52 +252,56 @@ For example:
        color=coef(new_results, 'D')[,'(Intercept)']) +
      xlab('Default prior') + ylab('Informative Prior') +
      geom_abline(slope=1, lty=2) + scale_color_continuous('Baseline\nlog odds\nof expression')
-@
+```
+
 After applying a prior to the continuous component, its estimates are shrunken towards zero, with the amount of shrinkage inversely depending on the number of expressing cells in the gene.
 
 
 
-\subsection{Two-sample Likelihood Ratio Test}
+## Two-sample Likelihood Ratio Test
   Another way to test for differential expression is available through
-  the \texttt{LRT} function, which is analogous to two-sample T tests.
-<<LRTexample, eval=TRUE, error=TRUE>>=
+  the **LRT** function, which is analogous to two-sample T tests.
+  
+```{r LRTexample, eval=TRUE, error=TRUE}
 two.sample <- LRT(vbeta.1, 'Population', referent='CD154+VbetaResponsive')
 head(two.sample) 
-@
+```
 
-Here we compare each population (\texttt{CD154-VbetaResponsive, CD154-VbetaUnresponsive CD154+VbetaUnresponsive, VbetaResponsive, VbetaUnresponsive}) to the \texttt{CD154+VbetaResponsive} population.
-  The \texttt{Population} column shows which population is being
-  compared, while \texttt{test.type} is \texttt{comb} for the combined
-  normal theory/binomial test.  Column \texttt{primerid} gives the
-  gene being tested, \texttt{direction} shows if the comparison group
+
+Here we compare each population (**CD154-VbetaResponsive, CD154-VbetaUnresponsive CD154+VbetaUnresponsive, VbetaResponsive, VbetaUnresponsive**) to the **CD154+VbetaResponsive** population.
+  The **Population** column shows which population is being
+  compared, while **test.type** is **comb** for the combined
+  normal theory/binomial test.  Column **primerid** gives the
+  gene being tested, **direction** shows if the comparison group
   mean is greater (1) or less (-1) than the referent group, and
-  \texttt{lrtstat} and \texttt{p.value} give the test statistic and
+  **lrtstat** and **p.value** give the test statistic and
   $\chi^2$ p-value (two degrees of freedom).
 Other options are whether additional information about the tests are
-returned (\texttt{returnall=TRUE}) and if the testing should be
-stratified by a character vector naming columns in \texttt{colData} 
-containing grouping variables (\texttt{groups}).
+returned (**returnall=TRUE**) and if the testing should be
+stratified by a character vector naming columns in **colData** 
+containing grouping variables (**groups**).
 
-These tests have been subsumed by \texttt{zlm} but
+These tests have been subsumed by **zlm** but
 remain in the package for user convenience.
 
-\section{Use with single cell RNA-sequencing data}
+# Use with single cell RNA-sequencing data
+
 In RNA-sequencing data is essentially no different than qPCR-based single cell gene expression, once it has been aligned and mapped, if one is willing to reduce the experiment to counts or count-like data for a fixed set of genes/features.  
 We assume that suitable tools (eg, RSEM, Kallisto or TopHat) have been applied to do this.
 
-An example of this use is provided in a vignette.  Type \texttt{vignette('MAITAnalysis')} to view.
-\begin{comment}
-  \section{Implementation Details}
+An example of this use is provided in a vignette.  Type **vignette('MAITAnalysis')** to view.
+
+### A Comment on Implementation Details
   Here we provide some background on the implementation of the
   package.
 
   There are several fundamental new object types provided by the
-  package.  \texttt{SummarizedExperiment} is the base class, which is
+  package.  **SummarizedExperiment** is the base class, which is
   provides an array-like object to store tabular data that might have
   multiple derived representations. 
-  On construction of a \texttt{SingleCellAssay} object, the package
+  On construction of a **SingleCellAssay** object, the package
   tests for completeness, and will fill in the missing data (with NA)
   if it is not, so assays with lots of missing data can make reading
   marginally slower.
-\end{comment}
-\end{document}
+
+# References
