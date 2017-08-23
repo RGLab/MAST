@@ -4,13 +4,30 @@ language: r
 r: bioc-devel
 dist: trusty
 
-r_binary_packages: BiocStyle
+r_binary_packages: 
+  - BiocStyle
+  - lme4
+  - GGally
+  - ggplot2
+  - reshape2
+  - data.table
+  - knitr
+  - stringr
+  - NMF
+  - rsvd
+  - RColorBrewer
+
 before_install:
   - R -e 'install.packages("devtools")'
   - tlmgr install index
 
 install:
   - R -e 'devtools::install_deps(dep = T,type="binary")'
+
+bioc_packages:
+  - GSEABase
+  - limma
+  - TxDb.Hsapiens.UCSC.hg19.knownGene
 
 cache: packages
   
