@@ -22,7 +22,7 @@ before_install:
   - tlmgr install index
 
 install:
-  - R -e 'devtools::install_deps(dep = T,type="binary")'
+  - R -e 'devtools::install_deps(dep = T)'
 
 bioc_packages:
   - GSEABase
