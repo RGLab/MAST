@@ -91,6 +91,7 @@ setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(
     .lrtZlmFit(object, MM[,-testIdx, drop=FALSE], 'Contrast Matrix')
 })
 
+
 ##' Wald test
 ##'
 ##' A 3D array with first dimension being the genes,
@@ -193,6 +194,7 @@ normalci <- function(center, se, level){
 ##' @param ... ignored
 ##' @return \code{data.table}
 ##' @seealso print.summaryZlmFit
+##' @aliases "summary-ZlmFit", "ZlmFit-summary"
 ##' @examples
 ##' data(vbetaFA)
 ##' z <- zlm(~Stim.Condition, vbetaFA[1:5,])

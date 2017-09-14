@@ -166,8 +166,10 @@ setClass('Hypothesis', contains='character', slots=list(contrastMatrix='matrix')
 setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numeric'))
 
 ##' An S4 class to hold the output of a call to zlm
-##'
+##' 
 ##' This holds output from a call to zlm.  Many methods are defined to operate on it.  See below.
+##' @usage ## S4 method for signature 'ZlmFit,matrix'
+##' waldTest(object, hypothesis)
 ##' @slot coefC matrix of continuous coefficients
 ##' @slot coefD matrix of discrete coefficients
 ##' @slot vcovC array of variance/covariance matrices for coefficients
@@ -185,6 +187,7 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @slot converged output that may optionally be set by the underlying modeling function
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
 ##' @seealso zlm summary,ZlmFit-method
+##' @aliases ZlmFit
 ##' @examples
 ##' data(vbetaFA)
 ##' zlmVbeta <- zlm(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])

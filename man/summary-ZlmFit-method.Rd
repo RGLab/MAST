@@ -3,6 +3,8 @@
 \docType{methods}
 \name{summary,ZlmFit-method}
 \alias{summary,ZlmFit-method}
+\alias{"summary-ZlmFit",}
+\alias{"ZlmFit-summary"}
 \title{Summarize model features from a \code{ZlmFit} object}
 \usage{
 \S4method{summary}{ZlmFit}(object, logFC = TRUE, doLRT = FALSE,
