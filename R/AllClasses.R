@@ -168,8 +168,6 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' An S4 class to hold the output of a call to zlm
 ##' 
 ##' This holds output from a call to zlm.  Many methods are defined to operate on it.  See below.
-##' @usage ## S4 method for signature 'ZlmFit,matrix'
-##' waldTest(object, hypothesis)
 ##' @slot coefC matrix of continuous coefficients
 ##' @slot coefD matrix of discrete coefficients
 ##' @slot vcovC array of variance/covariance matrices for coefficients

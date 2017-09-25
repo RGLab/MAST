@@ -14,9 +14,6 @@
 \alias{se.coef,ZlmFit-method}
 \title{An S4 class to hold the output of a call to zlm}
 \usage{
-## S4 method for signature 'ZlmFit,matrix'
-waldTest(object, hypothesis)
-
 \S4method{lrTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis)
 
 \S4method{lrTest}{ZlmFit,Hypothesis}(object, hypothesis)
