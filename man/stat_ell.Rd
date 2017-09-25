@@ -48,11 +48,11 @@ library(ggplot2)
 zlmCond <- zlm(~Stim.Condition, vbetaFA[1:10,])
 MM <- model.matrix(~Stim.Condition,unique(colData(vbetaFA)[,c("Stim.Condition"),drop=FALSE]))
 predicted <- predict(zlmCond,modelmatrix=MM)
-plt <- ggplot(predicted)+aes(x=invlogit(muD),y=muC,xse=seD,yse=seC,col=sample)+
+plt <- ggplot(predicted)+aes(x=invlogit(etaD),y=muC,xse=seD,yse=seC,col=sample)+
    facet_wrap(~primerid,scales="free_y")+theme_linedraw()+
    geom_point(size=0.5)+scale_x_continuous("Proportion expression")+
    scale_y_continuous("Estimated Mean")+
-   stat_ell(aes(x=muD,y=muC),level=0.95, invert='x')
+   stat_ell(aes(x=etaD,y=muC),level=0.95, invert='x')
 ## plot with inverse logit transformed x-axis
 print(plt)
 # doesn't do anything in this case because there are no inestimable coefficients

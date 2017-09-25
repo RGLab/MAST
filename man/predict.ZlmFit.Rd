@@ -16,7 +16,7 @@
 \item{...}{ignored}
 }
 \value{
-Predictions and standard errors.
+Predictions (on the link scale) and standard errors.
 }
 \description{
 Return predictions from a ZlmFit object.
