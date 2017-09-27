@@ -18,8 +18,12 @@ diag_safeContrastQF = function(contrast, vc){
 #' ##See stat_ell
 #' example(stat_ell)
 predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL, ...){
-    if(is.null(modelmatrix)) modelmatrix = object@LMlike@modelMatrix
+    if (is.null(modelmatrix)) modelmatrix = object@LMlike@modelMatrix
+    if (!is.null(newdata)) stop('Currently not implemented; supply `modelmatrix` instead')
     
+    coefnames = colnames(coef(object, 'D'))
+    if (is.null(colnames(modelmatrix)) || any(setdiff(colnames(modelmatrix), coefnames))) stop("Must supply column names for model matrix that match with coefficient names")
+    if (is.null(rownames(modelmatrix))) rownames(modelmatrix) = seq_len(nrow(modelmatrix))
     C = coef(object,"C")[,colnames(modelmatrix)]
     D = coef(object,"D")[,colnames(modelmatrix)]
     
@@ -43,7 +47,7 @@ predict.ZlmFit <- function(object,newdata = NULL, modelmatrix=NULL, ...){
     # colnames(contrCovD) = c("primerid","sample","seD")
     # colnames(predC) = c("primerid","sample","muC")
     # colnames(predD) = c("primerid","sample","etaD")
-    m = data.table(muC = as.vector(predC), etaD = as.vector(predD), seC = as.vector(contrCovC), seD = as.vector(contrCovD), CJ(sample = rownames(modelmatrix), primerid = rownames(D)))
+    m = data.table(muC = as.vector(predC), etaD = as.vector(predD), seC = as.vector(contrCovC), seD = as.vector(contrCovD), CJ(sample = rownames(modelmatrix), primerid = rownames(D), sorted = FALSE))
     m
 }
 
