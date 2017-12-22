@@ -30,7 +30,6 @@ bioc_packages:
   - TxDb.Hsapiens.UCSC.hg19.knownGene
 
 cache: packages
-group: deprecated-2017Q3
   
 warnings_are_errors: false 
 sudo: required 
