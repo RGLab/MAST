@@ -93,6 +93,7 @@ aheatmap(assay(scaRaw[1:1000,]), labRow='', annCol=as.data.frame(colData(scaRaw)
 set.seed(123)
 plotPCA <- function(sca_obj){
     projection <- rpca(t(assay(sca_obj)), retx=TRUE, k=4)$x
+    colnames(projection)=c("PC1","PC2","PC3","PC4")
     pca <- data.table(projection,  as.data.frame(colData(sca_obj)))
     print(ggpairs(pca, columns=c('PC1', 'PC2', 'PC3', 'libSize', 'PercentToHuman', 'nGeneOn', 'exonRate'),
             mapping=aes(color=condition), upper=list(continuous='blank')))
