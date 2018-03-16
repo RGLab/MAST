@@ -3,7 +3,7 @@ data(vbetaFA)
 library(plyr)
 vb1 = subset(vbetaFA[1:24,], ncells==1)
 #vb1 = vb1[,freq(vb1)>.1]
-zf = zlm.SingleCellAssay(~Stim.Condition, vb1)
+zf = zlm(~Stim.Condition, vb1)
 set.seed(1234)
 boots = bootVcov1(zf, 36)
 ## replace NAs for each coefficient, gene and component

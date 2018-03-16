@@ -1,8 +1,8 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.5.1
-Date: 2017-09-25
+Version: 1.5.2
+Date: 2018-03-13
 Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
             person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))
@@ -22,9 +22,10 @@ Imports:
     stats,
     stats4,
     graphics,
-    utils
+    utils,
+    SummarizedExperiment(>= 1.5.3)
 Depends:
-    SummarizedExperiment(>= 1.5.3),
+    SingleCellExperiment,
     R(>= 3.4)
 Suggests:
     knitr,

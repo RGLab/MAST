@@ -32,7 +32,7 @@ FromMatrix <- function(exprsArray, cData, fData, class='SingleCellAssay'){
         dimnames(assays[[i]]) <- dimnames(can$exprsArray)[-3]
     }
     names(assays) <- dimnames(can$exprsArray)[3]
-    obj <- SummarizedExperiment(assays=assays, colData=as(can$cData, 'DataFrame'))
+    obj <- SingleCellExperiment(assays=assays, colData=as(can$cData, 'DataFrame'))
     mcols(obj) <- as(can$fData, 'DataFrame')
     as(obj, class)
 }
@@ -501,14 +501,17 @@ setMethod('combine', signature(x='SingleCellAssay', y='ANY'), function(x, y,  ..
     mc
 })
 
+setMethod('rbind', signature('SingleCellAssay'), function(..., deparse.level = 1){
+    dargs = list(...)
+    b = callNextMethod()
+    as(b, class(dargs[[1]]))
+})
 
-## obsolete
-getMapping <- function(x, map){
-    stop('Obsolete')
-}
-
-
-
+setMethod('cbind', signature('SingleCellAssay'), function(..., deparse.level = 1){
+    dargs = list(...)
+    b = callNextMethod()
+    as(b, class(dargs[[1]]))
+})
 
 
 if(getRversion() >= "2.15.1") globalVariables(c(

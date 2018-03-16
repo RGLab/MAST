@@ -42,11 +42,11 @@ NULL
 Mandatory_Featurevars <- character()
 Mandatory_Cellvars <- character()
 
-##' @import SummarizedExperiment
+##' @import SingleCellExperiment
 ##' @import S4Vectors
 ##' @importMethodsFrom S4Vectors mcols
 ##' @importMethodsFrom SummarizedExperiment colData assays assay
-setClass('SingleCellAssay', contains='SummarizedExperiment',
+setClass('SingleCellAssay', contains='SingleCellExperiment',
          slots=list(cmap='character', fmap='character'),
          prototype=list(cmap=Mandatory_Cellvars,
                         fmap=Mandatory_Featurevars))
@@ -166,7 +166,7 @@ setClass('Hypothesis', contains='character', slots=list(contrastMatrix='matrix')
 setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numeric'))
 
 ##' An S4 class to hold the output of a call to zlm
-##' 
+##'
 ##' This holds output from a call to zlm.  Many methods are defined to operate on it.  See below.
 ##' @slot coefC matrix of continuous coefficients
 ##' @slot coefD matrix of discrete coefficients

@@ -7,12 +7,7 @@ cellvars='Experiment.Number'
 featurevars=NULL
 ncells <- 'Number.of.Cells'
 
-## Currently needed because devtools 1.11.0 has broken data()
-## See https://github.com/mlr-org/mlr/pull/835
-## try(load(system.file('data/vbeta.RData', package='MAST')))
-data(vbeta,package='MAST', envir = environment())
-
+data(vbeta)
 vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
-
-
+VBeta = vbeta
 fd <- FromFlatDF(vbeta, idvars=idvars, primerid=primerid, measurement=measurement,cellvars=cellvars, geneid=geneid, ncells='Number.of.Cells', class='FluidigmAssay')

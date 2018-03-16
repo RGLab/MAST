@@ -165,9 +165,9 @@ The filtering function has several other options, including whether the filter s
 ```{r otherFiltering, warning=FALSE}
 vbeta.fa
 ## Split by 'ncells', apply to each component, then recombine
-vbeta.filtered <- filter(vbeta.fa, groups='ncells')
+vbeta.filtered <- mast_filter(vbeta.fa, groups='ncells')
 ## Returned as boolean matrix
-was.filtered <- filter(vbeta.fa, apply_filter=FALSE)
+was.filtered <- mast_filter(vbeta.fa, apply_filter=FALSE)
 ## Wells filtered for being discrete outliers
 head(subset(was.filtered, pctout))
 ```

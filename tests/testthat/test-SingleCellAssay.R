@@ -14,7 +14,7 @@
 
 ##Tests depending on vbeta
 test_that("vbeta can be loaded",{
-  expect_that(vbeta,is_a("data.frame"))
+  expect_that(VBeta,is_a("data.frame"))
 })
 
 test_that('could create SingleCellAssay', {
@@ -23,7 +23,7 @@ test_that('could create SingleCellAssay', {
 
 
 context("Generating a complete and incomplete subset")
-dat_complete <- vbeta
+dat_complete <- VBeta
 countComplete <- table(do.call(paste, dat_complete[,idvars]))
 expect_that(all(countComplete==countComplete[1]), is_true())
 dat_incomplete <- dat_complete[-seq(1, nrow(dat_complete), by=101),]
@@ -41,8 +41,8 @@ blank <- dat_complete[1,]
 ##   expect_that(getwellKey(blankinst)[[1]], equals(digest(paste(blankinst@env$data[,getMapping(blankinst@mapping)$idvars],collapse=" "))))
 ## })
 
-vbeta$et <- ifelse(is.na(vbeta$Ct), 0, 40-vbeta$Ct)
-fd <- FromFlatDF(vbeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid, sort=TRUE)
+VBeta$et <- ifelse(is.na(VBeta$Ct), 0, 40-VBeta$Ct)
+fd <- FromFlatDF(VBeta, idvars=idvars, primerid=primerid, measurement=measurement, ncells=ncells, geneid=geneid, sort=TRUE)
 test_that('could construct from flattened data.frame', {
     expect_that(fd, is_a('SingleCellAssay'))
 })
@@ -107,7 +107,7 @@ test_that('Subset rows by index, name, boolean', {
     
     
 test_that('Cell data and feature data are correctly assigned on construction', {
-    vb.manip <- within(vbeta, {
+    vb.manip <- within(VBeta, {
         et[Stim.Condition=='Stim(SEB)'] <- 2000
         et[Stim.Condition!='Stim(SEB)' & Gene=='TGFB1'] <- 0
     })

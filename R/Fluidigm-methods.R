@@ -214,18 +214,17 @@ mast_filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
         if(apply_filter && filt_control$filter){
             ## list of SingleCellAssays
             out <- do.call(cbind, lapp)
-        } else if(filt_control$filter){
+        } else if(filt_control$filter){ # we are a data.frame
             out <- do.call(rbind, lapp)     #Fix order, argh
-            out <- out[match(getwellKey(sc), row.names(out)),] #test this
+            out <- out[match(getwellKey(sc), rownames(out)),] #test this
         } else{                           #I'd reckon it's an unapplied filterset, we'll just keep it as a list
             out <- lapp
         }
         return(out)
     }
 
-    exprs <- exprs(sc)
-    internalfilter<-get(".internalfilter",environment(SingleCellAssay))
-    filtered <- do.call(internalfilter, c(list(exprs), filt_control))
+    exprs <- t(assay(sc))
+    filtered <- do.call(.internalfilter, c(list(exprs), filt_control))
     if(apply_filter && filt_control$filter){
         anyfilter <- apply(filtered, 1, any)
         scout <- sc[,!anyfilter]

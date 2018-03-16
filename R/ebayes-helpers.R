@@ -40,7 +40,7 @@ solveMoM <- function(rNg, SSg){
 
 ##' @importFrom plyr aaply
 getSSg_rNg <- function(sca, mm){
-    aaply(exprs(sca), 2, function(y){
+    aaply(t(assay(sca)), 2, function(y){
         SSg <- NA
         rNg <- NA
         try({
@@ -80,7 +80,7 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
     method <- match.arg(ebayesControl[['method']], c('MOM', 'MLE'))
     model <- match.arg(ebayesControl[['model']], c('H0', 'H1'))
 
-    ee <- exprs(sca)
+    ee <- t(assay(sca))
     ee[ee==0] <- NA
     
     if(model == 'H0'){

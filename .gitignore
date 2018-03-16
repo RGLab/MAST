@@ -11,3 +11,4 @@ MAITAnalysis_files/
 *.tar.gz
 *.Rproj
 .ignore
+.Renviron
