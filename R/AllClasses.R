@@ -142,7 +142,7 @@ setClass('BayesGLMlikeWeight', contains='BayesGLMlike')
 ##' A horrendous hack is employed in order to do arbitrary likelihood ratio tests: the model matrix is built, the names possibly mangled, then fed in as a symbolic formula to glmer/lmer.
 ##' This is necessary because there is no (easy) way to specify an arbitrary fixed-effect model matrix in glmer.
 ##' @slot pseudoMM part of this horrendous hack.
-##' @slot strictConvergence \code{logical} return results even when the optimizer or *lmer complains about convergence
+##' @slot strictConvergence \code{logical} (default: \code{TRUE}) return results even when the optimizer or *lmer complains about convergence
 ##' @slot optimMsg \code{character} record warnings from lme.  \code{NA_character_} means no warnings.
 setClass('LMERlike', contains='LMlike', slots=c(pseudoMM='data.frame',
                                                 optimMsg='character',

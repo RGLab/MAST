@@ -112,7 +112,7 @@ test_that('Cell data and feature data are correctly assigned on construction', {
         et[Stim.Condition!='Stim(SEB)' & Gene=='TGFB1'] <- 0
     })
     vb.manip <- vb.manip[sample(nrow(vb.manip)),]
-    fd.manip <- FromFlatDF(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all')
+    fd.manip <- FromFlatDF(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all', check_logged = FALSE)
     expect_true(all(assay(subset(fd.manip, Stim.Condition=='Stim(SEB)'))==2000))
 })
 
@@ -145,8 +145,8 @@ test_that('uniqueModNA works on multiple columns', {
     expect_equivalent(unique(naframe), MAST:::uniqueModNA(naframe, include='var'))
 })
 
-sci<- FromFlatDF(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
 test_that("Completes incomplete data", {
+  sci<- FromFlatDF(dat_incomplete, idvars=idvars, primerid=geneid, measurement=measurement)
   expect_equal(nrow(melt.SingleCellAssay(sci)), nrow(dat_complete))
 
   incomplete <- rbind(melt.SingleCellAssay(fd[1:20,1:20], value.name=measurement),
@@ -263,9 +263,9 @@ test_that('Exprs', {
 
 context('Combine works')
 doubleid <- data.frame(id1=c(1, 1, 2), id2=c(1, 2, 3), et=rep(3, 3), f1=rep('A', 3))
-smallsc <- FromFlatDF(doubleid, idvars=c('id1', 'id2'), primerid='f1', measurement='et', id='1')
 
 test_that('combine works', {
+    smallsc <- FromFlatDF(doubleid, idvars=c('id1', 'id2'), primerid='f1', measurement='et', id='1', check_logged = FALSE)
     spl <- split(smallsc, 'id1')
     ## we'll keep the warnings here to remind us to remove combine in a later version
     c1 <- cbind(spl[[1]], spl[[2]])
@@ -331,3 +331,12 @@ test_that('Can melt with data.table', {
     dtm <- melt(dt, id.var='A')
     expect_is(dtm, 'data.table')
 })
+
+test_that('assay returns log-count slot by default', {
+    avb = assay(vbetaFA)
+    avb[] = -9
+    assays(vbetaFA) = list(null = avb, Et = assay(vbetaFA))
+    expect_equal(assay(vbetaFA, 'Et'), assay(vbetaFA))
+    assays(vbetaFA) = list(null = avb, Et = assay(vbetaFA), thresh = avb)
+    expect_equal(assay(vbetaFA, 'thresh'), assay(vbetaFA))
+    })

@@ -4,16 +4,19 @@
 \alias{FromMatrix}
 \title{Construct a SingleCellAssay from a matrix or array of expression}
 \usage{
-FromMatrix(exprsArray, cData, fData, class = "SingleCellAssay")
+FromMatrix(exprsArray, cData, fData, class = "SingleCellAssay",
+  check_logged = TRUE)
 }
 \arguments{
-\item{exprsArray}{matrix or array, columns are cells, rows are genes}
+\item{exprsArray}{matrix, or a list of matrices, or an array. Columns are cells, rows are genes.}
 
 \item{cData}{cellData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{ncol(exprsArray)}}
 
 \item{fData}{featureData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{nrow(exprsArray)}.}
 
 \item{class}{desired subclass of object.  Default \code{SingleCellAssay}.}
+
+\item{check_logged}{(default: \code{TRUE}) Set \code{FALSE} to override sanity checks that try to ensure that the default assay is logged transformed.  See \link{defaultAssay} for details on the "default assay" which is assumed to contain log transformed data.}
 }
 \value{
 an object of class \code{class}
@@ -36,4 +39,7 @@ stopifnot(inherits(sca, 'SummarizedExperiment'))
 cData$ncells <- 1
 fd <- FromMatrix(mat, cData, fData)
 stopifnot(inherits(fd, 'SingleCellAssay'))
+}
+\seealso{
+defaultAssay
 }

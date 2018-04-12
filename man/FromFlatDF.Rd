@@ -8,7 +8,7 @@
 \usage{
 FromFlatDF(dataframe, idvars, primerid, measurement, id = numeric(0),
   cellvars = NULL, featurevars = NULL, phenovars = NULL,
-  class = "SingleCellAssay", ...)
+  class = "SingleCellAssay", check_logged = TRUE, ...)
 
 FluidigmAssay(...)
 }
@@ -29,7 +29,9 @@ FluidigmAssay(...)
 
 \item{phenovars}{Character vector naming columns containing additional phenotype metadata}
 
-\item{class}{character providing desired subclass to construct.}
+\item{class}{desired subclass of object.  Default \code{SingleCellAssay}.}
+
+\item{check_logged}{(default: \code{TRUE}) Set \code{FALSE} to override sanity checks that try to ensure that the default assay is logged transformed.  See \link{defaultAssay} for details on the "default assay" which is assumed to contain log transformed data.}
 
 \item{...}{additional arguments are ignored}
 }
