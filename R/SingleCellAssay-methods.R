@@ -436,6 +436,7 @@ setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
 ##' @param x \code{SingleCellAssay}
 ##' @param value \code{DataFrame}
 ##' @return modified \code{SingleCellAssay}
+##' @importFrom SummarizedExperiment "colData<-"
 ##' @export
 setReplaceMethod("colData", c("SingleCellAssay", 'DataFrame'), function(x, value) {
     ## Only reason we over-ride
@@ -550,8 +551,11 @@ assay_idx = function(x){
 ##'
 ##' Methods in this package operate on log-transformed (multiplicative scale) expression.
 ##' We attempt to check for this at construction, and then over-ride the \code{assay} method to return the "layer" containing such log-transformed data.
+##' @details
 ##' By default we return the assay whose names, as given by \code{assayNames(x)}, matches the first element in the vector \code{c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts')}.
-##' 
+##' @param x \code{SingleCellAssay}
+##' @param i must be \code{missing} for this method to apply
+##' @param ... passed to parent method
 ##' @aliases defaultAssay
 ##' @rdname defaultAssay
 ##' @examples
@@ -562,12 +566,12 @@ assay_idx = function(x){
 setMethod('assay', signature('SingleCellAssay', 'missing'), function(x, i, ...){
      ## What will we assume is a log-transformed value?
     log_idx = assay_idx(x)
-     assay(x, log_idx$aidx)
+     assay(x, log_idx$aidx, ...)
 })
 
 setReplaceMethod('assay',  signature('SingleCellAssay', 'missing'), function(x, i, ..., value){
     log_idx = assay_idx(x)
-    assay(x, log_idx$aidx) <- value
+    assay(x, log_idx$aidx, ...) <- value
     x
 })
 
