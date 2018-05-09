@@ -25,8 +25,8 @@ Imports:
     utils,
     SummarizedExperiment(>= 1.5.3)
 Depends:
-    SingleCellExperiment,
-    R(>= 3.4)
+    SingleCellExperiment (>= 1.2.0),
+    R(>= 3.5)
 Suggests:
     knitr,
     rmarkdown,

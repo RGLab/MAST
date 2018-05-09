@@ -22,3 +22,6 @@ Fixup `stat_ell` to deal with changes introduced in ggplot 2.2.1
 
 ## 1.1.6 ##
 Base class `SummarizedExperiment0` -> `SummarizedExperiment`
+
+## 1.5.3 ##
+Transition to use `SingleCellExperiment` and manage log counts slot.
