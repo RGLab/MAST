@@ -8,7 +8,7 @@
 \usage{
 FromFlatDF(dataframe, idvars, primerid, measurement, id = numeric(0),
   cellvars = NULL, featurevars = NULL, phenovars = NULL,
-  class = "SingleCellAssay", check_logged = TRUE, ...)
+  class = "SingleCellAssay", check_sanity = TRUE, ...)
 
 FluidigmAssay(...)
 }
@@ -31,7 +31,7 @@ FluidigmAssay(...)
 
 \item{class}{desired subclass of object.  Default \code{SingleCellAssay}.}
 
-\item{check_logged}{(default: \code{TRUE}) Set \code{FALSE} to override sanity checks that try to ensure that the default assay is logged transformed.  See \link{defaultAssay} for details on the "default assay" which is assumed to contain log transformed data.}
+\item{check_sanity}{(default: \code{TRUE}) Set \code{FALSE} to override sanity checks that try to ensure that the default assay is log-transformed and has at least one exact zero.  See \link{defaultAssay} for details on the "default assay" which is assumed to contain log transformed data.}
 
 \item{...}{additional arguments are ignored}
 }

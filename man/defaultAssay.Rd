@@ -23,7 +23,7 @@ Methods in this package operate on log-transformed (multiplicative scale) expres
 We attempt to check for this at construction, and then over-ride the \code{assay} method to return the "layer" containing such log-transformed data.
 }
 \details{
-By default we return the assay whose names, as given by \code{assayNames(x)}, matches the first element in the vector \code{c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts')}.
+By default we return the assay whose names, as given by \code{assayNames(x)}, matches the first element in the vector \code{c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts', 'logcounts')}.
 }
 \section{Functions}{
 \itemize{

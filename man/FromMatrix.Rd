@@ -5,7 +5,7 @@
 \title{Construct a SingleCellAssay from a matrix or array of expression}
 \usage{
 FromMatrix(exprsArray, cData, fData, class = "SingleCellAssay",
-  check_logged = TRUE)
+  check_sanity = TRUE, check_logged = check_sanity)
 }
 \arguments{
 \item{exprsArray}{matrix, or a list of matrices, or an array. Columns are cells, rows are genes.}
@@ -16,7 +16,9 @@ FromMatrix(exprsArray, cData, fData, class = "SingleCellAssay",
 
 \item{class}{desired subclass of object.  Default \code{SingleCellAssay}.}
 
-\item{check_logged}{(default: \code{TRUE}) Set \code{FALSE} to override sanity checks that try to ensure that the default assay is logged transformed.  See \link{defaultAssay} for details on the "default assay" which is assumed to contain log transformed data.}
+\item{check_sanity}{(default: \code{TRUE}) Set \code{FALSE} to override sanity checks that try to ensure that the default assay is log-transformed and has at least one exact zero.  See \link{defaultAssay} for details on the "default assay" which is assumed to contain log transformed data.}
+
+\item{check_logged}{alias for \code{check_sanity}}
 }
 \value{
 an object of class \code{class}

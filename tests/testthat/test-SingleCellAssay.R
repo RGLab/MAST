@@ -112,7 +112,7 @@ test_that('Cell data and feature data are correctly assigned on construction', {
         et[Stim.Condition!='Stim(SEB)' & Gene=='TGFB1'] <- 0
     })
     vb.manip <- vb.manip[sample(nrow(vb.manip)),]
-    fd.manip <- FromFlatDF(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all', check_logged = FALSE)
+    fd.manip <- FromFlatDF(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all', check_sanity = FALSE)
     expect_true(all(assay(subset(fd.manip, Stim.Condition=='Stim(SEB)'))==2000))
 })
 
@@ -265,7 +265,7 @@ context('Combine works')
 doubleid <- data.frame(id1=c(1, 1, 2), id2=c(1, 2, 3), et=rep(3, 3), f1=rep('A', 3))
 
 test_that('combine works', {
-    smallsc <- FromFlatDF(doubleid, idvars=c('id1', 'id2'), primerid='f1', measurement='et', id='1', check_logged = FALSE)
+    smallsc <- FromFlatDF(doubleid, idvars=c('id1', 'id2'), primerid='f1', measurement='et', id='1', check_sanity = FALSE)
     spl <- split(smallsc, 'id1')
     ## we'll keep the warnings here to remind us to remove combine in a later version
     c1 <- cbind(spl[[1]], spl[[2]])

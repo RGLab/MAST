@@ -1,5 +1,5 @@
 ##' @describeIn defaultAssay list of names assumed to represent log-transformed data, in order of usage preference
-magic_assay_names = function() c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts')
+magic_assay_names = function() c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts', 'logcounts')
 
 
 ##' Construct a SingleCellAssay from a matrix or array of expression
@@ -11,8 +11,9 @@ magic_assay_names = function() c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logC
 ##' @param cData cellData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{ncol(exprsArray)}
 ##' @param fData featureData an object that can be coerced to a DataFrame, ie, data.frame, AnnotatedDataFrame.  Must have as many rows as \code{nrow(exprsArray)}.
 ##' @param class desired subclass of object.  Default \code{SingleCellAssay}.
-##' @param check_logged (default: \code{TRUE}) Set \code{FALSE} to override sanity checks that try to ensure that the default assay is logged transformed.  See \link{defaultAssay} for details on the "default assay" which is assumed to contain log transformed data.
+##' @param check_sanity (default: \code{TRUE}) Set \code{FALSE} to override sanity checks that try to ensure that the default assay is log-transformed and has at least one exact zero.  See \link{defaultAssay} for details on the "default assay" which is assumed to contain log transformed data.
 ##' @return an object of class \code{class}
+##' @param check_logged alias for \code{check_sanity}
 ##' @seealso defaultAssay
 ##' @export
 ##' @examples
@@ -28,8 +29,8 @@ magic_assay_names = function() c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logC
 ##' cData$ncells <- 1
 ##' fd <- FromMatrix(mat, cData, fData)
 ##' stopifnot(inherits(fd, 'SingleCellAssay'))
-FromMatrix <- function(exprsArray, cData, fData, class='SingleCellAssay', check_logged = TRUE){
-    if(is.list(exprsArray)){
+FromMatrix <- function(exprsArray, cData, fData, class='SingleCellAssay', check_sanity = TRUE, check_logged = check_sanity){
+    if(is.list(exprsArray) || inherits(exprsArray, 'SimpleList')){
         exprsArray = do.call(abind, c(exprsArray, list(along = 3)))
     }
     can <- checkArrayNames(exprsArray, cData, fData)
@@ -46,12 +47,31 @@ FromMatrix <- function(exprsArray, cData, fData, class='SingleCellAssay', check_
     obj = as(obj, class)
 
     ## Does the data look like it's logged? If not, cry.
-    maybeLog = maybe_logged(assay(obj))
-    log_idx = assay_idx(obj)
-    if(maybeLog & check_logged) message('Assuming data assay in position ',  log_idx$aidx, ', with name ', log_idx$aname, ' is log-transformed.')
-    if(!maybeLog & check_logged) stop('Assay in position ',  log_idx$aidx, ', with name ', log_idx$aname, " doesn't seem to be log-transformed. Set `check_logged = FALSE` to override and then proceed with caution.")
+    if(check_sanity != check_logged) stop('Provide only one of `check_sanity` or `check_logged`.')
+    if(check_sanity) sanity_check_sca(obj)
 
     obj
+}
+
+sanity_check_sca = function(obj){
+    diagnostic = 'unlogged'
+    x = assay(obj)
+    if(!all(floor(x) == x, na.rm = TRUE) & max(x, na.rm = TRUE) < 100) diagnostic = 'logged'
+    #if(all(x>0)) diagnostic = str_c(diagnostic, ' and has no exact zeros')
+    log_idx = assay_idx(obj)
+    if(diagnostic == 'logged') message('Assuming data assay in position ',  log_idx$aidx, ', with name ', log_idx$aname, ' is log-transformed.')
+    if(diagnostic != 'logged') stop('Assay in position ',  log_idx$aidx, ', with name ', log_idx$aname, " is ", diagnostic,  ". Set `check_sanity = FALSE` to override and then proceed with caution.")
+}
+
+##' Coerce a SingleCellExperiment to some class defined in MAST
+##'
+##' @param sce object inheriting from \code{SingleCellExperiment}
+##' @param class \code{character} naming the class to be coerced to
+##' @inheritParams FromMatrix
+##' @return object of the indicated class.
+##' @export
+SceToSingleCellAsssay = function(sce, class = 'SingleCellAssay', check_sanity = TRUE){
+    FromMatrix(assays(sce), cData = colData(sce), fData = rowData(sce), check_sanity = check_sanity)
 }
 
 as3dArray <- function(matOrArray){
@@ -111,9 +131,6 @@ checkArrayNames <- function(exprsArray, cData, fData){
     list(exprsArray=exprsArray, cData=cData, fData=fData)
 }
 
-maybe_logged = function(x){
-    !all(floor(x) == x, na.rm = TRUE) & max(x, na.rm = TRUE) < 100
-}
     
 setMethod('fData', 'SingleCellAssay', function(object){
     .Deprecated('mcols')
@@ -288,7 +305,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ##' vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
 ##' show(vbeta.sub)
 ##' @return SingleCellAssay, or derived, object
-FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, class='SingleCellAssay', check_logged = TRUE, ...){
+FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, class='SingleCellAssay', check_sanity = TRUE, ...){
     if(missing(dataframe) || missing(idvars) || missing(primerid) || missing(measurement)){
         stop("Must supply all of 'idvars', 'primerid', 'measurement'  and 'dataframe'")
     }
@@ -327,7 +344,7 @@ FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellva
     ##need a phenokey into the melted data frame for this to make sense
     f.adf <- DataFrame(uniqueModNA(fixed$df[,featurevars, with=FALSE], 'primerid'),check.names=FALSE)
     row.names(f.adf) <- unique(fixed$df$primerid)
-    FromMatrix(dl, cell.adf, f.adf, class, check_logged)
+    FromMatrix(dl, cell.adf, f.adf, class, check_sanity)
 }
 
 #'@export
@@ -537,12 +554,13 @@ setMethod('cbind', signature('SingleCellAssay'), function(..., deparse.level = 1
     as(b, class(dargs[[1]]))
 })
 
+##' @importFrom SummarizedExperiment assayNames 'assayNames<-' assay 'assay<-' assays 'assays<-'
 assay_idx = function(x){
     assaynames = assayNames(x)
    # browser()
     aidx = na.omit(match(magic_assay_names(), assaynames))[1]
-    aname = assaynames[aidx] #could be NA
     if(is.na(aidx)) aidx = 1
+    aname = assaynames[aidx] #could be NA
     list(aname = aname, aidx = aidx)
     }
 
@@ -552,7 +570,7 @@ assay_idx = function(x){
 ##' Methods in this package operate on log-transformed (multiplicative scale) expression.
 ##' We attempt to check for this at construction, and then over-ride the \code{assay} method to return the "layer" containing such log-transformed data.
 ##' @details
-##' By default we return the assay whose names, as given by \code{assayNames(x)}, matches the first element in the vector \code{c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts')}.
+##' By default we return the assay whose names, as given by \code{assayNames(x)}, matches the first element in the vector \code{c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts', 'logcounts')}.
 ##' @param x \code{SingleCellAssay}
 ##' @param i must be \code{missing} for this method to apply
 ##' @param ... passed to parent method

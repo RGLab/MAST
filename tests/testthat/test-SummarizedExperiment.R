@@ -1,5 +1,4 @@
 context('Construction from matrix')
-#library(S4Vectors) #This shouldn't be necessary
 NC <- 10
 NF <- 100
 assay <- matrix(rnorm(NC*NF), ncol=NC, nrow=NF)
@@ -15,7 +14,7 @@ test_that('Can create', {
 })
 
 test_that('Preserve dimnames in exprsArray', {
-    expect_silent(se2 <- FromMatrix(assayDn, check_logged = FALSE))
+    expect_silent(se2 <- FromMatrix(assayDn, check_sanity = FALSE))
     expect_equal(dimnames(se2), dimnames(assayDn))
 })
 
@@ -28,4 +27,10 @@ test_that('Integer primerids cast to character', {
     rData[['primerid']] <- 1:NF
     se <- FromMatrix(assay, colData, rData)
     expect_is(mcols(se)$primerid, 'character')
+})
+
+test_that('Can coerce from SingleCellExperiment', {
+    sce = SingleCellExperiment(assay, colData = colData, rowData = rData)
+    sca = SceToSingleCellAsssay(sce, class = 'SingleCellAssay')
+    expect_is(sca, 'SingleCellAssay')
 })
