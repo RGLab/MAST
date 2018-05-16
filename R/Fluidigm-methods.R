@@ -292,6 +292,7 @@ mast_filter <- function(sc, groups=NULL, filt_control=NULL, apply_filter=TRUE){
 #' @param fun.natural transformation to be used to collapse the duplicate expression values
 #' @param fun.cycle transformation to be used after collapsing
 #' @return averaged version of \code{fd}.
+#' @importFrom SummarizedExperiment 'rowData<-'
 #' @export
 primerAverage <- function(fd, geneGroups, fun.natural=expavg, fun.cycle=logshift){
     fVars <- mcols(fd)[, geneGroups, drop=FALSE]
