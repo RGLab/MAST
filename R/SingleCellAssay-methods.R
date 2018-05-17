@@ -70,7 +70,7 @@ sanity_check_sca = function(obj){
 ##' @inheritParams FromMatrix
 ##' @return object of the indicated class.
 ##' @export
-SceToSingleCellAsssay = function(sce, class = 'SingleCellAssay', check_sanity = TRUE){
+SceToSingleCellAssay = function(sce, class = 'SingleCellAssay', check_sanity = TRUE){
     FromMatrix(assays(sce), cData = colData(sce), fData = rowData(sce), check_sanity = check_sanity)
 }
 
