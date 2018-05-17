@@ -31,6 +31,6 @@ test_that('Integer primerids cast to character', {
 
 test_that('Can coerce from SingleCellExperiment', {
     sce = SingleCellExperiment(assay, colData = colData, rowData = rData)
-    sca = SceToSingleCellAsssay(sce, class = 'SingleCellAssay')
+    sca = SceToSingleCellAssay(sce, class = 'SingleCellAssay')
     expect_is(sca, 'SingleCellAssay')
 })
