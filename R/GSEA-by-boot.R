@@ -70,14 +70,6 @@ Drop <- function(x, d){
     x
 }
 
-##' @export
-##' @param n_randomize the number of genes to sample to approximate the non-module average expression. Set to \code{Inf} to turn off the approximation (the default).
-##' @param var_estimate the method used to estimate the variance of the modules, one of \code{bootall}, \code{bootdiag}, or \code{modelbased}.
-##' @describeIn gseaAfterBoot set control parameters.  See Details.
-gsea_control = function(n_randomize = Inf, var_estimate = 'bootall'){
-    list(n_randomize = n_randomize, var_estimate = var_estimate)
-}
-
 ##' Gene set analysis for hurdle model
 ##'
 ##' Modules defined in \code{sets} are tested for average differences in expression from the "average" gene.
@@ -97,7 +89,7 @@ gsea_control = function(n_randomize = Inf, var_estimate = 'bootall'){
 ##' @param boots bootstraps of zFit
 ##' @param sets list of indices of genes
 ##' @param hypothesis a \code{Hypothesis} to test. Currently only one degree \code{CoefficientHypothesis} are supported.
-##' @param control list of control parameters.  See details.
+##' @param control parameters as provided by \code{gsea_control}.  See details.
 ##' @return Object of class \code{GSEATests}, containing slots \code{tests},  4D array and \code{bootR}, the number of boostrap replicates.
 ##' @import abind
 ##' @export
@@ -302,6 +294,15 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=gsea_control(n_
     }
     new('GSEATests', tests=tests, bootR=dimb['rep'])
 }
+
+##' @export
+##' @param n_randomize the number of genes to sample to approximate the non-module average expression. Set to \code{Inf} to turn off the approximation (the default).
+##' @param var_estimate the method used to estimate the variance of the modules, one of \code{bootall}, \code{bootdiag}, or \code{modelbased}.
+##' @describeIn gseaAfterBoot set control parameters.  See Details.
+gsea_control = function(n_randomize = Inf, var_estimate = 'bootall'){
+    list(n_randomize = n_randomize, var_estimate = var_estimate)
+}
+
 
 ##match moments to get approximation of t statistic
 .approxt <- function(dof){
