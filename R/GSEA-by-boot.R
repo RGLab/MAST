@@ -70,6 +70,14 @@ Drop <- function(x, d){
     x
 }
 
+##' @export
+##' @param n_randomize the number of genes to sample to approximate the non-module average expression. Set to \code{Inf} to turn off the approximation (the default).
+##' @param var_estimate the method used to estimate the variance of the modules, one of \code{bootall}, \code{bootdiag}, or \code{modelbased}.
+##' @describeIn gseaAfterBoot set control parameters.  See Details.
+gsea_control = function(n_randomize = Inf, var_estimate = 'bootall'){
+    list(n_randomize = n_randomize, var_estimate = var_estimate)
+}
+
 ##' Gene set analysis for hurdle model
 ##'
 ##' Modules defined in \code{sets} are tested for average differences in expression from the "average" gene.
@@ -101,15 +109,18 @@ Drop <- function(x, d){
 ##' vb1 = vb1[,freq(vb1)>.1][1:15,]
 ##' zf = zlm(~Stim.Condition, vb1)
 ##' boots = bootVcov1(zf, 5)
-##' sets=list(A=1:5, B=3:10, C=15, D=1:5)
-##' gsea=gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))
+##' sets = list(A=1:5, B=3:10, C=15, D=1:5)
+##' gsea = gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'))
+##' ## Use a model-based estimate of the variance/covariance.
+##' gsea_mb = gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'),
+##' control = gsea_control(var_estimate = 'modelbased'))
 ##' calcZ(gsea)
 ##' summary(gsea)
 ##' \dontshow{
 ##' stopifnot(all.equal(gsea@tests['A',,,],gsea@tests['D',,,]))
 ##' stopifnot(all.equal(gsea@tests['C','cont','stat','test'], coef(zf, 'C')[15,'Stim.ConditionUnstim']))
 ##' }
-gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomize=Inf, var_estimate='bootall')){
+gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=gsea_control(n_randomize=Inf, var_estimate='bootall')){
 
     ## Basic idea is to average statistics (based on coefficients defined in Zfit) and find the variance of that average using the bootstraps
     ## However, don't want to naively find the covariance across all genes then keep summing up different terms in it, because that will have quadratic complexity
@@ -122,12 +133,25 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     stopifnot(inherits(hypothesis, 'CoefficientHypothesis'))
     hypothesis <- generateHypothesis(hypothesis, colnames(zFit@coefD))
     testIdx <- hypothesis@index
+
+    ## this will need to be abstracted if we want to support arbitrary contrasts
+    CC <- coef(zFit, 'C')
+    CD <- coef(zFit, 'D')
+    tstat <- cbind(C=CC[,testIdx],
+                   D=CD[,testIdx])
     
+    if(var_est == 'modelbased'){
+        ## Make a pretend bootstrap with a single replicate, for the sake of reusing the logic below
+        boots = array(0, dim = c(1, # one replicate
+                           nrow(CD), # genes
+                           ncol(CD), #coefficients
+                           2), dimnames = c(list(1), dimnames(CD), list(c('C', 'D')))) # components
+    }
+
     ## put bootstrap replicates last
     boots <- aperm(boots, c(2,3,4,1))
     dimb <- setNames(dim(boots), c('genes', 'coef', 'comp', 'rep'))
     dnb <- setNames(dimnames(boots), names(dimb))
-
     if(dimb['genes']!=nrow(zFit@coefD)) stop('Bootstraps must be run on same set of genes as `zFit`')
     if(!all(is.numeric(unlist(sets)))) stop('`sets` should be indices of genes in `zFit`')
     
@@ -135,7 +159,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     bmean <- rowMeans(boots, dims=3)
     boots <- applyFlat(boots, bmean, FUN='-')
     ## boots is now an array of centered coefficients, so we can calculate the second moment just by averaging crossproducts
-
+    
     ## we'll take crossproducts in this set, and then update as necessary to get the mean and variance of the null set
     ## sub sampling: subsample will converge to the true sample
     ## and this will save us having to update the null set so often
@@ -143,11 +167,7 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=list(n_randomiz
     nullgenes <- if(dimb['genes']>n_randomize) sample(dimb['genes'], n_randomize, replace=FALSE) else seq_len(dimb['genes'])
     nullgenes <- sort(nullgenes)
 
-    ## this will need to be abstracted if we want to support arbitrary contrasts
-    CC <- coef(zFit, 'C')
-    CD <- coef(zFit, 'D')
-    tstat <- cbind(C=CC[,testIdx],
-                   D=CD[,testIdx])
+   
     if(var_est!='modelbased'){
         ## put bootstraps of coefficient of interest into array
         bootstat <- boots[,testIdx,,]
