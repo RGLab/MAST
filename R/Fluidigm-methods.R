@@ -166,8 +166,7 @@ getrc <- function(concord){
 
 ##' @export
 filter <- function(...){
-    .Deprecated('mast_filter')
-    mast_filter(...)
+    .Defunct('mast_filter')
 }
 
 ##' Filter a SingleCellAssay
