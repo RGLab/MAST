@@ -152,7 +152,8 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
     obj <- fit(obj, ee[,upperQgene], silent=silent)
 
     ## called internally to do fitting, but want to get local variables in scope of function
-    nerror <- 0
+    nerror <- totalerr <- 0
+    pb = progress::progress_bar$new(total = ng, format = " Completed [:bar] :percent with :err failures")
     .fitGeneSet <- function(idx){
         ## initialize outputs
         hookOut <- NULL
@@ -160,18 +161,18 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
             obj <- fit(obj, response=ee[,idx], silent=silent, quick=TRUE)
             if(!is.null(hook)) hookOut <- hook(obj)
             nerror <- 0
-            if((idx %% 20)==0) message('.', appendLF=FALSE)
         })
 
         if(is(tt, 'try-error')){
             obj@fitC <- obj@fitD <- NULL
             obj@fitted <- c(C=FALSE, D=FALSE)
-            message('!', appendLF=FALSE)
-            nerror <- nerror+1
+            nerror <- nerror + 1
+            totalerr = totalerr + 1
             if(nerror>5 & !force) {
                 stop("We seem to be having a lot of problems here...are your tests specified correctly?  \n If you're sure, set force=TRUE.", tt)                
             }
         }
+        pb$tick(tokens = list(err = totalerr))
         if(onlyCoef) return(cbind(C=coef(obj, 'C'), D=coef(obj, 'D')))
         summaries <- summarize(obj)
         structure(summaries, hookOut=hookOut)

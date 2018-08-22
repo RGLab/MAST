@@ -23,7 +23,8 @@ Imports:
     stats4,
     graphics,
     utils,
-    SummarizedExperiment(>= 1.5.3)
+    SummarizedExperiment(>= 1.5.3),
+    progress
 Depends:
     SingleCellExperiment (>= 1.2.0),
     R(>= 3.5)
@@ -79,7 +80,7 @@ Collate:
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 LazyData: true
 biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
     RNASeq, Transcriptomics, SingleCell
