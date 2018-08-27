@@ -49,7 +49,7 @@ If you have previously installed the package `SingleCellAssay` you will want to 
 
 Then you may install or update `MAST` with:
 
-    install.packages("BiocManager') # Needed to install all Bioconductor packages
+    install.packages("BiocManager") # Needed to install all Bioconductor packages
     BiocManager::install("MAST")
 
 Converting old MASTClassic SingleCellAssay objects
