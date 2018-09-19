@@ -21,7 +21,19 @@ test_that('could create SingleCellAssay', {
     expect_that(fd, is_a('SingleCellAssay'))
 })
 
+test_that('melt.SingleCellAssay', {
+    res <- melt.SingleCellAssay(fd[1:2,1:2])
+    expect_equal(res[, 1:4], structure(list(Gene = c("B3GAT1", "BAX", "B3GAT1", "BAX")
+                                           , primerid = c("B3GAT1", "BAX", "B3GAT1", "BAX")
+                                           , Experiment.Number = c(23L, 23L, 23L, 23L)
+                                           , ncells = c(1L, 1L, 1L, 1L))
+                                          , class = c("data.table", "data.frame")
+                                          , row.names = c(NA, -4L)
+                                      )
+                )
+  })
 
+  
 context("Generating a complete and incomplete subset")
 dat_complete <- VBeta
 countComplete <- table(do.call(paste, dat_complete[,idvars]))

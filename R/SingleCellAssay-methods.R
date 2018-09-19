@@ -163,11 +163,14 @@ melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     if( (ncol(exprs)==1 && !is.null(value.name)) || is.null(colnames(exprs))|| colnames(exprs)=='NULL'){ #??
         colnames(exprs) <- make.unique(rep(value.name, ncol(exprs)))
     }
+    fdata <- featdata[rep(seq_len(nrow(featdata)), nrow(celldata)),,drop=FALSE]
+    cdata <- celldata[rep(seq_len(nrow(celldata)), each=nrow(featdata)),,drop=FALSE]
     
-    m <- cbind( featdata[rep(seq_len(nrow(featdata)), nrow(celldata)),,drop=FALSE],
-               celldata[rep(seq_len(nrow(celldata)), each=nrow(featdata)),,drop=FALSE], exprs)
-
-    
+    m <- data.frame(exprs)
+    if(nrow(cdata)>0)
+      m <- cbind(cdata, m)
+    if(nrow(fdata)>0)
+      m <- cbind(fdata, m)
     return(m)
 }
 
