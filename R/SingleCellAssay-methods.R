@@ -86,7 +86,7 @@ as3dArray <- function(matOrArray){
 }
 
 checkArrayNames <- function(exprsArray, cData, fData){
-    if(!is.numeric(exprsArray)) stop('`exprsArray` must be numeric')
+    if(!is.numeric(exprsArray)&&!is(exprsArray, "DelayedArray")) stop('`exprsArray` must be numeric or DelayedArray')
     exprsArray <- as3dArray(exprsArray)
     dn <- dimnames(exprsArray)
     noDimnames <- is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])
