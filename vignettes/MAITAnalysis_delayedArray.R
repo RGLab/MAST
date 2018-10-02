@@ -19,7 +19,7 @@ suppressPackageStartupMessages({
 })
 #options(mc.cores = detectCores() - 1) #if you have multiple cores to spin
 options(mc.cores = 1)
-knitr::opts_chunk$set(message = FALSE,error = FALSE,warning = FALSE,cache = FALSE,fig.width=8,fig.height=6, auto.dep=TRUE)
+# knitr::opts_chunk$set(message = FALSE,error = FALSE,warning = FALSE,cache = FALSE,fig.width=8,fig.height=6, auto.dep=TRUE)
 
 ## ----MASToptions---------------------------------------------------------
 freq_expressed <- 0.2
@@ -42,10 +42,10 @@ all.equal(mat, as.matrix(bm))
 
 ## ----createSca-----------------------------------------------------------
 scaRaw <- FromMatrix(mat, maits$cdat, maits$fdat)
-# scaRaw.bm <- FromMatrix(bm, maits$cdat, maits$fdat)#doesn't work due to https://github.com/Bioconductor/DelayedArray/issues/30
+scaRaw.bm <- FromMatrix(bm, maits$cdat, maits$fdat)
 
-scaRaw.bm <- scaRaw
-assay(scaRaw.bm) <- bm # hack
+# scaRaw.bm <- scaRaw
+# assay(scaRaw.bm) <- bm # hack
 
 # all.equal(assay(scaRaw), mat)
 # ----heatmap doesn't work basically `NMF` package isn't aware of `DelayedArray::rowMeans`, and question is if there is anything I can do about it without asking `NMF` author to import `BiocGenerics::rowMeans`?
@@ -111,18 +111,27 @@ all.equal(flat, flat.bm)
 # ggplot(flat, aes(x=value))+geom_density() +facet_wrap(~symbolid, scale='free_y')
 
 ## ----threshold, results='hide', fig.width=6------------------------------
+setRealizationBackend("BMArray")
+
 thres <- thresholdSCRNACountMatrix(assay(sca), nbins = 20, min_per_bin = 30)
 thres.bm <- thresholdSCRNACountMatrix(assay(sca.bm), nbins = 20, min_per_bin = 30)
+object.size(thres)
+object.size(thres.bm)
 
-a <- array(0, dim=c(2, 2))
-A <- DelayedArray(a)
-a[1,1] <- 1
-a[4] <- 2
+all.equal(thres$counts_threshold, as.matrix(thres.bm$counts_threshold))
+all.equal(thres$original_data, as.matrix(thres.bm$original_data))
+all.equal(thres[-(1:2)], thres.bm[-(1:2)])
+
+
+a <- array(0, dim=c(3, 3))
+b <- array(1, dim = c(2,2))
 a
-A[1,1] <- 1
-A[1] <- 1
-idx <- DelayedArray(array(c(T,F,F,F), dim  = c(2,2)))
-A[idx] <- 1
+b
+a[1:2, 1:2] <- b
+a
+A <- DelayedArray(a)
+idx <- DelayedArray(array(c(T,T,F,T,T,F,F,F,F), dim  = c(3,3)))
+A[idx] <- DelayedArray(b)
 tt <- tempfile()
 h5write(a, tt, "data")
 A <- HDF5Array(tt, "data")
