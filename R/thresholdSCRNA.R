@@ -228,10 +228,11 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     for( i in levels(cond_stat_bins)){
         log_data_list[[i]]<-NULL
         for( j in uni_cond){
-            x<-unlist(log_data[cond_stat_bins_array[,j]==i,conditions==j])
+            x <- log_data[cond_stat_bins_array[,j]==i,conditions==j]
+            x <- unlist(x)
             #TODO: if x potentially would be big, this linear single bracket subsetting will inevitably 
             #produce a lengthy 1d in-memory vector, which can be converted to on-disk array if needed
-            x <- x[x>0.0] 
+            x <- x[x > 0.0] 
             log_data_list[[i]]<-c(log_data_list[[i]], x)
         }
 
@@ -299,17 +300,11 @@ thresholdSCRNACountMatrix <-function( data_all              ,
             colidx <- conditions==j
             if(any(rowidx))
             {
-              #shouldn't have to do this once https://github.com/Bioconductor/DelayedArray/issues/32 is fixed
-              #convert Nindex to delayedArra idx
+              data_threshold[rowidx, colidx][log_data[rowidx,colidx]<cutpoints[i]]<-0
+              #must realize it to disk immediately due to the huge memory cost from accumulated delayedOps 
               if(is(data_threshold, "DelayedArray"))
-              {
-                idx <- array(FALSE, dim = dim(data_threshold))#global idx
-                idx[rowidx, colidx] <- TRUE #apply the first filter
-                idx[rowidx, colidx] <- as.matrix(log_data[rowidx,colidx] < cutpoints[i]) #apply the second filter
-                idx <- DelayedArray(idx)
-                data_threshold[idx] <- 0
-              }else
-                data_threshold[rowidx, colidx][log_data[rowidx,colidx]<cutpoints[i]]<-0
+                data_threshold <- realize(data_threshold)
+
             }
               
         }
@@ -320,14 +315,14 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     print( cutpoints )
     data_threshold_all                  <- data_all*0
                                         #data_threshold_all[comp_zero_idx, ] <- 0
-    if(is(data_all, "DelayedArray"))
-    {
-      # idx <- a#TODO:wait for DelayArray to support replacement with sub-delayedArray matrix
-    }else
+    # if(is(data_all, "DelayedArray"))
+    # {
+    #   # idx <- a#TODO:wait for DelayArray to support replacement with sub-delayedArray matrix
+    # }else
       data_threshold_all[!comp_zero_idx,] <- data_threshold #2^( data_threshold ) - 1
     bin_all       <- factor(cond_stat_bins_array)
     dim(bin_all)  <- dim(cond_stat_bins_array)
-    res_obj       <- list( counts_threshold = data_threshold_all,
+    res_obj       <- list( counts_threshold = realize(data_threshold_all),
                           original_data     = data_all,
                           cutpoint          = cutpoints,
                           bin               =  bin_all,
