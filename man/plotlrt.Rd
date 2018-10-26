@@ -4,7 +4,8 @@
 \alias{plotlrt}
 \title{Plot a likelihood ratio test object}
 \usage{
-plotlrt(lr, adjust = "fdr", thres = 0.1, trunc = 1e-06, groups = NULL)
+plotlrt(lr, adjust = "fdr", thres = 0.1, trunc = 1e-06,
+  groups = NULL)
 }
 \arguments{
 \item{lr}{output from lrtest, with returnall=FALSE}

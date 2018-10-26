@@ -1,8 +1,8 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.7.2
-Date: 2018-05-22
+Version: 1.7.3
+Date: 2018-10-26
 Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
             person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))
@@ -23,6 +23,7 @@ Imports:
     stats4,
     graphics,
     utils,
+    blme,
     SummarizedExperiment(>= 1.5.3),
     progress
 Depends:
@@ -53,6 +54,7 @@ License: GPL(>= 2)
 Collate:
     'AllGenerics.R'
     'AllClasses.R'
+    'CovFromBoots.R'
     'Fluidigm-methods.R'
     'GSEA-by-boot.R'
     'Hypothesis.R'

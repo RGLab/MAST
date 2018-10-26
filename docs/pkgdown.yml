@@ -1,0 +1,8 @@
+pandoc: 2.3.1
+pkgdown: 1.1.0
+pkgdown_sha: ~
+articles:
+  MAITAnalysis: MAITAnalysis.html
+  MAST-Intro: MAST-Intro.html
+  MAST-interoperability: MAST-interoperability.html
+

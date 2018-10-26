@@ -8,8 +8,8 @@
 \usage{
 LRT(sca, comparison, ...)
 
-\S4method{LRT}{SingleCellAssay,character}(sca, comparison, referent = NULL,
-  groups = NULL, returnall = FALSE)
+\S4method{LRT}{SingleCellAssay,character}(sca, comparison,
+  referent = NULL, groups = NULL, returnall = FALSE)
 }
 \arguments{
 \item{sca}{A \code{SingleCellAssay} class object}

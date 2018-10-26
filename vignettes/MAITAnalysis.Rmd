@@ -339,7 +339,7 @@ This would be completely inadequate if you wanted to report these results.
 ```{r boots, eval=TRUE}
 # bootstrap, resampling cells
 # R should be set to >50 if you were doing this for real.
-boots <- bootVcov1(zlmCond, R=4)
+boots <- bootVcov1(zlmCond, R = 4)
 ```
 
 ```{r setupBTM, dependson="data;zlm;boots",results='hide'}

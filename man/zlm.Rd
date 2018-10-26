@@ -6,8 +6,8 @@
 \title{Zero-inflated regression for SingleCellAssay}
 \usage{
 zlm(formula, sca, method = "bayesglm", silent = TRUE, ebayes = TRUE,
-  ebayesControl = NULL, force = FALSE, hook = NULL, parallel = TRUE,
-  LMlike, onlyCoef = FALSE, ...)
+  ebayesControl = NULL, force = FALSE, hook = NULL,
+  parallel = TRUE, LMlike, onlyCoef = FALSE, ...)
 }
 \arguments{
 \item{formula}{a formula with the measurement variable on the LHS and predictors present in colData on the RHS}
