@@ -18,19 +18,38 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
 
+
+
+<meta property="og:title" content="Gene set analysis for hurdle model — gseaAfterBoot" />
+
+<meta property="og:description" content="Modules defined in sets are tested for average differences in expression from the &quot;average&quot; gene.
+By using bootstraps, the between-gene covariance of terms in the hurdle model is found, and is used to adjust for coexpression between genes.
+We drop genes if the coefficient we are testing was not estimible in original model fit in zFit or in any of the bootstrap replicates (evidenced an NA in the bootstrap array).  This might yield overly conservative inference.
+Since bootstrapping is a randomized procedure, the degrees of freedom of a module (and its variance parameters) might differ from run-to-run.
+You might try setting var_estimate='modelbased' to relax this requirement by assuming independence between genes and then using the asymptotic covariance estimates, which are deterministic, but may result in overly-generous inference." />
+<meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -44,15 +63,40 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">MAST</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">MAST</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.7.3</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="../index.html">
+    <span class="fa fa-home fa-lg"></span>
+     
+  </a>
 </li>
 <li>
-  <a href="../articles/index.html">Articles</a>
+  <a href="../reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/MAITAnalysis.html">Using MAST with RNASeq: MAIT Analysis.</a>
+    </li>
+    <li>
+      <a href="../articles/MAST-Intro.html">MAST Intro</a>
+    </li>
+    <li>
+      <a href="../articles/MAST-interoperability.html">Interoptability between MAST and SingleCellExperiment-derived packages.</a>
+    </li>
+  </ul>
 </li>
       </ul>
       
@@ -64,6 +108,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -71,60 +116,89 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Gene set analysis for hurdle model</h1>
+    <small class="dont-index">Source: <a href='https://github.com/RGLab/MAST//blob/master/R/GSEA-by-boot.R'><code>R/GSEA-by-boot.R</code></a></small>
+    <div class="hidden name"><code>gseaAfterBoot.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
-    <p>Modules defined in <code>sets</code> are tested for average differences in expression from the &quot;average&quot; gene.
+    <p>Modules defined in <code>sets</code> are tested for average differences in expression from the "average" gene.
 By using bootstraps, the between-gene covariance of terms in the hurdle model is found, and is used to adjust for coexpression between genes.
 We drop genes if the coefficient we are testing was not estimible in original model fit in <code>zFit</code> or in any of the bootstrap replicates (evidenced an <code>NA</code> in the bootstrap array).  This might yield overly conservative inference.
 Since bootstrapping is a randomized procedure, the degrees of freedom of a module (and its variance parameters) might differ from run-to-run.
-You might try setting <code>var_estimate=&#39;modelbased&#39;</code> to relax this requirement by assuming independence between genes and then using the asymptotic covariance estimates, which are deterministic, but may result in overly-generous inference.</p>
+You might try setting <code>var_estimate='modelbased'</code> to relax this requirement by assuming independence between genes and then using the asymptotic covariance estimates, which are deterministic, but may result in overly-generous inference.</p>
     
+    </div>
 
-    <pre><span class='fu'>gseaAfterBoot</span>(<span class='no'>zFit</span>, <span class='no'>boots</span>, <span class='no'>sets</span>, <span class='no'>hypothesis</span>, <span class='kw'>control</span> <span class='kw'>=</span> <span class='fu'>list</span>(<span class='kw'>n_randomize</span> <span class='kw'>=</span> <span class='fl'>Inf</span>,
-  <span class='kw'>var_estimate</span> <span class='kw'>=</span> <span class='st'>"bootall"</span>))</pre>
+    <pre class="usage"><span class='fu'>gseaAfterBoot</span>(<span class='no'>zFit</span>, <span class='no'>boots</span>, <span class='no'>sets</span>, <span class='no'>hypothesis</span>,
+  <span class='kw'>control</span> <span class='kw'>=</span> <span class='fu'>gsea_control</span>(<span class='kw'>n_randomize</span> <span class='kw'>=</span> <span class='fl'>Inf</span>, <span class='kw'>var_estimate</span> <span class='kw'>=</span> <span class='st'>"bootall"</span>))
+
+<span class='fu'>gsea_control</span>(<span class='kw'>n_randomize</span> <span class='kw'>=</span> <span class='fl'>Inf</span>, <span class='kw'>var_estimate</span> <span class='kw'>=</span> <span class='st'>"bootall"</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>zFit</dt>
-      <dd>object of class ZlmFit</dd>
-      <dt>boots</dt>
-      <dd>bootstraps of zFit</dd>
-      <dt>sets</dt>
-      <dd>list of indices of genes</dd>
-      <dt>hypothesis</dt>
-      <dd>a <code>Hypothesis</code> to test. Currently only one degree <code>CoefficientHypothesis</code> are supported.</dd>
-      <dt>control</dt>
-      <dd>list of control parameters.  See details.</dd>
-    </dl>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>zFit</th>
+      <td><p>object of class ZlmFit</p></td>
+    </tr>
+    <tr>
+      <th>boots</th>
+      <td><p>bootstraps of zFit</p></td>
+    </tr>
+    <tr>
+      <th>sets</th>
+      <td><p>list of indices of genes</p></td>
+    </tr>
+    <tr>
+      <th>hypothesis</th>
+      <td><p>a <code>Hypothesis</code> to test. Currently only one degree <code>CoefficientHypothesis</code> are supported.</p></td>
+    </tr>
+    <tr>
+      <th>control</th>
+      <td><p>parameters as provided by <code>gsea_control</code>.  See details.</p></td>
+    </tr>
+    <tr>
+      <th>n_randomize</th>
+      <td><p>the number of genes to sample to approximate the non-module average expression. Set to <code>Inf</code> to turn off the approximation (the default).</p></td>
+    </tr>
+    <tr>
+      <th>var_estimate</th>
+      <td><p>the method used to estimate the variance of the modules, one of <code>bootall</code>, <code>bootdiag</code>, or <code>modelbased</code>.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Object of class <code>GSEATests</code>, containing slots <code>tests</code>,  4D array and <code>bootR</code>, the number of boostrap replicates.</p>
     
-    <h2 class="hasAnchor" id="-code-control-code-"><a class="anchor" href="#-code-control-code-"></a>&lt;code&gt;control&lt;/code&gt;</h2>
+    <h2 class="hasAnchor" id="functions"><a class="anchor" href="#functions"></a>Functions</h2>
 
-    <p></p>
-    <p><code>control</code> is a list with elements:
-<ul>
-<li> <code>n_randomize</code>, giving the number of genes to sample to approximate the non-module average expression. Set to <code>Inf</code> to turn off the approximation (the default).
-</li>
-<li> <code>var_estimate</code>, giving the method used to estimate the variance of the modules.  <code>bootall</code> uses the bootstrapped covariance matrices.  <code>bootdiag</code> uses only the diagonal of the bootstrapped covariance matrix (so assuming independence across genes). <code>modelbased</code> assumes independence across genes and uses the variance estimated from the model.</li>
-</ul></p>
+    <ul>
+<li><p><code>gsea_control</code>: set control parameters.  See Details.</p></li>
+</ul>
+    
+    <h2 class="hasAnchor" id="control"><a class="anchor" href="#control"></a><code>control</code></h2>
+
+    
+    <p><code>control</code> is a list with elements:</p><ul>
+<li><p><code>n_randomize</code>, giving the number of genes to sample to approximate the non-module average expression. Set to <code>Inf</code> to turn off the approximation (the default).</p></li>
+<li><p><code>var_estimate</code>, giving the method used to estimate the variance of the modules.  <code>bootall</code> uses the bootstrapped covariance matrices.  <code>bootdiag</code> uses only the diagonal of the bootstrapped covariance matrix (so assuming independence across genes). <code>modelbased</code> assumes independence across genes and uses the variance estimated from the model.</p></li>
+</ul>
     
     <h2 class="hasAnchor" id="return-value"><a class="anchor" href="#return-value"></a>Return Value</h2>
 
-    <p></p>
-    <p>A 4D array is returned, with  dimensions &quot;set&quot; (each module), &quot;comp&quot; (&#39;disc&#39;rete or &#39;cont&#39;inuous), &quot;metric&quot; (&#39;stat&#39; gives the average of the coefficient, &#39;var&#39; gives the variance of that average, &#39;dof&#39; gives the number of genes that were actually tested in the set), &quot;group&quot; (&#39;test&#39; for the genes in test-set, &quot;null&quot; for all genes outside the test-set).</p>
+    
+    <p>A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete or 'cont'inuous), "metric" ('stat' gives the average of the coefficient, 'var' gives the variance of that average, 'dof' gives the number of genes that were actually tested in the set), "group" ('test' for the genes in test-set, "null" for all genes outside the test-set).</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p><a href='calcZ.html'>calcZ</a></p>
-    <p>summary,GSEATests-method</p>
+    <div class='dont-index'><p><a href='calcZ.html'>calcZ</a></p>
+<p>summary,GSEATests-method</p></div>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -133,36 +207,38 @@ You might try setting <code>var_estimate=&#39;modelbased&#39;</code> to relax th
 <span class='no'>vb1</span> <span class='kw'>=</span> <span class='no'>vb1</span>[,<span class='fu'><a href='freq.html'>freq</a></span>(<span class='no'>vb1</span>)<span class='kw'>&gt;</span><span class='fl'>.1</span>][<span class='fl'>1</span>:<span class='fl'>15</span>,]
 <span class='no'>zf</span> <span class='kw'>=</span> <span class='fu'><a href='zlm.html'>zlm</a></span>(~<span class='no'>Stim.Condition</span>, <span class='no'>vb1</span>)</div><div class='output co'>#&gt; <span class='message'></span>
 #&gt; <span class='message'>Done!</span></div><div class='input'><span class='no'>boots</span> <span class='kw'>=</span> <span class='fu'><a href='bootVcov1.html'>bootVcov1</a></span>(<span class='no'>zf</span>, <span class='fl'>5</span>)
-<span class='no'>sets</span><span class='kw'>=</span><span class='fu'>list</span>(<span class='kw'>A</span><span class='kw'>=</span><span class='fl'>1</span>:<span class='fl'>5</span>, <span class='kw'>B</span><span class='kw'>=</span><span class='fl'>3</span>:<span class='fl'>10</span>, <span class='kw'>C</span><span class='kw'>=</span><span class='fl'>15</span>, <span class='kw'>D</span><span class='kw'>=</span><span class='fl'>1</span>:<span class='fl'>5</span>)
-<span class='no'>gsea</span><span class='kw'>=</span><span class='fu'>gseaAfterBoot</span>(<span class='no'>zf</span>, <span class='no'>boots</span>, <span class='no'>sets</span>, <span class='fu'><a href='Hypothesis.html'>CoefficientHypothesis</a></span>(<span class='st'>'Stim.ConditionUnstim'</span>))
+<span class='no'>sets</span> <span class='kw'>=</span> <span class='fu'>list</span>(<span class='kw'>A</span><span class='kw'>=</span><span class='fl'>1</span>:<span class='fl'>5</span>, <span class='kw'>B</span><span class='kw'>=</span><span class='fl'>3</span>:<span class='fl'>10</span>, <span class='kw'>C</span><span class='kw'>=</span><span class='fl'>15</span>, <span class='kw'>D</span><span class='kw'>=</span><span class='fl'>1</span>:<span class='fl'>5</span>)
+<span class='no'>gsea</span> <span class='kw'>=</span> <span class='fu'>gseaAfterBoot</span>(<span class='no'>zf</span>, <span class='no'>boots</span>, <span class='no'>sets</span>, <span class='fu'><a href='Hypothesis.html'>CoefficientHypothesis</a></span>(<span class='st'>'Stim.ConditionUnstim'</span>))
+<span class='co'>## Use a model-based estimate of the variance/covariance.</span>
+<span class='no'>gsea_mb</span> <span class='kw'>=</span> <span class='fu'>gseaAfterBoot</span>(<span class='no'>zf</span>, <span class='no'>boots</span>, <span class='no'>sets</span>, <span class='fu'><a href='Hypothesis.html'>CoefficientHypothesis</a></span>(<span class='st'>'Stim.ConditionUnstim'</span>),
+<span class='kw'>control</span> <span class='kw'>=</span> <span class='fu'>gsea_control</span>(<span class='kw'>var_estimate</span> <span class='kw'>=</span> <span class='st'>'modelbased'</span>))
 <span class='fu'><a href='calcZ.html'>calcZ</a></span>(<span class='no'>gsea</span>)</div><div class='output co'>#&gt; , , metric = Z
 #&gt; 
 #&gt;    comp
 #&gt; set       cont      disc
-#&gt;   A -0.9327106 -1.066283
-#&gt;   B -0.4801646 -3.406370
-#&gt;   C        NaN -3.584276
-#&gt;   D -0.9327106 -1.066283
+#&gt;   A -0.7262287 -1.321336
+#&gt;   B -1.0105619 -5.473274
+#&gt;   C        NaN -4.323690
+#&gt;   D -0.7262287 -1.321336
 #&gt; 
 #&gt; , , metric = P
 #&gt; 
 #&gt;    comp
 #&gt; set      cont        disc
-#&gt;   A 0.3855052 0.329922269
-#&gt;   B 0.6533250 0.009277177
-#&gt;   C       NaN 0.009531795
-#&gt;   D 0.3855052 0.329922269
+#&gt;   A 0.4903697 0.223809471
+#&gt;   B 0.3660167 0.001091282
+#&gt;   C       NaN 0.009105493
+#&gt;   D 0.4903697 0.223809471
 #&gt; </div><div class='input'><span class='fu'>summary</span>(<span class='no'>gsea</span>)</div><div class='output co'>#&gt;    set     cont_Z    cont_P    disc_Z      disc_P combined_Z combined_P
-#&gt; 1:   C        NaN       NaN -3.584276 0.009531795 -2.4530273 0.04525634
-#&gt; 2:   B -0.4801646 0.6533250 -3.406370 0.009277177 -1.5241897 0.17900212
-#&gt; 3:   A -0.9327106 0.3855052 -1.066283 0.329922269 -0.8061226 0.44410544
-#&gt; 4:   D -0.9327106 0.3855052 -1.066283 0.329922269 -0.8061226 0.44410544
+#&gt; 1:   B -1.0105619 0.3660167 -5.473274 0.001091282 -2.2616377 0.07340967
+#&gt; 2:   C        NaN       NaN -4.323690 0.009105493 -2.0549046 0.09993532
+#&gt; 3:   A -0.7262287 0.4903697 -1.321336 0.223809471 -0.9641867 0.35557726
+#&gt; 4:   D -0.7262287 0.4903697 -1.321336 0.223809471 -0.9641867 0.35557726
 #&gt;    cont_effect disc_effect combined_adj
-#&gt; 1:         NaN  -1.4281950    0.1810254
-#&gt; 2:  -0.3898317  -1.2768804    0.3580042
-#&gt; 3:  -0.6142811  -0.3488222    0.4441054
-#&gt; 4:  -0.6142811  -0.3488222    0.4441054</div><div class='input'>
-</div></pre>
+#&gt; 1:  -0.8174711  -1.2768804    0.1998706
+#&gt; 2:         NaN  -1.4281950    0.1998706
+#&gt; 3:  -0.3400834  -0.3488222    0.3555773
+#&gt; 4:  -0.3400834  -0.3488222    0.3555773</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -171,7 +247,9 @@ You might try setting <code>var_estimate=&#39;modelbased&#39;</code> to relax th
       
       <li><a href="#value">Value</a></li>
 
-      <li><a href="#-code-control-code-">&lt;code&gt;control&lt;/code&gt;</a></li>
+      <li><a href="#functions">Functions</a></li>
+
+      <li><a href="#control"><code>control</code></a></li>
 
       <li><a href="#return-value">Return Value</a></li>
 
@@ -189,11 +267,14 @@ You might try setting <code>var_estimate=&#39;modelbased&#39;</code> to relax th
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

@@ -4,11 +4,12 @@
 \alias{read.fluidigm}
 \title{Reads a Fluidigm Biomark (c. 2011) raw data file (or set of files)}
 \usage{
-read.fluidigm(files = NULL, metadata = NULL, header.size = 2, skip = 8,
-  cycle.threshold = 40, metadataColClasses = NULL, meta.key = NULL,
-  idvars = NULL, splitby = NULL, unique.well.id = "Chamber.ID",
-  raw = TRUE, assay = NULL, geneid = "Assay.Name", sample = NULL,
-  well = "Well", measurement = "X40.Ct", measurement.processed = "Ct",
+read.fluidigm(files = NULL, metadata = NULL, header.size = 2,
+  skip = 8, cycle.threshold = 40, metadataColClasses = NULL,
+  meta.key = NULL, idvars = NULL, splitby = NULL,
+  unique.well.id = "Chamber.ID", raw = TRUE, assay = NULL,
+  geneid = "Assay.Name", sample = NULL, well = "Well",
+  measurement = "X40.Ct", measurement.processed = "Ct",
   ncells = "SampleRConc")
 }
 \arguments{

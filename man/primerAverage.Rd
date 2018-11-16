@@ -4,7 +4,8 @@
 \alias{primerAverage}
 \title{Average expression values for duplicated/redundant genes}
 \usage{
-primerAverage(fd, geneGroups, fun.natural = expavg, fun.cycle = logshift)
+primerAverage(fd, geneGroups, fun.natural = expavg,
+  fun.cycle = logshift)
 }
 \arguments{
 \item{fd}{\code{SingleCellAssay} or subclass}

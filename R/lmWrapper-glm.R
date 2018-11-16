@@ -19,9 +19,9 @@ setMethod('vcov', signature=c(object='GLMlike'), function(object, which, ...){
     stopifnot(which %in% c('C', 'D'))
     vc <- object@defaultVcov
     if(which=='C' & object@fitted['C']){
-        vc2 <- stats:::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled
+        vc2 <- stats::summary.glm(object@fitC, dispersion=object@fitC$dispersion)$cov.scaled
     } else if(which=='D' & object@fitted['D']){
-        vc2 <- stats:::summary.glm(object@fitD)$cov.scaled
+        vc2 <- stats::summary.glm(object@fitD)$cov.scaled
     } else{
         vc2 <- numeric()
     }

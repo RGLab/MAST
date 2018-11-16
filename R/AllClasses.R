@@ -39,12 +39,20 @@ NULL
 NULL
 
 
+##' Predicted signatures
+##' @docType data
+##' @name predicted_sig
+##' @rdname predicted_sig-dataset
+##' @format A data frame of predicted gene expresion signatures for stimulated and unstimulated cells.
+NULL
+
 Mandatory_Featurevars <- character()
 Mandatory_Cellvars <- character()
 
 ##' @import SingleCellExperiment
 ##' @import S4Vectors
 ##' @importMethodsFrom S4Vectors mcols
+##' @importFrom blme blmer bglmer
 ##' @importMethodsFrom SummarizedExperiment colData assays assay
 setClass('SingleCellAssay', contains='SingleCellExperiment',
          slots=list(cmap='character', fmap='character'),

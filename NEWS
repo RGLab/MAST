@@ -1,5 +1,0 @@
-## Changes in version 1.1.6 ##
-  -`convertMastClassicToSingleCellAssay()` updates "MASTClassic" (version 0.933) objects to work with version >1.0
-  -Bug fixes in `thresholdSCRNACountMatrix`
-  -Deprecations and renaming of some awkwardly named functions (`zlm.SingleCellAssay` and others)
-  -Documentation updates
