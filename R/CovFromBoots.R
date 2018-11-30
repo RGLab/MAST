@@ -1,10 +1,10 @@
 #' @name CovFromBoots
-#' @title Extract the intere-gene covariance matrices for continuous and discrete components of a MAST model for a given coefficient from bootstrap replicates
+#' @title Extract the inter-gene covariance matrices for continuous and discrete components of a MAST model for a given coefficient from bootstrap replicates
 #' @description Computes the genewise covariance for a model coefficient from bootstrap replicates
 #' from `MAST::bootVcov1()`. If coefficients are unestimable (i.e. NA) for a gene, that row/column in the
 #' covariance matrix will be NA. Returns a list with components "C" and "D" containing the covariance
 #' matrices for the "C"ontinuous and "D"iscrete components of the MAST model.
-#' @return list with components "C" and "D" containing covariance matrices for the continuous and discrete components of the mode.
+#' @return list with components "C" and "D" containing covariance matrices for the continuous and discrete components of the model.
 #' @param boots a multidimensional array returned by `bootVcov1` or `pbootVcov1`.
 #' @param coefficient `character` the name of the model coefficient for which to return the inter-gene covariance matrices.
 CovFromBoots <- function(boots = NULL,
