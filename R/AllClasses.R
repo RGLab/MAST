@@ -136,7 +136,7 @@ defaultPrior <- function(names){
 ##' @slot prior \code{numeric} optional 3d array used to specify prior for coefficients
 ##' @slot useContinuousBayes \code{logical} should \code{bayesglm} be used to fit the continuous component as well?
 setClass('BayesGLMlike', contains='GLMlike', slots=c(coefPrior='array', useContinuousBayes='logical'),
-         prototype=list(prior=defaultPrior(character(0)), useContinuousBayes=FALSE),
+         prototype=list(coefPrior=defaultPrior(character(0)), useContinuousBayes=FALSE),
          validity=function(object){
              ## if(length(object@coefPrior>0))
              ##     if(dim(object@coefPrior)[3] != sum(colnames(model.matrix(object))!='(Intercept)')) stop('prior must have same number of components as model.matrix')
