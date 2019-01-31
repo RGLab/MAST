@@ -33,9 +33,14 @@ mat <- t(maits$expressionmat)
 dim(mat)
 
 #' Convert bigmemory-version of mat
-bm <- as.big.matrix(mat, backingpath = tempdir(), backingfile = "bm.bin", descriptorfile = "bm.desc")
-file.name(bm)
-bm <- DelayedArray(BMArraySeed(bm))
+# bm <- as.big.matrix(mat, backingpath = tempdir(), backingfile = "bm.bin", descriptorfile = "bm.desc")
+# file.name(bm)
+# bm <- DelayedArray(BMArraySeed(bm))
+h5file <- tempfile()
+h5createFile(h5file)
+h5createDataset(h5file, dataset = "data", dims = dim(mat), storage.mode = "double", chunk = c(1000,10) )
+h5write(mat, h5file, "data")
+bm <- HDF5Array(h5file,name = "data")
 rownames(bm) <- rownames(mat)
 colnames(bm) <- colnames(mat)
 all.equal(mat, as.matrix(bm))
@@ -43,7 +48,10 @@ all.equal(mat, as.matrix(bm))
 ## ----createSca-----------------------------------------------------------
 scaRaw <- FromMatrix(mat, maits$cdat, maits$fdat)
 scaRaw.bm <- FromMatrix(bm, maits$cdat, maits$fdat)
-
+object.size(assay(scaRaw))
+object.size(assay(scaRaw.bm))
+object.size(scaRaw)
+object.size(scaRaw.bm)
 # scaRaw.bm <- scaRaw
 # assay(scaRaw.bm) <- bm # hack
 
@@ -111,7 +119,7 @@ all.equal(flat, flat.bm)
 # ggplot(flat, aes(x=value))+geom_density() +facet_wrap(~symbolid, scale='free_y')
 
 ## ----threshold, results='hide', fig.width=6------------------------------
-setRealizationBackend("BMArray")
+setRealizationBackend("HDF5Array")
 
 thres <- thresholdSCRNACountMatrix(assay(sca), nbins = 20, min_per_bin = 30)
 thres.bm <- thresholdSCRNACountMatrix(assay(sca.bm), nbins = 20, min_per_bin = 30)
@@ -144,11 +152,24 @@ assays(sca) <- list(thresh=thres$counts_threshold, tpm=assay(sca))
 expressed_genes <- freq(sca) > freq_expressed
 sca <- sca[expressed_genes,]
 
+assays(sca.bm) <- list(thresh=thres.bm$counts_threshold, tpm=assay(sca.bm))
+expressed_genes.bm <- freq(sca.bm) > freq_expressed
+all.equal(expressed_genes, expressed_genes.bm)
+sca.bm <- sca.bm[expressed_genes.bm,]
+
 ## ----zlm-----------------------------------------------------------------
 cond<-factor(colData(sca)$condition)
 cond<-relevel(cond,"Unstim")
 colData(sca)$condition<-cond
 zlmCond <- zlm(~condition + cngeneson, sca)
+
+cond.bm<-factor(colData(sca.bm)$condition)
+cond.bm<-relevel(cond.bm,"Unstim")
+colData(sca.bm)$condition<-cond.bm
+zlmCond.bm <- zlm(~condition + cngeneson, sca.bm)
+
+object.size(sca)
+object.size(sca.bm)
 # The following are equivalent
 ## lrt <- lrTest(zlm, "condition")
 ## lrt <- lrTest(zlm, CoefficientHypothesis('conditionStim'))
