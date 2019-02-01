@@ -404,28 +404,6 @@ setMethod('cData', 'SingleCellAssay', function(sc){
     colData(sc)
 })
 
-##' Subset a \code{SingleCellAssay} by cells (columns)
-##'
-##' Evaluates the expression in \code{...} in the context of \code{colData(x)} and returns a subsetted version of \code{x}
-##' @param x \code{SingleCellAssay}
-##' @param ... expression
-##' @return \code{SingleCellAssay}
-##' @examples
-##' data(vbetaFA)
-##' subset(vbetaFA, ncells==1)
-##' @export
-setMethod('subset', 'SingleCellAssay', function(x, ...){
-    e <- substitute(...)
-    asBool <- try(eval(e, colData(x), parent.frame(n=1)), silent=TRUE)
-    if(is(asBool, 'try-error')) stop(paste('Variable in subset not found:', strsplit(asBool, ':')[[1]][2]))
-                                        #this is a special case of "subset", not of the "[[" method, so..
-    if(isTRUE(asBool)){
-        x 
-    }else{
-        x[,asBool]
-    }
-})
-
 
 
 setReplaceMethod('assayNames', c('SingleCellAssay', 'character'), function(x, i, ..., value){
