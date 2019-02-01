@@ -50,14 +50,14 @@ checkGroups <- function(sc, groups){
 ##' condmean(vbetaFA)
 ##' @export
 freq <- function(sc, na.rm=TRUE){
-    stopifnot(is(sc, 'SingleCellAssay'))
+    stopifnot(is(sc, 'SingleCellExperiment'))
     apply(assay(sc), 1, function(x)mean(x>0))
 }
 
 ##' @describeIn freq Report the mean non-zero expression value for each gene. NAs are always removed.
 ##' @export
 condmean <- function(sc){
-    stopifnot(is(sc, 'SingleCellAssay'))
+    stopifnot(is(sc, 'SingleCellExperiment'))
     exprsNA <- assay(sc)
     
     apply(exprsNA, 1, function(x){
@@ -70,7 +70,7 @@ condmean <- function(sc){
 ##' @describeIn freq Report standard deviation of expression, for positive et for each gene. NAs are always removed.
 ##' @export
 condSd <- function(sc){
-    stopifnot(is(sc, 'SingleCellAssay'))
+    stopifnot(is(sc, 'SingleCellExperiment'))
     exprsNA <- assay(sc)
     apply(exprsNA, 1, function(x){
       
@@ -83,7 +83,7 @@ condSd <- function(sc){
 ##' @describeIn freq Report number of expressing cells ($>0$) per gene. NAs are removed.
 ##' @export
 numexp <- function(sc){
-    stopifnot(is(sc, 'SingleCellAssay'))
+    stopifnot(is(sc, 'SingleCellExperiment'))
     apply(assay(sc), 1, function(x)sum(x>0))
 }
 
