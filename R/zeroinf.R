@@ -28,11 +28,9 @@ summary.zlm <- function(out){
     summary(out$disc)
 }
 
-##' @export
-zlm.SingleCellAssay <- function(...){
-    .Deprecated('zlm')
-    zlm(...)
-}
+#' @export
+#' @rdname zlm
+setGeneric("zlm",function(formula, data, ...)standardGeneric("zlm"))
 
 ##' Zero-inflated regression for SingleCellAssay 
 ##'
@@ -85,7 +83,31 @@ zlm.SingleCellAssay <- function(...){
 ##' summary.glm(fit$disc)
 ##' summary.glm(fit$cont)
 ##' @export
-zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
+#' @rdname zlm
+setMethod("zlm",
+          signature=signature(formula="formula", data = "SingleCellAssay"),
+          definition=function(formula, data, ...)
+          {
+            
+            .zlm.SingleCellAssay(formula, data, ...)
+          })
+##' @export
+#' @rdname zlm
+setMethod("zlm",
+          signature=signature(formula="formula", data = "SingleCellExperiment"),
+          definition=function(formula, data, ...)
+          {
+            
+            .zlm.SingleCellExperiment(formula, data, ...)
+          })
+
+.zlm.SingleCellExperiment <- function(formula, sce, assay.type = 'logcounts', check_sanity = TRUE, ...){
+  #convert sce to sca
+  sca <- FromMatrix(as.matrix(assay(sce, assay.type)),
+                    cData=colData(sce), check_sanity = check_sanity)
+  zlm(formula, sca,  ...)
+}
+.zlm.SingleCellAssay <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
     ## could also provide argument `data`
     dotsdata = list(...)$data
     if(!is.null(dotsdata)){
