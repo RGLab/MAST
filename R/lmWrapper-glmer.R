@@ -221,7 +221,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
     if(any(pos)){
         datpos <- dat[pos,]
         object@fitC <- do.call(cfun, c(list(formula=formC, data=quote(datpos), REML=FALSE), fitArgsC))
-        ok <- length(object@fitC@optinfo$conv$lme4)==0
+        ok <- length(object@fitC@optinfo$conv$lme4)==0 || lme4::isSingular(object@fitC)
         object@fitted['C'] <- TRUE
         if(!ok){
             object@optimMsg['C'] <- object@fitC@optinfo$conv$lme4$messages[1]
@@ -231,7 +231,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
     if(!all(pos)){
         object@fitD <- do.call(dfun, c(list(formula=formD, data=quote(dat), family=binomial()), fitArgsD))
         object@fitted['D'] <- length(object@fitD@optinfo$conv$lme)==0
-        ok <- length(object@fitD@optinfo$conv$lme4)==0
+        ok <- length(object@fitD@optinfo$conv$lme4)==0 || lme4::isSingular(object@fitD)
         object@fitted['D'] <- TRUE
         if(!ok){
             object@optimMsg['D'] <- object@fitD@optinfo$conv$lme4$messages[[1]]

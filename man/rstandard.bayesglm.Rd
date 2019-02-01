@@ -4,8 +4,8 @@
 \alias{rstandard.bayesglm}
 \title{rstandard for bayesglm objects.}
 \usage{
-\method{rstandard}{bayesglm}(model, infl = influence(model, do.coef = FALSE),
-  type = c("deviance", "pearson"), ...)
+\method{rstandard}{bayesglm}(model, infl = influence(model, do.coef =
+  FALSE), type = c("deviance", "pearson"), ...)
 }
 \arguments{
 \item{model}{\code{bayesglm}}

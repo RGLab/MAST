@@ -18,19 +18,35 @@
 <!-- Font Awesome icons -->
 <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 
+<!-- clipboard.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js" integrity="sha384-cV+rhyOuRHc9Ub/91rihWcGmMmCXDeksTtCihMupQHSsi8GIIRDG0ThDc3HGQFJ3" crossorigin="anonymous"></script>
+
+<!-- sticky kit -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sticky-kit/1.1.3/sticky-kit.min.js" integrity="sha256-c4Rlo1ZozqTPE2RLuvbusY3+SU1pQaJC0TjuhygMipw=" crossorigin="anonymous"></script>
 
 <!-- pkgdown -->
 <link href="../pkgdown.css" rel="stylesheet">
-<script src="../jquery.sticky-kit.min.js"></script>
 <script src="../pkgdown.js"></script>
 
+
+
+<meta property="og:title" content="Describe a linear model hypothesis to be tested — Hypothesis" />
+
+<meta property="og:description" content="A Hypothesis can be any linear combination of coefficients, compared to zero.  Specify it as a character vector that can be parsed to yield the desired equalities ala makeContrasts.
+A CoefficientHypothesis is a hypothesis for which terms are singly or jointly tested to be zero (generally the case in a t-test or F-test), by dropping coefficients from the model." />
+<meta name="twitter:card" content="summary" />
+
+
+
 <!-- mathjax -->
-<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+<script src='https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 
 <!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
+
+
   </head>
 
   <body>
@@ -44,15 +60,40 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="../index.html">MAST</a>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="../index.html">MAST</a>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">1.7.3</span>
+      </span>
     </div>
+
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../reference/index.html">Reference</a>
+  <a href="../index.html">
+    <span class="fa fa-home fa-lg"></span>
+     
+  </a>
 </li>
 <li>
-  <a href="../articles/index.html">Articles</a>
+  <a href="../reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/MAITAnalysis.html">Using MAST with RNASeq: MAIT Analysis.</a>
+    </li>
+    <li>
+      <a href="../articles/MAST-Intro.html">MAST Intro</a>
+    </li>
+    <li>
+      <a href="../articles/MAST-interoperability.html">Interoptability between MAST and SingleCellExperiment-derived packages.</a>
+    </li>
+  </ul>
 </li>
       </ul>
       
@@ -64,6 +105,7 @@
   </a>
 </li>
       </ul>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -71,38 +113,47 @@
       
       </header>
 
-      <div class="row">
+<div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Describe a linear model hypothesis to be tested</h1>
+    <small class="dont-index">Source: <a href='https://github.com/RGLab/MAST//blob/master/R/Hypothesis.R'><code>R/Hypothesis.R</code></a></small>
+    <div class="hidden name"><code>Hypothesis.Rd</code></div>
     </div>
 
+    <div class="ref-description">
     
     <p>A <code>Hypothesis</code> can be any linear combination of coefficients, compared to zero.  Specify it as a character vector that can be parsed to yield the desired equalities ala <code>makeContrasts</code>.
 A <code>CoefficientHypothesis</code> is a hypothesis for which terms are singly or jointly tested to be zero (generally the case in a t-test or F-test), by dropping coefficients from the model.</p>
     
+    </div>
 
-    <pre><span class='fu'>Hypothesis</span>(<span class='no'>hypothesis</span>, <span class='no'>terms</span>)</pre>
+    <pre class="usage"><span class='fu'>Hypothesis</span>(<span class='no'>hypothesis</span>, <span class='no'>terms</span>)</pre>
     
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
-    <dl class="dl-horizontal">
-      <dt>hypothesis</dt>
-      <dd>a character vector specifying a hypothesis, following makeContrasts, or a character vector naming coefficients to be dropped.</dd>
-      <dt>terms</dt>
-      <dd>an optional character vector giving the terms (column names from the <code>model.matrix</code>) out of which the contrasts will be contrasted.  If missing then most functions will attempt to fill this in for you at run time.</dd>
-    </dl>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>hypothesis</th>
+      <td><p>a character vector specifying a hypothesis, following makeContrasts, or a character vector naming coefficients to be dropped.</p></td>
+    </tr>
+    <tr>
+      <th>terms</th>
+      <td><p>an optional character vector giving the terms (column names from the <code>model.matrix</code>) out of which the contrasts will be contrasted.  If missing then most functions will attempt to fill this in for you at run time.</p></td>
+    </tr>
+    </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>a Hypothesis with a &quot;transformed&quot; component</p>
+    <p>a Hypothesis with a "transformed" component</p>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <p>zlm waldTest lrTest</p>
+    <div class='dont-index'><p>zlm waldTest lrTest</p></div>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>h</span> <span class='kw'>&lt;-</span> <span class='fu'>Hypothesis</span>(<span class='st'>'Stim.ConditionUnstim'</span>, <span class='fu'>c</span>(<span class='st'>'(Intercept)'</span>, <span class='st'>'Stim.ConditionUnstim'</span>))</div><div class='output co'>#&gt; <span class='warning'>Warning: Some levels contain symbols.  Be careful to escape these names with backticks (&#39;`&#39;) when specifying contrasts.</span></div><div class='input'><span class='no'>h</span>@<span class='kw'>contrastMatrix</span></div><div class='output co'>#&gt;                       Contrasts
+    <pre class="examples"><div class='input'><span class='no'>h</span> <span class='kw'>&lt;-</span> <span class='fu'>Hypothesis</span>(<span class='st'>'Stim.ConditionUnstim'</span>, <span class='fu'>c</span>(<span class='st'>'(Intercept)'</span>, <span class='st'>'Stim.ConditionUnstim'</span>))</div><div class='output co'>#&gt; <span class='warning'>Warning: Some levels contain symbols.  Be careful to escape these names with backticks ('`') when specifying contrasts.</span></div><div class='input'><span class='no'>h</span>@<span class='kw'>contrastMatrix</span></div><div class='output co'>#&gt;                       Contrasts
 #&gt; Levels                 Stim.ConditionUnstim
 #&gt;   (Intercept)                             0
 #&gt;   Stim.ConditionUnstim                    1</div></pre>
@@ -128,11 +179,14 @@ A <code>CoefficientHypothesis</code> is a hypothesis for which terms are singly 
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="http://hadley.github.io/pkgdown/">pkgdown</a>.</p>
+  <p>Site built with <a href="http://pkgdown.r-lib.org/">pkgdown</a>.</p>
 </div>
 
       </footer>
    </div>
 
+  
+
   </body>
 </html>
+

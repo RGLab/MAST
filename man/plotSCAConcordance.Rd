@@ -4,8 +4,8 @@
 \alias{plotSCAConcordance}
 \title{Concordance plots of filtered single vs n-cell assays}
 \usage{
-plotSCAConcordance(SCellAssay, NCellAssay, filterCriteria = list(nOutlier = 2,
-  sigmaContinuous = 9, sigmaProportion = 9), groups = NULL, ...)
+plotSCAConcordance(SCellAssay, NCellAssay, filterCriteria = list(nOutlier
+  = 2, sigmaContinuous = 9, sigmaProportion = 9), groups = NULL, ...)
 }
 \arguments{
 \item{SCellAssay}{is a FluidigmAssay for the 1-cell per well assay}

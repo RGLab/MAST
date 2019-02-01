@@ -127,8 +127,9 @@ bayesglm.influence <-  function(model, do.coef = do.coef, ...)
             stop("non-NA residual length does not match cases used in fitting")
         do.coef <- as.logical(do.coef)
         tol <- 10 * .Machine$double.eps
-        C_infl<-get("C_influence",getNamespace("stats"))
+        C_infl <- get("C_influence",getNamespace("stats"))
         res <- .Call(C_infl, mqr, do.coef, e, tol)
+        res$wt.res <- e # .Call above is not returning wt.res anymore?
         if (!is.null(model$na.action)) {
             hat <- naresid(model$na.action, res$hat)
             hat[is.na(hat)] <- 0
