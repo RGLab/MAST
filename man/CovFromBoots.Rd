@@ -2,7 +2,7 @@
 % Please edit documentation in R/CovFromBoots.R
 \name{CovFromBoots}
 \alias{CovFromBoots}
-\title{Extract the inter-gene covariance matrices for continuous and discrete components of a MAST model for a given coefficient from bootstrap replicates}
+\title{Extract the intere-gene covariance matrices for continuous and discrete components of a MAST model for a given coefficient from bootstrap replicates}
 \usage{
 CovFromBoots(boots = NULL, coefficient = NULL)
 }
@@ -12,7 +12,7 @@ CovFromBoots(boots = NULL, coefficient = NULL)
 \item{coefficient}{`character` the name of the model coefficient for which to return the inter-gene covariance matrices.}
 }
 \value{
-list with components "C" and "D" containing covariance matrices for the continuous and discrete components of the model.
+list with components "C" and "D" containing covariance matrices for the continuous and discrete components of the mode.
 }
 \description{
 Computes the genewise covariance for a model coefficient from bootstrap replicates
