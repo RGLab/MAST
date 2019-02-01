@@ -579,7 +579,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
                                   'primerid', 
                                   'variable')) #setAs('SingleCellAssay', 'data.table')
 
-setAs('SingleCellAssay', 'data.table', function(from){
+setAs('SingleCellExperiment', 'data.table', function(from){
     melt.SingleCellAssay(from)
 })
 
