@@ -213,7 +213,7 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##'         `PopulationCD154-VbetaUnresponsive`'))
 ##' waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
 ##'         `PopulationCD154-VbetaUnresponsive`'))
-setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellAssay', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
+setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellExperiment', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
 
 ##' An S4 class for Gene Set Enrichment output
 ##'

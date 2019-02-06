@@ -94,7 +94,7 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
     }
     
     ## Are we just a data.frame? Call simplified method.
-    if(!inherits(sca, 'SingleCellAssay')){
+    if(!inherits(sca, 'SingleCellExperiment')){
         if(inherits(sca, 'data.frame')){
             if(!is.null(dotsdata)){
                 return(.zlm(formula, method=method, silent=silent, ...)   )
@@ -102,7 +102,7 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
                 return(.zlm(formula, data=sca, method=method, silent=silent, ...)   )
             }
         } else{
-            stop('`sca` must inherit from `data.frame` or `SingleCellAssay`')   
+            stop('`sca` must inherit from `data.frame` or `SingleCellExperiment`')   
         }
     } 
 
@@ -112,7 +112,7 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
         method <- match.arg(method, methodDict[,keyword])
         method <- methodDict[keyword==method,lmMethod]
         
-        if(!is(sca, 'SingleCellAssay')) stop("'sca' must be (or inherit) 'SingleCellAssay'")
+        if(!is(sca, 'SingleCellExperiment')) stop("'sca' must be (or inherit) 'SingleCellExperiment'")
         if(!is(formula, 'formula')) stop("'formula' must be class 'formula'")
         Formula <- removeResponse(formula)
 

@@ -115,7 +115,7 @@ There is also a **subset** method, which will evaluate its argument in the frame
 ```{r subsets,warning=FALSE}
 sub1 <- vbeta.fa[,1:10]
 show(sub1)
-sub2 <- subset(vbeta.fa, Well=='A01')
+sub2 <- subset(vbeta.fa, select = Well=='A01')
 show(sub2)
 sub3 <- vbeta.fa[6:10, 1:10]
 show(sub3)
@@ -186,7 +186,7 @@ There are two frameworks available in the package.  The first framework **zlm** 
 We'll describe **zlm**.  Models are specified in terms of the variable used as the measure and covariates present in the **cellData** using symbolic notation, just as the **lm** function in R.
 
 ```{r zlmArgs}
-vbeta.1 <- subset(vbeta.fa, ncells==1)
+vbeta.1 <- subset(vbeta.fa, select = ncells==1)
 ## Consider the first 20 genes
 vbeta.1 <- vbeta.1[1:20,] 
 head(colData(vbeta.1))
