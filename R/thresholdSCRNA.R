@@ -315,14 +315,12 @@ thresholdSCRNACountMatrix <-function( data_all              ,
     print( cutpoints )
     data_threshold_all                  <- data_all*0
                                         #data_threshold_all[comp_zero_idx, ] <- 0
-    # if(is(data_all, "DelayedArray"))
-    # {
-    #   # idx <- a#TODO:wait for DelayArray to support replacement with sub-delayedArray matrix
-    # }else
-      data_threshold_all[!comp_zero_idx,] <- data_threshold #2^( data_threshold ) - 1
+    data_threshold_all[!comp_zero_idx,] <- data_threshold #2^( data_threshold ) - 1
+    if(is(data_threshold_all, "DelayedArray"))
+      data_threshold_all <- realize(data_threshold_all)
     bin_all       <- factor(cond_stat_bins_array)
     dim(bin_all)  <- dim(cond_stat_bins_array)
-    res_obj       <- list( counts_threshold = realize(data_threshold_all),
+    res_obj       <- list( counts_threshold = data_threshold_all,
                           original_data     = data_all,
                           cutpoint          = cutpoints,
                           bin               =  bin_all,
