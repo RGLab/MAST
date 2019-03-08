@@ -102,7 +102,7 @@ This holds output from a call to zlm.  Many methods are defined to operate on it
 
 \examples{
 data(vbetaFA)
-zlmVbeta <- zlm(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
+zlmVbeta <- zlm(~ Stim.Condition+Population, subset(vbetaFA, select = ncells==1)[1:10,])
 #Coefficients and standard errors
 coef(zlmVbeta, 'D')
 coef(zlmVbeta, 'C')

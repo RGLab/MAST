@@ -305,7 +305,7 @@ fixdf <- function(df, idvars, primerid, measurement, cmap, fmap){
 ##' ncol(vbeta.fa)
 ##' head(mcols(vbeta.fa)$primerid)
 ##' table(colData(vbeta.fa)$Subject.ID)
-##' vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
+##' vbeta.sub <- subset(vbeta.fa, select = Subject.ID=='Sub01')
 ##' show(vbeta.sub)
 ##' @return SingleCellAssay, or derived, object
 FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellvars=NULL, featurevars=NULL, phenovars=NULL, class='SingleCellAssay', check_sanity = TRUE, ...){

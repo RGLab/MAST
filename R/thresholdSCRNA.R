@@ -123,6 +123,7 @@ orderCutpoints <- function(midindex, cutpoints) {
 #' @param adj bandwith adjustment, passed to \code{density}
 #'@return \code{list} of thresholded counts (on natural scale), thresholds, bins, densities estimated on each bin, and the original data
 #'@importFrom plyr ldply
+#' @importFrom SummarizedExperiment realize
 #' @examples
 #' data(maits,package='MAST', envir = environment())
 #' sca <- FromMatrix(t(maits$expressionmat[,1:1000]), maits$cdat, maits$fdat[1:1000,])

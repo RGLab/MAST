@@ -71,7 +71,7 @@ It's also possible to consider partial residuals, in which the contribution of a
 
 \examples{
 data(vbetaFA)
-svbeta <- subset(vbetaFA, ncells==1)
+svbeta <- subset(vbetaFA, select = ncells==1)
 svbeta <- svbeta[freq(svbeta)>.4,]
 window <- function(x1) lapply(assays(x1), function(x2) x2[1:3, 1:6])
 #total residuals of the response

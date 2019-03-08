@@ -55,6 +55,6 @@ nrow(vbeta.fa)
 ncol(vbeta.fa)
 head(mcols(vbeta.fa)$primerid)
 table(colData(vbeta.fa)$Subject.ID)
-vbeta.sub <- subset(vbeta.fa, Subject.ID=='Sub01')
+vbeta.sub <- subset(vbeta.fa, select = Subject.ID=='Sub01')
 show(vbeta.sub)
 }

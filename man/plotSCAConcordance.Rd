@@ -30,8 +30,8 @@ But it could be any grouping.
 }
 \examples{
 data(vbetaFA)
-sca1 <- subset(vbetaFA, ncells==1)
-sca100 <- subset(vbetaFA, ncells==100)
+sca1 <- subset(vbetaFA, select = ncells==1)
+sca100 <- subset(vbetaFA, select = ncells==100)
 plotSCAConcordance(sca1, sca100)
 }
 \seealso{

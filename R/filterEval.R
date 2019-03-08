@@ -33,8 +33,8 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
 #' @return printed plot
 #'@examples
 #' data(vbetaFA)
-#' sca1 <- subset(vbetaFA, ncells==1)
-#' sca100 <- subset(vbetaFA, ncells==100)
+#' sca1 <- subset(vbetaFA, select = ncells==1)
+#' sca100 <- subset(vbetaFA, select = ncells==100)
 #' plotSCAConcordance(sca1, sca100)
 #'@export
 plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlier = 2, sigmaContinuous = 9,sigmaProportion = 9), groups=NULL, ...){

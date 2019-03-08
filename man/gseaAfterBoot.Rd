@@ -55,7 +55,7 @@ A 4D array is returned, with  dimensions "set" (each module), "comp" ('disc'rete
 
 \examples{
 data(vbetaFA)
-vb1 = subset(vbetaFA, ncells==1)
+vb1 = subset(vbetaFA, select = ncells==1)
 vb1 = vb1[,freq(vb1)>.1][1:15,]
 zf = zlm(~Stim.Condition, vb1)
 boots = bootVcov1(zf, 5)

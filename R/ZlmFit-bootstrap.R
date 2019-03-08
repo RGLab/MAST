@@ -39,7 +39,7 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
 ##' @importFrom plyr raply
 ##' @examples
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:5,])
+##' zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, select = ncells==1)[1:5,])
 ##' #Only run 3 boot straps, which you wouldn't ever want to do in practice...
 ##' bootVcov1(zlmVbeta, R=3)
 ##' @export

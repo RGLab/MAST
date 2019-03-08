@@ -97,7 +97,7 @@ Drop <- function(x, d){
 ##' @seealso summary,GSEATests-method
 ##' @examples
 ##' data(vbetaFA)
-##' vb1 = subset(vbetaFA, ncells==1)
+##' vb1 = subset(vbetaFA, select = ncells==1)
 ##' vb1 = vb1[,freq(vb1)>.1][1:15,]
 ##' zf = zlm(~Stim.Condition, vb1)
 ##' boots = bootVcov1(zf, 5)

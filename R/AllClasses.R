@@ -196,7 +196,7 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @aliases ZlmFit
 ##' @examples
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm(~ Stim.Condition+Population, subset(vbetaFA, ncells==1)[1:10,])
+##' zlmVbeta <- zlm(~ Stim.Condition+Population, subset(vbetaFA, select = ncells==1)[1:10,])
 ##' #Coefficients and standard errors
 ##' coef(zlmVbeta, 'D')
 ##' coef(zlmVbeta, 'C')

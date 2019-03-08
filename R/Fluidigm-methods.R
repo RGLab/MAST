@@ -103,8 +103,8 @@ numexp <- function(sc){
 ##' @seealso \link{plotSCAConcordance}
 ##' @examples
 ##' data(vbetaFA)
-##' sca1 <- subset(vbetaFA, ncells==1)
-##' sca100 <- subset(vbetaFA, ncells==100)
+##' sca1 <- subset(vbetaFA, select = ncells==1)
+##' sca100 <- subset(vbetaFA, select = ncells==100)
 ##' concord <- getConcordance(sca1, sca100)
 ##' getss(concord)
 ##' getrc(concord)
@@ -197,7 +197,7 @@ filter <- function(...){
 ##' @seealso burdenOfFiltering
 ##' @aliases filter
 ##' @examples
-##' data(vbetaFA)
+#' data(vbetaFA)
 ##' ## Split by 'ncells', apply to each component, then recombine
 ##' vbeta.filtered <- mast_filter(vbetaFA, groups='ncells')
 ##' ## Returned as boolean matrix

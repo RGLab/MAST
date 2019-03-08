@@ -56,7 +56,7 @@ H0 model estimates the precisions using the intercept alone in each gene, while 
 
 \examples{
 data(vbetaFA)
-zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:10,])
+zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, select = ncells==1)[1:10,])
 slotNames(zlmVbeta)
 #A matrix of coefficients
 coef(zlmVbeta, 'D')['CCL2',]
