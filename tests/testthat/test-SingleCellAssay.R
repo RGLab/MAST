@@ -125,7 +125,7 @@ test_that('Cell data and feature data are correctly assigned on construction', {
     })
     vb.manip <- vb.manip[sample(nrow(vb.manip)),]
     fd.manip <- FromFlatDF(vb.manip, idvars=c("Subject.ID", "Chip.Number", "Well"), primerid='Gene', measurement='et', ncells='Number.of.Cells', geneid="Gene",  cellvars=c('Number.of.Cells', 'Population'), phenovars=c('Stim.Condition','Time'), id='vbeta all', check_sanity = FALSE)
-    expect_true(all(assay(subset(fd.manip, Stim.Condition=='Stim(SEB)'))==2000))
+    expect_true(all(assay(subset(fd.manip, select = Stim.Condition=='Stim(SEB)'))==2000))
 })
 
 sc <- fd
@@ -222,12 +222,12 @@ test_that("Exprs works", {
 })
 
 test_that('Subset with TRUE is unchanged', {
-  suball <- subset(sc, TRUE)
+  suball <- subset(sc, select = TRUE)
   expect_equal(suball, sc)
 })
 
 test_that('Subset with FALSE returns empty set', {
-  subnone <- subset(sc, FALSE)
+  subnone <- subset(sc, select = FALSE)
   expect_that(all.equal(sc, subnone), is_a('character'))
   expect_equal(ncol(subnone), 0)
 })
@@ -235,7 +235,7 @@ test_that('Subset with FALSE returns empty set', {
 
 test_that('Subset with names from SingleCellAssay works', {
     stim <- table(colData(sc)$Stim.Condition)[1]
-  sub1 <- subset(sc, Stim.Condition == names(stim))
+  sub1 <- subset(sc, select = Stim.Condition == names(stim))
   expect_equivalent(ncol(sub1), stim)
 })
 
