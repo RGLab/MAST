@@ -160,7 +160,7 @@ melt.SingleCellAssay<-function(data,...,na.rm=FALSE, value.name='value'){
     celldata <- as.data.table(colData(data))
 
     exprs <- do.call(cbind, lapply(assays(data), as.vector))
-    if( (ncol(exprs)==1 && !is.null(value.name)) || is.null(colnames(exprs))|| colnames(exprs)=='NULL'){ #??
+    if( (ncol(exprs)==1 && !is.null(value.name)) || is.null(colnames(exprs))){
         colnames(exprs) <- make.unique(rep(value.name, ncol(exprs)))
     }
     

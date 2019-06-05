@@ -12,3 +12,5 @@ MAITAnalysis_files/
 *.Rproj
 .ignore
 .Renviron
+doc
+Meta

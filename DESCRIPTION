@@ -1,7 +1,7 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.11.0
+Version: 1.11.1
 Date: 2019-06-05
 Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
@@ -88,3 +88,4 @@ biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
     RNASeq, Transcriptomics, SingleCell
 BugReports: https://github.com/RGLab/MAST/issues
 URL: https://github.com/RGLab/MAST/
+Encoding: UTF-8
