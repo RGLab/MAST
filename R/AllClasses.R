@@ -120,7 +120,7 @@ setClass('GLMlike', contains='LMlike', slots=c(weightFun='function'), prototype=
 ##' dp <- defaultPrior('Stim.ConditionUnstim')
 ##' \dontrun{
 ##' data(vbetaFA)
-##' zlmVbeta <- zlm(~ Stim.Condition, vbeta.sc, method='bayesglm', coefPrior=dp)
+##' zlmVbeta <- zlm(~ Stim.Condition, vbetaFA, method='bayesglm', coefPrior=dp)
 ##' }
 defaultPrior <- function(names){
     names <- setdiff(names, '(Intercept)')

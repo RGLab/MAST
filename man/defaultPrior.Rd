@@ -22,6 +22,6 @@ Initialize a prior to be used a prior for BayeGLMlike/BayesGLMlike2
 dp <- defaultPrior('Stim.ConditionUnstim')
 \dontrun{
 data(vbetaFA)
-zlmVbeta <- zlm(~ Stim.Condition, vbeta.sc, method='bayesglm', coefPrior=dp)
+zlmVbeta <- zlm(~ Stim.Condition, vbetaFA, method='bayesglm', coefPrior=dp)
 }
 }

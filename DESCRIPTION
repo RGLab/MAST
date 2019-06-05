@@ -2,7 +2,7 @@ Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
 Version: 1.11.0
-Date: 2019-01-16
+Date: 2019-06-05
 Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
             person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))

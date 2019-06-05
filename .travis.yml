@@ -3,7 +3,16 @@
 language: r
 r: bioc-devel
 dist: trusty
+sudo: required
 
+matrix:
+  include:
+   - os: linux
+     r: release
+   - os: linux
+     r: devel
+     env: R_CODECOV=true
+     
 r_binary_packages: 
   - BiocStyle
   - lme4
@@ -29,10 +38,12 @@ bioc_packages:
   - limma
   - TxDb.Hsapiens.UCSC.hg19.knownGene
 
-cache: packages
+cache: 
+  packages: TRUE
   
 warnings_are_errors: false 
-sudo: required 
+
+use_bioc: true
 
 bioc_required: true
 
@@ -44,3 +55,8 @@ notifications:
   email:
     on_success: change
     on_failure: change
+    
+after_success:
+  -  if [[ "${R_CODECOV}" ]]; then R -e 'covr::codecov()'; fi
+    
+
