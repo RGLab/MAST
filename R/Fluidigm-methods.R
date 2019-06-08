@@ -164,11 +164,6 @@ getrc <- function(concord){
                                         #    with(concord,{foo<-na.omit(2^cbind(et.ref,et.comp)-1);2*cov(foo[,"et.ref"],foo[,"et.comp"])/(var(foo[,"et.ref"])+var(foo[,"et.comp"])+(mean(foo[,"et.ref"])-mean(foo[,"et.comp"]))^2)})
 }
 
-##' @export
-filter <- function(...){
-    .Defunct('mast_filter')
-}
-
 ##' Filter a SingleCellAssay
 ##'
 ##' Remove, or flag wells that are outliers in discrete or continuous space.
@@ -187,7 +182,6 @@ filter <- function(...){
 ##' @return A filtered result
 ##' @author Andrew McDavid
 ##' @seealso burdenOfFiltering
-##' @aliases filter
 ##' @examples
 ##' data(vbetaFA)
 ##' ## Split by 'ncells', apply to each component, then recombine

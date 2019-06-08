@@ -7,7 +7,8 @@
 \usage{
 zlm(formula, sca, method = "bayesglm", silent = TRUE, ebayes = TRUE,
   ebayesControl = NULL, force = FALSE, hook = NULL,
-  parallel = TRUE, LMlike, onlyCoef = FALSE, ...)
+  parallel = TRUE, LMlike, onlyCoef = FALSE,
+  exprs_values = assay_idx(sca)$aidx, ...)
 }
 \arguments{
 \item{formula}{a formula with the measurement variable on the LHS and predictors present in colData on the RHS}
@@ -31,6 +32,8 @@ zlm(formula, sca, method = "bayesglm", silent = TRUE, ebayes = TRUE,
 \item{LMlike}{if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.}
 
 \item{onlyCoef}{If TRUE then only an array of model coefficients will be returned (probably only useful for bootstrapping).}
+
+\item{exprs_values}{character or integer passed to `assay` specifying which assay to use for testing}
 
 \item{...}{arguments passed to the S4 model object upon construction.  For example, \code{fitArgsC} and \code{fitArgsD}, or \code{coefPrior}.}
 }

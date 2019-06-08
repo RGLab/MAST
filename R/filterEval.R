@@ -17,6 +17,8 @@ burdenOfFiltering <- function(sc, groups, byGroup=FALSE, filt_control = NULL){
     lattice::barchart(tab, main=sprintf('Burden of filtering by %s', paste(groups, collapse=" and ")), auto.key=TRUE, horizontal=FALSE, stack=FALSE)
 }
 
+if(getRversion() >= "2.15.1") globalVariables('filter')
+
 #'Concordance plots of filtered single vs n-cell assays
 #'
 #'Plot the average expression value of two subsets of the data.

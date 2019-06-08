@@ -21,9 +21,9 @@
 ##' @rdname cData
 ##' @examples
 ##' data(vbetaFA)
-##' stopifnot(all.equal(hushWarning(cData(vbetaFA), 'deprecated'),colData(vbetaFA)))
-##' stopifnot(all.equal(hushWarning(fData(vbetaFA), 'deprecated'), mcols(vbetaFA)))
-##' stopifnot(all.equal(hushWarning(exprs(vbetaFA), 'deprecated'), t(assay(vbetaFA))))
+##' colData(vbetaFA)
+##'  mcols(vbetaFA)
+##' t(assay(vbetaFA))
 ##' @export
 setGeneric('cData', function(sc) standardGeneric('cData'))
 
@@ -57,7 +57,6 @@ setGeneric("cData<-", function(sc, value) standardGeneric("cData<-"))
 ##' @name fData
 ##' @aliases fData,SingleCellAssay-method
 ##' @importMethodsFrom Biobase fData
-                                        #setGeneric('fData', function(sc) standardGeneric('fData'))
 NULL
 
 ##' Accessor for featureData \code{AnnotatedDataFrame}
@@ -70,7 +69,6 @@ NULL
 ##' @name featureData
 ##' @aliases featureData,SingleCellAssay-method
 ##' @importMethodsFrom Biobase featureData
-                                        #setGeneric('featureData', function(object) standardGeneric('featureData'))
 NULL
 
 ##' @import BiocGenerics

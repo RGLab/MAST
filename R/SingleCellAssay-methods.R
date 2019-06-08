@@ -133,8 +133,7 @@ checkArrayNames <- function(exprsArray, cData, fData){
 
     
 setMethod('fData', 'SingleCellAssay', function(object){
-    .Deprecated('mcols')
-    mcols(object)
+    .Defunct('mcols')
 })
 
 
@@ -350,8 +349,7 @@ FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellva
 #'@export
 #'@rdname FromFlatDF
 FluidigmAssay <- SingleCellAssay <- function(...){
-    .Deprecated("FromFlatDF")
-    FromFlatDF(...)
+    .Defunct("FromFlatDF")
 }
 
 uniqueModNA.old <- function(df, exclude){
@@ -397,8 +395,7 @@ setMethod('getwellKey', 'SingleCellAssay', function(sc) {colData(sc)$wellKey})
 ##' @rdname cData
 ##' @export
 setMethod('cData', 'SingleCellAssay', function(sc){
-    .Deprecated('use colData')
-    colData(sc)
+    .Defunct('colData')
 })
 
 ##' Subset a \code{SingleCellAssay} by cells (columns)
@@ -440,9 +437,7 @@ setReplaceMethod('assayNames', c('SingleCellAssay', 'character'), function(x, i,
 ##' @export
 ##' @rdname cData
 setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
-    .Deprecated('colData<-')
-    colData(sc) <- value
-    sc
+    .Defunct('colData<-')
 })
 
 ##' Replace \code{colData}
@@ -555,9 +550,10 @@ setMethod('cbind', signature('SingleCellAssay'), function(..., deparse.level = 1
 })
 
 ##' @importFrom SummarizedExperiment assayNames 'assayNames<-' assay 'assay<-' assays 'assays<-'
+##' @export
+##' @describeIn defaultAssay what index is returned by default by `assay`
 assay_idx = function(x){
     assaynames = assayNames(x)
-   # browser()
     aidx = na.omit(match(magic_assay_names(), assaynames))[1]
     if(is.na(aidx)) aidx = 1
     aname = assaynames[aidx] #could be NA

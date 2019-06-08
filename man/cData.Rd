@@ -59,9 +59,9 @@ You should transition to use the following replacements:
 
 \examples{
 data(vbetaFA)
-stopifnot(all.equal(hushWarning(cData(vbetaFA), 'deprecated'),colData(vbetaFA)))
-stopifnot(all.equal(hushWarning(fData(vbetaFA), 'deprecated'), mcols(vbetaFA)))
-stopifnot(all.equal(hushWarning(exprs(vbetaFA), 'deprecated'), t(assay(vbetaFA))))
+colData(vbetaFA)
+ mcols(vbetaFA)
+t(assay(vbetaFA))
 }
 \seealso{
 exprs

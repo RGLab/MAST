@@ -59,6 +59,7 @@ Collate:
     'GSEA-by-boot.R'
     'Hypothesis.R'
     'LmWrapper.R'
+    'MAST-package.R'
     'MultidimensionalScaling.R'
     'RNASeqAssay-methods.R'
     'Readers.R'

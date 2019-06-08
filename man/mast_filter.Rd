@@ -2,7 +2,6 @@
 % Please edit documentation in R/Fluidigm-methods.R, R/filterEval.R
 \name{mast_filter}
 \alias{mast_filter}
-\alias{filter}
 \alias{burdenOfFiltering}
 \title{Filter a SingleCellAssay}
 \usage{

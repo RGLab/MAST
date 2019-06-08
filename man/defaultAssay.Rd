@@ -3,11 +3,14 @@
 \docType{methods}
 \name{magic_assay_names}
 \alias{magic_assay_names}
+\alias{assay_idx}
 \alias{assay,SingleCellAssay,missing-method}
 \alias{defaultAssay}
 \title{Default \code{assay} returned}
 \usage{
 magic_assay_names()
+
+assay_idx(x)
 
 \S4method{assay}{SingleCellAssay,missing}(x, i, ...)
 }
@@ -28,6 +31,8 @@ By default we return the assay whose names, as given by \code{assayNames(x)}, ma
 \section{Functions}{
 \itemize{
 \item \code{magic_assay_names}: list of names assumed to represent log-transformed data, in order of usage preference
+
+\item \code{assay_idx}: what index is returned by default by `assay`
 }}
 
 \examples{
