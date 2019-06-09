@@ -30,19 +30,24 @@ magic_assay_names = function() c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logC
 ##' fd <- FromMatrix(mat, cData, fData)
 ##' stopifnot(inherits(fd, 'SingleCellAssay'))
 FromMatrix <- function(exprsArray, cData, fData, class='SingleCellAssay', check_sanity = TRUE, check_logged = check_sanity){
-    if(is.list(exprsArray) || inherits(exprsArray, 'SimpleList')){
-        exprsArray = do.call(abind, c(exprsArray, list(along = 3)))
+    if(is.matrix(exprsArray)){
+        assays = list(et = exprsArray)
+    } else if(is.array(exprsArray)){
+        assays = list()
+        for(i in seq_len(dim(exprsArray)[3])){
+            assays[[i]] = Drop(exprsArray[,,i,drop = FALSE], 3)
+        }
+        names(assays) = dimnames(exprsArray)[3]
+    } else if(is.list(exprsArray) || inherits(exprsArray, 'SimpleList')){
+        assays = exprsArray
+    } else{
+        stop('`exprsArray` must be matrix, 3-D array, `list` or `SimpleList`')
     }
-    can <- checkArrayNames(exprsArray, cData, fData)
-    nslice <- dim(can$exprsArray)[3]
-    assays <- vector('list', length=nslice)
-    for(i in seq_len(nslice)){
-        assays[[i]] <- can$exprsArray[,,i,drop=FALSE]
-        dim(assays[[i]]) <- dim(assays[[i]])[-3] # only drop last index
-        dimnames(assays[[i]]) <- dimnames(can$exprsArray)[-3]
-    }
-    names(assays) <- dimnames(can$exprsArray)[[3]]
-    obj <- SingleCellExperiment(assays=assays, colData=as(can$cData, 'DataFrame'))
+    nslice = length(assays)
+    can <- checkAssayNames(assays, cData, fData)
+   
+ 
+    obj <- SingleCellExperiment(assays=can$assays, colData=as(can$cData, 'DataFrame'))
     mcols(obj) <- as(can$fData, 'DataFrame')
     obj = as(obj, class)
 
@@ -71,35 +76,35 @@ sanity_check_sca = function(obj){
 ##' @return object of the indicated class.
 ##' @export
 SceToSingleCellAssay = function(sce, class = 'SingleCellAssay', check_sanity = TRUE){
-    FromMatrix(assays(sce), cData = colData(sce), fData = rowData(sce), check_sanity = check_sanity)
+    can = checkAssayNames(assays(sce), colData(sce), rowData(sce))
+    dimnames(sce) = dimnames(can$assays[[1]])
+    colData(sce) = can$cData
+    rowData(sce) = can$fData
+    obj = as(sce, class)
+    if(check_sanity){
+        sanity_check_sca(obj)
+    }
+    obj
 }
 
-as3dArray <- function(matOrArray){
-    dn <- dimnames(matOrArray)
-    dm <- dim(matOrArray)
-    if(length(dm)>3 || length(dm)<2 ) stop('`exprsArray` must be matrix or 3-d array')
-    if(length(dm)==3) return(matOrArray)
-    ## length(dm)==2
-    dim(matOrArray) <- c(dim(matOrArray), 1)
-    dimnames(matOrArray) <- c(dn, list(NULL))
-    return(matOrArray)
-}
-
-checkArrayNames <- function(exprsArray, cData, fData){
-    if(!is.numeric(exprsArray)) stop('`exprsArray` must be numeric')
-    exprsArray <- as3dArray(exprsArray)
-    dn <- dimnames(exprsArray)
+checkAssayNames <- function(assays, cData, fData){
+    dnall <- lapply(assays, dimnames)
+    dn = dnall[[1]]
+    if(!all(dn_equal <- sapply(dnall, function(x) isTRUE(all.equal(x, dn)) ))){
+        warning('Dimnames mismatch on assays', paste(which(!dn_equal), collapse = ', '), '.\n Renaming to match assay 1.')
+    }
+    
     noDimnames <- is.null(dn) || is.null(dn[[1]]) || is.null(dn[[2]])
 
-    pidDefault <- if(is.null(dn[[1]])) sprintf('p%0*d', ceiling(log10(nrow(exprsArray)+1)), seq_len(nrow(exprsArray))) else dn[[1]]
-    wkDefault <- if(is.null(dn[[2]])) sprintf('wk%0*d', ceiling(log10(ncol(exprsArray)+1)), seq_len(ncol(exprsArray))) else dn[[2]]
+    pidDefault <- if(is.null(dn[[1]])) sprintf('p%0*d', ceiling(log10(nrow(assays[[1]])+1)), seq_len(nrow(assays[[1]]))) else dn[[1]]
+    wkDefault <- if(is.null(dn[[2]])) sprintf('wk%0*d', ceiling(log10(ncol(assays[[1]])+1)), seq_len(ncol(assays[[1]]))) else dn[[2]]
     
     if(missing(fData)) fData <- S4Vectors::DataFrame(primerid=pidDefault)
     if(missing(cData)) cData <- S4Vectors::DataFrame(wellKey=wkDefault)
     
     
-    if(ncol(exprsArray) != nrow(cData)) stop('`cData` must contain as many rows as `exprsArray`')
-    if(nrow(exprsArray) != nrow(fData)) stop('`fData` must contain as many columns as `exprsArray`')
+    if(ncol(assays[[1]]) != nrow(cData)) stop('`cData` must contain as many rows as `exprsArray`')
+    if(nrow(assays[[1]]) != nrow(fData)) stop('`fData` must contain as many columns as `exprsArray`')
 
     if(!('primerid' %in% names(fData))){
         message("`fData` has no primerid.  I'll make something up.")
@@ -120,15 +125,15 @@ checkArrayNames <- function(exprsArray, cData, fData){
 
     if(noDimnames){
         message('No dimnames in `exprsArray`, assuming `fData` and `cData` are sorted according to `exprsArray`')
-        dn <- list(primerid=row.names(fData), wellkey=row.names(cData), 'et')  
-    } else if(is.null(dn[[3]])){
-        dn[[3]] = 'et'
+        dn <- list(primerid=row.names(fData), wellkey=row.names(cData))  
     }
-    
     if(!isTRUE(all.equal(dn[[2]], cData$wellKey))) stop('Order of `exprsArray` and `cData` doesn\'t match')
     if(!isTRUE(all.equal(dn[[1]], fData$primerid))) stop('Order of `exprsArray` and `fData` doesn\'t match')
-    dimnames(exprsArray) <- dn
-    list(exprsArray=exprsArray, cData=cData, fData=fData)
+    assays = lapply(assays, function(x){
+        dimnames(x) = dn
+        x
+    })
+    list(assays=assays, cData=cData, fData=fData)
 }
 
     
