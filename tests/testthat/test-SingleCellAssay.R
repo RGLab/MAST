@@ -273,10 +273,7 @@ test_that('combine works', {
     expect_equal(ncol(c1), 3)
     c2 <- cbind(spl[[1]], spl[[1]], spl[[2]])
     expect_that(c2, is_a('SingleCellAssay'))
-})
-
-test_that('combine throws error for non-conforming',{
-  expect_error(combine(fd, spl[[1]]))
+    expect_error(cbind(fd, spl[[1]]))
 })
 
 context('Test replace methods')

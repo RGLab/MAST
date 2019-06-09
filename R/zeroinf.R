@@ -30,7 +30,7 @@ summary.zlm <- function(out){
 
 ##' @export
 zlm.SingleCellAssay <- function(...){
-    .Deprecated('zlm')
+    .Defunct('zlm')
     zlm(...)
 }
 
@@ -60,7 +60,9 @@ zlm.SingleCellAssay <- function(...){
 ##' @param parallel If TRUE and \code{option(mc.cores)>1} then multiple cores will be used in fitting.
 ##' @param LMlike if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.
 ##' @param onlyCoef If TRUE then only an array of model coefficients will be returned (probably only useful for bootstrapping).
+##' @param exprs_values character or integer passed to `assay` specifying which assay to use for testing
 ##' @param ... arguments passed to the S4 model object upon construction.  For example, \code{fitArgsC} and \code{fitArgsD}, or \code{coefPrior}.
+##'
 ##' @return a object of class \code{ZlmFit} with methods to extract coefficients, etc. 
 ##' OR, if data is a \code{data.frame} just a list of the discrete and continuous fits.
 ##' @seealso ZlmFit-class, ebayes, GLMlike-class, BayesGLMlike-class
@@ -85,7 +87,7 @@ zlm.SingleCellAssay <- function(...){
 ##' summary.glm(fit$disc)
 ##' summary.glm(fit$cont)
 ##' @export
-zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, ...){
+zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, exprs_values = assay_idx(sca)$aidx, ...){
     ## could also provide argument `data`
     dotsdata = list(...)$data
     if(!is.null(dotsdata)){
