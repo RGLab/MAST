@@ -51,14 +51,14 @@ checkGroups <- function(sc, groups){
 ##' @export
 freq <- function(sc, na.rm=TRUE){
     stopifnot(is(sc, 'SingleCellAssay'))
-    apply(exprs(sc)>0, 2, mean, na.rm=na.rm)
+    apply(t(assay(sc))>0, 2, mean, na.rm=na.rm)
 }
 
 ##' @describeIn freq Report the mean non-zero expression value for each gene. NAs are always removed.
 ##' @export
 condmean <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
-    exprsNA <- exprs(sc)
+    exprsNA <- t(assay(sc))
     exprsNA[exprsNA==0] <- NA
     apply(exprsNA, 2, mean, na.rm=TRUE)
 }
@@ -67,7 +67,7 @@ condmean <- function(sc){
 ##' @export
 condSd <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
-    exprsNA <- exprs(sc)
+    exprsNA <- t(assay(sc))
     exprsNA[exprsNA==0] <- NA
     sqrt(apply(exprsNA, 2, var, na.rm=TRUE))
 }
@@ -76,7 +76,7 @@ condSd <- function(sc){
 ##' @export
 numexp <- function(sc){
     stopifnot(is(sc, 'SingleCellAssay'))
-    apply(exprs(sc)>0, 2, sum, na.rm=TRUE)
+    apply(t(assay(sc))>0, 2, sum, na.rm=TRUE)
 }
 
 ##' Get the concordance between two experiments

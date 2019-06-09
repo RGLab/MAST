@@ -252,15 +252,6 @@ test_that('Replace works', {
     expect_true(all(assay(sc)==(-111)))
 })
 
-context("Backwards compatibility")
-
-test_that('Exprs', {
-    expect_equal(assay(sc), t(exprs(sc)))
-    exprs(sc)[1, 10] <- -5
-    expect_equal(assay(sc)[10, 1], -5)
-})
-
-
 context('Combine works')
 doubleid <- data.frame(id1=c(1, 1, 2), id2=c(1, 2, 3), et=rep(3, 3), f1=rep('A', 3))
 

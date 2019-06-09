@@ -3,7 +3,7 @@ test_that('Can construct LMLike', {
     expect_is(obj, 'LMlike')
 })
 
-obj <- fit(obj, response=exprs(fd)[,2])
+obj <- fit(obj, response=t(assay(fd))[,2])
 test_that('Can fit', {
     expect_is(coef(obj, 'C'), 'numeric')
     expect_is(coef(obj, 'D'), 'numeric')    

@@ -598,9 +598,13 @@ setAs('SingleCellAssay', 'data.table', function(from){
     melt.SingleCellAssay(from)
 })
 
-setMethod('exprs', 'SingleCellAssay', function(object) t(assay(object)))
+setMethod('exprs', 'SingleCellAssay', function(object){
+    .Deprecated('t(assay)')
+    t(assay(object))
+})
 
 setReplaceMethod('exprs', 'SingleCellAssay', function(object, value){
+    .Deprecated('assay(x) <- t(value)')
     assay(object, 1) <- t(value)
     object
 })

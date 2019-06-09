@@ -49,7 +49,7 @@ hushWarning <- function(expr, regexp){
 removeResponse <- function(Formula, warn=TRUE){
     charForm <- paste0(deparse(Formula, width.cutoff=500), collapse='')
     fsplit <- str_split_fixed(charForm, fixed('~'), 2)
-    if(nchar(fsplit[1,1])>0 && warn) message("Ignoring LHS of formula (", fsplit[1,1], ') and using exprs(sca)')
+    if(nchar(fsplit[1,1])>0 && warn) message("Ignoring LHS of formula (", fsplit[1,1], ') and using assay(sca)')
     as.formula(paste0('~', fsplit[1,2])) 
 }
 
