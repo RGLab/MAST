@@ -2,6 +2,7 @@
 title: 'Interoptability between MAST and SingleCellExperiment-derived packages.'
 author: Andrew McDavid
 date: "`r Sys.Date()`"
+bibliography: mast-interopt.bib
 package: MAST
 output:
   BiocStyle::html_document:
@@ -13,32 +14,36 @@ vignette: >
 ---
 
 # Introduction 
-As a SingleCellExperiment-derived package, `MAST` can easily be
+As a `SingleCellExperiment`-derived package, `MAST` can easily be
 inserted into workflows with packages such as
-`scran`, `scater`, `zinbwave`, `SCnorm` and others.  The main gotcha is packages
-that assume integer counts vs log-transformed, or log-transformed,
-approximately scale-normalized data.  We find that MAST performs best
+`scran`, `scater`, `zinbwave`, `SCnorm` and others.  Moreover, subclassing SingleCellExperiment/SummarizedExperiment provides a flexible abstraction for the `assay` that contains the actual expression data.  It can use sparse `Matrix` and HDF5 as backends to save memory.
+
+To use MAST with such packages, you just need to upcast the `SingleCellExperiment` to MAST's subclass `SingleCellAssay` with the function `SceToSingleCellAssay` that handles the coercion and checks the object for validity.  Going the other direction, generally `SingleCellAssay`s should work in packages that use `SingleCellExperiment`, but if in doubt you could down-cast with `as(sca, 'SingleCellExperiment')`.
+
+## Log-transformation is expected in MAST
+
+The main gotcha in all this is that some SingleCellExperiment-derived packages
+assume integer counts have been provided, while MAST assumes that log-transformed approximately scale-normalized data is provided.  We find that MAST performs best
 with log-transformed, scale-normalized data that has been thresholded,
 such as $\log_2(\text{transcripts per million} + 1)$.
 
 We address this by:
 
--  testing for log-like data for objects constructed in MAST
+-  testing for log-like data for objects up-cast to `SingleCellAssay`
 -  explicitly naming the slot of the `assay` containing such
 putatively log-like data
 -  by default operating on the slot with such log-like data
 
-In objects that were constructed in other packages, we ...
+## Examples 
 
 In what follows, we show an example of using `scater` to plot some QC
 metrics, `SCnorm` to normalize data, and, and conversion
 to a `Seurat` object.
 
 
-
 #  From MAST to Scater
 
-Scater (citation) is a package that ...
+Scater @scater is a package that provides functions for QC, normalization and visualization of single cell RNAseq data.
 
 ```{r, results = 'hide'}
 library(MAST)
@@ -75,20 +80,82 @@ Evidently some features were filtered, so not all cells contain 1
 million counts.  We can tell these were rare features based on the
 inverse relationship between `total_counts` and
 `total_features_by_counts`: the most complex libraries (with the
-greatest numer of features) are missing the most counts.
+greatest number of features) are missing the most counts.
 
 ```{r}
-sca_raw <- runPCA(sca_raw, ncomponents=5, exprs_values = 'et')
+sca_raw = runPCA(sca_raw, ncomponents=5, exprs_values = 'et')
 plotReducedDim(sca_raw, use_dimred = 'PCA', colour_by = 'condition')
 ```
 We can also run a PCA.
 
 ## From scater to MAST
 
+Since scater uses `SingleCellExperiment` objects, the only here consideration is making sure `MAST` can find log-like data, and possibly thresholding the data.
+
 ```{r}
-data(sc_example_counts)
+data("sc_example_counts")
+data("sc_example_cell_info")
+example_sce = SingleCellExperiment(
+    assays = list(counts = sc_example_counts),
+    colData = sc_example_cell_info
+)
+
+example_sce = normalize(example_sce)
+sca = SceToSingleCellAssay(example_sce)
+```
+
+Here we coerce `example_sce` to be a SingleCellAssay object.
+
+```{r}
+zlm( ~ Treatment, sca = sca, exprs_value = 'logcounts')
+```
+
+We test for differential expression with regards to `Treatment` and explicitly indicate the `logcounts` slot will be used.  Methods in MAST will operate on the default slice returned by `assay`, which has been over-ridden to  return log-like data: the default slice is the first assay whose name, as given by `assayNames(x)`, matches the first element in the sequence `c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts', 'logcounts')`.  So in the case of `sca`, even if `exprs_value` was not specified, the `logcounts` slot would have been used, even though it comes second in `assayNames(sca)`:
+
+```{r}
+assayNames(sca)
+```
+
+## Sparse matrix and HDF5 support
+
+```{r}
+library(Matrix)
+sca_sparse = FromMatrix(
+    exprsArray = list(et = Matrix(t(maits$expressionmat), sparse = TRUE)),
+    cData = maits$cdat, fData = maits$fdat)
+class(assay(sca_sparse))
+regular_time = system.time(zlm( ~ condition, sca = sca_raw[1:100,]))
+sparse_time = system.time(zlm( ~ condition, sca = sca_sparse[1:100,]))
+```
+
+There is no complication to providing a sparse matrix.
+
+```{r}
+library(DelayedArray)
+library(HDF5Array)
+hd5_dat = as(t(maits$expressionmat), 'HDF5Array')
+seed(hd5_dat)
+```
+
+Write `sc_example_counts` to disk as an `HDF5Array`
+
+```{r}
+sca_delay = FromMatrix(
+    exprsArray = list(et = hd5_dat),
+     cData = maits$cdat, fData = maits$fdat)
+class(assay(sca_sparse))
+
+hd5_time = system.time(zlm( ~ condition, sca = sca_delay[1:100,]))
+```
+
+Nor is there a complication to using HDF5-backed stores.  
+```{r}
+knitr::kable(data.frame(method = c('Dense', 'Sparse', 'HDF5'), 'user time(s)' =c( regular_time[1], sparse_time[1], hd5_time[1]), check.names = FALSE))
 
 ```
+
+As expected, the dense storage is fastest, followed by the sparse storage.  HDF5 is slowest.  The linear models underlying MAST don't (yet) have any special provision for big $n$ data, and will tend to linearly (or worse) in the number of cells.  So performance may be an issue even if they data do fit in memory.
+
 
 # WIP: From MAST to ZINB-wave
 <!-- ```{r zinbwave} -->
@@ -145,3 +212,4 @@ data(sc_example_counts)
 <!-- ``` -->
 
 <!-- Normalized expression from factor model -->
+
