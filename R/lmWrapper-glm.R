@@ -146,9 +146,9 @@ setMethod('residuals', signature=c(object='GLMlike'), function(object, type='res
 ## make a row matrix
 rowm <- function(C, D){
     x <- c(C=NA, D=NA)
-    try({if(is.null(C) | missing(C))
+    try({if(is.null(C) || missing(C))
              C <- NA
-             if(is.null(D) | missing(D))
+             if(is.null(D) || missing(D))
                  D <- NA
              x <- c(C=C, D=D)
     }, silent=TRUE)

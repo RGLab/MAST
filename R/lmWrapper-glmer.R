@@ -274,9 +274,9 @@ setMethod('coef', signature=c(object='LMERlike'), function(object, which, singul
     stopifnot(which %in% c('C', 'D'))
     co <- setNames(rep(NA, ncol(model.matrix(object))), colnames(model.matrix(object)))
     if(which=='C' & object@fitted['C']){
-        co <- fixef(object@fitC)}
+        co <- lme4::fixef(object@fitC)}
     else if(object@fitted['D']){
-        co <- fixef(object@fitD)
+        co <- lme4::fixef(object@fitD)
     }
     if(!singular) co <- co[!is.na(co)]
     conm <- names(co)
@@ -302,7 +302,7 @@ setMethod('summarize', signature=c(object='LMERlike'), function(object, ...){
 
     li <- list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'),
                deviance=rowm(deviance(object@fitC), deviance(object@fitD)),
-               df.null=rowm(nobs(object@fitC),nobs(object@fitD)),
+               df.null=rowm(NA_integer_,NA_integer_),
                dispersion=rowm(sigma(object@fitC), NA),
                coefD=coef(object, which='D'), vcovD=vcov(object, 'D'),
                loglik=torowm(logLik(object)),

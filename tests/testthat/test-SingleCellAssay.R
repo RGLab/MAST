@@ -25,10 +25,10 @@ test_that('could create SingleCellAssay', {
 context("Generating a complete and incomplete subset")
 dat_complete <- VBeta
 countComplete <- table(do.call(paste, dat_complete[,idvars]))
-expect_that(all(countComplete==countComplete[1]), is_true())
+expect_true(all(countComplete==countComplete[1]))
 dat_incomplete <- dat_complete[-seq(1, nrow(dat_complete), by=101),]
 counts <- table(do.call(paste, dat_incomplete[,idvars]))
-expect_that(all(counts == counts[1]), is_false())
+expect_false(all(counts == counts[1]))
 
 blank <- dat_complete[1,]
 ## blankinst <- new('SingleCellAssay', dataframe=blank, idvars=idvars, primerid=geneid, measurement=measurement)

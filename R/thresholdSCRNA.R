@@ -128,7 +128,7 @@ orderCutpoints <- function(midindex, cutpoints) {
 #' sca <- FromMatrix(t(maits$expressionmat[,1:1000]), maits$cdat, maits$fdat[1:1000,])
 #' tt <- thresholdSCRNACountMatrix(assay(sca))
 #' tt <- thresholdSCRNACountMatrix(2^assay(sca)-1, data_log=FALSE)
-#' opar <- par()
+#' opar <- par(no.readonly = TRUE)
 #' on.exit(par(opar))
 #' par(mfrow=c(4,2))
 #' plot(tt)
