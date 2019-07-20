@@ -17,6 +17,7 @@ getREvars <- function(Formula){
     termNames <- labels(terms(Formula))
     hasRE <- str_detect(termNames, fixed('|'))
     ## collapse all variables into something that can be used for model.frame
+    if(!any(hasRE)) stop("Must specify at least one random effect when method = 'lmer'")
     REvar <- str_replace_all(paste(termNames[hasRE], collapse='+', sep='+'), '[|]+', '+')
     ## save portion of formula that contained random effects
     REform <- paste(sprintf('(%s)', termNames[hasRE]), collapse='+')   
