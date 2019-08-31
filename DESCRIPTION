@@ -1,8 +1,8 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.11.3
-Date: 2019-07-19
+Version: 1.11.4
+Date: 2019-08-31
 Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
             person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))
@@ -23,7 +23,6 @@ Imports:
     stats4,
     graphics,
     utils,
-    blme,
     SummarizedExperiment(>= 1.5.3),
     progress
 Depends:
@@ -34,7 +33,8 @@ Suggests:
     rmarkdown,
     testthat,
     lme4(>= 1.0),
-    roxygen2(> 4.0.0),
+    blme,
+    roxygen2(> 6.0.0),
     numDeriv,
     car,
     gdata,
@@ -49,7 +49,8 @@ Suggests:
     BiocStyle,
     scater,
     DelayedArray,
-    Matrix
+    Matrix,
+    HDF5Array
 Description: Methods and models for handling zero-inflated single cell
     assay data.
 License: GPL(>= 2)

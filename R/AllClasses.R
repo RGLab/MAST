@@ -11,7 +11,6 @@ Mandatory_Cellvars <- character()
 ##' @import SingleCellExperiment
 ##' @import S4Vectors
 ##' @importMethodsFrom S4Vectors mcols
-##' @importFrom blme blmer bglmer
 ##' @importMethodsFrom SummarizedExperiment colData assays assay
 setClass('SingleCellAssay', contains='SingleCellExperiment',
          slots=list(cmap='character', fmap='character'),

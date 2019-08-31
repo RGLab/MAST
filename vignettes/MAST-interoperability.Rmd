@@ -93,12 +93,15 @@ We can also run a PCA.
 Since scater uses `SingleCellExperiment` objects, the only here consideration is making sure `MAST` can find log-like data, and possibly thresholding the data.
 
 ```{r}
-data("sc_example_counts")
-data("sc_example_cell_info")
-example_sce = SingleCellExperiment(
+if(packageVersion('scater') >= '1.13'){
+  example_sce = mockSCE() 
+} else{
+  data("sc_example_counts")
+  data("sc_example_cell_info")
+  example_sce = SingleCellExperiment(
     assays = list(counts = sc_example_counts),
-    colData = sc_example_cell_info
-)
+    colData = sc_example_cell_info)
+}
 
 example_sce = normalize(example_sce)
 sca = SceToSingleCellAssay(example_sce)
