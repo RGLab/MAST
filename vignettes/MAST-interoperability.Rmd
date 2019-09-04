@@ -84,7 +84,7 @@ greatest number of features) are missing the most counts.
 
 ```{r}
 sca_raw = runPCA(sca_raw, ncomponents=5, exprs_values = 'et')
-plotReducedDim(sca_raw, use_dimred = 'PCA', colour_by = 'condition')
+plotReducedDim(sca_raw, dimred = 'PCA', colour_by = 'condition')
 ```
 We can also run a PCA.
 
@@ -160,59 +160,62 @@ knitr::kable(data.frame(method = c('Dense', 'Sparse', 'HDF5'), 'user time(s)' =c
 As expected, the dense storage is fastest, followed by the sparse storage.  HDF5 is slowest.  The linear models underlying MAST don't (yet) have any special provision for big $n$ data, and will tend to linearly (or worse) in the number of cells.  So performance may be an issue even if they data do fit in memory.
 
 
-# WIP: From MAST to ZINB-wave
-<!-- ```{r zinbwave} -->
-<!-- library(zinbwave) -->
-<!-- feature_var = apply(assay(sca_raw), 1, var) -->
-<!-- sca_top500 = sca_raw[rank(-feature_var)<=500,] -->
-<!-- zw <- zinbwave(Y = sca_top500, X = '~condition', which_assay = 'counts') -->
+# MAST and ZINB-wave
+```{r zinbwave}
+library(zinbwave)
+feature_var = apply(assay(sca_raw), 1, var)
+sca_top500 = sca_raw[rank(-feature_var)<=500,]
+zw = zinbwave(Y = sca_top500, X = '~1', which_assay = 'counts', K = 2, normalizedValues = TRUE)
 
-<!-- ``` -->
+```
 
-<!-- Run zinbwave.  To speed things, we take the -->
-<!-- top 500 most variable genes. -->
-
-
-<!-- ```{r} -->
-<!-- ggpairs(data.frame(zw = reducedDim(zw), colData(zw)), columns = c('zw.PC1', 'zw.PC2', 'ngeneson'), mapping = aes(color = condition)) -->
-
-<!-- ``` -->
-
-<!-- ## Using MAST to characterizing genes that drive the factors -->
-
-<!-- ```{r, results = 'hide'} -->
-<!-- assays(zw)[[1]] <- log2(assay(zw)+1) -->
-<!-- colData(zw) <- cbind(colData(zw), zw=as.data.frame(reducedDim(zw))) -->
-<!-- zw <- zw %>% as('SingleCellAssay') -->
-<!-- zz <- zlm(~W1+W2, sca=zw) -->
-
-<!-- ``` -->
-
-<!-- ```{r, results = 'asis'} -->
-<!-- ss <- summary(zz) -->
-<!-- knitr::kable(print(ss)) -->
-
-<!-- ``` -->
-
-<!-- These are log-fold changes in the top few changes associated with factors 1 and 2. -->
-
-<!-- ```{r} -->
-<!-- top5 <- ss$datatable %>% filter(component=='logFC', contrast %like% 'W') %>% arrange(-abs(z)) %>% head(n=5) %>% left_join(rowData(zw) %>% as.data.table()) -->
-<!-- plt <- ggplot(zw[top5$primerid,] %>% as('data.table'), aes(x=W1, color = condition)) + geom_point() + facet_wrap(~symbolid) -->
-
-<!-- ``` -->
+Run zinbwave.  To speed things, we take the
+top 500 most variable genes.
 
 
+```{r, message=FALSE}
+rd = data.frame(reducedDim(zw, 'PCA'), reducedDim(zw, 'zinbwave'), colData(zw))
+GGally::ggpairs(rd, columns = c('PC1', 'PC2', 'W1', 'W2'), mapping = aes(color = condition))
+```
 
-<!-- ```{r} -->
-<!-- plt + aes(y = et) -->
-<!-- ``` -->
+## Using MAST to characterizing genes that drive the factors
 
-<!-- Expression on "Et" scale ($\log_2( TPM + 1)$) -->
+```{r, results = 'hide'}
+colData(zw) = cbind(colData(zw), reducedDim(zw, 'zinbwave'))
+zw = SceToSingleCellAssay(zw)
+zz = zlm(~W1 + W2, sca = zw, exprs_values = 'et')
+```
 
-<!-- ```{r} -->
-<!-- plt + aes(y = normalizedValues) -->
-<!-- ``` -->
+```{r, results = 'asis'}
+ss = summary(zz)
+knitr::kable(print(ss))
 
-<!-- Normalized expression from factor model -->
+```
 
+These are log-fold changes in the top few changes associated with factors 1 and 2.
+
+```{r}
+library(dplyr)
+library(data.table)
+top5 = ss$datatable %>% filter(component=='logFC', contrast %like% 'W') %>% arrange(-abs(z)) %>% head(n=5) %>% left_join(rowData(zw) %>% as.data.table())
+dat = zw[top5$primerid,] %>% as('data.table')
+dat = dat[,!duplicated(colnames(dat)),with = FALSE]
+plt = ggplot(dat, aes(x=W1, color = condition)) + geom_point() + facet_wrap(~symbolid)
+
+```
+
+
+
+```{r}
+plt + aes(y = et)
+```
+
+Expression on "Et" scale ($\log_2( TPM + 1)$)
+
+```{r}
+plt + aes(y = normalizedValues)
+```
+
+Normalized expression from factor model
+
+# References

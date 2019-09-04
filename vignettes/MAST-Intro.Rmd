@@ -23,12 +23,12 @@ Assays are assumed to be  mostly *complete* in the sense that most *wells*
 contain measurements for all features.
 
 ## Internals
-A **SingleCellAssay** object can be manipulated as a matrix, with rows giving features and columns giving cells.
-It derives from [http://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html](**SummarizedExperiment**).
+A `SingleCellAssay` object can be manipulated as a matrix, with rows giving features and columns giving cells.
+It derives from [http://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html](`SingleCellExperiment`).
 
 ## Statistical Testing
 Apart from reading and storing single-cell assay data, the package also
-provides functionality for significance testing of differential expression using a Hurdle model, gene set enrichment, facilities for visualizing patterns in residuals indicative of differential expression, and power calculations (soon).
+provides functionality for significance testing of differential expression using a Hurdle model, gene set enrichment, facilities for visualizing patterns in residuals indicative of differential expression, and more.
 
 There is also some facilities for inferring background thresholds, and filtering of individual outlier wells/libraries. 
 These methods are described our papers, @McDavid2014-kr , @McDavid2013-mc , @Finak2015-uz , @McDavid2016-rm .
@@ -43,7 +43,7 @@ Data can be imported in a Fluidigm instrument-specific format (the details of
 which are undocumented, and likely subject-to-change) or some derived,
 annotated format,  or in "long" (melted) format, in which each row is a
 measurement, so if there are $N$ wells and $M$ cells, then the
-**data.frame** should contain $N \times M$ rows.
+`data.frame` should contain $N \times M$ rows.
 
 For example, the following data set was provided in as a comma-separated value file.
 It has the cycle threshold ($ct$) recorded. 
@@ -51,7 +51,7 @@ Non-detected genes are recorded as NAs.
 For the Fluidigm/qPCR single cell expression functions to work as expected, we
 must use the *expression threshold*, defined as $et = c_{\mbox{max}} - ct$, which is proportional to the log-expression.
 
-Below, we load the package and the data, then compute the expression threshold from the $ct$, and construct a **FluidigmAssay**.
+Below, we load the package and the data, then compute the expression threshold from the $ct$, and construct a `FluidigmAssay`.
 
 
 ```{r long-example, warning=FALSE, echo=FALSE}
@@ -73,24 +73,24 @@ vbeta.fa <- FromFlatDF(vbeta, idvars=c("Subject.ID", "Chip.Number", "Well"),
 print(vbeta.fa)
 ```
 
-We see that the variable **vbeta** is a **data.frame** from which we
-construct the **FluidigmAssay** object. 
-The **idvars** is the set of column(s) in **vbeta** that uniquely
-identify a well (globally), the **primerid** is a column(s) that specify the feature measured at this well.
-The **measurement** gives the column name containing the log-expression
-measurement, **ncells** contains the number of cells (or other
+We see that the variable `vbeta` is a `data.frame` from which we
+construct the `FluidigmAssay` object. 
+The `idvars` is the set of column(s) in `vbeta` that uniquely
+identify a well (globally), the `primerid` is a column(s) that specify the feature measured at this well.
+The `measurement` gives the column name containing the log-expression
+measurement, `ncells` contains the number of cells (or other
 normalizing factor) for the well.
-**geneid**, **cellvars**, **phenovars** all specify additional
-columns to be included in the **featureData**, **phenoData**  and
-**cellData** (\future{wellData}). The output is a **FluidigmAssay**
+`geneid`, `cellvars`, `phenovars` all specify additional
+columns to be included in the `rowData`,  and
+`colData`. The output is a `FluidigmAssay`
 object with \Sexpr{nrow(colData(vbeta.fa))} wells and \Sexpr{nrow(mcols(vbeta.fa))} features. 
 
 
 We can access the feature-level metadata and the cell-level metadata using
-the **mcols** and **colData** accessors.
+the `rowData` and `colData` accessors.
 
 ```{r examineMeta}
-head(mcols(vbeta.fa),3)
+head(rowData(vbeta.fa),3)
 head(colData(vbeta.fa),3)
 ```
 
@@ -102,7 +102,7 @@ id, the stimulation it was subjected to, and the timepoint for the experiment
 this cell was part of). The wellKey are concatenated idvars columns, helping to
 ensure consistency when splitting and merging SCA objects. 
 \subsection{Importing Matrix Data}
-Data can also be imported in matrix format using command **FromMatrix**, and passing a matrix of expression values and **DataFrame** coercible cell and feature data.
+Data can also be imported in matrix format using command `FromMatrix`, and passing a matrix of expression values and `DataFrame` coercible cell and feature data.
 
 \subsection{Subsetting, splitting, combining, melting}
 It's possible to subset SingleCellAssay objects by wells and features.
@@ -110,7 +110,7 @@ Square brackets ("[") will index on
 the first index (features) and by features on the second index (cells).
 Integer and boolean and indices may be used, as well as character vectors
 naming the wellKey or the feature (via the primerid).
-There is also a **subset** method, which will evaluate its argument in the frame of the **colData**, hence will subset by wells.
+There is also a `subset` method, which will evaluate its argument in the frame of the `colData`, hence will subset by wells.
 
 ```{r subsets,warning=FALSE}
 sub1 <- vbeta.fa[,1:10]
@@ -119,11 +119,9 @@ sub2 <- subset(vbeta.fa, Well=='A01')
 show(sub2)
 sub3 <- vbeta.fa[6:10, 1:10]
 show(sub3)
-colData(sub3)
-mcols(sub3)
 ```
 
-The cellData and featureData **AnnotatedDataFrames** are subset
+The colData and rowData `DataFrame`s are subset
 accordingly as well.
 
 A SingleCellAssay may be split into a list of SingleCellAssay. 
@@ -136,9 +134,9 @@ sp1 <- split(vbeta.fa, 'Subject.ID')
 show(sp1)
 ```
 
-The splitting variable can either be a character vector naming column(s) of the SingleCellAssay, or may be a **factor** or **list** of **factor**s.
+The splitting variable can either be a character vector naming column(s) of the SingleCellAssay, or may be a `factor` or `list` of `factor`s.
 
-It's possible to combine SingleCellAssay objects with the **cbind** method.
+It's possible to combine SingleCellAssay objects with the `cbind` method.
 
 ```{r combine,warning=FALSE,echo=FALSE}
 cbind(sp1[[1]],sp1[[2]])
@@ -181,9 +179,9 @@ burdenOfFiltering(vbeta.fa, 'ncells', byGroup=TRUE)
 
 # Significance testing under the Hurdle model
 
-There are two frameworks available in the package.  The first framework **zlm** offers a full linear model to allow arbitrary comparisons and adjustment for covariates. The second framework **LRT** can be considered essentially performing t-tests (respecting the discrete/continuous nature of the data) between pairs of groups.  **LRT** is subsumed by the first framework, but might be simpler for some users, so has been kept in the package.
+There are two frameworks available in the package.  The first framework `zlm` offers a full linear model to allow arbitrary comparisons and adjustment for covariates. The second framework `LRT` can be considered essentially performing t-tests (respecting the discrete/continuous nature of the data) between pairs of groups.  `LRT` is subsumed by the first framework, but might be simpler for some users, so has been kept in the package.
 
-We'll describe **zlm**.  Models are specified in terms of the variable used as the measure and covariates present in the **cellData** using symbolic notation, just as the **lm** function in R.
+We'll describe `zlm`.  Models are specified in terms of the variable used as the measure and covariates present in the `colData` using symbolic notation, just as the `lm` function in R.
 
 ```{r zlmArgs}
 vbeta.1 <- subset(vbeta.fa, ncells==1)
@@ -192,7 +190,7 @@ vbeta.1 <- vbeta.1[1:20,]
 head(colData(vbeta.1))
 ```
 
-Now, for each gene, we can regress on **Et** the factors **Population** and **Subject.ID**.
+Now, for each gene, we can regress on `Et` the factors `Population` and `Subject.ID`.
 
 In each gene, we'll fit a Hurdle model with a separate intercept for each population and subject.
 A an S4 object of class "ZlmFit" is returned, containing slots with the genewise coefficients, variance-covariance matrices, etc.
@@ -210,7 +208,7 @@ ggplot(coefAndCI, aes(x=contrast, y=coef, ymin=ci.lo, ymax=ci.hi, col=component)
     theme(axis.text.x=element_text(angle=45, hjust=1)) + coord_cartesian(ylim=c(-3, 3))
 ```
 
-Try **?ZlmFit-class** or **showMethods(classes='ZlmFit')** to see a full list of methods. Multicore support is offered by setting **options(mc.cores=4)**, or however many cores your system has.
+Try `?ZlmFit-class` or `showMethods(classes='ZlmFit')` to see a full list of methods. Multicore support is offered by setting `options(mc.cores=4)`, or however many cores your system has.
 
 The combined test for differences in proportion expression/average expression is found by calling a likelihood ratio test on the fitted object.
 An array of genes, metrics and test types is returned.
@@ -224,13 +222,13 @@ pvalue <- ggplot(melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))
 print(pvalue)
 ```
 
-In fact, the **zlm** framework is quite general, and has wrappers for a variety of  modeling functions that accept **glm**-like arguments to be used, such as mixed models (using **lme4**).
-%This is not eval'd because of mysterious errors emanating from lme4 on the bioconductor machines that I am unable to reproduce.
-% Warning: failed to assign RegisteredNativeSymbol for deepcopy to deepcopy since deepcopy is already defined in the 'lme4' namespace
-% Quitting from lines 230-232 (MAST-intro.Rnw) 
-% Error: processing vignette 'MAST-intro.Rnw' failed with diagnostics:
-% first argument must be a string (of length 1) or native symbol reference
-% Execution halted
+In fact, the `zlm` framework is quite general, and has wrappers for a variety of  modeling functions that accept `glm`-like arguments to be used, such as mixed models (using `lme4`).
+<!-- %This is not eval'd because of mysterious errors emanating from lme4 on the bioconductor machines that I am unable to reproduce. -->
+<!-- % Warning: failed to assign RegisteredNativeSymbol for deepcopy to deepcopy since deepcopy is already defined in the 'lme4' namespace -->
+<!-- % Quitting from lines 230-232 (MAST-intro.Rnw)  -->
+<!-- % Error: processing vignette 'MAST-intro.Rnw' failed with diagnostics: -->
+<!-- % first argument must be a string (of length 1) or native symbol reference -->
+<!-- % Execution halted -->
 ```{r lmerExample , warning=FALSE, message=FALSE, eval=FALSE}
 library(lme4)
 lmer.output <- zlm(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer', ebayes=FALSE)
@@ -239,8 +237,8 @@ lmer.output <- zlm(~ Stim.Condition +(1|Subject.ID), vbeta.1, method='glmer', eb
 
 By default, we employ Bayesian logistic regression, which imposes a Cauchy prior of the regression coefficients, for the discrete component.  This provides reasonable inference under linear separation.
 We default to regular least squares for the continuous component with an empirical Bayes' adjustment for the dispersion (variance) estimate.
-However, the prior can be adjusted (see **defaultPrior**) or eliminated entirely by setting **method='glm'** in **zlm**.
-It is also possible to use Bayesian linear regression for the continuous component by setting **useContinuousBayes=TRUE** in **zlm**.
+However, the prior can be adjusted (see `defaultPrior`) or eliminated entirely by setting `method='glm'` in `zlm`.
+It is also possible to use Bayesian linear regression for the continuous component by setting `useContinuousBayes=TRUE` in `zlm`.
 For example:
 
 ```{r advancedArmExample, fig.width=4, fig.height=4, message=FALSE, warning=FALSE}
@@ -260,7 +258,7 @@ After applying a prior to the continuous component, its estimates are shrunken t
 
 ## Two-sample Likelihood Ratio Test
   Another way to test for differential expression is available through
-  the **LRT** function, which is analogous to two-sample T tests.
+  the `LRT` function, which is analogous to two-sample T tests.
   
 ```{r LRTexample, eval=TRUE, error=TRUE}
 two.sample <- LRT(vbeta.1, 'Population', referent='CD154+VbetaResponsive')
@@ -269,19 +267,19 @@ head(two.sample)
 
 
 Here we compare each population (**CD154-VbetaResponsive, CD154-VbetaUnresponsive CD154+VbetaUnresponsive, VbetaResponsive, VbetaUnresponsive**) to the **CD154+VbetaResponsive** population.
-  The **Population** column shows which population is being
-  compared, while **test.type** is **comb** for the combined
-  normal theory/binomial test.  Column **primerid** gives the
-  gene being tested, **direction** shows if the comparison group
+  The `Population` column shows which population is being
+  compared, while `test.type` is `comb` for the combined
+  normal theory/binomial test.  Column `primerid` gives the
+  gene being tested, `direction` shows if the comparison group
   mean is greater (1) or less (-1) than the referent group, and
-  **lrtstat** and **p.value** give the test statistic and
+  `lrtstat` and `p.value` give the test statistic and
   $\chi^2$ p-value (two degrees of freedom).
 Other options are whether additional information about the tests are
-returned (**returnall=TRUE**) and if the testing should be
-stratified by a character vector naming columns in **colData** 
-containing grouping variables (**groups**).
+returned (`returnall=TRUE`) and if the testing should be
+stratified by a character vector naming columns in `colData` 
+containing grouping variables (`groups`).
 
-These tests have been subsumed by **zlm** but
+These tests have been subsumed by `zlm` but
 remain in the package for user convenience.
 
 # Use with single cell RNA-sequencing data
@@ -289,19 +287,17 @@ remain in the package for user convenience.
 In RNA-sequencing data is essentially no different than qPCR-based single cell gene expression, once it has been aligned and mapped, if one is willing to reduce the experiment to counts or count-like data for a fixed set of genes/features.  
 We assume that suitable tools (eg, RSEM, Kallisto or TopHat) have been applied to do this.
 
-An example of this use is provided in a vignette.  Type **vignette('MAITAnalysis')** to view.
+An example of this use is provided in a vignette.  Type `vignette('MAITAnalysis')` to view.
 
 ### A Comment on Implementation Details
   Here we provide some background on the implementation of the
   package.
 
-  There are several fundamental new object types provided by the
-  package.  **SummarizedExperiment** is the base class, which is
+ We derive from  `SingleCellExperiment`, which is
   provides an array-like object to store tabular data that might have
   multiple derived representations. 
-  On construction of a **SingleCellAssay** object, the package
+  On construction of a `SingleCellAssay` object with `FromFlatDF`, the package
   tests for completeness, and will fill in the missing data (with NA)
-  if it is not, so assays with lots of missing data can make reading
-  marginally slower.
+  if it is not.  The `FromMatrix` and `SceToSingleCellAssay` constructors do not do anything special for missing values, though these are not typically expected in scRNAseq data.
 
 # References
