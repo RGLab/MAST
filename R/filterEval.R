@@ -54,7 +54,7 @@ plotSCAConcordance<-function(SCellAssay, NCellAssay, filterCriteria=list(nOutlie
         ggplot2::geom_point(data=subset(toplot,filter=="filtered"),ggplot2::aes_string(x="et.ref",y="et.comp"),alpha=0.75)+
         ggplot2::theme_bw()+ggplot2::scale_x_continuous("Reference Assay")+ggplot2::scale_y_continuous("Comparison Assay")
     
-    seg<-reshape2::dcast(melt(toplot,measure=c("et.ref","et.comp"),id=c("primerid","filter")),primerid~filter+variable)
+    seg<-reshape2::dcast(reshape2::melt(toplot,measure=c("et.ref","et.comp"),id=c("primerid","filter")),primerid~filter+variable)
     g<-g+ggplot2::geom_segment(data=seg,ggplot2::aes_string(x="unfiltered_et.ref",xend="filtered_et.ref",y="unfiltered_et.comp",yend="filtered_et.comp"),alpha=0.5,lwd=0.5)
     
     wss.filt<-getwss(concord.filtered,concord.filtered$nexp.ref)

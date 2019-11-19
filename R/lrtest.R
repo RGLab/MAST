@@ -142,7 +142,7 @@ lrt <- function(sca, comparison, referent=NULL, groups=NULL, returnall=TRUE){
         return(m)
     }
     retme<-subset(m, test.type=='comb')
-    return(dcast(rename(retme,c(metric="variable")), formula=...~variable))
+    return(reshape2::dcast(rename(retme,c(metric="variable")), formula=...~variable))
 }
 if(getRversion() >= "2.15.1") globalVariables(c('test.type', 'gene'))
 

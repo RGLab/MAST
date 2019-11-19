@@ -219,7 +219,7 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
         abind(coef=coefs, z=z, ci.lo=ci[['ci.lo']], ci.hi=ci[['ci.hi']], rev.along=0, hier.names=TRUE)
     })
     names(dimnames(coefAndCI)) <- c('component', 'primerid', 'contrast', 'metric')
-    dt <- dcast.data.table(data.table(melt(coefAndCI, as.is=TRUE)), primerid + component + contrast ~ metric)
+    dt <- dcast.data.table(data.table(reshape2::melt(coefAndCI, as.is=TRUE)), primerid + component + contrast ~ metric)
     setkey(dt, primerid, contrast)
     stouffer <- dt[,list(z=sum(z)/sqrt(sum(!is.na(z))), component='S'), keyby=list(primerid, contrast)]
     dt <- rbind(dt, stouffer, fill=TRUE)
@@ -245,7 +245,7 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
         message('Calculating likelihood ratio tests')
         llrt <- lapply(doLRT, function(x) lrTest(object, CoefficientHypothesis(x))[,,'Pr(>Chisq)'])
         names(llrt) <-  doLRT
-        llrt <- data.table(melt(llrt))
+        llrt <- data.table(reshape2::melt(llrt))
         setnames(llrt, c('test.type', 'L1', 'value'), c('component', 'contrast', 'Pr(>Chisq)'))
         llrt[,':='(component=c(cont='C', disc='D', hurdle='H')[component],
                    primerid=as.character(primerid))]
