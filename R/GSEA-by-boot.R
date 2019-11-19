@@ -412,10 +412,10 @@ calcZ <- function(gseaObj, testType='t', combined='none'){
 setMethod('summary', signature=c(object='GSEATests'), function(object, ...){
     t_stat <- as.data.table(reshape2::melt(calcZ(object, combined='none', ...)))
     effect_size <- as.data.table(reshape2::melt(object@tests[,,'stat','test']-object@tests[,,'stat','null']))
-    effect_size_wide <- dcast(effect_size, set ~ comp)
+    effect_size_wide <- dcast.data.table(effect_size, set ~ comp)
     setnames(effect_size_wide, c('disc', 'cont'), c('disc_effect', 'cont_effect'))
     
-    t_stat_wide <- dcast(t_stat, set ~ comp + metric)
+    t_stat_wide <- dcast.data.table(t_stat, set ~ comp + metric)
     pvalArr <- calcZ(object, combined = "stouffer", ...)
     pvals <- data.table(pvalArr)
     setnames(pvals, c('P', 'Z'), c('combined_P', 'combined_Z'))

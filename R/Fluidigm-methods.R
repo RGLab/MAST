@@ -128,7 +128,7 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
         secondForm <- formula(terms2)
         nexp = reshape2::dcast(m, secondForm, fun.aggregate=function(x){sum(x>0)}, value.var="value")
                                         #put back on Et scale. fun.cycle adds 1 so -Inf becomes 0 on natural scale
-        castL[[i]] <- reshape2::dcast(melt(tmp), secondForm, fun.aggregate=fun.cycle)
+        castL[[i]] <- reshape2::dcast(reshape2::melt(tmp), secondForm, fun.aggregate=fun.cycle)
         renamestr <- c('.'='et')
         castL[[i]] <- plyr::rename(castL[[i]], renamestr)
         castL[[i]] <- cbind(castL[[i]], nexp=nexp[['.']])

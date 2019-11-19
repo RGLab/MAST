@@ -297,12 +297,15 @@ datArray <- array(c(1:39, NA), dim=c(2,4,5))
 datList <- list(A=datArray, B=1:10)
 test_that('Can melt with reshape2', {
     #try(detach('package:reshape', force=TRUE), silent=TRUE)
-    tryCatch(library(reshape2, pos=length(search())), error = function(e) skip('Install reshape2'))
-    M <- reshape2::melt(datArray, na.rm=TRUE, value.name='foo')
-    expect_equal(M, melt(datArray, na.rm=TRUE, value.name='foo'))
-    M2 <- reshape2::melt(datList, na.rm=TRUE, value.name='foo')
-    expect_equal(M2, melt(datList, na.rm=TRUE, value.name='foo'))
-    detach('package:reshape2')
+  
+    # After reshape2 deprecation, data.table->reshape2 redirection is deprecated as well
+  
+    # tryCatch(library(reshape2, pos=length(search())), error = function(e) skip('Install reshape2'))
+    # M <- reshape2::melt(datArray, na.rm=TRUE, value.name='foo')
+    # expect_equal(M, melt(datArray, na.rm=TRUE, value.name='foo'))
+    # M2 <- reshape2::melt(datList, na.rm=TRUE, value.name='foo')
+    # expect_equal(M2, melt(datList, na.rm=TRUE, value.name='foo'))
+    # detach('package:reshape2')
 })
 
 ## test_that('Can melt with reshape', {

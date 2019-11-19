@@ -147,7 +147,7 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 ##' @export
 getLogFC <- function(zlmfit, contrast0, contrast1){
     lfc <- logFC(zlmfit, contrast0, contrast1)
-    logFC <- dcast.data.table(data.table(melt(lfc)), primerid + contrast ~ L1, fun.aggregate=mean, na.rm=TRUE)
+    logFC <- dcast.data.table(data.table(reshape2::melt(lfc)), primerid + contrast ~ L1, fun.aggregate=mean, na.rm=TRUE)
     logFC[,primerid:=as.character(primerid)]
     logFC[,z:=logFC/sqrt(varLogFC)]
     setkey(logFC,primerid)
