@@ -45,7 +45,7 @@ to a `Seurat` object.
 
 Scater @scater is a package that provides functions for QC, normalization and visualization of single cell RNAseq data.
 
-```{r, results = 'hide'}
+```{r init, results = 'hide'}
 library(MAST)
 
 knitr::opts_chunk$set(message = FALSE,error = FALSE,warning = FALSE)
@@ -71,16 +71,12 @@ such as mitochrondial genes, or spike-ins.
 
 ```{r scaterQC,results='hide'}
 library(scater)
-sca_raw = calculateQCMetrics(sca_raw)
-plotRowData(sca_raw, x = 'log10_mean_counts', 'pct_dropout_by_counts')
-plotColData(sca_raw, y="total_features_by_counts", x="total_counts")
+sca_raw = addPerCellQC(sca_raw)
+plotColData(sca_raw, y="detected", x="total")
 ```
 
 Evidently some features were filtered, so not all cells contain 1
-million counts.  We can tell these were rare features based on the
-inverse relationship between `total_counts` and
-`total_features_by_counts`: the most complex libraries (with the
-greatest number of features) are missing the most counts.
+million counts.
 
 ```{r}
 sca_raw = runPCA(sca_raw, ncomponents=5, exprs_values = 'et')
@@ -93,17 +89,9 @@ We can also run a PCA.
 Since scater uses `SingleCellExperiment` objects, the only here consideration is making sure `MAST` can find log-like data, and possibly thresholding the data.
 
 ```{r}
-if(packageVersion('scater') >= '1.13'){
   example_sce = mockSCE() 
-} else{
-  data("sc_example_counts")
-  data("sc_example_cell_info")
-  example_sce = SingleCellExperiment(
-    assays = list(counts = sc_example_counts),
-    colData = sc_example_cell_info)
-}
 
-example_sce = normalize(example_sce)
+example_sce = logNormCounts(example_sce)
 sca = SceToSingleCellAssay(example_sce)
 ```
 
@@ -157,7 +145,9 @@ knitr::kable(data.frame(method = c('Dense', 'Sparse', 'HDF5'), 'user time(s)' =c
 
 ```
 
-As expected, the dense storage is fastest, followed by the sparse storage.  HDF5 is slowest.  The linear models underlying MAST don't (yet) have any special provision for big $n$ data, and will tend to linearly (or worse) in the number of cells.  So performance may be an issue even if they data do fit in memory.
+Dense storage is generally fastest, followed by the sparse storage.
+HDF5 is often slowest, but if your data doesn't fit in memory, you
+don't really have any other choice.  The linear models underlying MAST don't have any special provision for big $n$ data, and will tend to linearly (or worse) in the number of cells.  So performance may be an issue even if they data do fit in memory.
 
 
 # MAST and ZINB-wave
