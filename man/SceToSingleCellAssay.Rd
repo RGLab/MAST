@@ -4,8 +4,7 @@
 \alias{SceToSingleCellAssay}
 \title{Coerce a SingleCellExperiment to some class defined in MAST}
 \usage{
-SceToSingleCellAssay(sce, class = "SingleCellAssay",
-  check_sanity = TRUE)
+SceToSingleCellAssay(sce, class = "SingleCellAssay", check_sanity = TRUE)
 }
 \arguments{
 \item{sce}{object inheriting from \code{SingleCellExperiment}}

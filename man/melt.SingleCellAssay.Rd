@@ -4,8 +4,7 @@
 \alias{melt.SingleCellAssay}
 \title{"Melt" a \code{SingleCellAssay} matrix}
 \usage{
-\method{melt}{SingleCellAssay}(data, ..., na.rm = FALSE,
-  value.name = "value")
+\method{melt}{SingleCellAssay}(data, ..., na.rm = FALSE, value.name = "value")
 }
 \arguments{
 \item{data}{\code{SingleCellAssay}}

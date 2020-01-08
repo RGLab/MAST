@@ -7,8 +7,13 @@
 \alias{getrc}
 \title{Get the concordance between two experiments}
 \usage{
-getConcordance(singleCellRef, singleCellcomp, groups = NULL,
-  fun.natural = expavg, fun.cycle = logmean)
+getConcordance(
+  singleCellRef,
+  singleCellcomp,
+  groups = NULL,
+  fun.natural = expavg,
+  fun.cycle = logmean
+)
 
 getwss(concord, nexp)
 

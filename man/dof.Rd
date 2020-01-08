@@ -3,6 +3,7 @@
 \name{dof}
 \alias{dof}
 \alias{dof,GLMlike-method}
+\alias{dof,LMERlike-method}
 \title{Degrees of freedom of Zero inflated model}
 \usage{
 dof(object)

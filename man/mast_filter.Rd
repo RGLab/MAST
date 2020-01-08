@@ -5,8 +5,7 @@
 \alias{burdenOfFiltering}
 \title{Filter a SingleCellAssay}
 \usage{
-mast_filter(sc, groups = NULL, filt_control = NULL,
-  apply_filter = TRUE)
+mast_filter(sc, groups = NULL, filt_control = NULL, apply_filter = TRUE)
 
 burdenOfFiltering(sc, groups, byGroup = FALSE, filt_control = NULL)
 }

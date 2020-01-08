@@ -4,8 +4,14 @@
 \alias{FromMatrix}
 \title{Construct a SingleCellAssay from a matrix or array of expression}
 \usage{
-FromMatrix(exprsArray, cData, fData, class = "SingleCellAssay",
-  check_sanity = TRUE, check_logged = check_sanity)
+FromMatrix(
+  exprsArray,
+  cData,
+  fData,
+  class = "SingleCellAssay",
+  check_sanity = TRUE,
+  check_logged = check_sanity
+)
 }
 \arguments{
 \item{exprsArray}{matrix, or a list of matrices, or an array. Columns are cells, rows are genes.}

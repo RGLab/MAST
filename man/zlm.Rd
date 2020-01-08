@@ -5,10 +5,21 @@
 \alias{zlm.SingleCellAssay}
 \title{Zero-inflated regression for SingleCellAssay}
 \usage{
-zlm(formula, sca, method = "bayesglm", silent = TRUE, ebayes = TRUE,
-  ebayesControl = NULL, force = FALSE, hook = NULL,
-  parallel = TRUE, LMlike, onlyCoef = FALSE,
-  exprs_values = assay_idx(sca)$aidx, ...)
+zlm(
+  formula,
+  sca,
+  method = "bayesglm",
+  silent = TRUE,
+  ebayes = TRUE,
+  ebayesControl = NULL,
+  force = FALSE,
+  hook = NULL,
+  parallel = TRUE,
+  LMlike,
+  onlyCoef = FALSE,
+  exprs_values = assay_idx(sca)$aidx,
+  ...
+)
 }
 \arguments{
 \item{formula}{a formula with the measurement variable on the LHS and predictors present in colData on the RHS}
@@ -67,7 +78,7 @@ coef(zlmVbeta, 'D')['CCL2',]
 vcov(zlmVbeta, 'D')[,,'CCL2']
 waldTest(zlmVbeta, CoefficientHypothesis('Stim.ConditionUnstim'))
 
-## Can also provide just a \\code{data.frame} instead
+## Can also provide just a \code{data.frame} instead
 data<- data.frame(x=rnorm(500), z=rbinom(500, 1, .3))
 logit.y <- with(data, x*2 + z*2); mu.y <- with(data, 10+10*x+10*z + rnorm(500))
 y <- (runif(500)<exp(logit.y)/(1+exp(logit.y)))*1

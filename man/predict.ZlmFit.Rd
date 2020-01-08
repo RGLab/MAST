@@ -4,8 +4,7 @@
 \alias{predict.ZlmFit}
 \title{Return predictions from a ZlmFit object.}
 \usage{
-\method{predict}{ZlmFit}(object, newdata = NULL, modelmatrix = NULL,
-  ...)
+\method{predict}{ZlmFit}(object, newdata = NULL, modelmatrix = NULL, ...)
 }
 \arguments{
 \item{object}{A \code{ZlmFit}}

@@ -4,8 +4,7 @@
 \alias{plot.thresholdSCRNACountMatrix}
 \title{Plot cutpoints and densities for thresholding}
 \usage{
-\method{plot}{thresholdSCRNACountMatrix}(x, ask = FALSE, wait.time = 0,
-  type = "bin", indices = NULL, ...)
+\method{plot}{thresholdSCRNACountMatrix}(x, ask = FALSE, wait.time = 0, type = "bin", indices = NULL, ...)
 }
 \arguments{
 \item{x}{output of \code{thresholdSCRNACountMatrix}}

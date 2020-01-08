@@ -5,8 +5,13 @@
 \alias{gsea_control}
 \title{Gene set analysis for hurdle model}
 \usage{
-gseaAfterBoot(zFit, boots, sets, hypothesis,
-  control = gsea_control(n_randomize = Inf, var_estimate = "bootall"))
+gseaAfterBoot(
+  zFit,
+  boots,
+  sets,
+  hypothesis,
+  control = gsea_control(n_randomize = Inf, var_estimate = "bootall")
+)
 
 gsea_control(n_randomize = Inf, var_estimate = "bootall")
 }

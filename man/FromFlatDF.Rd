@@ -6,9 +6,19 @@
 \alias{FluidigmAssay}
 \title{Construct a SingleCellAssay (or derived subclass) from a `flat` (melted) data.frame/data.table}
 \usage{
-FromFlatDF(dataframe, idvars, primerid, measurement, id = numeric(0),
-  cellvars = NULL, featurevars = NULL, phenovars = NULL,
-  class = "SingleCellAssay", check_sanity = TRUE, ...)
+FromFlatDF(
+  dataframe,
+  idvars,
+  primerid,
+  measurement,
+  id = numeric(0),
+  cellvars = NULL,
+  featurevars = NULL,
+  phenovars = NULL,
+  class = "SingleCellAssay",
+  check_sanity = TRUE,
+  ...
+)
 
 FluidigmAssay(...)
 }

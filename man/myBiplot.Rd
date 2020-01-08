@@ -4,8 +4,7 @@
 \alias{myBiplot}
 \title{Makes a nice BiPlot}
 \usage{
-myBiplot(pc, colorfactor, scaling = 100, nudge = 1.2, N = 10,
-  dims = 1:2, ...)
+myBiplot(pc, colorfactor, scaling = 100, nudge = 1.2, N = 10, dims = 1:2, ...)
 }
 \arguments{
 \item{pc}{output of \code{prcomp}}

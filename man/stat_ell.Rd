@@ -4,10 +4,21 @@
 \alias{stat_ell}
 \title{Plot confidence ellipse in 2D}
 \usage{
-stat_ell(mapping = NULL, data = NULL, geom = "polygon",
-  position = "identity", na.rm = FALSE, show.legend = NA,
-  inherit.aes = TRUE, fill = NA, level = 0.95, lty = 2,
-  invert = FALSE, alpha = 1, ...)
+stat_ell(
+  mapping = NULL,
+  data = NULL,
+  geom = "polygon",
+  position = "identity",
+  na.rm = FALSE,
+  show.legend = NA,
+  inherit.aes = TRUE,
+  fill = NA,
+  level = 0.95,
+  lty = 2,
+  invert = FALSE,
+  alpha = 1,
+  ...
+)
 }
 \arguments{
 \item{mapping}{Set of aesthetic mappings created by aes or aes_. If specified and inherit.aes = TRUE (the default), it is combined with the default mapping at the top level of the plot. You must supply mapping if there is no plot mapping.}

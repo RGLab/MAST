@@ -81,9 +81,6 @@ z2 <- zlm(~ Stim.Condition, svbeta, hook=continuous_residuals_hook)
 window(collectResiduals(z2, svbeta))
 z3 <- zlm(~ Stim.Condition, svbeta, hook=combined_residuals_hook)
 window(collectResiduals(z3, svbeta))
-#total deviance residuals
-z4 <- zlm(~ Stim.Condition, svbeta, hook=deviance_residuals_hook)
-window(collectResiduals(z4, svbeta))
 #partial residuals
 colData(svbeta)$ngeneson <- colMeans(assay(svbeta)>0)
 z5 <- zlm(~ Stim.Condition + ngeneson, svbeta)
