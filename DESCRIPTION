@@ -1,8 +1,8 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.13.2
-Date: 2019-08-31
+Version: 1.13.3
+Date: 2020-01-08
 Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
             person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))
@@ -50,7 +50,9 @@ Suggests:
     scater,
     DelayedArray,
     Matrix,
-    HDF5Array
+    HDF5Array,
+    zinbwave,
+    dplyr
 Description: Methods and models for handling zero-inflated single cell
     assay data.
 License: GPL(>= 2)
@@ -86,7 +88,7 @@ Collate:
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 LazyData: true
 biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
     RNASeq, Transcriptomics, SingleCell
