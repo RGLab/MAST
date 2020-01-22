@@ -98,6 +98,7 @@ context('Post hoc testing')
 test_that('LRT For Glm', {
  atest <- lrTest(obj, 'Stim.Condition')
  expect_is(atest, 'matrix')
+ expect_true(all(atest[,'lambda']>0))
 
  hushWarning(btest <- lrTest(obj2, 'Stim.Condition'), fixed('Coefficients PopulationCD154+VbetaResponsive:Stim.ConditionUnstim, PopulationCD154+VbetaUnresponsive:Stim.ConditionUnstim, PopulationCD154-VbetaResponsive:Stim.ConditionUnstim, PopulationCD154-VbetaUnresponsive:Stim.ConditionUnstim are never estimible and will be dropped.'))
  expect_true(all(btest[,'df']==0))
