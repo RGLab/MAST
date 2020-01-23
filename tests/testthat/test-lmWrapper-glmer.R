@@ -13,11 +13,13 @@ test_that('Signal error if no random effects', {
 })
 
     test_that('lrt is non-NA', {
-        z1 = zlm(~ Stim.Condition + (1|Subject.ID), vbetaFA[1:5,], method='glmer', ebayes = FALSE)
-        z2 = zlm(~ Stim.Condition, vbetaFA[1:5,], method='bayesglm', ebayes = FALSE)
-        l1 = lrTest(z1, 'Stim.Condition')
+        z1 = zlm(~ Population + (1|Subject.ID), vbetaFA[3:5,], method='glmer', ebayes = FALSE)
+        ## z2 = zlm(~ Population, vbetaFA[3:5,], method='bayesglm', ebayes = FALSE)
+        
+        ## VbetaResponsive is completely aliased with Subject.ID so test statistics should be no larger than the model ignoring subjectid
+        ## And will be equal if the random effect is singular
+        l1 = lrTest(z1, CoefficientHypothesis('PopulationVbetaResponsive'))
         expect_true(all(l1[,'hurdle', 'lambda']>0))
-        l2 = lrTest(z2, 'Stim.Condition')
     })
     
     try(detach('package:lme4'), silent=TRUE)

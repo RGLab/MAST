@@ -36,14 +36,12 @@ if(require('lme4')){
   m$Subject.ID <- factor(m$Subject.ID)
   m$Stim.Condition <- factor(m$Stim.Condition)
   test_that('zlm can run lmer', {
-      skip_on_cran()
     lrout2 <- suppressWarnings(zlm(value ~ Population + (1|Subject.ID:Stim.Condition), data=m, method='lmer'))
     expect_is(lrout2$cont, c('mer','lmerMod','glmerMod'))
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
     test_that('zlm can run lmer', {
-        skip_on_cran()
-        hushWarning(z <- zlm(~Population + (1|Subject.ID), fd2, method='lmer', ebayes=FALSE), 'gradient|singular|multiple')
+        hushWarning(z <- zlm(~Population + (1|Subject.ID), fd2, method='lmer', ebayes=FALSE), 'gradient|singular|multiple|nobs')
         expect_is(z, 'ZlmFit')
         expect_equal(nrow(z@df.null), 20)
         expect_equal(dim(z@vcovC)[[3]], 20)

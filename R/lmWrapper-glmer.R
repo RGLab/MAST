@@ -197,8 +197,15 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
         return(object)
     }
 
+    if(!requireNamespace('lme4')) stop('Please install `lme4` to use method `LMERlike`.')
     fitArgsC <- object@fitArgsC
     fitArgsD <- object@fitArgsD
+
+    if(silent){
+        if(!inherits(fitArgsC$control, 'merControl')) fitArgsC$control = lme4::lmerControl()
+        if(!inherits(fitArgsD$control, 'merControl')) fitArgsD$control = lme4::glmerControl()
+        fitArgsC$control$checkConv$check.conv.singular$action <- fitArgsD$control$checkConv$check.conv.singular$action <- "ignore"
+    }
 
     ## Mutilate the formula and replace it with the colnames of the fixed effects
     ## 
@@ -302,7 +309,7 @@ setMethod('summarize', signature=c(object='LMERlike'), function(object, ...){
 
     li <- list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'),
                deviance=rowm(deviance(object@fitC), deviance(object@fitD)),
-               df.null=rowm(NA_integer_,NA_integer_),
+               df.null=suppressWarnings(rowm(stats::nobs(object@fitC),stats::nobs(object@fitD))), # to quiet no 'nobs' method is available warnings if the fit was empty
                dispersion=rowm(sigma(object@fitC), NA),
                coefD=coef(object, which='D'), vcovD=vcov(object, 'D'),
                loglik=torowm(logLik(object)),
