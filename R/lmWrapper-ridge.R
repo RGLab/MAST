@@ -20,10 +20,10 @@ setMethod('fit', signature=c(object='RidgeBGLMlike', response='missing'), functi
         }
     }
     
-    contFit <- if(object@useContinuousBayes) .bayesglm.fit else ridge.fit
+    contFit <- if(object@useContinuousBayes) arm::bayesglm.fit else ridge.fit
     fitArgsC$lambda<-object@lambda
     object@fitC <- do.call(contFit, c(list(x=object@modelMatrix[pos,,drop=FALSE], y=object@response[pos],  weights=object@weightFun(object@response[pos])), fitArgsC))
-    object@fitD <- do.call(.bayesglm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
+    object@fitD <- do.call(arm::bayesglm.fit, c(list(x=object@modelMatrix, y=object@weightFun(object@response), family=binomial()), fitArgsD))
     
     object <- .glmDOF(object, pos)
     object <- .dispersion(object)

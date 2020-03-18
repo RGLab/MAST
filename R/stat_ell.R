@@ -14,9 +14,9 @@ StatEll <- ggproto("StatEll", Stat,
                    compute_group = function(data, scales,level=0.95,invert=FALSE,alpha=1) {
                        e=ell(x=data$x, xse=data$xse,y=data$y,yse=data$yse,radius=sqrt(qchisq(level,df=2)))
                        if(invert==c("x")){
-                           e[,1] =invlogit(e[,1])
+                           e[,1] = invlogit(e[,1])
                        }else if(invert==c("y")){
-                           e[,2] =invlogit(e[,2])
+                           e[,2] = invlogit(e[,2])
                        }
                        return(e)
                    },

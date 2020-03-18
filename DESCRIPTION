@@ -23,8 +23,9 @@ Imports:
     stats4,
     graphics,
     utils,
-    SummarizedExperiment(>= 1.5.3),
-    progress
+    SummarizedExperiment (>= 1.5.3),
+    progress,
+    arm
 Depends:
     SingleCellExperiment (>= 1.2.0),
     R(>= 3.5)
@@ -73,7 +74,6 @@ Collate:
     'ZlmFit-bootstrap.R'
     'ZlmFit-logFC.R'
     'ZlmFit.R'
-    'bayesglm.R'
     'convertMASTClassic.R'
     'ebayes-helpers.R'
     'filterEval.R'
@@ -88,7 +88,7 @@ Collate:
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 LazyData: true
 biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
     RNASeq, Transcriptomics, SingleCell
