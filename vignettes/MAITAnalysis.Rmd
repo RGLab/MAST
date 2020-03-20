@@ -170,7 +170,7 @@ When we plot the threshold vs genes binned by median expression value, we can se
 
 
 ```{r assignThresh}
-assays(sca) <- list(thresh=thres$counts_threshold, tpm=assay(sca))
+assays(sca, withDimnames = FALSE) <- list(thresh=thres$counts_threshold, tpm=assay(sca))
 expressed_genes <- freq(sca) > freq_expressed
 sca <- sca[expressed_genes,]
 ```
@@ -317,7 +317,7 @@ We concatenated them into a matrix.
 
 Now we can add `residDEMatrix` as another component of the "assay":
 ```{r addResiduals, dpi = 36}
-assays(scaDE) <- c(assays(scaDE), list(resid=residDEMatrix))
+assays(scaDE, withDimnames = FALSE) <- c(assays(scaDE), list(resid=residDEMatrix))
 scaResidFlat <- as(scaDE, 'data.table')
 scaResidFlat[1:4,]
 ggplot(scaResidFlat, aes(x=ngeneson, y=resid))+geom_point(aes(col=condition))+geom_smooth()+facet_wrap(~symbolid)

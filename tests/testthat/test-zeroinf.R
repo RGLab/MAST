@@ -59,12 +59,13 @@ test_that('zlm works', {
 
 test_that("zlm doesn't die on 100% expression", {
     fd3 <- fd2[1:5,]
-  ee <- t(assay(fd3))
-  ee[,1] <- rnorm(ncol(fd3))+20
-  assay(fd3) <- t(ee)
-  hushWarning(zz <- zlm( ~ Population, fd3, method='glm', ebayes=FALSE), 'glm.fit')
-  expect_that(zz, is_a('ZlmFit'))
-  expect_lt(zz@df.resid[1,'D'], 1)
+    ee <- t(assay(fd3))
+    ee[,1] <- rnorm(ncol(fd3))+20
+    tee = t(ee)
+    assay(fd3, withDimnames = FALSE) = tee
+    hushWarning(zz <- zlm( ~ Population, fd3, method='glm', ebayes=FALSE), 'glm.fit')
+    expect_that(zz, is_a('ZlmFit'))
+    expect_lt(zz@df.resid[1,'D'], 1)
 
     zz3 <- zlm( ~ Population, fd3, method='bayesglm', ebayes=FALSE)
     expect_that(zz3, is_a('ZlmFit'))
@@ -73,7 +74,7 @@ test_that("zlm doesn't die on 100% expression", {
     w.resp <- which(colData(fd3)$Population=='VbetaResponsive')
     ee[,1] <- 0
     ee[,1][w.resp] <- rbinom(length(w.resp), 1, .2)
-    assay(fd3) <- t(ee)
+    assay(fd3, withDimnames = FALSE) <- t(ee)
     zz2 <- zlm( ~ Population, fd3)
     expect_that(zz2, is_a('ZlmFit'))
     expect_true(zz2@converged[1,'D'])
@@ -112,7 +113,7 @@ test_that('Give up after 5 errors', {
 test_that('No holes in output', {
     ee <- t(assay(fd2))
     ee[1,2] <- NA
-    assay(fd2) <- t(ee)
+    assay(fd2,, withDimnames = FALSE) <- t(ee)
     zze <- zlm(~Stim.Condition, fd2,  method='glm', ebayes=FALSE)
     expect_equal(nrow(zze@coefD), nrow(fd2))
     expect_true(all(is.na(zze@coefD[2,])))

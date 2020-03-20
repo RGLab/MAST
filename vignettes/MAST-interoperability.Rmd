@@ -125,7 +125,7 @@ There is no complication to providing a sparse matrix.
 library(DelayedArray)
 library(HDF5Array)
 hd5_dat = as(t(maits$expressionmat), 'HDF5Array')
-seed(hd5_dat)
+DelayedArray::seed(hd5_dat)
 ```
 
 Write `sc_example_counts` to disk as an `HDF5Array`

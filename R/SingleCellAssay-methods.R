@@ -565,6 +565,11 @@ assay_idx = function(x){
     list(aname = aname, aidx = aidx)
     }
 
+sca_assay =  function(x, i, withDimnames = TRUE, ...){
+     ## What will we assume is a log-transformed value?
+    log_idx = assay_idx(x)
+     assay(x, log_idx$aidx, withDimnames = withDimnames, ...)
+}
 
 ##' Default \code{assay} returned
 ##'
@@ -574,25 +579,27 @@ assay_idx = function(x){
 ##' By default we return the assay whose names, as given by \code{assayNames(x)}, matches the first element in the vector \code{c('thresh', 'et', 'Et', 'lCount', 'logTPM', 'logCounts', 'logcounts')}.
 ##' @param x \code{SingleCellAssay}
 ##' @param i must be \code{missing} for this method to apply
+##' @inheritParams SummarizedExperiment::assay
 ##' @param ... passed to parent method
 ##' @aliases defaultAssay
 ##' @rdname defaultAssay
 ##' @examples
 ##' data(vbetaFA)
 ##' assay(vbetaFA)[1:3,1:3]
-##' assay(vbetaFA, 'thresh') = assay(vbetaFA)*0 - 9 
+##' assay(vbetaFA, 'thresh', withDimnames = FALSE) = assay(vbetaFA)*0 - 9 
 ##' assay(vbetaFA)[1:3, 1:3]
-setMethod('assay', signature('SingleCellAssay', 'missing'), function(x, i, ...){
-     ## What will we assume is a log-transformed value?
-    log_idx = assay_idx(x)
-     assay(x, log_idx$aidx, ...)
-})
+setMethod('assay', signature('SingleCellAssay', 'missing'),sca_assay)
 
-setReplaceMethod('assay',  signature('SingleCellAssay', 'missing'), function(x, i, ..., value){
+
+sca_assay_replace = function(x, i, withDimnames = TRUE, ..., value){
     log_idx = assay_idx(x)
-    assay(x, log_idx$aidx, ...) <- value
+    dotargs = list(...)
+    print(names(dotargs))
+    assay(x, log_idx$aidx,  withDimnames = withDimnames, ...) <- value
     x
-})
+}
+
+setReplaceMethod('assay',  signature('SingleCellAssay', 'missing'), sca_assay_replace)
 
 if(getRversion() >= "2.15.1") globalVariables(c(
                                   'wellKey',

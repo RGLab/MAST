@@ -63,7 +63,7 @@ test_that('Replace assay names', {
 })
 
 test_that("Add assay and replace assay names", {
-    assay(fd, 2) <- sign(assay(fd))
+    assay(fd, 2, withDimnames = FALSE) <- sign(assay(fd))
     assayNames(fd, 2) <- 'new'
     expect_equal(assayNames(fd), c(measurement, 'new'))
 })
@@ -248,7 +248,7 @@ test_that('Can split',{
 })
 
 test_that('Replace works', {
-    assay(sc, 1) <- matrix(-111, nrow=nrow(sc), ncol=ncol(sc))
+    assay(sc, 1, withDimnames = FALSE) <- matrix(-111, nrow=nrow(sc), ncol=ncol(sc))
     expect_true(all(assay(sc)==(-111)))
 })
 
@@ -326,8 +326,8 @@ test_that('Can melt with data.table', {
 test_that('assay returns log-count slot by default', {
     avb = assay(vbetaFA)
     avb[] = -9
-    assays(vbetaFA) = list(null = avb, Et = assay(vbetaFA))
+    assays(vbetaFA, withDimnames = FALSE) = list(null = avb, Et = assay(vbetaFA))
     expect_equal(assay(vbetaFA, 'Et'), assay(vbetaFA))
-    assays(vbetaFA) = list(null = avb, Et = assay(vbetaFA), thresh = avb)
+    assays(vbetaFA, withDimnames = FALSE) = list(null = avb, Et = assay(vbetaFA), thresh = avb)
     expect_equal(assay(vbetaFA, 'thresh'), assay(vbetaFA))
     })

@@ -35,5 +35,10 @@ test_that('Can make SCA from sparse SCE', {
 })
 
 test_that('Results are equal', {
-    expect_equal(summary(zz_dense)$datatable, summary(zz_sparse)$datatable)
+    sdense = summary(zz_dense)$datatable
+    ssparse = summary(zz_sparse)$datatable
+    ## For some reason, the table is sorted by contrast and then `z` statistic
+    ## There are ties that end up with arbitrary sort order.
+    m = merge(sdense,  ssparse, by = c('primerid', 'component', 'contrast'))
+    expect_equal(m$z.x, m$z.y)
 })

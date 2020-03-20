@@ -50,7 +50,7 @@ collectResiduals <- function(x, sca, newLayerName='Residuals'){
         i <- length(assays(sca))+1
     }
     mat <- laply(revealHook(x), function(x) x)
-    assay(sca, i) <- mat
+    assay(sca, i, withDimnames = FALSE) <- mat
     assayNames(sca, i) <- newLayerName
     sca
 }
