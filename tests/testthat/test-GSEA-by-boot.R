@@ -41,6 +41,11 @@ test_that('Triples work as expected', {
               expect_equal(tripleAvgT, gsea[c('E'), 'disc', 'stat', 'test'])
           })
 
+test_that('Avg cor is nearly null', {
+    ## We are rank deficient or something when whitening the correlation for this set
+    ## in the continuous component. Or something like that?
+    expect_true(all(abs(gsea[,'disc','avgCor',]) < .02, na.rm = TRUE))
+    })
 
 test_that('model-based singletons agree with model', {
     gsea <- gseaAfterBoot(zf, boots, sets, CoefficientHypothesis('Stim.ConditionUnstim'), control=list(n_randomize=20, var_estimate='modelbased'))@tests
@@ -64,6 +69,10 @@ test_that('Null and test statistic are complements in complementary modules',{
 test_that('Variances are positive', {
      expect_true(all(gsea1[,,'var',]>0, na.rm=TRUE))
 })
+
+test_that('Avg cor is between 0 and 1 ', {
+    expect_true(all(abs(gsea1[,,'avgCor',]) <= 1, na.rm = TRUE))
+    })
 
 test_that('combining coefficients works',{
               Zn <- calcZ(gseaClass, testType='normal')

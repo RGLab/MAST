@@ -274,8 +274,12 @@ gseaAfterBoot <- function(zFit, boots, sets, hypothesis, control=gsea_control(n_
     scaleStats <- function(test, overlap, null){
         ## adjust the null stats and DOF
         null$stat <- null$stat - overlap$stat
-        nullscaled <- cbind(null$stat['stat',,]/null$stat['dof',,], dof=null$stat['dof',,'t'], cor=null$cor)
-        testscaled <- cbind(test$stat['stat',,]/test$stat['dof',,], dof=test$stat['dof',,'t'], cor=test$cor)
+        nullscaled <- cbind(null$stat['stat',,]/null$stat['dof',,],
+                            dof=null$stat['dof',,'t'],
+                            cor=NA_real_)
+        testscaled <- cbind(test$stat['stat',,]/test$stat['dof',,],
+                            dof=test$stat['dof',,'t'],
+                            cor=test$cor/(test$stat['dof',,'t'] * (test$stat['dof',,'t'] - 1)/2 ))
         abind(test=testscaled, null=nullscaled, rev.along=0)
     }
 
