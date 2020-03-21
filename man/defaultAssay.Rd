@@ -11,12 +11,31 @@ magic_assay_names()
 
 assay_idx(x)
 
-\S4method{assay}{SingleCellAssay,missing}(x, i, ...)
+\S4method{assay}{SingleCellAssay,missing}(x, i, withDimnames = TRUE, ...)
 }
 \arguments{
 \item{x}{\code{SingleCellAssay}}
 
 \item{i}{must be \code{missing} for this method to apply}
+
+\item{withDimnames}{A \code{logical(1)}, indicating whether the
+    dimnames of the SummarizedExperiment object should be applied (i.e.
+    copied) to the extracted assays. More precisely, setting
+    \code{withDimnames=FALSE} in the \emph{getter} returns the
+    assays \emph{as-is} whereas setting \code{withDimnames=FALSE}
+    return them with possibly modified dimnames.
+
+    Setting \code{withDimnames=FALSE} in the \emph{setter} (\code{assays<-})
+    is required when the dimnames on the supplied assays are not identical
+    to the dimnames on the SummarizedExperiment object; it does not
+    influence actual assignment of dimnames to assays (they're always
+    stored as-is).
+
+    Note that \preformatted{  assays(x, withDimnames=FALSE) <- assays(x, withDimnames=FALSE)}
+    is guaranteed to always work and be a no-op. This is not the case
+    if \code{withDimnames=TRUE} is used or if \code{withDimnames} is
+    not specified.
+  }
 
 \item{...}{passed to parent method}
 }
@@ -37,6 +56,6 @@ By default we return the assay whose names, as given by \code{assayNames(x)}, ma
 \examples{
 data(vbetaFA)
 assay(vbetaFA)[1:3,1:3]
-assay(vbetaFA, 'thresh') = assay(vbetaFA)*0 - 9 
+assay(vbetaFA, 'thresh', withDimnames = FALSE) = assay(vbetaFA)*0 - 9 
 assay(vbetaFA)[1:3, 1:3]
 }

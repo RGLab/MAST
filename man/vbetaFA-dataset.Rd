@@ -4,7 +4,9 @@
 \name{vbetaFA}
 \alias{vbetaFA}
 \title{Vbeta Data Set, FluidigmAssay}
-\format{a \code{FluidigmAssay} of the vbeta data set.}
+\format{
+a \code{FluidigmAssay} of the vbeta data set.
+}
 \description{
 Vbeta Data Set, FluidigmAssay
 }

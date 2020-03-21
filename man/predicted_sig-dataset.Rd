@@ -4,7 +4,9 @@
 \name{predicted_sig}
 \alias{predicted_sig}
 \title{Predicted signatures}
-\format{A data frame of predicted gene expresion signatures for stimulated and unstimulated cells.}
+\format{
+A data frame of predicted gene expresion signatures for stimulated and unstimulated cells.
+}
 \description{
 Predicted signatures
 }

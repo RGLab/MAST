@@ -4,7 +4,9 @@
 \name{maits}
 \alias{maits}
 \title{MAITs data set, RNASeq}
-\format{a \code{list} containing an expression matrix (\code{expressionmat}), cell \code{cdat} and feature \code{fdat}.}
+\format{
+a \code{list} containing an expression matrix (\code{expressionmat}), cell \code{cdat} and feature \code{fdat}.
+}
 \description{
 MAITs data set, RNASeq
 }
