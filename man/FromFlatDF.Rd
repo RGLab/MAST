@@ -19,8 +19,6 @@ FromFlatDF(
   check_sanity = TRUE,
   ...
 )
-
-FluidigmAssay(...)
 }
 \arguments{
 \item{dataframe}{A 'flattened' \code{data.frame} or \code{data.table} containing columns giving cell and feature identifiers and  a measurement column}

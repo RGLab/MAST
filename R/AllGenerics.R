@@ -2,30 +2,6 @@
 ## Base
 ###############################
 
-##' Deprecated cell/feature data accessors/mutators
-##'
-##' These functions are now all deprecated and will be removed in a future release.
-##'
-##' @section Replacement Functions:
-##' You should transition to use the following replacements:
-##' \describe{
-##'   \item{\code{cData}}{\link{colData}}
-##'   \item{\code{fData}}{\link{mcols}}
-##'   \item{\code{exprs}}{\link{assay}}
-##'   \item{\code{combine}}{\link{cbind2} or \link{rbind2}}
-##' }
-##' @param sc An object with \code{cellData}
-##' @return \code{DataFrame} or modifies the \code{SingleCellAssay} object in place
-##' @details \code{cData(sc)}: Return the \code{cellData} \code{data.frame}.
-##' @seealso exprs
-##' @rdname cData
-##' @examples
-##' data(vbetaFA)
-##' colData(vbetaFA)
-##'  mcols(vbetaFA)
-##' t(assay(vbetaFA))
-##' @export
-setGeneric('cData', function(sc) standardGeneric('cData'))
 
 ##' Accessor for wellKey
 ##'
@@ -40,36 +16,8 @@ setGeneric('cData', function(sc) standardGeneric('cData'))
 ##' @export
 setGeneric('getwellKey', function(sc) standardGeneric('getwellKey'))
 
-##' @export
-##' @rdname cData
-##' @details \code{cData(sc)<-value}: Replace the cellData with \code{value}, which can be either an \code{AnnotatedDataFrame} or \code{data.frame}.  The replacement is checked that it has mandatory fields defined by its class.
-##' @param value replacement value
-setGeneric("cData<-", function(sc, value) standardGeneric("cData<-"))
 
-##' Accessor for featureData \code{data.frame}
-##'
-##' Returns the \code{featureData} \code{data.frame}.
-##' @title fData
-##' @param object An object with \code{featureData}
-##' @return \code{data.frame} 
-##' @docType methods
-##' @rdname fData-methods
-##' @name fData
-##' @aliases fData,SingleCellAssay-method
-##' @importMethodsFrom Biobase fData
-NULL
 
-##' Accessor for featureData \code{AnnotatedDataFrame}
-##'
-##' Returns the \code{featureData}.
-##' @param object An object with \code{featureData}
-##' @return \code{AnnotatedDataFrame}
-##' @docType methods
-##' @rdname featureData-methods
-##' @name featureData
-##' @aliases featureData,SingleCellAssay-method
-##' @importMethodsFrom Biobase featureData
-NULL
 
 ##' @import BiocGenerics
 ##' @importMethodsFrom BiocGenerics subset

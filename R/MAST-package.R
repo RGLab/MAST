@@ -46,8 +46,16 @@ NULL
 #' @section Functions (and replacements, if available):
 #' \describe{
 #'   \item{filter}{mast_filter}
+#'   \item{\code{cData}}{\link{colData}}
+#'   \item{\code{fData}}{\link{mcols}}
+#'   \item{\code{exprs}}{\link{assay}}
+#'   \item{\code{zlm.SingleCellAssay}}{\link{zlm}}
+#'   \item{\code{combine}}{\link{cbind} or \link{rbind}}
+#'   \item{\code{deviance_residuals_hook}}{No replacement available, underlying API changed}
 #' }
 #' 
-#' @aliases filter
+#' @aliases filter cData fData exprs
 #' @name MAST-defunct
 NULL
+
+

@@ -28,11 +28,6 @@ summary.zlm <- function(out){
     summary(out$disc)
 }
 
-##' @export
-zlm.SingleCellAssay <- function(...){
-    .Defunct('zlm')
-    zlm(...)
-}
 
 ##' Zero-inflated regression for SingleCellAssay 
 ##'

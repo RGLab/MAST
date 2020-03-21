@@ -191,23 +191,7 @@ rstandard.bayesglm <- function (model, infl = influence(model, do.coef = FALSE),
 #' @export
 deviance_residuals_hook<-function (x) 
 {
-    if (all(x@fitted)) {
-        class(x@fitC) <- c("glm", "lm")
-        class(x@fitD) <- c("bayesglm", "glm", "lm")
-        cont.resid<-rstandard(x@fitC,type="deviance")
-        disc.resid<-rstandard(x@fitD,type="deviance")
-        cont.resid<-data.table(id=names(x@fitC$y),cont.resid)
-        disc.resid<-data.table(id=names(x@fitD$y),disc.resid)
-        resid<-merge(cont.resid,disc.resid,by="id",all=TRUE)
-        namean <- function(x, y){
-            nax <- is.na(x)
-            nay <- is.na(y)
-            (ifelse(nax, 0, x)+ifelse(nay,0, y))/sqrt((!nax)*1+(!nay)*1)
-        }
-        resid[, comb:=namean(cont.resid, disc.resid)]
-        resid <- resid[data.table(id=rownames(x@modelMatrix)),,on='id']
-        return(setNames(resid[,comb], resid[,id]))
-    }
+    .Defunct('Not supported in R 4.0')
 }
 
 if(getRversion() >= "2.15.1") globalVariables(c('comb'))

@@ -137,11 +137,6 @@ checkAssayNames <- function(assays, cData, fData){
 }
 
     
-setMethod('fData', 'SingleCellAssay', function(object){
-    .Defunct('mcols')
-})
-
-
 
 ##' "Melt" a \code{SingleCellAssay} matrix
 ##'
@@ -351,11 +346,6 @@ FromFlatDF<-function(dataframe,idvars,primerid,measurement,id=numeric(0), cellva
     FromMatrix(dl, cell.adf, f.adf, class, check_sanity)
 }
 
-#'@export
-#'@rdname FromFlatDF
-FluidigmAssay <- SingleCellAssay <- function(...){
-    .Defunct("FromFlatDF")
-}
 
 uniqueModNA.old <- function(df, exclude){
                                         #browser()
@@ -397,11 +387,6 @@ uniqueModNA <- function(df, include){
 
 setMethod('getwellKey', 'SingleCellAssay', function(sc) {colData(sc)$wellKey})
 
-##' @rdname cData
-##' @export
-setMethod('cData', 'SingleCellAssay', function(sc){
-    .Defunct('colData')
-})
 
 ##' Subset a \code{SingleCellAssay} by cells (columns)
 ##'
@@ -439,11 +424,6 @@ setReplaceMethod('assayNames', c('SingleCellAssay', 'character'), function(x, i,
 })
 
 
-##' @export
-##' @rdname cData
-setReplaceMethod("cData", "SingleCellAssay", function(sc, value) {
-    .Defunct('colData<-')
-})
 
 ##' Replace \code{colData}
 ##'
@@ -509,38 +489,6 @@ setMethod('split', signature(x='SingleCellAssay', f='list'), function(x, f, drop
 })
 
 
-##' @export
-##' @rdname cData
-##' @param x \code{SingleCellAssay}
-##' @param y \code{SingleCellAssay}
-##' @param ... \code{SingleCellAssay}
-##' @details  \code{combine(x, y, ...)}: Concatenate two experiments along rows/columns
-setMethod('combine', signature(x='SingleCellAssay', y='SingleCellAssay'), function(x, y,  ...){
-    ## Not using .Deprecated because I want to maintain test coverage for this function.
-    warning('Deprecated: use rbind/cbind')
-    if(ncol(x) == ncol(y) ){
-        do.call(rbind, list(x, y, ...))
-    } else if(nrow(x) == nrow(y)){
-        do.call(cbind, list(x, y, ...))
-    } else{
-        stop("Neither row nor column dimensions match")
-    }
-})
-
-##' @export
-##' @rdname cData
-setMethod('combine', signature(x='SingleCellAssay', y='ANY'), function(x, y,  ...){
-    if(ncol(x) == nrow(y) || ncol(x) == length(y)){
-        cd <- cbind(colData(x), y)
-        colData(x) <- cd
-    } else if(nrow(x) == nrow(y)){
-        mc <- cbind(mcols(x), y)
-        mcols(x) <- mc
-    } else{
-        stop("Neither row nor column dimensions match")
-    }
-    mc
-})
 
 setMethod('rbind', signature('SingleCellAssay'), function(..., deparse.level = 1){
     dargs = list(...)
@@ -608,15 +556,4 @@ if(getRversion() >= "2.15.1") globalVariables(c(
 
 setAs('SingleCellAssay', 'data.table', function(from){
     melt.SingleCellAssay(from)
-})
-
-setMethod('exprs', 'SingleCellAssay', function(object){
-    .Deprecated('t(assay)')
-    t(assay(object))
-})
-
-setReplaceMethod('exprs', 'SingleCellAssay', function(object, value){
-    .Deprecated('assay(x) <- t(value)')
-    assay(object, 1) <- t(value)
-    object
 })

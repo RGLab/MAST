@@ -3,6 +3,9 @@
 \name{MAST-defunct}
 \alias{MAST-defunct}
 \alias{filter}
+\alias{cData}
+\alias{fData}
+\alias{exprs}
 \title{Defunct functions in package `MAST`}
 \description{
 These functions are defunct or have been renamed.
@@ -11,6 +14,12 @@ These functions are defunct or have been renamed.
 
 \describe{
   \item{filter}{mast_filter}
+  \item{\code{cData}}{\link{colData}}
+  \item{\code{fData}}{\link{mcols}}
+  \item{\code{exprs}}{\link{assay}}
+  \item{\code{zlm.SingleCellAssay}}{\link{zlm}}
+  \item{\code{combine}}{\link{cbind} or \link{rbind}}
+  \item{\code{deviance_residuals_hook}}{No replacement available, underlying API changed}
 }
 }
 

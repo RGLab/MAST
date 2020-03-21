@@ -1,5 +1,5 @@
 obj <- new('GLMlike', design=colData(fd), formula=~Stim.Condition)
-obj <- fit(obj, response=exprs(fd)[,2])
+obj <- fit(obj, response=assay(fd)[2,])
 objD <- glm(obj@response>0 ~ Stim.Condition, data=obj@design, family='binomial')
 objC <- glm(obj@response ~ Stim.Condition, data=obj@design, subset=obj@response>0)
 context('GLMlike')
