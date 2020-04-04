@@ -23,8 +23,9 @@ Imports:
     stats4,
     graphics,
     utils,
-    SummarizedExperiment(>= 1.5.3),
-    progress
+    SummarizedExperiment (>= 1.5.3),
+    progress,
+    arm
 Depends:
     SingleCellExperiment (>= 1.2.0),
     R(>= 3.5)
@@ -73,7 +74,6 @@ Collate:
     'ZlmFit-bootstrap.R'
     'ZlmFit-logFC.R'
     'ZlmFit.R'
-    'bayesglm.R'
     'convertMASTClassic.R'
     'ebayes-helpers.R'
     'filterEval.R'

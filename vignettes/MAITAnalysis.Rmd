@@ -111,7 +111,7 @@ We'll set a filtering threshold using the [Potter Stewart](https://en.wikipedia.
 ## Filtering
 ```{r filter_outlying_cell,results='hide'}
 sca <- subset(scaRaw,filterCrit)
-eid <- select(TxDb.Hsapiens.UCSC.hg19.knownGene,keys = mcols(sca)$entrez,keytype ="GENEID",columns = c("GENEID","TXNAME"))
+eid <- AnnotationDbi::select(TxDb.Hsapiens.UCSC.hg19.knownGene,keys = mcols(sca)$entrez,keytype ="GENEID",columns = c("GENEID","TXNAME"))
 ueid <- unique(na.omit(eid)$GENEID)
 sca <- sca[mcols(sca)$entrez %in% ueid,]
 ## Remove invariant genes
@@ -264,7 +264,7 @@ predicted_sig <- merge(mcols(sca), predicted[primerid%in%entrez_to_plot], by='pr
 predicted_sig <- as.data.table(predicted_sig)
 
 ## plot with inverse logit transformed x-axis
-ggplot(predicted_sig)+aes(x=invlogit(etaD),y=muC,xse=seD,yse=seC,col=sample)+
+ggplot(predicted_sig)+aes(x=arm::invlogit(etaD),y=muC,xse=seD,yse=seC,col=sample)+
     facet_wrap(~symbolid,scales="free_y")+theme_linedraw()+
     geom_point(size=0.5)+scale_x_continuous("Proportion expression")+
     scale_y_continuous("Estimated Mean")+
