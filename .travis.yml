@@ -16,6 +16,8 @@ cache:
 before_install:
   - R -e 'install.packages("devtools")'
   - tlmgr install index
+  - sudo apt-get update
+  - audo apt-get -y install libharfbuzz-dev libfribidi-dev
 
 r_packages:
   - data.table
