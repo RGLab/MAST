@@ -1,8 +1,5 @@
 # Sample .travis.yml for R projects
-
 language: r
-r: bioc-devel
-dist: trusty
 sudo: required
 
 matrix:
@@ -12,44 +9,60 @@ matrix:
    - os: linux
      r: devel
      env: R_CODECOV=true
-     
-r_binary_packages: 
+
+cache: 
+  packages: TRUE
+
+before_install:
+  - R -e 'install.packages("devtools")'
+  - tlmgr install index
+  - sudo apt-get update
+  - sudo apt-get -y install libharfbuzz-dev libfribidi-dev
+
+r_packages:
+  - data.table
+  - shiny
+  - shinythemes
+  - MASS
+  - methods
+  - stats
+  - utils
+  - graphics
+  - grDevices
+  - tools
+  - magrittr
+  - rmarkdown
+  - robustbase
+  - ggplot2
   - BiocStyle
   - lme4
   - GGally
-  - ggplot2
   - reshape2
-  - data.table
-  - knitr
   - stringr
   - NMF
   - rsvd
   - RColorBrewer
 
-before_install:
-  - R -e 'install.packages("devtools")'
-  - tlmgr install index
-
-install:
-  - R -e 'devtools::install_deps(dep = T,type="source")'
+r_github_packages:
+  - jrowen/rhandsontable
+  - rlbarter/superheat
+  - yihui/knitr
+  - r-lib/covr
+  - r-lib/testthat
+  - r-lib/vdiffr
+  - r-lib/pkgdown
+  - rstudio/shinytest
+  
+use_bioc: true
 
 bioc_packages:
+  - BiocGenerics
   - GSEABase
   - limma
   - TxDb.Hsapiens.UCSC.hg19.knownGene
 
-cache: 
-  packages: TRUE
-  
-warnings_are_errors: false 
 
-use_bioc: true
-
-bioc_required: true
-
-env:
- global:
-   - CRAN: http://cran.rstudio.com
+warnings_are_errors: false
 
 notifications:
   email:
@@ -58,5 +71,16 @@ notifications:
     
 after_success:
   -  if [[ "${R_CODECOV}" ]]; then R -e 'covr::codecov()'; fi
-    
+  
+env:
+ global:
+   - CRAN: http://cran.rstudio.com
+   - BIOC_USE_DEVEL="FALSE"
+
+
+     
+
+
+
+
 

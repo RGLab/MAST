@@ -1,8 +1,11 @@
 Glue <- function(...) abind(..., rev.along=0)
 
+#'@importFrom plyr rbind.fill
 collectSummaries <- function(listOfSummaries){
     summaries <- list()
-    summaries[['coefC']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'coefC'))
+    #summaries[['coefC']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'coefC'))
+    summaries[['coefC']] <- as.matrix(do.call(plyr::rbind.fill,lapply(lapply(listOfSummaries,"[[", "coefC"),function(x)as.data.frame(t(x)))))
+    rownames(summaries[['coefC']])<-names(listOfSummaries)
     summaries[['vcovC']] <- do.call(Glue, lapply(listOfSummaries, '[[', 'vcovC'))
     summaries[['df.resid']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'df.resid'))
     summaries[['df.null']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'df.null'))
@@ -11,8 +14,11 @@ collectSummaries <- function(listOfSummaries){
     summaries[['dispersionNoshrink']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'dispersionNoshrink'))
     summaries[['converged']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'converged'))
     summaries[['loglik']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'loglik'))
-    summaries[['coefD']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'coefD'))
+    #summaries[['coefD']] <- do.call(rbind, lapply(listOfSummaries, '[[', 'coefD'))
     summaries[['vcovD']] <- do.call(Glue, lapply(listOfSummaries, '[[', 'vcovD'))
+    summaries[['coefD']] <-as.matrix(do.call(plyr::rbind.fill,lapply(lapply(listOfSummaries,"[[", "coefD"),function(x)as.data.frame(t(x)))))
+    rownames(summaries[['coefD']])<-names(listOfSummaries)
+    
 
     summaries
 }
