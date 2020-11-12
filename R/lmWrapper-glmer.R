@@ -274,22 +274,29 @@ setMethod('vcov', signature=c(object='LMERlike'), function(object, which, ...){
     vc
 })
 
+demangle_names = function(x){
+    names(x) = str_replace_all(names(x), fixed('`'), '')
+    x
+}
+
 if(getRversion() >= "2.15.1") globalVariables(c('fixef', 'lmer', 'glmer'))
 #' @describeIn LMERlike return the coefficients.  The horrendous hack is attempted to be undone.
 #' @param singular \code{logical}. Should NA coefficients be returned?
 setMethod('coef', signature=c(object='LMERlike'), function(object, which, singular=TRUE, ...){
     stopifnot(which %in% c('C', 'D'))
     co <- setNames(rep(NA, ncol(model.matrix(object))), colnames(model.matrix(object)))
-    if(which=='C' & object@fitted['C']){
-        co <- lme4::fixef(object@fitC)}
-    else if(object@fitted['D']){
-        co <- lme4::fixef(object@fitD)
+    co = object@defaultCoef
+    if(which == 'C' & object@fitted['C']){
+        lm_co = lme4::fixef(object@fitC)
+      
+    } else if(object@fitted['D']){
+        lm_co = lme4::fixef(object@fitD)
+    } else{
+        lm_co = co
     }
+    co[names(demangle_names(lm_co))] = demangle_names(lm_co)
     if(!singular) co <- co[!is.na(co)]
-    conm <- names(co)
-    ## because of backtick shenanigans
-    names(co) <- str_replace_all(conm, fixed('`'), '')
-    co
+   co
 })
 
 ##' @describeIn LMERlike return the log-likelihood

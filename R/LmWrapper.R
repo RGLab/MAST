@@ -54,7 +54,7 @@ setMethod('coef', signature=c(object='LMlike'), function(object, which, singular
     stopifnot(which %in% c('C', 'D'))
     co <- object@defaultCoef
     if(which=='C' & object@fitted['C']){
-        co <- coef(object@fitC)
+        co[names(coef(object@fitC))] <- coef(object@fitC)
     }
 
     if(which=='D' & object@fitted['D']){
