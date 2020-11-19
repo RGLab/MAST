@@ -5,7 +5,7 @@ vb1 = subset(vbetaFA[1:24,], ncells==1)
 #vb1 = vb1[,freq(vb1)>.1]
 zf = zlm(~Stim.Condition, vb1)
 set.seed(1234)
-boots = bootVcov1(zf, 36)
+boots = bootVcov1(zf, R = 36)
 ## replace NAs for each coefficient, gene and component
 bootsUncor <- apply(boots, 2:4, function(col){
     col[!is.na(col)] <- col[!is.na(col)]-mean(col[!is.na(col)], na.rm=TRUE)

@@ -32,6 +32,7 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
 ##' Sample cells with replacement to find bootstrapped distribution of coefficients
 ##' @param zlmfit class \code{ZlmFit}
 ##' @param R number of bootstrap replicates
+##' @param boot_index list of indices to resample.  Only one of R or boot_index can be offered.
 ##' @return array of bootstrapped coefficients
 ##' @importFrom plyr raply
 ##' @examples
@@ -40,12 +41,20 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
 ##' #Only run 3 boot straps, which you wouldn't ever want to do in practice...
 ##' bootVcov1(zlmVbeta, R=3)
 ##' @export
-bootVcov1 <- function(zlmfit, R=99){
+bootVcov1 <- function(zlmfit, R=99, boot_index = NULL){
     sca <- zlmfit@sca
     N <- ncol(sca)
     LMlike <- zlmfit@LMlike
-    manyvc <- raply(R, {
-        s <- sample(N, replace=TRUE)
+    if(is.numeric(R)){
+        boot_index = lapply(1:R, function(i) sample(N, replace = TRUE))
+    } else if(!is.null(boot_index)){
+        r = range(unlist(boot_index))
+        if(!is.list(boot_index) || r[1] < 1 || r[2] > N) stop("boot_index must be a list of integer vectors between 1 and ", N)
+    } else{
+        stop("Provide only of of `boot_index` or `R`.")
+    }
+    
+    manyvc <- laply(boot_index, function(s){
         newsca <- sca[,s]
         LMlike <- update(LMlike, design=colData(newsca))
         zlm(sca=newsca, LMlike=LMlike, onlyCoef=TRUE)

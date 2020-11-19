@@ -7,7 +7,7 @@
 \usage{
 pbootVcov1(cl, zlmfit, R = 99)
 
-bootVcov1(zlmfit, R = 99)
+bootVcov1(zlmfit, R = 99, boot_index = NULL)
 }
 \arguments{
 \item{cl}{a \code{cluster} object created by \code{makeCluster}}
@@ -15,6 +15,8 @@ bootVcov1(zlmfit, R = 99)
 \item{zlmfit}{class \code{ZlmFit}}
 
 \item{R}{number of bootstrap replicates}
+
+\item{boot_index}{list of indices to resample.  Only one of R or boot_index can be offered.}
 }
 \value{
 array of bootstrapped coefficients
