@@ -56,8 +56,8 @@ bootVcov1 <- function(zlmfit, R=99, boot_index = NULL){
     
     manyvc <- laply(boot_index, function(s){
         newsca <- sca[,s]
-        LMlike <- update(LMlike, design=colData(newsca))
-        zlm(sca=newsca, LMlike=LMlike, onlyCoef=TRUE)
+        LMlike <- update(LMlike, design=colData(newsca), keepDefaultCoef = TRUE)
+        zlm(sca=newsca, LMlike = LMlike, onlyCoef = TRUE)
     })
 
     manyvc

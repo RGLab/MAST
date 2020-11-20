@@ -103,24 +103,25 @@ test_that('Bootstrap recovers covariance', {
 
 parallel::stopCluster(cl)
 
-# context("Nearly singular designs")
-# 
-# test_that('Bootstrap results are padded appropriately', {
-#     N <- 12
-#     m <- 20
-#     p <- 3
-#     X <- getX(p, N/p, N)
-#     beta <- rbind(2, matrix(0, nrow = p-1, ncol = m))
-#     Y <- simYs(m, X, beta, rho=0, sigma=1, p=.7)
-#     cData <- data.frame(group = attr(X, 'group'))
-#     cData$group = factor(cData$group)
-#     sca <- suppressMessages(suppressWarnings(FromMatrix(t(Y$Y), cData=cData)))
-#     zfit <- suppressWarnings(zlm(~group, sca=sca))
-#     # Only fit on groupA/groupB samples
-#     boot <- bootVcov1(zfit,R = NULL,boot_index  = list(c(rep(1, 4), 1:8)))
-#     expect_equal(colnames(boot), colnames(coef(zfit, 'D')))
-# })
+context("Nearly singular designs")
 
-          
+test_that('Bootstrap results are padded appropriately', {
+    N <- 12
+    m <- 20
+    p <- 3
+    X <- getX(p, N/p, N)
+    beta <- rbind(2, matrix(0, nrow = p-1, ncol = m))
+    Y <- simYs(m, X, beta, rho=0, sigma=1, p=.7)
+    cData <- data.frame(group = attr(X, 'group'))
+    cData$group = factor(cData$group)
+    sca <- suppressMessages(suppressWarnings(FromMatrix(t(Y$Y), cData=cData)))
+    zfit <- suppressWarnings(zlm(~group, sca=sca))
+    # Only fit on groupA/groupB samples
+    boot <- bootVcov1(zfit,R = NULL,boot_index  = list(c(rep(1, 4), 1:8)))
+    expect_equal(colnames(boot), colnames(coef(zfit, 'D')))
+    expect_true(all(is.na(boot[,'groupC',])))
+})
+
+
 
 

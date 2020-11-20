@@ -37,3 +37,7 @@ Transition to use `SingleCellExperiment` and manage log counts slot.
 
 - deviance_residuals_hook had dependencies on lm.influence internals that abruptly changed in R 4.0 with no obvious fix.  This function is now defunct.
 - Defunct functions `cData`, `fData`, `zlm.SingleCellAssay`, `exprs`, `combine` have been removed.
+
+## 1.17.2
+
+- Fix issue in bootstrapping in which some factor levels aren't sampled in a the bag

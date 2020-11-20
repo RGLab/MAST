@@ -16,7 +16,7 @@
 \usage{
 \S4method{summary}{LMlike}(object)
 
-\S4method{update}{LMlike}(object, formula., design, ...)
+\S4method{update}{LMlike}(object, formula., design, keepDefaultCoef = FALSE, ...)
 
 \S4method{waldTest}{LMlike,CoefficientHypothesis}(object, hypothesis)
 
@@ -38,6 +38,8 @@
 \item{formula.}{\code{formula}}
 
 \item{design}{something coercible to a \code{data.frame}}
+
+\item{keepDefaultCoef}{\code{logical}. Should the coefficient names be preserved from \code{object} or updated if the model matrix has changed?}
 
 \item{...}{passed to \code{model.matrix}}
 

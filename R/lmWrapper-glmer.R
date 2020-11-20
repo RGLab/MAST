@@ -45,7 +45,9 @@ toAdditiveFormula <- function(string){
 ##' @describeIn LMERlike update the formula or design matrix
 ##' @param formula. \code{formula}
 ##' @param design  something coercible to a \code{data.frame}
-setMethod('update', signature=c(object='LMERlike'), function(object, formula., design, ...){
+##' @param  keepDefaultCoef \code{logical}. Should the coefficient names be preserved from \code{object} or updated if the model matrix has changed?
+setMethod('update', signature=c(object='LMERlike'), function(object, formula., design, keepDefaultCoef = FALSE, ...){
+    o_old = object
     if(!missing(formula.)){
         object@formula <- update.formula(object@formula, formula.)
     }
@@ -54,6 +56,10 @@ setMethod('update', signature=c(object='LMERlike'), function(object, formula., d
         object@design <- as(design, 'data.frame')
     }
     model.matrix(object) <- model.matrix(as.formula(paste0('~', reComponents$FEform)), object@design, ...)
+    if(keepDefaultCoef){
+      object@defaultCoef = o_old@defaultCoef
+      object@defaultVcov = o_old@defaultVcov
+    }
     object@fitC <- object@fitD <- numeric(0)
     object@fitted <- c(C=FALSE, D=FALSE)
     object

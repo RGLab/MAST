@@ -9,7 +9,7 @@
 \alias{logLik,LMERlike-method}
 \title{Wrapper for lmer/glmer}
 \usage{
-\S4method{update}{LMERlike}(object, formula., design, ...)
+\S4method{update}{LMERlike}(object, formula., design, keepDefaultCoef = FALSE, ...)
 
 \S4method{vcov}{LMERlike}(object, which, ...)
 
@@ -23,6 +23,8 @@
 \item{formula.}{\code{formula}}
 
 \item{design}{something coercible to a \code{data.frame}}
+
+\item{keepDefaultCoef}{\code{logical}. Should the coefficient names be preserved from \code{object} or updated if the model matrix has changed?}
 
 \item{...}{In the case of \code{vcov}, ignored.  In the case of \code{update}, passed to \code{model.matrix}.}
 

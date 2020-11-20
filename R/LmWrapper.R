@@ -52,15 +52,17 @@ setMethod('initialize', 'LMlike', function(.Object, ..., design=data.frame()){
 
 setMethod('coef', signature=c(object='LMlike'), function(object, which, singular=TRUE, ...){
     stopifnot(which %in% c('C', 'D'))
-    co <- object@defaultCoef
-    if(which=='C' & object@fitted['C']){
-        co[names(coef(object@fitC))] <- coef(object@fitC)
+    co = object@defaultCoef
+    if(which == 'C' & object@fitted['C']){
+        some_co = coef(object@fitC)
+    } else if(which == 'D' & object@fitted['D']){
+        some_co = coef(object@fitD)
+    } else{
+        #!fitted
+        some_co = co
     }
-
-    if(which=='D' & object@fitted['D']){
-        co <- coef(object@fitD)
-    }
-    if(!singular) co <- co[!is.na(co)]
+    co[names(some_co)] = some_co
+    if(!singular) co = co[!is.na(co)]
     co
 })
 
@@ -79,9 +81,11 @@ setMethod('summary', signature=c(object='LMlike'), function(object){
 ##' @describeIn LMlike update the formula or design from which the \code{model.matrix} is constructed
 ##' @param formula. \code{formula}
 ##' @param design something coercible to a \code{data.frame}
+##' @param keepDefaultCoef \code{logical}. Should the coefficient names be preserved from \code{object} or updated if the model matrix has changed?
 ##' @param ... passed to \code{model.matrix}
 ##' @importMethodsFrom stats4 update coef vcov summary
-setMethod('update', signature=c(object='LMlike'), function(object, formula., design, ...){
+setMethod('update', signature=c(object='LMlike'), function(object, formula., design, keepDefaultCoef = FALSE, ...){
+    o_old = object
     if(!missing(formula.)){
         object@formula <- update.formula(object@formula, formula.)
     }
@@ -89,6 +93,10 @@ setMethod('update', signature=c(object='LMlike'), function(object, formula., des
         object@design <- as(design, 'data.frame')
     }
     model.matrix(object) <- model.matrix(object@formula, object@design, ...)
+    if(keepDefaultCoef){
+        object@defaultCoef = o_old@defaultCoef
+        object@defaultVcov = o_old@defaultVcov
+    }
     object@fitC <- object@fitD <- numeric(0)
     object@fitted <- c(C=FALSE, D=FALSE)
     object
