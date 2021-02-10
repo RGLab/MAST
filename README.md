@@ -14,7 +14,7 @@ MAST supports:
 *  Gene set enrichment analysis, corrected for covariates and gene-gene correlations
 *  Exploration of gene-gene correlations and co-expression
 
-Vignettes are available in the package via `vignette('MAITAnalysis')`, `vignette('MAST-intro')` or `vignette('MAST-interoperability')`.
+Vignettes are available in the package via `vignette('MAITAnalysis')`, `vignette('MAST-Intro')` or `vignette('MAST-interoperability')`.
 
 New Features and announcements
 ------------
