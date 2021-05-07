@@ -41,3 +41,7 @@ Transition to use `SingleCellExperiment` and manage log counts slot.
 ## 1.17.2
 
 - Fix issue in bootstrapping in which some factor levels aren't sampled in a the bag
+
+## 1.17.4
+
+- `exprs_values` was not actually being used to select the assay in zlm (thanks to lrSoler for the report).

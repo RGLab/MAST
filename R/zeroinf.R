@@ -137,7 +137,7 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
     
     ## avoiding repeated calls to the S4 object speeds calls on large sca
     ## due to overzealous copying semantics on R's part
-    ee <- t(assay(sca))
+    ee <- t(assay(sca, exprs_values))
     genes <- colnames(ee)
     ng <- length(genes)
     MM <- model.matrix(obj)
