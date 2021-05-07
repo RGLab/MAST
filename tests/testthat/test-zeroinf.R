@@ -27,6 +27,7 @@ test_that('zlm can run linear regression', {
 
 test_that('zlm accepts expressions in formulae', {
     out <- zlm(y ~ cut(x2, 3) + x1, dat, method='glm')
+    expect_type(out, 'list')
 })
 
   fd2 <- fd[1:20,]
@@ -41,7 +42,7 @@ if(require('lme4')){
     expect_is(lrout2$disc, c('mer','lmerMod','glmerMod'))
 })
     test_that('zlm can run lmer', {
-        hushWarning(z <- zlm(~Population + (1|Subject.ID), fd2, method='lmer', ebayes=FALSE), 'gradient|singular|multiple|nobs')
+        hushWarning(z <- zlm(~Population + (1|Subject.ID), fd2, method='lmer', ebayes=FALSE), 'gradient|singular|multiple|nobs|NA')
         expect_is(z, 'ZlmFit')
         expect_equal(nrow(z@df.null), 20)
         expect_equal(dim(z@vcovC)[[3]], 20)
@@ -148,3 +149,15 @@ test_that('Can do ebayes shrinkage using bayesglm', {
     expect_equal(zzinit@dispersion, zzinitshrink@dispersionNoshrink)
 })
 
+
+context('exprs_values')
+test_that('exprs_values selects correct assay', {
+  avb = assay(fd2)
+  avb[] = -9
+  assays(fd2, withDimnames = FALSE) = list(null = avb, Et = assay(fd2))
+  z1 = zlm(~Population, fd2, ebayes = FALSE, method = 'glm')
+  z2 = zlm(~Population, fd2, ebayes = FALSE, method = 'glm', exprs_value = 'Et')
+  z3 = zlm(~Population, fd2, ebayes = FALSE, method = 'glm', exprs_value = 'null')
+  expect_equal(z1, z2)
+  expect_false(isTRUE(all.equal(z2, z3)))
+})
