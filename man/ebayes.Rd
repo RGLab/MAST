@@ -4,14 +4,14 @@
 \alias{ebayes}
 \title{Estimate hyperparameters for hierarchical variance model for continuous component}
 \usage{
-ebayes(sca, ebayesControl, Formula, truncate = Inf)
+ebayes(assay_t, ebayesControl, mm, truncate = Inf)
 }
 \arguments{
-\item{sca}{\code{SingleCellAssay}}
+\item{assay_t}{cells X genes matrix}
 
 \item{ebayesControl}{list with (optional) components 'method', 'model'.  See details.}
 
-\item{Formula}{a formula (using variables in \code{colData(sca)} used when \code{model='H1'}.}
+\item{mm}{a model matrix, used when \code{model='H1'}.}
 
 \item{truncate}{Genes with sample precisions exceeding this value are discarded when estimating the hyper parameters}
 }
@@ -21,5 +21,5 @@ ebayes(sca, ebayesControl, Formula, truncate = Inf)
 \description{
 \code{ebayesControl} is a named list with (optional) components 'method' (one of 'MOM' or 'MLE') and 'model' (one of 'H0' or 'H1')
 method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
-H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
+H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{mm}
 }
