@@ -39,13 +39,12 @@ solveMoM <- function(rNg, SSg){
 }
 
 ##' @importFrom plyr aaply
-getSSg_rNg <- function(sca, mm){
-    aaply(t(assay(sca)), 2, function(y){
+getSSg_rNg <- function(assay_t, mm){
+    aaply(assay_t, 2, function(y){
         SSg <- NA
         rNg <- NA
         try({
-            pos <- y>0
-            yp <- y[pos]
+            yp <- y[!is.na(y)]
             mp <- mm[pos,]
             QR <- qr(mp)
             resid <- qr.resid(QR, yp)
@@ -60,13 +59,13 @@ getSSg_rNg <- function(sca, mm){
 ##'
 ##' \code{ebayesControl} is a named list with (optional) components 'method' (one of 'MOM' or 'MLE') and 'model' (one of 'H0' or 'H1')
 ##' method MOM uses a method-of-moments estimator, while MLE using the marginal likelihood.
-##' H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{formula}
-##' @param sca \code{SingleCellAssay}
+##' H0 model estimates the precisions using the intercept alone in each gene, while H1 fits the full model specified by \code{mm}
+##' @param assay_t cells X genes matrix
 ##' @param ebayesControl list with (optional) components 'method', 'model'.  See details.
-##' @param Formula a formula (using variables in \code{colData(sca)} used when \code{model='H1'}.
+##' @param mm a model matrix, used when \code{model='H1'}.
 ##' @param truncate Genes with sample precisions exceeding this value are discarded when estimating the hyper parameters
 ##' @return \code{numeric} of length two, giving the hyperparameters in terms of a variance (\code{v}) and prior observations (\code{df}), inside a \code{structure}, with component \code{hess}, giving the Fisher Information of the hyperparameters.
-ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
+ebayes <- function(assay_t, ebayesControl, mm, truncate=Inf){
     ## Empirical bayes method
     defaultCtl <- list(method='MLE', model='H0')
     if (is.null(ebayesControl)){
@@ -79,22 +78,18 @@ ebayes <- function(sca, ebayesControl, Formula, truncate=Inf){
     ebayesControl[missingControl] <- defaultCtl[missingControl]
     method <- match.arg(ebayesControl[['method']], c('MOM', 'MLE'))
     model <- match.arg(ebayesControl[['model']], c('H0', 'H1'))
-
-    ee <- t(assay(sca))
-    ee[ee==0] <- NA
+    assay_t[assay_t==0] <- NA
     
     if(model == 'H0'){
-        ee <- scale(ee, scale=FALSE, center=TRUE)
+        assay_t <- scale(assay_t, scale=FALSE, center=TRUE)
         ## Global variance
-        rNg <- colSums(!is.na(ee), na.rm=TRUE)-1
-        SSg <- colSums(ee^2, na.rm=TRUE)
+        rNg <- colSums(!is.na(assay_t), na.rm=TRUE)-1
+        SSg <- colSums(assay_t^2, na.rm=TRUE)
         valid <- rNg>0 & rNg/SSg < truncate
         rNg <- rNg[valid]
         SSg <- SSg[valid]
     } else if(model == 'H1'){
-        mm <- model.matrix(Formula, colData(sca))
-
-        allfits <- getSSg_rNg(sca, mm)
+        allfits <- getSSg_rNg(assay_t, mm)
         valid <- apply(!is.na(allfits), 1, all) & allfits[, 'rNg']/allfits[, 'SSg']<truncate
         valid[is.na(valid)] <- FALSE
         SSg <- allfits[valid,'SSg']

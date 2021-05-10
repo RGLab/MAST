@@ -118,7 +118,7 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
         priorDOF <- 0
         if(ebayes){
             if(!methodDict[lmMethod==method,implementsEbayes]) stop('Method', method, ' does not implement empirical bayes variance shrinkage.')
-            ebparm <- ebayes(sca, ebayesControl, Formula)
+            ebparm <- ebayes(t(assay(sca, exprs_values)), ebayesControl, model.matrix(Formula, colData(sca)))
             priorVar <- ebparm[['v']]
             priorDOF <- ebparm[['df']]
             stopifnot(all(!is.na(ebparm)))
