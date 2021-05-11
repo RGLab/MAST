@@ -42,7 +42,7 @@ Transition to use `SingleCellExperiment` and manage log counts slot.
 
 - Fix issue in bootstrapping in which some factor levels aren't sampled in a the bag
 
-## 1.17.5
+## 1.17.6
 
 - `exprs_values` was not actually being used to select the assay in zlm.
-- `exprs_values` was not being properly propagated to `ebayes`. (thanks to IrSoler for the report)
+- `exprs_values` was not being properly propagated to `ebayes`, `lrTest`, `pbootVcov1` and `bootVcov1`.  Added a slot to ZlmFit to manage this. Thanks to IrSoler for the report.
