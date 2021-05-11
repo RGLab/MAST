@@ -9,16 +9,22 @@ pbootVcov1<-function (cl,zlmfit, R = 99)
     sca <- zlmfit@sca
     N <- ncol(sca)
     LMlike <- zlmfit@LMlike
+    if('exprs_values' %in% slotNames(zlmfit)) { 
+        exprs_values = zlmfit@exprs_values
+    } else{
+        exprs_values = assay_idx(sca)$aidx
+    }
     parallel::clusterEvalQ(cl,require(MAST))
     ## clusterEvalQ(cl,require(abind))
     parallel::clusterExport(cl,"N",envir=environment())
     parallel::clusterExport(cl,"LMlike",envir=environment())
     parallel::clusterExport(cl,"sca",envir=environment())
+    parallel::clusterExport(cl,"exprs_values",envir=environment())
     manyvc <- parallel::parSapply(cl,1:R, function(i,...){
         s <- sample(N, replace = TRUE)
         newsca <- sca[, s]
         LMlike <- update(LMlike, design=colData(newsca))
-        zlm(sca = newsca, LMlike = LMlike, onlyCoef=TRUE)
+        zlm(sca = newsca, LMlike = LMlike, onlyCoef = TRUE, exprs_values = exprs_values)
     })
     
     d<-dim(coef(zlmfit,"D"))
@@ -45,6 +51,11 @@ bootVcov1 <- function(zlmfit, R=99, boot_index = NULL){
     sca <- zlmfit@sca
     N <- ncol(sca)
     LMlike <- zlmfit@LMlike
+    if('exprs_values' %in% slotNames(zlmfit)) { 
+       exprs_values = zlmfit@exprs_values
+    } else{
+        exprs_values = assay_idx(sca)$aidx
+    }
     if(is.numeric(R)){
         boot_index = lapply(1:R, function(i) sample(N, replace = TRUE))
     } else if(!is.null(boot_index)){
@@ -57,7 +68,7 @@ bootVcov1 <- function(zlmfit, R=99, boot_index = NULL){
     manyvc <- laply(boot_index, function(s){
         newsca <- sca[,s]
         LMlike <- update(LMlike, design=colData(newsca), keepDefaultCoef = TRUE)
-        zlm(sca=newsca, LMlike = LMlike, onlyCoef = TRUE)
+        zlm(sca=newsca, LMlike = LMlike, onlyCoef = TRUE, exprs_values = exprs_values)
     })
 
     manyvc

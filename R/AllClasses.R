@@ -150,6 +150,7 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##' @slot priorVar shrinkage target
 ##' @slot converged output that may optionally be set by the underlying modeling function
 ##' @slot hookOut a list of length ngenes containing output from a hook function, if \code{zlm} was called with one
+##' @slot exprs_values `character` or `integer` with the `assay` used.
 ##' @seealso zlm summary,ZlmFit-method
 ##' @aliases ZlmFit
 ##' @examples
@@ -171,7 +172,7 @@ setClass('CoefficientHypothesis', contains='Hypothesis', slots=list(index='numer
 ##'         `PopulationCD154-VbetaUnresponsive`'))
 ##' waldTest(zlmVbeta, Hypothesis('`PopulationCD154+VbetaUnresponsive` -
 ##'         `PopulationCD154-VbetaUnresponsive`'))
-setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellAssay', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY'))
+setClass('ZlmFit', slots=list(coefC='matrix', coefD='matrix', vcovC='array', vcovD='array', LMlike='LMlike', sca='SingleCellAssay', deviance='matrix', loglik='matrix', df.null='matrix', df.resid='matrix', dispersion='matrix', dispersionNoshrink='matrix', priorDOF='numeric', priorVar='numeric', converged='matrix', hookOut='ANY', exprs_values = 'ANY'))
 
 ##' An S4 class for Gene Set Enrichment output
 ##'

@@ -144,9 +144,7 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
     coefNames <- colnames(MM)
     ## to facilitate our call to mclapply
     listEE <- setNames(seq_len(ng), genes)
-    ## in hopes of finding a typical gene
-    upperQgene <- which(rank(freq(sca), ties.method='random')==floor(.75*ng))
-    obj <- fit(obj, ee[,upperQgene], silent=silent)
+    obj <- fit(obj, ee[,1], silent=silent)
 
     ## called internally to do fitting, but want to get local variables in scope of function
     nerror <- totalerr <- 0
@@ -207,6 +205,7 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
     summaries[['priorVar']] <- obj@priorVar
     summaries[['priorDOF']] <- obj@priorDOF
     summaries[['hookOut']] <- hookOut
+    summaries[['exprs_values']] <- exprs_values
     summaries[['Class']] <- 'ZlmFit'
     ## everything we need to call new
     zfit <- do.call(new, as.list(summaries))

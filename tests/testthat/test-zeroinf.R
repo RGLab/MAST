@@ -152,12 +152,22 @@ test_that('Can do ebayes shrinkage using bayesglm', {
 
 context('exprs_values')
 test_that('exprs_values selects correct assay', {
+  z1 = zlm(~Population, fd2, method = 'glm')
   avb = assay(fd2)
   avb[] = -9
-  assays(fd2, withDimnames = FALSE) = list(null = avb, Et = assay(fd2))
-  z1 = zlm(~Population, fd2, ebayes = FALSE, method = 'glm')
-  z2 = zlm(~Population, fd2, ebayes = FALSE, method = 'glm', exprs_value = 'Et')
-  z3 = zlm(~Population, fd2, ebayes = FALSE, method = 'glm', exprs_value = 'null')
+  fd3 = fd2
+  assays(fd3, withDimnames = FALSE) = list(Et = avb, good = assay(fd2))
+  z2 = zlm(~Population, fd3, method = 'glm',  exprs_values = 'good')
+  # same as assays(fd2)$good
+  z3 = zlm(~Population, fd3, method = 'glm')
+  l1 = lrTest(z1, 'Population')
+  l2 = lrTest(z2, 'Population')
+  expect_equal(l1, l2)
+  # equal except intended differences
+  z1@sca = z2@sca
+  z1@exprs_values = z2@exprs_values
   expect_equal(z1, z2)
-  expect_false(isTRUE(all.equal(z2, z3)))
+  
+  #
+  expect_false(isTRUE(all.equal(coef(z2, 'D'), coef(z3, 'D'))))
 })
