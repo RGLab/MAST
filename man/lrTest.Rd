@@ -4,12 +4,14 @@
 \alias{lrTest}
 \title{Run a likelihood-ratio test}
 \usage{
-lrTest(object, hypothesis)
+lrTest(object, hypothesis, ...)
 }
 \arguments{
 \item{object}{LMlike or subclass}
 
 \item{hypothesis}{the hypothesis to be tested.  See details.}
+
+\item{...}{optional arguments, passed to fitting functions}
 }
 \value{
 array giving test statistics

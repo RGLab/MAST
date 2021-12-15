@@ -14,11 +14,11 @@
 \alias{se.coef,ZlmFit-method}
 \title{An S4 class to hold the output of a call to zlm}
 \usage{
-\S4method{lrTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis)
+\S4method{lrTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis, ...)
 
-\S4method{lrTest}{ZlmFit,Hypothesis}(object, hypothesis)
+\S4method{lrTest}{ZlmFit,Hypothesis}(object, hypothesis, ...)
 
-\S4method{lrTest}{ZlmFit,matrix}(object, hypothesis)
+\S4method{lrTest}{ZlmFit,matrix}(object, hypothesis, ...)
 
 \S4method{waldTest}{ZlmFit,CoefficientHypothesis}(object, hypothesis)
 
@@ -35,9 +35,9 @@
 
 \item{hypothesis}{call to \link{Hypothesis} or \link{CoefficientHypothesis} or a matrix giving such contrasts.}
 
-\item{which}{character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned}
-
 \item{...}{ignored}
+
+\item{which}{character vector, one of "C" (continuous) or "D" (discrete) specifying which component should be returned}
 }
 \value{
 see "Methods (by generic)"
@@ -98,6 +98,8 @@ This holds output from a call to zlm.  Many methods are defined to operate on it
 \item{\code{converged}}{output that may optionally be set by the underlying modeling function}
 
 \item{\code{hookOut}}{a list of length ngenes containing output from a hook function, if \code{zlm} was called with one}
+
+\item{\code{exprs_values}}{`character` or `integer` with the `assay` used.}
 }}
 
 \examples{

@@ -58,6 +58,7 @@ setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
 ##' \code{hypothesis} can be one of a \code{character} giving complete factors or terms to be dropped from the model, \code{CoefficientHypothesis} giving names of  coefficients to be dropped, \code{Hypothesis} giving contrasts using the symbolically, or a contrast \code{matrix}, with one row for each coefficient in the full model, and one column for each contrast being tested.
 ##' @param object LMlike or subclass
 ##' @param hypothesis the hypothesis to be tested.  See details.
+##' @param ... optional arguments, passed to fitting functions
 ##' @return array giving test statistics
 ##' @export
 ##' @seealso fit
@@ -68,7 +69,7 @@ setGeneric('se.coef', function(object, ...) standardGeneric('se.coef'))
 ##' @examples
 ##' #see ZlmFit-class for examples
 ##' example('ZlmFit-class')
-setGeneric('lrTest', function(object, hypothesis) standardGeneric('lrTest'))
+setGeneric('lrTest', function(object, hypothesis, ...) standardGeneric('lrTest'))
 
 ##' Run a Wald test
 ##'

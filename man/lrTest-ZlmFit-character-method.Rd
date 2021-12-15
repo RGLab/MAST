@@ -4,12 +4,29 @@
 \alias{lrTest,ZlmFit,character-method}
 \title{Likelihood ratio test}
 \usage{
-\S4method{lrTest}{ZlmFit,character}(object, hypothesis)
+\S4method{lrTest}{ZlmFit,character}(object, hypothesis, ...)
 }
 \arguments{
 \item{object}{ZlmFit}
 
 \item{hypothesis}{See Details}
+
+\item{...}{
+  Arguments passed on to \code{\link[=zlm]{zlm}}
+  \describe{
+    \item{\code{formula}}{a formula with the measurement variable on the LHS and predictors present in colData on the RHS}
+    \item{\code{sca}}{SingleCellAssay object}
+    \item{\code{method}}{character vector, either 'glm', 'glmer' or 'bayesglm'}
+    \item{\code{silent}}{Silence common problems with fitting some genes}
+    \item{\code{ebayes}}{if TRUE, regularize variance using empirical bayes method}
+    \item{\code{ebayesControl}}{list with parameters for empirical bayes procedure.  See \link{ebayes}.}
+    \item{\code{force}}{Should we continue testing genes even after many errors have occurred?}
+    \item{\code{hook}}{a function called on the \code{fit} after each gene.}
+    \item{\code{parallel}}{If TRUE and \code{option(mc.cores)>1} then multiple cores will be used in fitting.}
+    \item{\code{LMlike}}{if provided, then the model defined in this object will be used, rather than following the formulas.  This is intended for internal use.}
+    \item{\code{onlyCoef}}{If TRUE then only an array of model coefficients will be returned (probably only useful for bootstrapping).}
+    \item{\code{exprs_values}}{character or integer passed to `assay` specifying which assay to use for testing}
+  }}
 }
 \value{
 3D array

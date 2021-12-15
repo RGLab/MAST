@@ -3,10 +3,18 @@
 \name{summary,ZlmFit-method}
 \alias{summary,ZlmFit-method}
 \alias{"summary-ZlmFit",}
-\alias{"ZlmFit-summary"}
+\alias{"ZlmFit-summary",}
+\alias{"summary.ZlmFit"}
 \title{Summarize model features from a \code{ZlmFit} object}
 \usage{
-\S4method{summary}{ZlmFit}(object, logFC = TRUE, doLRT = FALSE, level = 0.95, ...)
+\S4method{summary}{ZlmFit}(
+  object,
+  logFC = TRUE,
+  doLRT = FALSE,
+  level = 0.95,
+  parallel = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{A \code{ZlmFit} object}
@@ -16,6 +24,8 @@
 \item{doLRT}{if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.}
 
 \item{level}{what level of confidence coefficient to return.  Defaults to 95 percent.}
+
+\item{parallel}{If TRUE and \code{option(mc.cores)>1} then multiple cores will be used in fitting.}
 
 \item{...}{ignored}
 }
@@ -45,6 +55,8 @@ names(zs)
 print(zs)
 ##Select `datatable` copmonent to get normal print method
 zs$datatable
+## Can use parallel processing for LRT now
+summary(z, doLRT = TRUE, parallel = TRUE)
 }
 \seealso{
 print.summaryZlmFit
