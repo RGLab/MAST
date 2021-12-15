@@ -53,8 +53,14 @@ removeResponse <- function(Formula, warn=TRUE){
     as.formula(paste0('~', fsplit[1,2])) 
 }
 
-## removeResponse <- function(Formula, warn=TRUE){
-##     trm <- terms(Formula)
-##     if(attr(trm, 'response')==1 && warn) warning("Ignoring LHS variable from formula", Formula)
-##     reformulate(labels(trm), intercept=attr(trm, 'intercept'))
-## }
+#' Combine lists, preferentially taking elements from x if there are duplicate names
+#'
+#' @param x list
+#' @param y list
+#' @examples
+#' MAST:::meld_list_left(list(A=1, B=2), list(A = 0))
+meld_list_left = function(x, y){
+    unite = c(x, y)
+    dups = nchar(names(unite)) & duplicated(names(unite))
+    unite[!dups]
+}

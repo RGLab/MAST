@@ -204,7 +204,7 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
     }
 
     if(!requireNamespace('lme4')) stop('Please install `lme4` to use method `LMERlike`.')
-    fitArgsC <- object@fitArgsC
+    fitArgsC <- meld_list_left(object@fitArgsC, list(REML = FALSE))
     fitArgsD <- object@fitArgsD
 
     if(silent){
@@ -234,11 +234,11 @@ setMethod('fit', signature=c(object='LMERlike', response='missing'), function(ob
     
     if(any(pos)){
         datpos <- dat[pos,]
-        object@fitC <- do.call(cfun, c(list(formula=formC, data=quote(datpos), REML=FALSE), fitArgsC))
+        object@fitC <- do.call(cfun, c(list(formula=formC, data=quote(datpos)), fitArgsC))
         ok <- length(object@fitC@optinfo$conv$lme4)==0 || lme4::isSingular(object@fitC)
         object@fitted['C'] <- TRUE
         if(!ok){
-            object@optimMsg['C'] <- object@fitC@optinfo$conv$lme4$messages[1]
+            object@optimMsg['C'] <- object@fitC@optinfo$conv$lme4$messages[[1]]
             object@fitted['C'] <- !object@strictConvergence
         }
     }
@@ -318,15 +318,16 @@ setMethod('dof', signature=c(object='LMERlike'), function(object){
 
 })
 
+
 setMethod('summarize', signature=c(object='LMERlike'), function(object, ...){
 
-    li <- list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'),
+    li <- hushWarning(list(coefC=coef(object, which='C'), vcovC=vcov(object, 'C'),
                deviance=rowm(deviance(object@fitC), deviance(object@fitD)),
-               df.null=suppressWarnings(rowm(stats::nobs(object@fitC),stats::nobs(object@fitD))), # to quiet no 'nobs' method is available warnings if the fit was empty
+               df.null=rowm(nobs(object@fitC),nobs(object@fitD)), # to quiet no 'nobs' method is available warnings if the fit was empty
                dispersion=rowm(sigma(object@fitC), NA),
                coefD=coef(object, which='D'), vcovD=vcov(object, 'D'),
                loglik=torowm(logLik(object)),
-               converged=torowm(object@fitted))
+               converged=torowm(object@fitted)), 'nobs')
     
     li[['df.resid']] <- li[['df.null']]-c(sum(!is.na(li[['coefC']])), sum(!is.na(li[['coefD']])))
     li[['dispersionNoshrink']] <- li[['dispersion']]
