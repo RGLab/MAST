@@ -46,3 +46,8 @@ Transition to use `SingleCellExperiment` and manage log counts slot.
 
 - `exprs_values` was not actually being used to select the assay in zlm.
 - `exprs_values` was not being properly propagated to `ebayes`, `lrTest`, `pbootVcov1` and `bootVcov1`.  Added a slot to ZlmFit to manage this. Thanks to IrSoler for the report.
+
+## 1.21.2
+
+- `REML = FALSE` (previous default) for mixed models can now be overridden with `fitArgsC`
+- `lrTest` and `summary` gain `parallel` argument
