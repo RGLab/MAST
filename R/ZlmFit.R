@@ -25,16 +25,16 @@ collectSummaries <- function(listOfSummaries){
 
 ## Refit using new MM and calculate stats
 ## hString is human-readable hypothesis
-.lrtZlmFit <- function(zlmfit, newMM, hString){
+.lrtZlmFit <- function(zlmfit, newMM, hString, ...){
     o1 <- zlmfit
     LMlike <- o1@LMlike
     model.matrix(LMlike) <- newMM
     message('Refitting on reduced model...')
     # may not be necessary, but hopefully will keep backward compatibility with serialized ZlmFit
     if('exprs_values' %in% slotNames(zlmfit)) { 
-        o0 <- zlm(sca=o1@sca, LMlike=LMlike, exprs_values = o1@exprs_values)
+        o0 <- zlm(sca=o1@sca, LMlike=LMlike, exprs_values = o1@exprs_values, ...)
     } else{
-        o0 <- zlm(sca=o1@sca, LMlike=LMlike)
+        o0 <- zlm(sca=o1@sca, LMlike=LMlike, ...)
     }
     
     lambda <- -2*(o0@loglik-o1@loglik)
@@ -57,8 +57,10 @@ collectSummaries <- function(listOfSummaries){
 ##' discrete, continuous and hurdle (combined) levels.
 ##' @param object ZlmFit
 ##' @param hypothesis See Details
+##' @param ... passed to `zlm`
+##' @inheritDotParams zlm
 ##' @return 3D array
-setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis){
+setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), function(object, hypothesis, ...){
     o1 <- object
     LMlike <- o1@LMlike
     oldMM <- model.matrix(LMlike)
@@ -73,34 +75,35 @@ setMethod('lrTest',  signature=c(object='ZlmFit', hypothesis='character'), funct
     newq <- qr.Q(qr(newMM))
     diff <- any(abs(newq %*% crossprod(newq, oldMM) - oldMM)>1e-6)
     if(!diff) stop('Removing term ', sQuote(hypothesis), " doesn't actually alter the model, maybe due to marginality? Try specifying individual coefficents as a `CoefficientHypothesis`.")
-    .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis)
+    .lrtZlmFit(o1, LMlike@modelMatrix, hypothesis, ...)
 })
 
 ##' @describeIn ZlmFit Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
+##' @param ... passed to `zlm`
 ##' @return see "Methods (by generic)"
-setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis){
+setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='CoefficientHypothesis'), function(object, hypothesis, ...){
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
     testIdx <- h@index
     newMM <- model.matrix(object@LMlike)[,-testIdx, drop=FALSE]
-    .lrtZlmFit(object, newMM, hypothesis@.Data)
+    .lrtZlmFit(object, newMM, hypothesis@.Data, ...)
 })
 
 ##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a \link{Hypothesis}.
-setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis){
+setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='Hypothesis'), function(object, hypothesis, ...){
     ## original fit
     h <- generateHypothesis(hypothesis, colnames(object@coefD))
     ## call using coefficient matrix
-    lrTest(object, h@contrastMatrix)
+    lrTest(object, h@contrastMatrix, ...)
 })
 
 ## contrast matrices
 ##' @describeIn ZlmFit Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a contrast \code{matrix}.
-setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(object, hypothesis){
+setMethod('lrTest', signature=c(object='ZlmFit', hypothesis='matrix'), function(object, hypothesis, ...){
     ## original fit
     LMlike <- object@LMlike
     MM <- .rotateMM(LMlike, hypothesis)
     testIdx <- attr(MM, 'testIdx')
-    .lrtZlmFit(object, MM[,-testIdx, drop=FALSE], 'Contrast Matrix')
+    .lrtZlmFit(object, MM[,-testIdx, drop=FALSE], 'Contrast Matrix', ...)
 })
 
 
@@ -203,10 +206,11 @@ normalci <- function(center, se, level){
 ##' @param logFC If TRUE, calculate log-fold changes, or output from a call to \code{getLogFC}.
 ##' @param doLRT if TRUE, calculate lrTests on each coefficient, or a character vector of such coefficients to consider.
 ##' @param level what level of confidence coefficient to return.  Defaults to 95 percent. 
+##' @inheritParams zlm
 ##' @param ... ignored
 ##' @return \code{data.table}
 ##' @seealso print.summaryZlmFit
-##' @aliases "summary-ZlmFit", "ZlmFit-summary"
+##' @aliases "summary-ZlmFit", "ZlmFit-summary", "summary.ZlmFit"
 ##' @examples
 ##' data(vbetaFA)
 ##' z <- zlm(~Stim.Condition, vbetaFA[1:5,])
@@ -215,8 +219,10 @@ normalci <- function(center, se, level){
 ##' print(zs)
 ##' ##Select `datatable` copmonent to get normal print method
 ##' zs$datatable
+##' ## Can use parallel processing for LRT now
+##' summary(z, doLRT = TRUE, parallel = TRUE)
 ##' @export
-setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE, level=.95, ...){
+setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE,  doLRT=FALSE, level=.95, parallel = FALSE, ...){
     message('Combining coefficients and standard errors')
 
     
@@ -255,7 +261,7 @@ setMethod('summary', signature=c(object='ZlmFit'), function(object, logFC=TRUE, 
     }
     if(!is.logical(doLRT)){
         message('Calculating likelihood ratio tests')
-        llrt <- lapply(doLRT, function(x) lrTest(object, CoefficientHypothesis(x))[,,'Pr(>Chisq)'])
+        llrt <- lapply(doLRT, function(x) lrTest(object, CoefficientHypothesis(x), parallel = parallel)[,,'Pr(>Chisq)'])
         names(llrt) <-  doLRT
         llrt <- data.table(reshape2::melt(llrt))
         setnames(llrt, c('test.type', 'L1', 'value'), c('component', 'contrast', 'Pr(>Chisq)'))
