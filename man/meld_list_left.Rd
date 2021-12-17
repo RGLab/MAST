@@ -15,5 +15,5 @@ meld_list_left(x, y)
 Combine lists, preferentially taking elements from x if there are duplicate names
 }
 \examples{
-meld_list_left(list(A=1, B=2), list(A = 0))
+MAST:::meld_list_left(list(A=1, B=2), list(A = 0))
 }
