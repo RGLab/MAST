@@ -22,7 +22,7 @@ reference:
       desc: "Fit a Hurdle linear model to test for zero-inflated differential expression."
       contents:
         - zlm
-        - summary,ZlmFit-class
+        - summary
         - LMERlike-class
         - BayesGLMlike-class
         - print.summaryZlmFit
@@ -35,6 +35,7 @@ reference:
         - CoefficientHypothesis
         - lrTest
         - waldTest
+        - lrTest,ZlmFit,character-method
     - title: "Low-level manipulation of fitted hurdle models"
       desc: "Return coefficients, standard errors, etc.  Calculate and return residuals from models."
       contents: 
@@ -59,4 +60,12 @@ reference:
         - myBiplot
         - plotSCAConcordance
         - stat_ell
+    - title: "Legacy methods"
+      desc: "Older and perhaps obsoleted methods."
+      contents:
+        - LRT
+        - computeEtFromCt
+        - mast_filter
+        - expavg
+        - filterLowExpressedGenes
 
