@@ -7,7 +7,7 @@ ell <- function(x,xse,y,yse,segments=20,radius){
     order <- order(attr(Q, "pivot"))
     ellipse <- t(center + radius * t(unit.circle %*% Q[, order]))
     colnames(ellipse)=c("x","y")
-    ellipse
+    as.data.frame(ellipse)
 }
 
 StatEll <- ggproto("StatEll", Stat,

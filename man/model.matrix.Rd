@@ -22,6 +22,6 @@ Model matrix accessor
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{LMlike}: return the \code{model.matrix}
-}}
+\item \code{model.matrix(LMlike)}: return the \code{model.matrix}
 
+}}

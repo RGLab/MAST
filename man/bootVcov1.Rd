@@ -28,9 +28,9 @@ Sample cells with replacement to find bootstrapped distribution of coefficients
 }
 \section{Functions}{
 \itemize{
-\item \code{pbootVcov1}: parallel version of bootstrapping
-}}
+\item \code{pbootVcov1()}: parallel version of bootstrapping
 
+}}
 \examples{
 data(vbetaFA)
 zlmVbeta <- zlm(~ Stim.Condition, subset(vbetaFA, ncells==1)[1:5,])

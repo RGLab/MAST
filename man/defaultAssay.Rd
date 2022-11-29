@@ -18,9 +18,10 @@ assay_idx(x)
 
 \item{i}{must be \code{missing} for this method to apply}
 
-\item{withDimnames}{A \code{logical(1)}, indicating whether the
-    dimnames of the SummarizedExperiment object should be applied (i.e.
-    copied) to the extracted assays. More precisely, setting
+\item{withDimnames}{
+    A \code{logical(1)}, indicating whether the dimnames of the
+    SummarizedExperiment object should be applied (i.e. copied)
+    to the extracted assays. More precisely, setting
     \code{withDimnames=FALSE} in the \emph{getter} returns the
     assays \emph{as-is} whereas setting \code{withDimnames=FALSE}
     return them with possibly modified dimnames.
@@ -48,11 +49,11 @@ By default we return the assay whose names, as given by \code{assayNames(x)}, ma
 }
 \section{Functions}{
 \itemize{
-\item \code{magic_assay_names}: list of names assumed to represent log-transformed data, in order of usage preference
+\item \code{magic_assay_names()}: list of names assumed to represent log-transformed data, in order of usage preference
 
-\item \code{assay_idx}: what index is returned by default by `assay`
+\item \code{assay_idx()}: what index is returned by default by `assay`
+
 }}
-
 \examples{
 data(vbetaFA)
 assay(vbetaFA)[1:3,1:3]

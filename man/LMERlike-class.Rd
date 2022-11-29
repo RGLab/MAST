@@ -41,15 +41,15 @@ This is necessary because there is no (easy) way to specify an arbitrary fixed-e
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{update}: update the formula or design matrix
+\item \code{update(LMERlike)}: update the formula or design matrix
 
-\item \code{vcov}: return the variance/covariance of component \code{which}
+\item \code{vcov(LMERlike)}: return the variance/covariance of component \code{which}
 
-\item \code{coef}: return the coefficients.  The horrendous hack is attempted to be undone.
+\item \code{coef(LMERlike)}: return the coefficients.  The horrendous hack is attempted to be undone.
 
-\item \code{logLik}: return the log-likelihood
+\item \code{logLik(LMERlike)}: return the log-likelihood
+
 }}
-
 \section{Slots}{
 
 \describe{

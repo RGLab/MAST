@@ -44,19 +44,19 @@ Here this is used to calculate various residuals, though in some cases they can 
 }
 \section{Functions}{
 \itemize{
-\item \code{discrete_residuals_hook}: Hook to get the discrete residuals, ie, difference between expected probability of expression and observed
+\item \code{discrete_residuals_hook()}: Hook to get the discrete residuals, ie, difference between expected probability of expression and observed
 
-\item \code{continuous_residuals_hook}: Hook to get the continuous residuals, ie, residuals for conditionally positive observations.  If an observation is zero, it's residual is defined to be zero as well.
+\item \code{continuous_residuals_hook()}: Hook to get the continuous residuals, ie, residuals for conditionally positive observations.  If an observation is zero, it's residual is defined to be zero as well.
 
-\item \code{combined_residuals_hook}: Hook to get the combined residuals, ie, Y-E(U)*E(V)
+\item \code{combined_residuals_hook()}: Hook to get the combined residuals, ie, Y-E(U)*E(V)
 
-\item \code{deviance_residuals_hook}: Standardized deviance residuals hook. Computes the sum of the standardized deviance residuals for the discrete and continuous models (scaled to have unit variance).  If the observation is zero then only the discrete component is used.
+\item \code{deviance_residuals_hook()}: Standardized deviance residuals hook. Computes the sum of the standardized deviance residuals for the discrete and continuous models (scaled to have unit variance).  If the observation is zero then only the discrete component is used.
 
-\item \code{fitted_phat}: Hook to return p_hat, the predicted probability of expression.
+\item \code{fitted_phat()}: Hook to return p_hat, the predicted probability of expression.
 
-\item \code{partialScore}: Compute \eqn{Y_i-E(V_i|X_i, Z_0)E(U|X_i, Z_0)}, where \eqn{Z_0} is a  treatment effect (being left in) and \eqn{X_i} is a nuisance effect (being regressed out).
+\item \code{partialScore()}: Compute \eqn{Y_i-E(V_i|X_i, Z_0)E(U|X_i, Z_0)}, where \eqn{Z_0} is a  treatment effect (being left in) and \eqn{X_i} is a nuisance effect (being regressed out).
+
 }}
-
 \section{Total residual types}{
 
 Each component of the model contributes several flavors of residual, which can be combined in various fashions.

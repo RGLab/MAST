@@ -23,6 +23,6 @@ Prints information on a LMlike object
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{ZlmFit}: print info on ZlmFit
-}}
+\item \code{show(ZlmFit)}: print info on ZlmFit
 
+}}

@@ -47,23 +47,23 @@ This holds output from a call to zlm.  Many methods are defined to operate on it
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{lrTest}: Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
+\item \code{lrTest(object = ZlmFit, hypothesis = CoefficientHypothesis)}: Returns an array with likelihood-ratio tests on contrasts defined using \code{CoefficientHypothesis()}.
 
-\item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a \link{Hypothesis}.
+\item \code{lrTest(object = ZlmFit, hypothesis = Hypothesis)}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a \link{Hypothesis}.
 
-\item \code{lrTest}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a contrast \code{matrix}.
+\item \code{lrTest(object = ZlmFit, hypothesis = matrix)}: Returns an array with likelihood-ratio tests specified by \code{Hypothesis}, which is a contrast \code{matrix}.
 
-\item \code{waldTest}: Returns an array with Wald Tests on contrasts defined using \code{CoefficientHypothesis()}.
+\item \code{waldTest(object = ZlmFit, hypothesis = CoefficientHypothesis)}: Returns an array with Wald Tests on contrasts defined using \code{CoefficientHypothesis()}.
 
-\item \code{waldTest}: Returns an array with Wald Tests on contrasts defined in \code{Hypothesis()}
+\item \code{waldTest(object = ZlmFit, hypothesis = Hypothesis)}: Returns an array with Wald Tests on contrasts defined in \code{Hypothesis()}
 
-\item \code{coef}: Returns the matrix of coefficients for component \code{which}.
+\item \code{coef(ZlmFit)}: Returns the matrix of coefficients for component \code{which}.
 
-\item \code{vcov}: Returns an array of variance/covariance matrices for component \code{which}.
+\item \code{vcov(ZlmFit)}: Returns an array of variance/covariance matrices for component \code{which}.
 
-\item \code{se.coef}: Returns a matrix of standard error estimates for coefficients on component \code{which}.
+\item \code{se.coef(ZlmFit)}: Returns a matrix of standard error estimates for coefficients on component \code{which}.
+
 }}
-
 \section{Slots}{
 
 \describe{

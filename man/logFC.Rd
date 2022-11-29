@@ -32,9 +32,9 @@ An approximation of the variance of \code{logFC} (applying the delta method to  
 }
 \section{Functions}{
 \itemize{
-\item \code{getLogFC}: Return results as a perhaps friendlier \code{data.table}
-}}
+\item \code{getLogFC()}: Return results as a perhaps friendlier \code{data.table}
 
+}}
 \section{Caveats}{
 
 1.  When \code{method='bayesglm'} (the default), it's no longer necessarily true that the log fold change from condition A to B will be the inverse of the log fold change from B to A if the models are fit separately.

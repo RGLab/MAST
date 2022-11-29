@@ -88,7 +88,7 @@ Collate:
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 LazyData: true
 biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
     RNASeq, Transcriptomics, SingleCell

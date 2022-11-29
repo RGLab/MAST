@@ -42,9 +42,9 @@ You might try setting \code{var_estimate='modelbased'} to relax this requirement
 }
 \section{Functions}{
 \itemize{
-\item \code{gsea_control}: set control parameters.  See Details.
-}}
+\item \code{gsea_control()}: set control parameters.  See Details.
 
+}}
 \section{\code{control}}{
 
 \code{control} is a list with elements:

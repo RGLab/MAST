@@ -55,25 +55,25 @@ Depending on how different the method is, you will definitely need to override t
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{summary}: Print a summary of the coefficients in each component.
+\item \code{summary(LMlike)}: Print a summary of the coefficients in each component.
 
-\item \code{update}: update the formula or design from which the \code{model.matrix} is constructed
+\item \code{update(LMlike)}: update the formula or design from which the \code{model.matrix} is constructed
 
-\item \code{waldTest}: Wald test dropping single term specified by \code{CoefficientHypothesis} \code{hypothesis}
+\item \code{waldTest(object = LMlike, hypothesis = CoefficientHypothesis)}: Wald test dropping single term specified by \code{CoefficientHypothesis} \code{hypothesis}
 
-\item \code{waldTest}: Wald test of contrast specified by contrast matrix \code{hypothesis}
+\item \code{waldTest(object = LMlike, hypothesis = matrix)}: Wald test of contrast specified by contrast matrix \code{hypothesis}
 
-\item \code{lrTest}: Likelihood ratio test dropping entire term specified by \code{character} \code{hypothesis} naming a term in the symbolic formula.
+\item \code{lrTest(object = LMlike, hypothesis = character)}: Likelihood ratio test dropping entire term specified by \code{character} \code{hypothesis} naming a term in the symbolic formula.
 
-\item \code{lrTest}: Likelihood ratio test dropping single term specified by \code{CoefficientHypothesis} \code{hypothesis}
+\item \code{lrTest(object = LMlike, hypothesis = CoefficientHypothesis)}: Likelihood ratio test dropping single term specified by \code{CoefficientHypothesis} \code{hypothesis}
 
-\item \code{lrTest}: Likelihood ratio test dropping single term specified by \code{Hypothesis} \code{hypothesis}
+\item \code{lrTest(object = LMlike, hypothesis = Hypothesis)}: Likelihood ratio test dropping single term specified by \code{Hypothesis} \code{hypothesis}
 
-\item \code{lrTest}: Likelihood ratio test dropping single term specified by contrast matrix \code{hypothesis}
+\item \code{lrTest(object = LMlike, hypothesis = matrix)}: Likelihood ratio test dropping single term specified by contrast matrix \code{hypothesis}
 
-\item \code{logLik}: return the log-likelihood of a fitted model
+\item \code{logLik(GLMlike)}: return the log-likelihood of a fitted model
+
 }}
-
 \section{Slots}{
 
 \describe{

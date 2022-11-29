@@ -29,13 +29,13 @@ NAs can be optionally removed
 }
 \section{Functions}{
 \itemize{
-\item \code{condmean}: Report the mean non-zero expression value for each gene. NAs are always removed.
+\item \code{condmean()}: Report the mean non-zero expression value for each gene. NAs are always removed.
 
-\item \code{condSd}: Report standard deviation of expression, for positive et for each gene. NAs are always removed.
+\item \code{condSd()}: Report standard deviation of expression, for positive et for each gene. NAs are always removed.
 
-\item \code{numexp}: Report number of expressing cells ($>0$) per gene. NAs are removed.
+\item \code{numexp()}: Report number of expressing cells ($>0$) per gene. NAs are removed.
+
 }}
-
 \examples{
 data(vbetaFA)
 freq(vbetaFA)

@@ -22,8 +22,8 @@ a list of statistics on the original data, and thresholded data
 \description{
 Returns the proportion of (putative) expression, the variance of expressed cells, and -log10 shapiro-wilk tests for normality on the expressed cells
 }
-\section{Methods (by generic)}{
+\section{Functions}{
 \itemize{
-\item \code{print}: prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
-}}
+\item \code{print(summaryThresholdSCRNA)}: prints five-number distillation of the statistics and invisibly returns the table used to generate the summary
 
+}}

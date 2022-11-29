@@ -37,9 +37,9 @@ If \code{groups} is provided, the filtering is calculated within each level of t
 }
 \section{Functions}{
 \itemize{
-\item \code{burdenOfFiltering}: plot the proportions of wells are filtered due to different criteria
-}}
+\item \code{burdenOfFiltering()}: plot the proportions of wells are filtered due to different criteria
 
+}}
 \examples{
 data(vbetaFA)
 ## Split by 'ncells', apply to each component, then recombine

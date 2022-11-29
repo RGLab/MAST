@@ -47,13 +47,13 @@ A \code{data.frame} with one row per gene-\code{groups} is returned with some ad
 }
 \section{Functions}{
 \itemize{
-\item \code{getwss}: getrc the sum of squares, weighted by nexp
+\item \code{getwss()}: getrc the sum of squares, weighted by nexp
 
-\item \code{getss}: return the sum of squares
+\item \code{getss()}: return the sum of squares
 
-\item \code{getrc}: Return Lin's (1989) concordance correlation coefficient
+\item \code{getrc()}: Return Lin's (1989) concordance correlation coefficient
+
 }}
-
 \examples{
 data(vbetaFA)
 sca1 <- subset(vbetaFA, ncells==1)
