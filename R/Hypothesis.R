@@ -36,7 +36,7 @@ Hypothesis <- CoefficientHypothesis <- function(hypothesis, terms){
 generateHypothesis <- function(h, terms){
     stopifnot(inherits(h, 'Hypothesis') | inherits(h, 'CoefficientHypothesis'))
     ## if(length(h@transformed)>0) return(h)
-    if(class(h) =='Hypothesis'){
+    if(class(h) =='Hypothesis'){ #we need to test for this exact class, not just inheritance
         ## makeContrasts can't handle non-syntactic names :-/
         ## So we'll use this instead
         cm <- makeContrasts2(contrasts=h@.Data, levels=terms)

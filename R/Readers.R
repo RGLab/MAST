@@ -197,7 +197,7 @@ if(getRversion() >= "2.15.1") globalVariables(c('Ct Call', 'Ct Value', 'Gene'))
 ##Function to read fluidigm from xls file
 read.fluidigm.xls<-function(x,header.size=2,skip=8){
     colmap<-c(`Chamber ID`="Chamber.ID",`Sample Name`="SampleName",`Sample Type`="SampleType",`Sample rConc`="SampleRConc",`FAM-MGB Name`="Gene",`FAM-MGB Type`="AssayType",`Ct Quality`="CtQuality",`Ct Threshold`="CtThreshold")
-    if(!class(x)=="character"){
+    if(!inherits(x, "character")){
         message("Argument must be of type character")
     }
     if(!file.exists(x)){

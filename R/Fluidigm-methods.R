@@ -118,7 +118,7 @@ getConcordance <- function(singleCellRef, singleCellcomp, groups=NULL, fun.natur
         m <- as(scL[[i]], 'data.table')
         tmp <- reshape2::dcast(m, firstForm, fun.aggregate=fun.natural)
         ##exponential average per gene, scaled by number of cells
-        if(class(m[['ncells']]) == 'factor'){
+        if(inherits(m[['ncells']], 'factor')){
             warning("ncells is a factor rather than numeric.\n I'll continue, but this may cause problems down the line")
             tmp[['ncells']] <- as.numeric(as.character(tmp[["ncells"]]))
         }
