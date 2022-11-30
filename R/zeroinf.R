@@ -80,7 +80,6 @@ summary.zlm <- function(out){
 ##' data$y <- y
 ##' fit <- zlm(y ~ x+z, data)
 ##' summary.glm(fit$disc)
-##' summary.glm(fit$cont)
 ##' @export
 zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebayesControl=NULL, force=FALSE, hook=NULL, parallel=TRUE, LMlike, onlyCoef=FALSE, exprs_values = assay_idx(sca)$aidx, ...){
     ## could also provide argument `data`
@@ -124,7 +123,9 @@ zlm <- function(formula, sca, method='bayesglm', silent=TRUE, ebayes=TRUE, ebaye
             stopifnot(all(!is.na(ebparm)))
         }
         ## initial value of priorVar, priorDOF default to no shrinkage
-        obj <- new(method, design=colData(sca), formula=Formula, priorVar=priorVar, priorDOF=priorDOF, ...)
+        obj <- new_with_repaired_slots(classname = method, design = colData(sca), 
+                                       formula = Formula, priorVar = priorVar, priorDOF = priorDOF, 
+                                       extra = list(...))
         ## End Default Call
     } else{
         ## Refitting

@@ -64,3 +64,23 @@ meld_list_left = function(x, y){
     dups = nchar(names(unite)) & duplicated(names(unite))
     unite[!dups]
 }
+
+#' Instantiate a class, but warn rather than error for badly named slots
+#'
+#' @param classname `character` naming a class
+#' @param ... slots in `classname`
+#' @param extra named list giving other slots in `classname`
+#'
+#' @return `new(classname)`
+#' @examples
+#' MAST:::new_with_repaired_slots("SimpleList",  listData = list(x = LETTERS), 
+#' extra = list(elementType = 'character', food = "tasty", beer = "cold"))
+new_with_repaired_slots = function(classname, ..., extra){
+  #... were actually named in caller, so assumed good.
+  # extra are dot args, and might have been passed in erroneously by a caller.
+  bad_slots = setdiff(names(extra), slotNames(classname))
+  warning(sprintf("Dropping illegal slot(s) %s for class %s.  
+                  This likely indicates a bug in an upstream package.", 
+                  paste0(bad_slots, collapse = ', '), classname))
+  do.call(new, c(Class = classname, list(...), extra[setdiff(names(extra), bad_slots)]))
+}

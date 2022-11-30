@@ -86,7 +86,6 @@ y[y>0] <- mu.y[y>0]
 data$y <- y
 fit <- zlm(y ~ x+z, data)
 summary.glm(fit$disc)
-summary.glm(fit$cont)
 }
 \seealso{
 ZlmFit-class, ebayes, GLMlike-class, BayesGLMlike-class
