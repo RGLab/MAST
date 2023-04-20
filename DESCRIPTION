@@ -1,8 +1,8 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.25.1
-Date: 2022-11-29
+Version: 1.25.2
+Date: 2023-04-20
 Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
             person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))
@@ -24,7 +24,8 @@ Imports:
     graphics,
     utils,
     SummarizedExperiment(>= 1.5.3),
-    progress
+    progress,
+    Matrix
 Depends:
     SingleCellExperiment (>= 1.2.0),
     R(>= 3.5)
@@ -49,7 +50,6 @@ Suggests:
     BiocStyle,
     scater,
     DelayedArray,
-    Matrix,
     HDF5Array,
     zinbwave,
     dplyr
@@ -88,7 +88,7 @@ Collate:
     'thresholdSCRNA.R'
     'zeroinf.R'
     'zlmHooks.R'
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 LazyData: true
 biocViews: GeneExpression, DifferentialExpression, GeneSetEnrichment,
     RNASeq, Transcriptomics, SingleCell

@@ -65,6 +65,7 @@ getSSg_rNg <- function(assay_t, mm){
 ##' @param mm a model matrix, used when \code{model='H1'}.
 ##' @param truncate Genes with sample precisions exceeding this value are discarded when estimating the hyper parameters
 ##' @return \code{numeric} of length two, giving the hyperparameters in terms of a variance (\code{v}) and prior observations (\code{df}), inside a \code{structure}, with component \code{hess}, giving the Fisher Information of the hyperparameters.
+##' @importFrom Matrix colSums rowSums
 ebayes <- function(assay_t, ebayesControl, mm, truncate=Inf){
     ## Empirical bayes method
     defaultCtl <- list(method='MLE', model='H0')
