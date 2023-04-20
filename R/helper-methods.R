@@ -79,8 +79,10 @@ new_with_repaired_slots = function(classname, ..., extra){
   #... were actually named in caller, so assumed good.
   # extra are dot args, and might have been passed in erroneously by a caller.
   bad_slots = setdiff(names(extra), slotNames(classname))
-  warning(sprintf("Dropping illegal slot(s) %s for class %s.  
-                  This likely indicates a bug in an upstream package.", 
-                  paste0(bad_slots, collapse = ', '), classname))
+  if(length(bad_slots) > 0){
+    warning(sprintf("Dropping illegal slot(s) %s for class %s.  
+                    This likely indicates a bug in an upstream package.", 
+                    paste0(bad_slots, collapse = ', '), classname))
+  }
   do.call(new, c(Class = classname, list(...), extra[setdiff(names(extra), bad_slots)]))
 }
