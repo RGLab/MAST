@@ -134,7 +134,7 @@ Write `sc_example_counts` to disk as an `HDF5Array`
 sca_delay = FromMatrix(
     exprsArray = list(et = hd5_dat),
      cData = maits$cdat, fData = maits$fdat)
-class(assay(sca_sparse))
+class(assay(sca_delay))
 
 hd5_time = system.time(zlm( ~ condition, sca = sca_delay[1:100,]))
 ```
