@@ -70,6 +70,7 @@ logFC <- function(zlmfit, contrast0, contrast1){
     } else if(inherits(contrast0, 'Hypothesis')){
         gh <- generateHypothesis(contrast0, coname)
         contrast0 <- gh@contrastMatrix
+        contrast0 <- t(contrast0)
     } 
     if(missing(contrast1)){
         contrast1 <- cbind(0, diag(1, nrow=length(coname)-1))
