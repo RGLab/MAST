@@ -217,7 +217,7 @@ We'll plot the -log10 P values by gene and test type.
 ```{r tests, fig.width=4, fig.height=5}
 zlm.lr <- lrTest(zlm.output, 'Population')
 dimnames(zlm.lr)
-pvalue <- ggplot(melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+
+pvalue <- ggplot(reshape2::melt(zlm.lr[,,'Pr(>Chisq)']), aes(x=primerid, y=-log10(value)))+
     geom_bar(stat='identity')+facet_wrap(~test.type) + coord_flip()
 print(pvalue)
 ```
