@@ -1,9 +1,9 @@
 Package: MAST
 Type: Package
 Title: Model-based Analysis of Single Cell Transcriptomics
-Version: 1.35.1
-Date: 2023-04-20
-Authors@R: c(person("Andrew", "McDavid", email = "Andrew_McDavid@urmc.rochester.edu", role = c("aut", "cre")),
+Version: 1.35.2
+Date: 2025-10-20
+Authors@R: c(person("Andrew", "McDavid", email = "andrew.n.mcdavid@gmail.com", role = c("aut", "cre")),
             person("Greg", "Finak", email="gfinak@fredhutch.org", role='aut'),
             person("Masanao", "Yajima", email="myajima@fredhutch.org", role='aut'))
 VignetteBuilder: knitr
