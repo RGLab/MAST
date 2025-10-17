@@ -203,12 +203,11 @@ read.fluidigm.xls<-function(x,header.size=2,skip=8){
     if(!file.exists(x)){
         stop("File not found ",x)
     }
-    if(grepl("xls$",basename(x))){
-        ##Read as xls file
-        tmp<-gdata::xls2csv(x)
-    }else if(grepl("csv$",basename(x))){
+    if(grepl("csv$",basename(x))){
         ##read as csv
         tmp<-file(x,open="r")
+    } else {
+        stop("Only csv files are supported.")
     }
     header<-readLines(tmp,8)
     quality.threshold<-strsplit(gsub("\\\"","",header[5]),",")[[1]][2]
