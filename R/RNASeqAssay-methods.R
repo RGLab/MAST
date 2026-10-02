@@ -63,7 +63,7 @@ filterLowExpressedGenes<-function(assay,threshold=0.1){
         stop(sprintf("assay must be a SingleCellAssay but found %s\n",class(assay)[1]))
     }
     gp <- freq(assay)
-    cat(sprintf("Filtered out %2.2f percent of genes at %2.2f percent threshold\n",mean(gp>threshold)*100,threshold*100))
+    cat(sprintf("Filtered out %2.2f percent of genes at %2.2f percent threshold\n",mean(gp<=threshold, na.rm=TRUE)*100,threshold*100))
     return(assay[gp>threshold,])
 }
 
