@@ -414,8 +414,10 @@ print.summaryThresholdSCRNA <- function(x, ...){
     summ <- m[,list(stat=names(summary(value)), value=summary(value)),keyby=list(L2, metric)]
     summ$stat <- factor(summ$stat, levels=c('Min.', '1st Qu.', 'Median', 'Mean', '3rd Qu.', 'Max.'))
     dc <- dcast.data.table(summ, stat + L2  ~  metric)
-    
-    setnames(dc, c('stat', 'L2', 'vars', 'zeros'), c('Quantile', 'Data', 'variance', 'prop. expressed'))
+    setnames(dc, c('stat', 'L2'), c('Quantile', 'Data'))
+    if('vars' %in% names(dc)) setnames(dc, 'vars', 'variance')
+    if('zeros' %in% names(dc)) setnames(dc, 'zeros', 'prop. expressed')
+    if('shapiro' %in% names(dc)) setnames(dc, 'shapiro', '-log10 Shapiro-Wilk p')
     dcdf <- as.data.frame(dc)
     print(dcdf, right=FALSE, row.names=FALSE)
     invisible(dc)
