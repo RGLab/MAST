@@ -44,8 +44,9 @@ getSSg_rNg <- function(assay_t, mm){
         SSg <- NA
         rNg <- NA
         try({
-            yp <- y[!is.na(y)]
-            mp <- mm[pos,]
+            observed <- !is.na(y)
+            yp <- y[observed]
+            mp <- mm[observed,]
             QR <- qr(mp)
             resid <- qr.resid(QR, yp)
             SSg <- crossprod(resid)
