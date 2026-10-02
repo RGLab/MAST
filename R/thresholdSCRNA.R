@@ -387,7 +387,12 @@ summary.thresholdSCRNACountMatrix <- function(object, ...){
     })
     shapiro <- lapply(object[c('original_data', 'counts_threshold')], function(o){
         apply(o, 2, function(x){
-            
+            x <- x[!is.na(x) & x != 0]
+            if(length(x) < 3L || length(x) > 5000L ||
+               any(!is.finite(x)) || length(unique(x)) < 2L){
+                return(NA_real_)
+            }
+            -log10(stats::shapiro.test(x)$p.value)
         })
     })
     out <- list(zeros=zeros, vars=vars, shapiro=shapiro)
