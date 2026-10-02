@@ -56,13 +56,18 @@ bootVcov1 <- function(zlmfit, R=99, boot_index = NULL){
     } else{
         exprs_values = assay_idx(sca)$aidx
     }
-    if(is.numeric(R)){
+    if(!is.null(boot_index)){
+        if(!missing(R)) stop("Provide only one of `boot_index` or `R`.")
+        if(!is.list(boot_index) || length(boot_index) == 0L ||
+           any(lengths(boot_index) == 0L) ||
+           any(vapply(boot_index, function(i) !is.numeric(i) || anyNA(i) ||
+                      any(!is.finite(i)) || any(i != as.integer(i)) || any(i < 1 | i > N), logical(1)))){
+            stop("boot_index must be a list of integer vectors between 1 and ", N)
+        }
+    } else if(is.numeric(R)){
         boot_index = lapply(1:R, function(i) sample(N, replace = TRUE))
-    } else if(!is.null(boot_index)){
-        r = range(unlist(boot_index))
-        if(!is.list(boot_index) || r[1] < 1 || r[2] > N) stop("boot_index must be a list of integer vectors between 1 and ", N)
     } else{
-        stop("Provide only of of `boot_index` or `R`.")
+        stop("Provide one of `boot_index` or `R`.")
     }
     
     manyvc <- laply(boot_index, function(s){
